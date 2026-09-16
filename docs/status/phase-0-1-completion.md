@@ -67,11 +67,17 @@ pnpm build      # passed
 pnpm format:check # passed
 ```
 
-The GitHub Actions workflow runs frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; the closure-fix run [35091888686](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35091888686) passed this smoke step without downloading or activating FQGate. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
+The GitHub Actions workflow runs frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; the final closure-fix run [35092128468](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35092128468) passed this smoke step without downloading or activating FQGate. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
 
 ## Windows acceptance status
 
-Real Windows x64 acceptance was **not executed in this environment**, which is Linux. It is the only remaining external acceptance step before Phase 0/1 can be considered fully closed.
+Real Windows x64 acceptance was **not executed**. Development commands ran in
+Linux/WSL2. The underlying Windows x64 host has an existing unmanaged FQGate
+that answered the live health probe, but it has no Windows Node.js/pnpm and no
+managed bridge installation. It is not a clean/disposable target on which to
+replace or start another FQGate binary, so this observation is not acceptance.
+Real Windows x64 acceptance remains the only product-level step before Phase
+0/1 can be considered fully closed.
 
 The closure-fix protocol and script changes are covered by local automated tests and the passing Windows CI smoke step, but CI is not a substitute for the intended interactive Windows host acceptance.
 
