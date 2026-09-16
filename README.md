@@ -2,7 +2,7 @@
 
 Securely run, update, monitor, and remotely access a local [FQGate](https://github.com/zhuyifang/fqgate-releases) instance on an always-on Windows PC through Cloudflare Tunnel and Cloudflare Access.
 
-> **Status:** architecture and implementation plan only. No production implementation exists yet.
+> **Status:** Phase 0 + Phase 1 implementation is present. Real Windows x64 acceptance is still pending; Phase 2 features are intentionally not implemented.
 
 ## Why this project exists
 
@@ -38,7 +38,7 @@ FQGate
 
 The key rule is simple: **Cloudflare Tunnel must terminate at this bridge, not at FQGate directly.**
 
-## Core responsibilities
+## Planned long-term responsibilities
 
 - Download, verify, install, update, and roll back FQGate from its official release source.
 - Download, install, update, and health-check `cloudflared`.
@@ -76,17 +76,16 @@ Initial setup should converge toward one administrator command or installer that
 
 Normal operation should require no manual intervention. When FQGate login expires, the protected web UI should show a QR code and restore the session without Remote Desktop.
 
-## Proposed implementation stack
+## Implementation stack for the current phase
 
 The implementation plan assumes:
 
 - Node.js 22+ / TypeScript
-- a small HTTP server (Fastify preferred)
-- Vue 3 + Vite for the minimal status/login UI
+- a small local lifecycle CLI; HTTP/UI layers are deferred
 - PowerShell only for Windows bootstrap/service/task integration
 - packaged Windows release artifacts so normal runtime does not depend on a developer checkout
 
-This is a planning baseline, not a license to add framework complexity. The bridge should remain small enough to audit.
+Fastify, Vue, Cloudflare, QR login, and remote proxying remain later-phase work. The bridge should remain small enough to audit.
 
 ## Documentation
 
@@ -100,12 +99,24 @@ This is a planning baseline, not a license to add framework complexity. The brid
 
 ## Current implementation handoff
 
-The first coding goal is **Phase 0 + Phase 1 only**: create the TypeScript/pnpm foundation and implement a deterministic, tested local FQGate lifecycle manager for Windows. Cloudflare, remote HTTP, login UI, MCP, and other later-phase features are intentionally excluded from this handoff.
+The repository now implements **Phase 0 + Phase 1 only**: a TypeScript/pnpm foundation and a deterministic, tested local FQGate lifecycle manager for Windows. Cloudflare, remote HTTP, login UI, MCP, and other later-phase features are intentionally excluded.
 
-Start with:
+Build and inspect it with:
 
-1. [`docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md`](docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md)
-2. [`docs/prompts/phase-0-1-codex-goal.md`](docs/prompts/phase-0-1-codex-goal.md)
+```text
+pnpm install --frozen-lockfile
+pnpm build
+pnpm typecheck
+pnpm lint
+pnpm test
+node dist/cli/main.js version
+node dist/cli/main.js fqgate status
+node dist/cli/main.js fqgate update --check
+```
+
+Use `config/example.json` as the no-secret starting point. The Windows bootstrap and real-host acceptance procedure are in [`scripts/windows`](scripts/windows).
+
+The detailed acceptance contract remains in [`docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md`](docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md), and the handoff report is [`docs/status/phase-0-1-completion.md`](docs/status/phase-0-1-completion.md).
 
 ## Current upstream baseline
 

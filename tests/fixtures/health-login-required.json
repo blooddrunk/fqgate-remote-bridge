@@ -1,0 +1,6 @@
+{
+  "status": "login_required",
+  "network_ready": true,
+  "connected": false,
+  "reason": "login required"
+}

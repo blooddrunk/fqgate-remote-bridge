@@ -1,0 +1,9 @@
+{
+  "status": "connected",
+  "network_ready": true,
+  "connected": true,
+  "level2_permission": true,
+  "login_method": "ths",
+  "reason": "ok",
+  "active_subscriptions": ["quote:000001"]
+}

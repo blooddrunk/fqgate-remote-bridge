@@ -220,3 +220,7 @@ A consumer must not depend on upstream FQGate quirks directly when avoidable. Th
 - upstream version metadata in diagnostics
 
 The consumer remains responsible for fallback to other market-data providers.
+
+## Phase 0 + Phase 1 implementation boundary
+
+The current implementation stops before the HTTP bridge, UI, Cloudflare, login adapters, supervisors, and notifications. It provides a local CLI and lifecycle manager only. Its managed files live under a per-user application-data directory, and its FQGate process is launched in the current interactive user session; no Phase 0/1 component opens a listening network socket.

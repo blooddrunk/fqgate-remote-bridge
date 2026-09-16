@@ -1,0 +1,6 @@
+{
+  "status": "starting",
+  "network_ready": false,
+  "connected": false,
+  "reason": "network not ready"
+}

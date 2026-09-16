@@ -18,6 +18,8 @@ Observed stable version at the baseline date:
 1.0.0
 ```
 
+The live official manifest was rechecked on **2026-09-16**. It remains published on the stable channel and reports `schemaVersion: 1`, `component: "fqgate"`, `minimumSupportedVersion: "0.1.0"`, and a Windows x64 package with `installMode: "replaceExecutable"`.
+
 The official stable manifest is:
 
 ```text
@@ -36,6 +38,14 @@ Observed useful fields:
 - `packages[].sha256`
 
 The Windows package is distributed as an executable and can be selected by platform/architecture from the manifest.
+
+The current manifest does not contain an asset URL field. The official release layout observed on the upstream release page is therefore represented by the release adapter as:
+
+```text
+https://github.com/zhuyifang/fqgate-releases/releases/download/fqgate-v<version>/<fileName>
+```
+
+For the current package this resolves to `FQGate-1.0.0-windows-x64-UNSIGNED.exe`, with exact size `22921728` bytes and SHA-256 `d2227dcf0c48f0bc428e3bfece444ba52a6938981d1ba143489be46a6add33c8`. The upstream release page labels this Windows artifact **UNSIGNED**; checksum, candidate identity, and compatibility validation are mandatory before activation.
 
 ## Local address
 

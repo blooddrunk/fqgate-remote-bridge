@@ -1,0 +1,7 @@
+{
+  "status": "guest",
+  "network_ready": true,
+  "connected": false,
+  "login_method": "guest",
+  "reason": "guest mode"
+}

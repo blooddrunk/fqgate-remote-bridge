@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "component": "fqgate",
+  "channel": "stable",
+  "status": "published",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-15T00:57:24Z",
+  "minimumSupportedVersion": "0.1.0",
+  "releaseNotes": ["fixture"],
+  "packages": [
+    {
+      "platform": "windows",
+      "architecture": "x86_64",
+      "installMode": "replaceExecutable",
+      "fileName": "FQGate-1.0.0-windows-x64-UNSIGNED.exe",
+      "size": 22921728,
+      "sha256": "d2227dcf0c48f0bc428e3bfece444ba52a6938981d1ba143489be46a6add33c8"
+    },
+    {
+      "platform": "macos",
+      "architecture": "aarch64",
+      "installMode": "openPackage",
+      "fileName": "FQGate-1.0.0-macos-arm64-ADHOC.zip",
+      "size": 7430071,
+      "sha256": "f5ee6987a5ffafa20828ba4d2e6dfdaf02037888f3edca28de5da0cc37c351bf"
+    },
+    {
+      "platform": "macos",
+      "architecture": "x86_64",
+      "installMode": "openPackage",
+      "fileName": "FQGate-1.0.0-macos-x86_64-ADHOC.zip",
+      "size": 8004707,
+      "sha256": "c3d83f595cd3de89560b20e9e96d4a36e94c3a8d8a7422652483c07b1d2594aa"
+    }
+  ]
+}
