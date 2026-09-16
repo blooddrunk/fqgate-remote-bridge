@@ -1,10 +1,11 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
 
 export interface HttpRequestOptions {
-  readonly method?: "GET";
+  readonly method?: "GET" | "POST";
   readonly timeoutMs: number;
   readonly maxBytes?: number;
   readonly headers?: Readonly<Record<string, string>>;
+  readonly body?: string;
 }
 
 export interface HttpResponse {
@@ -50,6 +51,9 @@ export class FetchHttpTransport implements HttpTransport {
         method: options.method ?? "GET",
         signal: controller.signal,
       };
+      if (options.body !== undefined) {
+        requestInit.body = options.body;
+      }
       if (options.headers !== undefined) {
         requestInit.headers = options.headers;
       }

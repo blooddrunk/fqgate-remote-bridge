@@ -1,0 +1,260 @@
+import {
+  CheckCircle2,
+  Clock3,
+  Copy,
+  Loader2,
+  QrCode,
+  RefreshCw,
+  ShieldCheck,
+  WifiOff,
+} from "lucide-react";
+import type { QrBeginResponse, QrPollResponse } from "../../bridge/contracts.js";
+import { Alert } from "../ui/alert.js";
+import { Badge } from "../ui/badge.js";
+import { Button } from "../ui/button.js";
+import { Card, CardContent } from "../ui/card.js";
+import type { ReactNode } from "react";
+
+export type QrFlowViewState =
+  | { readonly kind: "idle" }
+  | { readonly kind: "starting" }
+  | {
+      readonly kind: "active";
+      readonly begin: QrBeginResponse;
+      readonly poll?: QrPollResponse;
+      readonly isPolling: boolean;
+    }
+  | { readonly kind: "connected"; readonly loginMethod?: string }
+  | { readonly kind: "expired" | "replaced"; readonly message: string }
+  | { readonly kind: "error"; readonly message: string };
+
+export interface QrFlowViewProps {
+  readonly state: QrFlowViewState;
+  readonly onStart: () => void;
+  readonly onRetry: () => void;
+}
+
+export function QrFlowView({ state, onStart, onRetry }: QrFlowViewProps) {
+  return (
+    <div className="mx-auto max-w-4xl space-y-8">
+      <section className="max-w-2xl">
+        <Badge tone="info">
+          <QrCode size={13} aria-hidden="true" /> Secure local login
+        </Badge>
+        <h1 className="mt-5 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
+          Restore the market session.
+        </h1>
+        <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+          Scan a short-lived QR code with the FQGate companion app. The code stays in memory, and
+          the upstream flow identifier never leaves this bridge.
+        </p>
+      </section>
+
+      {state.kind === "idle" ? <StartCard onStart={onStart} /> : null}
+      {state.kind === "starting" ? <StartingCard /> : null}
+      {state.kind === "active" ? (
+        <ActiveCard begin={state.begin} poll={state.poll} isPolling={state.isPolling} />
+      ) : null}
+      {state.kind === "connected" ? (
+        <ConnectedCard
+          {...(state.loginMethod === undefined ? {} : { loginMethod: state.loginMethod })}
+        />
+      ) : null}
+      {state.kind === "expired" || state.kind === "replaced" ? (
+        <TerminalCard state={state} onRetry={onRetry} />
+      ) : null}
+      {state.kind === "error" ? <ErrorCard message={state.message} onRetry={onRetry} /> : null}
+    </div>
+  );
+}
+
+function StartCard({ onStart }: { readonly onStart: () => void }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center px-6 py-14 text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cyan-50 text-cyan-600 dark:bg-cyan-400/10 dark:text-cyan-300">
+          <QrCode size={29} aria-hidden="true" />
+        </span>
+        <h2 className="mt-6 text-xl font-semibold">Ready when you are</h2>
+        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
+          Starting a flow asks FQGate for a fresh QR code with credential caching disabled.
+        </p>
+        <Button className="mt-7" size="lg" onClick={onStart}>
+          Generate QR code
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StartingCard() {
+  return (
+    <Card>
+      <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
+        <Loader2 className="animate-spin text-cyan-400" size={30} aria-label="Generating QR code" />
+        <h2 className="mt-5 text-lg font-semibold">Generating a fresh code…</h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          Talking to the local FQGate session endpoint.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActiveCard({
+  begin,
+  poll,
+  isPolling,
+}: {
+  readonly begin: QrBeginResponse;
+  readonly poll: QrPollResponse | undefined;
+  readonly isPolling: boolean;
+}) {
+  const status = poll?.status ?? begin.status;
+  return (
+    <Card>
+      <CardContent className="grid gap-8 p-6 md:grid-cols-[minmax(18rem,22rem)_1fr] md:p-8">
+        <div className="flex min-h-[23rem] items-center justify-center rounded-3xl border border-slate-200 bg-white p-5 shadow-inner dark:border-white/[0.08] dark:bg-white">
+          <img
+            className="aspect-square w-full max-w-[19rem] object-contain"
+            src={`data:${begin.qr.mediaType};base64,${begin.qr.imageBase64}`}
+            alt="FQGate QR login code"
+          />
+        </div>
+        <div className="flex flex-col justify-center">
+          <Badge tone={status === "waiting_for_confirmation" ? "warning" : "info"}>
+            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+            {status === "waiting_for_confirmation" ? "Confirm on device" : "Waiting for scan"}
+          </Badge>
+          <h2 className="mt-5 text-2xl font-semibold tracking-tight">
+            {status === "waiting_for_confirmation" ? "Almost there" : "Scan this code"}
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
+            Keep this page open while the bridge checks the short-lived login flow.{" "}
+            {isPolling
+              ? "Polling securely every few seconds."
+              : "Waiting for the next status update."}
+          </p>
+          <div className="mt-7 space-y-3 text-sm">
+            <InfoRow
+              icon={<Clock3 size={16} />}
+              label="Expires"
+              value={formatExpiry(begin.expiresAt)}
+            />
+            <InfoRow icon={<ShieldCheck size={16} />} label="Storage" value="Memory only" />
+            <InfoRow icon={<WifiOff size={16} />} label="Network scope" value="127.0.0.1" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ConnectedCard({ loginMethod }: { readonly loginMethod?: string }) {
+  return (
+    <Card>
+      <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300">
+          <CheckCircle2 size={31} aria-hidden="true" />
+        </span>
+        <h2 className="mt-6 text-2xl font-semibold">Session connected</h2>
+        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
+          FQGate accepted the QR login
+          {loginMethod === undefined ? "" : ` via ${loginMethod}`}. The bridge has stopped polling
+          and refreshed the dashboard state.
+        </p>
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => void navigator.clipboard?.writeText("Session connected")}
+          >
+            <Copy size={15} aria-hidden="true" /> Copy status
+          </Button>
+          <a
+            href="/"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-cyan-400 px-4 text-sm font-medium text-slate-950 outline-none hover:bg-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
+          >
+            View dashboard
+          </a>
+        </div>
+        <p className="mt-6 text-xs text-slate-400">
+          The QR payload expired from the page state after this flow completes.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TerminalCard({
+  state,
+  onRetry,
+}: {
+  readonly state: Extract<QrFlowViewState, { readonly kind: "expired" | "replaced" }>;
+  readonly onRetry: () => void;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300">
+          <RefreshCw size={28} aria-hidden="true" />
+        </span>
+        <h2 className="mt-6 text-2xl font-semibold">
+          {state.kind === "expired" ? "Code expired" : "Code replaced"}
+        </h2>
+        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
+          {state.message}
+        </p>
+        <Button className="mt-7" size="lg" onClick={onRetry}>
+          <RefreshCw size={16} aria-hidden="true" /> Generate a new code
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ErrorCard({
+  message,
+  onRetry,
+}: {
+  readonly message: string;
+  readonly onRetry: () => void;
+}) {
+  return (
+    <Alert tone="danger" className="flex items-start gap-3">
+      <WifiOff className="mt-0.5 shrink-0" size={18} aria-hidden="true" />
+      <div>
+        <p className="font-semibold">QR login could not start</p>
+        <p className="mt-1">{message}</p>
+        <Button className="mt-4" variant="secondary" size="sm" onClick={onRetry}>
+          <RefreshCw size={15} aria-hidden="true" /> Try again
+        </Button>
+      </div>
+    </Alert>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  readonly icon: ReactNode;
+  readonly label: string;
+  readonly value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-slate-200/70 pb-3 last:border-b-0 last:pb-0 dark:border-white/[0.08]">
+      <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        {icon}
+        {label}
+      </span>
+      <span className="font-medium text-slate-800 dark:text-slate-100">{value}</span>
+    </div>
+  );
+}
+function formatExpiry(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf())
+    ? "Shortly"
+    : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}

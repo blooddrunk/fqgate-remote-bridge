@@ -44,6 +44,14 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Install Playwright Chromium
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser E2E tests
+        if: runner.os == 'Linux'
+        run: pnpm test:e2e
+
       - name: Format check
         run: pnpm format:check
 
@@ -54,3 +62,9 @@ jobs:
         run: |
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\bootstrap.ps1" -VerifyCli
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\acceptance.ps1" -VerifyCli
+
+      - name: Windows production loopback smoke test
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\acceptance.ps1" -VerifyBridge

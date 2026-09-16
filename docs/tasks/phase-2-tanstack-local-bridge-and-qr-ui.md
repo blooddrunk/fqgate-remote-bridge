@@ -1,6 +1,7 @@
 # Phase 2 Task Package — TanStack Local Bridge and QR Login UI
 
-Status: **ready for implementation**  
+Status: **implementation complete; real Windows QR acceptance pending**
+
 Target executor: Codex Goal / coding agent  
 Scope owner: `fqgate-remote-bridge`  
 Baseline: 2026-09-16

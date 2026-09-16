@@ -1,10 +1,15 @@
 # Phase 2 Task Package — Local Bridge API and QR Login UI
 
-Status: **ready for implementation**  
+Status: **superseded historical draft**
+
 Target executor: Codex Goal / coding agent  
 Scope owner: `fqgate-remote-bridge`  
 Baseline: 2026-09-16  
 Prerequisite: Phase 0 + Phase 1 are fully closed, including real Windows x64 acceptance.
+
+> This earlier Fastify + Vue task is retained for history only. The active Phase 2
+> acceptance contract is [`phase-2-tanstack-local-bridge-and-qr-ui.md`](phase-2-tanstack-local-bridge-and-qr-ui.md),
+> which defines the implemented TanStack Start + React stack.
 
 ## 1. Objective
 

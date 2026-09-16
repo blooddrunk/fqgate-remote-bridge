@@ -127,6 +127,37 @@ The login UI is protected by Cloudflare Access and should additionally:
 
 QR image data should remain ephemeral.
 
+## Phase 2 local API boundary
+
+The Phase 2 bridge exposes only these same-origin, loopback routes:
+
+```text
+GET  /api/v1/version
+GET  /api/v1/capabilities
+GET  /api/v1/status
+POST /api/v1/session/qr/begin
+POST /api/v1/session/qr/poll
+```
+
+The registry rejects duplicate/wildcard/raw-upstream paths at module load, and
+the HTTP handler rejects unknown routes, wrong methods, query strings, oversized
+bodies, and malformed JSON. There is no route parameter that selects an arbitrary
+FQGate path. The QR begin body is an empty JSON object; the adapter sends
+`cache_credentials: false` upstream. The browser receives only an opaque UUID
+session ID. The upstream numeric `flow_id` and QR image are held in bounded
+process memory, expire after 120 seconds, and are never written to storage or
+logs. At most three active QR flows are retained; replacement and terminal
+states are tombstoned briefly so stale polling cannot revive a flow.
+
+Bridge-generated errors use `{ error: { code, message, requestId } }`. Messages
+are stable and generic; request bodies, QR payloads, upstream flow IDs, response
+details, and stack traces are not returned. Response headers include no-store,
+same-origin framing/resource policies, `nosniff`, `no-referrer`, and a restrictive
+CSP. The current TanStack Start SSR output includes an inline hydration bootstrap,
+so `script-src` permits inline scripts only for this framework-generated output;
+`unsafe-eval`, external scripts, wildcard CORS, and external `connect-src` values
+remain disallowed.
+
 ## API authentication and authorization
 
 The bridge should rely on Cloudflare Access at the edge and also support defense-in-depth verification where practical.

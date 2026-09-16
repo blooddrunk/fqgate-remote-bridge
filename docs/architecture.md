@@ -58,7 +58,9 @@ Internet client                         |
                                     FQGate
 ```
 
-Phase 2 implements only the local TanStack Start/UI/API portion of this model. Cloudflare and supervisor components remain later work.
+Phase 2 implements only the local TanStack Start/UI/API portion of this model. The
+local implementation is complete and Cloudflare/supervisor components remain later
+work.
 
 ## Bridge modules
 
@@ -101,6 +103,13 @@ Responsibilities:
 - apply security headers and normalized bridge error responses;
 - host the QR login/status UI;
 - remain a thin transport over framework-agnostic bridge/FQGate services.
+
+The production bundle is launched through `scripts/start-bridge.mjs`, which fixes
+the listener to `127.0.0.1` and defaults to port `17282`. The five server routes
+delegate to the explicit operation registry and normalized service; they are not a
+generic framework proxy. Start's generated SSR bootstrap requires a narrowly
+scoped inline script allowance in the current CSP; no eval, external script, or
+external connection allowance is enabled.
 
 TanStack Start replaces the earlier Phase 2 Fastify + Vue plan. Do not run a second Fastify backend merely to preserve the old plan.
 
@@ -272,7 +281,7 @@ The consumer remains responsible for fallback to other market-data providers.
 
 Phase 0 + Phase 1 are fully closed and provide the local lifecycle manager.
 
-Phase 2 is the current target and adds only:
+Phase 2 implementation is complete in the repository and adds only:
 
 - local loopback TanStack Start runtime;
 - explicit bridge version/capability/status routes;

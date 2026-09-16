@@ -19,4 +19,17 @@ describe("Windows entry points", () => {
       expect(script).not.toContain("pnpm exec fqgate-remote-bridge");
     },
   );
+
+  it("contains a production loopback and raw-route smoke procedure", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("$VerifyBridge");
+    expect(script).toContain("Get-NetTCPConnection -State Listen -LocalPort $bridgePort");
+    expect(script).toContain('LocalAddress -ne "127.0.0.1"');
+    expect(script).toContain("/v1/market/health");
+    expect(script).toContain("Stop-Process -Id $bridgeProcess.Id -Force");
+  });
 });

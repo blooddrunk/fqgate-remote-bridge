@@ -180,6 +180,15 @@ login_method
 
 Observed upstream error codes `1003` and `3014` have been treated by the public plugin as QR flow expiration/replacement conditions. The bridge should translate these through a compatibility adapter rather than expose undocumented assumptions directly to clients.
 
+The Phase 2 adapter sends only the documented QR bodies, accepts only the
+validated image media types (`image/png`, `image/jpeg`, and `image/webp`), bounds
+the decoded image size, and accepts only the observed pending statuses. A
+successful begin response is stored behind a bridge-owned opaque session ID; the
+upstream numeric `flow_id` is never returned to the browser. Error `1003` maps to
+bridge `QR_FLOW_EXPIRED`, and `3014` maps to `QR_FLOW_REPLACED`. Unknown response
+shapes or statuses fail closed as upstream/compatibility errors rather than being
+forwarded to the client.
+
 ## SMS login
 
 The public plugin also exposes an SMS flow:

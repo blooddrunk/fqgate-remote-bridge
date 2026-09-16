@@ -2,7 +2,8 @@
 param(
     [string]$ConfigPath,
     [switch]$ExecuteInstall,
-    [switch]$VerifyCli
+    [switch]$VerifyCli,
+    [switch]$VerifyBridge
 )
 
 $ErrorActionPreference = "Stop"
@@ -47,6 +48,80 @@ function Add-ConfigArgument {
 
 if ($VerifyCli) {
     Invoke-BridgeCli (Add-ConfigArgument @("version", "--json"))
+    if (-not $VerifyBridge) {
+        exit 0
+    }
+}
+
+if ($VerifyBridge) {
+    $bridgePort = 17282
+    $bridgeScriptPath = Join-Path $repositoryRoot "scripts\start-bridge.mjs"
+    if (-not (Test-Path -LiteralPath $bridgeScriptPath -PathType Leaf)) {
+        throw "Bridge launcher was not found at '$bridgeScriptPath'. Run 'pnpm build' from '$repositoryRoot' before running this script."
+    }
+
+    $bridgeArguments = @('"' + $bridgeScriptPath + '"')
+    $bridgeProcess = Start-Process `
+        -FilePath $nodePath `
+        -ArgumentList $bridgeArguments `
+        -WorkingDirectory $repositoryRoot `
+        -PassThru `
+        -WindowStyle Hidden
+
+    try {
+        $bridgeReady = $false
+        for ($attempt = 0; $attempt -lt 40; $attempt++) {
+            Start-Sleep -Milliseconds 250
+            try {
+                $versionResponse = Invoke-WebRequest `
+                    -UseBasicParsing `
+                    -Uri "http://127.0.0.1:$bridgePort/api/v1/version" `
+                    -TimeoutSec 2
+                if ($versionResponse.StatusCode -eq 200) {
+                    $bridgeReady = $true
+                    break
+                }
+            } catch {
+                # The launcher may still be loading the production bundle.
+            }
+        }
+
+        if (-not $bridgeReady) {
+            throw "The production bridge did not become ready on 127.0.0.1:$bridgePort."
+        }
+
+        $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $bridgePort -ErrorAction SilentlyContinue)
+        if ($listeners.Count -ne 1 -or $listeners[0].LocalAddress -ne "127.0.0.1") {
+            throw "The production bridge must have exactly one IPv4 loopback listener on port $bridgePort."
+        }
+
+        $rawStatus = 0
+        try {
+            $rawResponse = Invoke-WebRequest `
+                -UseBasicParsing `
+                -Uri "http://127.0.0.1:$bridgePort/v1/market/health" `
+                -TimeoutSec 2
+            $rawStatus = [int]$rawResponse.StatusCode
+        } catch {
+            if ($null -ne $_.Exception.Response) {
+                $rawStatus = [int]$_.Exception.Response.StatusCode
+            } else {
+                throw
+            }
+        }
+
+        if ($rawStatus -ne 404) {
+            throw "The raw FQGate path must remain unreachable; expected HTTP 404, received $rawStatus."
+        }
+
+        Write-Host "Production bridge loopback and deny-by-default smoke test passed."
+    } finally {
+        if ($null -ne $bridgeProcess -and -not $bridgeProcess.HasExited) {
+            Stop-Process -Id $bridgeProcess.Id -Force
+            $bridgeProcess.WaitForExit()
+        }
+    }
+
     exit 0
 }
 

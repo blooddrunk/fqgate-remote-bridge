@@ -49,7 +49,9 @@ Later architecture may use:
 
 ## Phase 2 implementation shape
 
-Phase 0 + Phase 1 are fully closed. The current active implementation package is Phase 2.
+Phase 0 + Phase 1 are fully closed. The Phase 2 implementation package is complete
+in the repository; real QR success on the target Windows/FQGate host is still the
+final external acceptance item before the phase is fully closed.
 
 Use:
 
@@ -64,6 +66,10 @@ Use:
 - Tailwind CSS v4
 - shadcn/ui as the baseline UI component source
 - PowerShell only for Windows bootstrap/service/task integration
+
+The production bridge defaults to `127.0.0.1:17282`. Its launcher may accept a
+different unprivileged port for local testing, but it must always force IPv4
+loopback binding.
 
 ### Important Phase 2 decisions
 
@@ -168,7 +174,7 @@ Follow `docs/roadmap.md`.
 
 - Phase 0: CLOSED
 - Phase 1: CLOSED
-- Phase 2: current implementation target
+- Phase 2: implementation complete; Windows QR acceptance pending
 - Phase 3+: do not opportunistically implement
 
 The active Phase 2 acceptance contract is:

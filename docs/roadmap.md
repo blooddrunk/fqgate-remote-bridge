@@ -58,7 +58,7 @@ A clean Windows x64 host installed and started FQGate safely on 2026-09-16, and 
 
 ## Phase 2 — Local TanStack bridge API and QR login UI
 
-Status: **ready for implementation**.
+Status: **implementation complete; real Windows QR acceptance pending**.
 
 Goal: put a controlled local application boundary in front of FQGate while remaining loopback-only.
 
@@ -108,6 +108,11 @@ Exit criteria:
 From a browser on the same Windows host, the user can view normalized bridge/FQGate/session status, initiate a QR login through the bridge, scan it, and observe session recovery without interacting with the FQGate UI. The production server is proven to bind only to loopback, and unknown/raw upstream paths remain unreachable.
 
 Phase 2 is fully closed only after a real QR login is proven at least once against the target Windows/FQGate combination. If proving QR would require unsafe/destructive session manipulation, implementation may be complete while that single real-host acceptance item remains pending.
+
+The repository implementation and automated checks are complete. The remaining
+item is an operator-run Windows x64 acceptance against the target FQGate session;
+see [`docs/status/phase-2-completion.md`](status/phase-2-completion.md) and
+[`docs/operations/windows-phase-2-acceptance.md`](operations/windows-phase-2-acceptance.md).
 
 Detailed acceptance contract:
 

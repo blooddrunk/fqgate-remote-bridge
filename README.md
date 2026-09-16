@@ -2,7 +2,7 @@
 
 Securely run, update, monitor, and remotely access a local [FQGate](https://github.com/zhuyifang/fqgate-releases) instance on an always-on Windows PC through a controlled bridge, with Cloudflare Tunnel and Cloudflare Access planned for later phases.
 
-> **Status:** Phase 0 + Phase 1 are fully closed after real Windows x64 acceptance. Phase 2 is ready for implementation: a local-only TanStack Start bridge API and QR login UI.
+> **Status:** Phase 0 + Phase 1 are fully closed after real Windows x64 acceptance. The Phase 2 implementation package is complete and locally verified; real QR success on the target Windows/FQGate host remains the final external acceptance item.
 
 ## Why this project exists
 
@@ -76,9 +76,14 @@ Phase 0 + Phase 1 provide a deterministic Windows-first FQGate lifecycle boundar
 - managed-process identity checks;
 - real `/v1/market/health` envelope handling;
 - local lifecycle CLI;
-- real Windows x64 acceptance.
+- real Windows x64 acceptance;
+- TanStack Start production runtime forced to `127.0.0.1:17282`;
+- explicit bridge version, capabilities, status, and QR begin/poll routes;
+- compatibility-gated FQGate QR adapter with an in-memory opaque session registry;
+- React/TanStack Query status and QR login UI with light/dark responsive styling;
+- unit, integration, UI, and Playwright browser coverage.
 
-See [`docs/status/phase-0-1-completion.md`](docs/status/phase-0-1-completion.md) for the recorded evidence.
+See [`docs/status/phase-0-1-completion.md`](docs/status/phase-0-1-completion.md) and the [`Phase 2 completion report`](docs/status/phase-2-completion.md) for recorded evidence.
 
 ## Phase 2 technology direction
 
@@ -99,15 +104,28 @@ TanStack Start is still pre-v1/RC, so the project treats it as a replaceable tra
 
 Aceternity UI and Magic UI are not baseline Phase 2 dependencies. The first UI should achieve a modern operator-dashboard look with shadcn/ui and Tailwind before additional visual registries or animation packages are considered.
 
-## Phase 2 target
+## Phase 2 local runtime
 
-The next milestone remains local-only. A browser on the Windows host should be able to:
+The Phase 2 runtime is local-only. A browser on the Windows host can:
 
 1. open the bridge on loopback;
 2. see bridge/FQGate/session/compatibility status;
 3. begin an FQGate QR login through a bridge-owned API;
 4. scan the QR and observe the session recover;
 5. do so without exposing raw FQGate paths or persisting QR/session material.
+
+The default production listener is `http://127.0.0.1:17282`. The launcher accepts
+`BRIDGE_PORT`/`PORT` for a different unprivileged port, but always forces the host
+to IPv4 loopback. Run the production bundle with:
+
+```text
+pnpm install --frozen-lockfile
+pnpm build
+pnpm start
+```
+
+The lifecycle CLI remains available independently of the web runtime. The bridge
+does not install FQGate, create a Windows service, or claim headless FQGate support.
 
 Cloudflare, public hostnames, MCP, WebSocket proxying, SMS login, notifications, and trading remain out of scope.
 
@@ -136,11 +154,15 @@ Normal operation should eventually require no manual intervention. When FQGate l
 - [Phase 0 + Phase 1 completion report](docs/status/phase-0-1-completion.md)
 - [Phase 2 implementation task](docs/tasks/phase-2-tanstack-local-bridge-and-qr-ui.md)
 - [Phase 2 Codex Goal prompt](docs/prompts/phase-2-codex-goal.md)
+- [Phase 2 completion report](docs/status/phase-2-completion.md)
+- [Windows Phase 2 acceptance procedure](docs/operations/windows-phase-2-acceptance.md)
 - [Agent/developer instructions](AGENTS.md)
 
 ## Current development handoff
 
-The current coding goal is **Phase 2 only**.
+The current implementation boundary is **Phase 2 only**. The implementation is
+complete in the repository; the real Windows QR acceptance item must be run on the
+target host before Phase 2 is declared fully closed.
 
 Read the Phase 2 task package first, then use the stored Codex Goal prompt. Do not begin Cloudflare integration until the local bridge/API/QR flow is implemented and accepted on the target Windows/FQGate combination.
 
@@ -152,7 +174,9 @@ node dist/cli/main.js fqgate status
 node dist/cli/main.js fqgate update --check
 ```
 
-Phase 2 must preserve this lifecycle functionality while adding the TanStack Start production build/runtime.
+Phase 2 preserves this lifecycle functionality while adding the TanStack Start
+production build/runtime. Cloudflare, public binding, market-data forwarding,
+MCP, WebSocket, SMS, notifications, and trading remain Phase 3+ work.
 
 ## Current upstream baseline
 

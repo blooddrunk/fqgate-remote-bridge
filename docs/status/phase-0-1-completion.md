@@ -127,6 +127,13 @@ does not prove headless service support.
 - No DPAPI/Credential Manager secret store is needed yet because Phase 0/1 has no secrets. The redaction foundation is present for later phases.
 - Without a bridge-owned PID record, status does not discover and control arbitrary externally started same-name FQGate processes. This is intentional for safety.
 
-## Remaining Phase 2 work
+## Phase 2 follow-up
 
-Phase 2 must add the local Fastify bridge, explicit read-only route registry, FQGate compatibility adapter for approved routes, QR login begin/poll handling, minimal Vue status/login UI, and normalized bridge error/API behavior. It must preserve the Phase 0/1 loopback, route-allowlist, no-trading, and compatibility boundaries. No Phase 2 work is included in this commit.
+The Phase 2 implementation now lives in the same package as a TanStack Start
+transport over the framework-agnostic lifecycle and FQGate modules. It adds the
+explicit local bridge registry, compatibility-gated QR begin/poll adapter,
+ephemeral opaque session registry, normalized API errors, and React/TanStack
+Query UI. See [`phase-2-completion.md`](phase-2-completion.md) for the current
+implementation evidence and [`windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md)
+for the target-host procedure. The real Windows QR success check remains an
+external acceptance item; Cloudflare and other Phase 3+ work remains excluded.

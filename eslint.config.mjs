@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "coverage/**", "node_modules/**"],
+    ignores: ["dist/**", ".output/**", "coverage/**", "node_modules/**", "src/routeTree.gen.ts"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -16,7 +16,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["**/*.ts"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: {
         project: "./tsconfig.json",
