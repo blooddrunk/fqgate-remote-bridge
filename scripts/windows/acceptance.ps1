@@ -22,7 +22,9 @@ function Invoke-BridgeCli {
     }
 }
 
-$node = Get-Command node -CommandType Application -ErrorAction SilentlyContinue
+$node =
+    Get-Command node -CommandType Application -ErrorAction SilentlyContinue |
+    Select-Object -First 1
 if ($null -eq $node) {
     throw "Node.js 22 or newer is required."
 }

@@ -13,6 +13,7 @@ describe("Windows entry points", () => {
       expect(script).toContain("$PSScriptRoot");
       expect(script).toContain('"dist\\cli\\main.js"');
       expect(script).toContain("Test-Path -LiteralPath $cliPath -PathType Leaf");
+      expect(script).toContain("Select-Object -First 1");
       expect(script).toContain("& $script:nodePath $script:cliPath @Arguments");
       expect(script).toContain("--config");
       expect(script).not.toContain("pnpm exec fqgate-remote-bridge");
