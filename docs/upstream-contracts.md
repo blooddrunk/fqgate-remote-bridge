@@ -123,8 +123,13 @@ data schema must be probed and contract-tested rather than copied blindly.
 A live loopback probe observed on **2026-09-16** returned a successful envelope
 with `data.status: "ok"`, `network_ready: true`, `connected: true`,
 `login_method: "formal"`, `level2_permission: false`, and
-`active_subscriptions: 0`. Account identifiers, user identifiers, remote
-endpoints, and other session material are intentionally not recorded here.
+`active_subscriptions: 0`. During the Windows x64 acceptance's initial managed
+start, the same successful envelope also returned `connected: false`,
+`login_method: null`, and `level2_permission: null` while the process was
+running and waiting for an authenticated session. The health adapter treats
+these optional null values as unknown rather than malformed. Account
+identifiers, user identifiers, remote endpoints, and other session material
+are intentionally not recorded here.
 
 ## Known QR login contract
 

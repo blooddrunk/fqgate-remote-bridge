@@ -87,6 +87,17 @@ describe("FQGate health normalization", () => {
     expect(normalizeSessionState({ connected: false, network_ready: true })).toBe("unknown");
   });
 
+  it("accepts null optional diagnostics from an initial upstream session state", async () => {
+    const health = await probeFor("health-session-pending").probe();
+    expect(health.validPayload).toBe(true);
+    expect(health.networkReady).toBe(true);
+    expect(health.connected).toBe(false);
+    expect(health.session).toBe("unknown");
+    expect(health.level2Permission).toBe(null);
+    expect(health.loginMethod).toBeUndefined();
+    expect(health.activeSubscriptions).toBe(0);
+  });
+
   it("fails closed for malformed envelopes and invalid health data", async () => {
     for (const name of [
       "health-null-data",

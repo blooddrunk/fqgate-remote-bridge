@@ -248,7 +248,7 @@ function invalidObservation(
 
 function readOptionalBoolean(payload: Record<string, unknown>, key: string): boolean | null {
   const value = payload[key];
-  if (value === undefined) return null;
+  if (value === undefined || value === null) return null;
   if (typeof value !== "boolean") {
     throw new BridgeError(
       ERROR_CODES.HEALTH_INVALID,
@@ -260,7 +260,7 @@ function readOptionalBoolean(payload: Record<string, unknown>, key: string): boo
 
 function readOptionalString(payload: Record<string, unknown>, key: string): string | undefined {
   const value = payload[key];
-  if (value === undefined) return undefined;
+  if (value === undefined || value === null) return undefined;
   if (typeof value !== "string") {
     throw new BridgeError(
       ERROR_CODES.HEALTH_INVALID,

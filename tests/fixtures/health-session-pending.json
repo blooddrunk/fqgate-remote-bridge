@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "ok",
+    "network_ready": true,
+    "connected": false,
+    "level2_permission": null,
+    "login_method": null,
+    "active_subscriptions": 0,
+    "pending_interactive_login": true
+  }
+}
