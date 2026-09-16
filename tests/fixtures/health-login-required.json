@@ -1,6 +1,10 @@
 {
-  "status": "login_required",
-  "network_ready": true,
-  "connected": false,
-  "reason": "login required"
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "login_required",
+    "network_ready": true,
+    "connected": false,
+    "reason": "login required"
+  }
 }

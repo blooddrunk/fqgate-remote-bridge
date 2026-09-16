@@ -1,4 +1,8 @@
 {
-  "status": 42,
-  "connected": "yes"
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": 42,
+    "connected": "yes"
+  }
 }

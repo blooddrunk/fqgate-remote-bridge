@@ -153,7 +153,11 @@ function readyHealth(): HttpResponse {
     status: 200,
     headers: {},
     body: Buffer.from(
-      JSON.stringify({ status: "connected", network_ready: true, connected: true }),
+      JSON.stringify({
+        code: 0,
+        message: "ok",
+        data: { status: "connected", network_ready: true, connected: true },
+      }),
     ),
   };
 }

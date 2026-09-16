@@ -4,7 +4,7 @@ This roadmap is ordered to reduce risk early. The first goal is not a polished U
 
 ## Phase 0 — Repository and contracts
 
-Status: **implementation complete; Windows host acceptance remains external**.
+Status: **implementation and closure fixes complete; Windows host acceptance remains external**.
 
 Deliverables:
 
@@ -24,7 +24,7 @@ Exit criteria:
 
 ## Phase 1 — Local FQGate lifecycle manager
 
-Status: **implementation complete; real Windows x64 acceptance remains pending**.
+Status: **implementation and closure fixes complete; real Windows x64 acceptance remains pending**.
 
 Goal: reliably own FQGate installation and runtime on one Windows machine before any Internet exposure exists.
 

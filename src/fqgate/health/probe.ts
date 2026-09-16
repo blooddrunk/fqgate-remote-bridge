@@ -1,5 +1,6 @@
 import { validateLoopbackBaseUrl } from "../../config/config.js";
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
+import { decodeFqgateResponseEnvelope } from "../http/envelope.js";
 import { decodeResponseText, type HttpTransport } from "../release/http.js";
 import type { HealthObservation, SessionState } from "./types.js";
 
@@ -83,10 +84,21 @@ export class FqgateHealthProbe {
     }
 
     try {
-      return normalizeHealthPayload(this.endpoint, checkedAt, response.status, value);
+      const envelope = decodeFqgateResponseEnvelope<Record<string, unknown>>(value);
+      return normalizeHealthPayload(this.endpoint, checkedAt, response.status, envelope.data);
     } catch (error) {
-      if (error instanceof BridgeError && error.code === ERROR_CODES.HEALTH_INVALID) {
-        return invalidObservation(this.endpoint, checkedAt, response.status, error.message);
+      if (
+        error instanceof BridgeError &&
+        (error.code === ERROR_CODES.HEALTH_INVALID ||
+          error.code === ERROR_CODES.UPSTREAM_RESPONSE_INVALID)
+      ) {
+        return invalidObservation(
+          this.endpoint,
+          checkedAt,
+          response.status,
+          error.message,
+          error.details,
+        );
       }
       throw error;
     }
@@ -208,7 +220,17 @@ function invalidObservation(
   checkedAt: string,
   httpStatus: number,
   reason: string,
+  details?: Readonly<Record<string, unknown>>,
 ): HealthObservation {
+  const diagnostics: Record<string, unknown> = {
+    availability: "invalid_payload",
+  };
+  if (details?.upstreamCode !== undefined) {
+    diagnostics.upstreamCode = details.upstreamCode;
+  }
+  if (details?.upstreamMessage !== undefined) {
+    diagnostics.upstreamMessage = details.upstreamMessage;
+  }
   return {
     endpoint,
     checkedAt,
@@ -220,7 +242,7 @@ function invalidObservation(
     session: "unknown",
     level2Permission: null,
     reason,
-    diagnostics: { availability: "invalid_payload" },
+    diagnostics,
   };
 }
 

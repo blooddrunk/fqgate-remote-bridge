@@ -1,7 +1,11 @@
 {
-  "status": "guest",
-  "network_ready": true,
-  "connected": false,
-  "login_method": "guest",
-  "reason": "guest mode"
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "guest",
+    "network_ready": true,
+    "connected": false,
+    "login_method": "guest",
+    "reason": "guest mode"
+  }
 }

@@ -46,3 +46,11 @@ jobs:
 
       - name: Format check
         run: pnpm format:check
+
+      - name: Windows script CLI smoke test
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: ${{ runner.temp }}
+        run: |
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\bootstrap.ps1" -VerifyCli
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\acceptance.ps1" -VerifyCli

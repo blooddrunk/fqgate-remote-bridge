@@ -94,6 +94,7 @@ Fastify, Vue, Cloudflare, QR login, and remote proxying remain later-phase work.
 - [Upstream contracts and compatibility](docs/upstream-contracts.md)
 - [Development roadmap](docs/roadmap.md)
 - [Phase 0 + Phase 1 implementation task](docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md)
+- [Phase 0 + Phase 1 closure fixes](docs/tasks/phase-0-1-closure-fixes.md)
 - [Phase 0 + Phase 1 Codex Goal prompt](docs/prompts/phase-0-1-codex-goal.md)
 - [Agent/developer instructions](AGENTS.md)
 

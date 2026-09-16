@@ -1,34 +1,46 @@
 [CmdletBinding()]
 param(
     [string]$ConfigPath,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$VerifyCli
 )
 
 $ErrorActionPreference = "Stop"
 
+$repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+$cliPath = Join-Path $repositoryRoot "dist\cli\main.js"
+if (-not (Test-Path -LiteralPath $cliPath -PathType Leaf)) {
+    throw "Built CLI was not found at '$cliPath'. Run 'pnpm build' from '$repositoryRoot' before running this script."
+}
+
 function Invoke-BridgeCli {
     param([string[]]$Arguments)
 
-    & pnpm exec fqgate-remote-bridge @Arguments
+    & $script:nodePath $script:cliPath @Arguments
     if ($LASTEXITCODE -ne 0) {
         throw "fqgate-remote-bridge exited with code $LASTEXITCODE"
     }
 }
 
-$node = Get-Command node -ErrorAction SilentlyContinue
+$node = Get-Command node -CommandType Application -ErrorAction SilentlyContinue
 if ($null -eq $node) {
     throw "Node.js 22 or newer is required."
 }
 
-$nodeVersionText = (& node --version).Trim().TrimStart("v")
+$nodePath = $node.Source
+$nodeVersionText = (& $nodePath --version).Trim().TrimStart("v")
 $nodeVersion = [Version]$nodeVersionText
 if ($nodeVersion.Major -lt 22) {
     throw "Node.js 22 or newer is required; found $nodeVersionText."
 }
 
-$pnpm = Get-Command pnpm -ErrorAction SilentlyContinue
-if ($null -eq $pnpm) {
-    throw "pnpm is required. Install pnpm 11.x or enable it through Corepack."
+if ($VerifyCli) {
+    $verifyArguments = @("version", "--json")
+    if ($ConfigPath) {
+        $verifyArguments += @("--config", $ConfigPath)
+    }
+    Invoke-BridgeCli -Arguments $verifyArguments
+    exit 0
 }
 
 $installArguments = @("fqgate", "install")

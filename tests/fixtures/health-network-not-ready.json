@@ -1,6 +1,10 @@
 {
-  "status": "starting",
-  "network_ready": false,
-  "connected": false,
-  "reason": "network not ready"
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "starting",
+    "network_ready": false,
+    "connected": false,
+    "reason": "network not ready"
+  }
 }

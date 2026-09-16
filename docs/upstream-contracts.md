@@ -57,6 +57,46 @@ FQGate is documented and implemented as a local-first service using:
 
 The bridge must not assume that FQGate itself is designed for direct remote exposure.
 
+## FQGate HTTP response envelope
+
+The observed normal FQGate HTTP response wire format is an envelope shared by
+the local API adapters:
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "data": {}
+}
+```
+
+The current upstream `tonghuasun-agent` HTTP client uses envelope mode by
+default and accepts only numeric `code === 0` as a successful response. A
+non-zero code is an upstream API error; its `data` is not endpoint data. The
+`message` is a string and may be retained only after redaction and length
+bounding. Additional envelope fields may be added upstream and are ignored by
+this Phase 0/1 boundary. This observation is based on the upstream client
+implementation as checked on **2026-09-16**:
+[`FqgateHttpClient.ts`](https://github.com/zhuyifang/tonghuasun-agent/blob/main/AI-plugins/ui-apps/src/adapters/local-api/FqgateHttpClient.ts).
+
+For the health adapter, the boundary is explicitly:
+
+```text
+wire response envelope
+        ↓
+envelope decoder
+        ↓
+health data object
+        ↓
+normalized HealthObservation
+```
+
+The decoder rejects a non-object envelope, missing or invalid `code`/`message`
+fields, missing or null `data` on the successful path, and non-zero upstream
+codes. The health normalizer then validates that `data` is a health object.
+Therefore HTTP 2xx, envelope success, and valid health data remain separate
+checks; a bare health object is not accepted as a successful wire response.
+
 ## Known health contract
 
 Observed endpoint:
@@ -77,7 +117,8 @@ reason
 active_subscriptions (observed in tests/diagnostics)
 ```
 
-The exact response schema must be probed and contract-tested rather than copied blindly.
+These fields are inside the successful envelope's `data` object. The exact
+data schema must be probed and contract-tested rather than copied blindly.
 
 ## Known QR login contract
 

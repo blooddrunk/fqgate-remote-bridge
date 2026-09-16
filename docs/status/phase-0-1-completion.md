@@ -2,7 +2,7 @@
 
 Date: **2026-09-16**
 
-Status: **implementation complete; real Windows x64 acceptance pending**
+Status: **implementation and closure fixes complete; real Windows x64 acceptance pending**
 
 ## Implemented behavior
 
@@ -15,10 +15,10 @@ The implementation provides:
 - conservative `FQGate --version` identity parsing and explicit compatibility states: validated, supported-but-unvalidated, unsupported, and pinned-mismatch;
 - a transactional per-user installation layout with atomic state files, a known-good `previous` executable, one-shot activation rollback, and explicit rollback-failure diagnostics;
 - managed process start/stop/status/restart boundaries that persist a PID and verify the executable path before control; Windows inspection uses machine-readable PowerShell/CIM output and does not kill all same-name processes;
-- a bounded loopback health probe for `/v1/market/health` with schema validation and conservative normalization of network readiness and connected/guest/login-required/unknown session states;
+- a bounded loopback health probe for `/v1/market/health` that decodes the observed `{ code, message, data }` envelope, fails closed on malformed/non-zero responses, validates the health data object, and conservatively normalizes network readiness and connected/guest/login-required/unknown session states;
 - structured logging with central redaction and no Phase 0/1 secret configuration;
 - human-readable and `--json` CLI output with non-zero failure categories and safe `--dry-run`/`update --check` behavior;
-- Windows bootstrap and acceptance scripts that invoke the CLI while keeping lifecycle policy in TypeScript.
+- Windows bootstrap and acceptance scripts that resolve `dist/cli/main.js` from `$PSScriptRoot` and invoke it directly with Node while keeping lifecycle policy in TypeScript;
 
 ## Final CLI
 
@@ -62,15 +62,18 @@ The repository includes fixtures and fakes for manifest, download, process, and 
 ```text
 pnpm typecheck  # passed
 pnpm lint       # passed
-pnpm test       # passed; 54 tests
+pnpm test       # passed; 60 tests
 pnpm build      # passed
+pnpm format:check # passed
 ```
 
-GitHub Actions runs frozen-lockfile install, typecheck, lint, tests, and build on both `ubuntu-latest` and `windows-latest`. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
+The GitHub Actions workflow is configured for frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; this will prove repository-root resolution and built-CLI execution without downloading or activating FQGate. The current closure-fix working tree has not been pushed for a new GitHub Actions run. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
 
 ## Windows acceptance status
 
 Real Windows x64 acceptance was **not executed in this environment**, which is Linux. It is the only remaining external acceptance step before Phase 0/1 can be considered fully closed.
+
+The closure-fix protocol and script changes are covered by local automated tests and the configured Windows CI smoke step, but CI is not a substitute for the intended interactive Windows host acceptance.
 
 Run the scripted procedure from a real Windows x64 interactive user session after building the package:
 

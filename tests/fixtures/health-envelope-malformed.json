@@ -1,0 +1,9 @@
+{
+  "code": "0",
+  "message": "ok",
+  "data": {
+    "status": "connected",
+    "network_ready": true,
+    "connected": true
+  }
+}

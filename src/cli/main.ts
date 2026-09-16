@@ -333,7 +333,12 @@ function exitCodeFor(code: string): number {
     code === ERROR_CODES.PROCESS_IDENTITY_MISMATCH
   )
     return 6;
-  if (code === ERROR_CODES.HEALTH_TIMEOUT || code === ERROR_CODES.HEALTH_INVALID) return 7;
+  if (
+    code === ERROR_CODES.HEALTH_TIMEOUT ||
+    code === ERROR_CODES.HEALTH_INVALID ||
+    code === ERROR_CODES.UPSTREAM_RESPONSE_INVALID
+  )
+    return 7;
   if (code === ERROR_CODES.ROLLBACK_FAILED || code === ERROR_CODES.ACTIVATION_FAILED) return 8;
   return 1;
 }
