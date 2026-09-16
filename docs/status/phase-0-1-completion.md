@@ -67,17 +67,31 @@ pnpm build      # passed
 pnpm format:check # passed
 ```
 
-The GitHub Actions workflow runs frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; the final closure-fix run [35092128468](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35092128468) passed this smoke step without downloading or activating FQGate. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
+The GitHub Actions workflow runs frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; the final closure-fix run [35092302918](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35092302918) passed both platform jobs and the Windows smoke step without downloading or activating FQGate. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
 
 ## Windows acceptance status
 
-Real Windows x64 acceptance was **not executed**. Development commands ran in
-Linux/WSL2. The underlying Windows x64 host has an existing unmanaged FQGate
-that answered the live health probe, but it has no Windows Node.js/pnpm and no
-managed bridge installation. It is not a clean/disposable target on which to
-replace or start another FQGate binary, so this observation is not acceptance.
-Real Windows x64 acceptance remains the only product-level step before Phase
-0/1 can be considered fully closed.
+Real Windows x64 acceptance was **not completed**. On 2026-09-16, the
+closure-fix branch at commit `8ae502b` was cloned to
+`D:\code\research\fqgate-remote-bridge-closure-fixes` and exercised through
+Windows x64 PowerShell with Node.js `v24.15.0` and Corepack pnpm `11.23.0`:
+
+- `pnpm install --frozen-lockfile` and `pnpm build` passed;
+- `pnpm typecheck`, `pnpm lint`, `pnpm test` (60 tests), and
+  `pnpm format:check` passed;
+- `bootstrap.ps1 -VerifyCli` and `acceptance.ps1 -VerifyCli` both invoked the
+  built CLI successfully;
+- `acceptance.ps1` dry-run passed and validated the Windows x64 release plan.
+
+The full `acceptance.ps1 -ExecuteInstall` procedure was not run. This host has
+an existing unmanaged `FQGate\fqgate.exe` at
+`C:\Users\xieyh\Downloads\FQGate\fqgate.exe` listening on
+`127.0.0.1:17281`; starting a second bridge-managed FQGate there would make
+the lifecycle and health results ambiguous and could disrupt the existing
+process. The existing process answering the health probe therefore does not
+prove managed install/activation acceptance. A clean or dedicated test-managed
+Windows x64 host remains the only product-level step before Phase 0/1 can be
+considered fully closed.
 
 The closure-fix protocol and script changes are covered by local automated tests and the passing Windows CI smoke step, but CI is not a substitute for the intended interactive Windows host acceptance.
 
