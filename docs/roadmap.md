@@ -4,7 +4,7 @@ This roadmap is ordered to reduce risk early. The first goal is not a polished U
 
 ## Phase 0 — Repository and contracts
 
-Status: **implementation and closure fixes complete; Windows host acceptance remains external**.
+Status: **fully closed (implementation, closure fixes, CI, and Windows x64 acceptance complete)**.
 
 Deliverables:
 
@@ -24,7 +24,7 @@ Exit criteria:
 
 ## Phase 1 — Local FQGate lifecycle manager
 
-Status: **implementation and closure fixes complete; real Windows x64 acceptance remains pending**.
+Status: **fully closed (implementation, closure fixes, CI, and Windows x64 acceptance complete)**.
 
 Goal: reliably own FQGate installation and runtime on one Windows machine before any Internet exposure exists.
 
@@ -54,7 +54,7 @@ Required tests:
 
 Exit criteria:
 
-A clean Windows host can install and start FQGate safely, and the manager can distinguish process health from market-session/login health. Automated fixtures, Linux checks, and Windows CI cover the testable boundary; the clean-host acceptance must still be run on real Windows before this exit criterion is marked fully closed.
+A clean Windows x64 host installed and started FQGate safely on 2026-09-16, and the manager distinguished process health from market-session/login health during the recorded acceptance. Automated fixtures, Linux checks, and Windows CI also passed. Headless Windows-service support remains out of scope.
 
 ## Phase 2 — Local bridge API and QR login UI
 
