@@ -120,6 +120,12 @@ active_subscriptions (observed in tests/diagnostics)
 These fields are inside the successful envelope's `data` object. The exact
 data schema must be probed and contract-tested rather than copied blindly.
 
+A live loopback probe observed on **2026-09-16** returned a successful envelope
+with `data.status: "ok"`, `network_ready: true`, `connected: true`,
+`login_method: "formal"`, `level2_permission: false`, and
+`active_subscriptions: 0`. Account identifiers, user identifiers, remote
+endpoints, and other session material are intentionally not recorded here.
+
 ## Known QR login contract
 
 Observed begin endpoint:

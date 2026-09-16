@@ -67,13 +67,13 @@ pnpm build      # passed
 pnpm format:check # passed
 ```
 
-The GitHub Actions workflow is configured for frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; this will prove repository-root resolution and built-CLI execution without downloading or activating FQGate. The current closure-fix working tree has not been pushed for a new GitHub Actions run. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
+The GitHub Actions workflow runs frozen-lockfile install, typecheck, lint, tests, build, and format checks on both `ubuntu-latest` and `windows-latest`. The Windows job also runs both PowerShell entry points in `-VerifyCli` mode after build; the closure-fix run [35091888686](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35091888686) passed this smoke step without downloading or activating FQGate. CI is designed not to require a real FQGate binary, Cloudflare credentials, or private resources.
 
 ## Windows acceptance status
 
 Real Windows x64 acceptance was **not executed in this environment**, which is Linux. It is the only remaining external acceptance step before Phase 0/1 can be considered fully closed.
 
-The closure-fix protocol and script changes are covered by local automated tests and the configured Windows CI smoke step, but CI is not a substitute for the intended interactive Windows host acceptance.
+The closure-fix protocol and script changes are covered by local automated tests and the passing Windows CI smoke step, but CI is not a substitute for the intended interactive Windows host acceptance.
 
 Run the scripted procedure from a real Windows x64 interactive user session after building the package:
 
