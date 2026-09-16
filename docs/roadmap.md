@@ -56,32 +56,62 @@ Exit criteria:
 
 A clean Windows x64 host installed and started FQGate safely on 2026-09-16, and the manager distinguished process health from market-session/login health during the recorded acceptance. Automated fixtures, Linux checks, and Windows CI also passed. Headless Windows-service support remains out of scope.
 
-## Phase 2 — Local bridge API and QR login UI
+## Phase 2 — Local TanStack bridge API and QR login UI
 
-Goal: put a controlled application boundary in front of FQGate while still remaining local-only.
+Status: **ready for implementation**.
+
+Goal: put a controlled local application boundary in front of FQGate while remaining loopback-only.
+
+Technology decision:
+
+- React 19
+- TanStack Start
+- TanStack Router
+- TanStack Query
+- Vite
+- Tailwind CSS v4
+- shadcn/ui
+- single pnpm package
+
+TanStack Start replaces the earlier Fastify + Vue Phase 2 plan. Do not run a second backend or create a monorepo merely to preserve the old architecture.
 
 Deliverables:
 
-- Fastify bridge bound to `127.0.0.1`
-- bridge health/version/capability endpoints
-- explicit route registry
-- FQGate compatibility adapter
-- QR login begin/poll adapter
-- minimal Vue status/login UI
-- session-state display
-- error normalization
-- structured/redacted logs
+- production TanStack Start bridge forced to `127.0.0.1`
+- bridge version/capabilities/status endpoints
+- explicit bridge operation/policy registry
+- stable bridge error envelope
+- FQGate QR login begin/poll compatibility adapter
+- bridge-owned ephemeral QR-flow/session registry
+- TanStack Query status/QR polling and invalidation
+- modern shadcn-based dashboard
+- QR login UI
+- light/dark responsive UI
+- browser security headers and same-origin posture
+- unit/integration/UI/browser tests
+- Windows production acceptance procedure
 
 Security requirements:
 
 - no catch-all reverse proxy
 - unknown paths denied
+- no raw `/v1/market/*` bridge exposure
+- bridge remains loopback-only
 - QR image/session data remains ephemeral
+- upstream numeric QR flow IDs remain server-side
+- no browser storage persistence for active QR state
+- no wildcard CORS
 - no trading endpoints
 
 Exit criteria:
 
-From another browser on the same Windows host, the user can view status, initiate a QR login, scan it, and observe session recovery through the bridge without interacting with the FQGate UI.
+From a browser on the same Windows host, the user can view normalized bridge/FQGate/session status, initiate a QR login through the bridge, scan it, and observe session recovery without interacting with the FQGate UI. The production server is proven to bind only to loopback, and unknown/raw upstream paths remain unreachable.
+
+Phase 2 is fully closed only after a real QR login is proven at least once against the target Windows/FQGate combination. If proving QR would require unsafe/destructive session manipulation, implementation may be complete while that single real-host acceptance item remains pending.
+
+Detailed acceptance contract:
+
+`docs/tasks/phase-2-tanstack-local-bridge-and-qr-ui.md`
 
 ## Phase 3 — cloudflared lifecycle and manual Tunnel integration
 
@@ -247,6 +277,12 @@ Not required for the first useful release:
 
 These should be added only if real usage justifies them.
 
-## Suggested first development handoff
+## Current development handoff
 
-The first coding task should cover **Phase 0 + Phase 1 only**. Do not begin Cloudflare integration until FQGate lifecycle management and health semantics work reliably on the target Windows host.
+The current coding task is **Phase 2 only**.
+
+Use:
+
+`docs/prompts/phase-2-codex-goal.md`
+
+Do not begin Cloudflare integration until the local TanStack bridge, explicit API boundary, QR flow, browser UI, tests, and Windows acceptance state are complete and documented.
