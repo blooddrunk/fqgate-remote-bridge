@@ -94,7 +94,18 @@ This is a planning baseline, not a license to add framework complexity. The brid
 - [Security model](docs/security.md)
 - [Upstream contracts and compatibility](docs/upstream-contracts.md)
 - [Development roadmap](docs/roadmap.md)
+- [Phase 0 + Phase 1 implementation task](docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md)
+- [Phase 0 + Phase 1 Codex Goal prompt](docs/prompts/phase-0-1-codex-goal.md)
 - [Agent/developer instructions](AGENTS.md)
+
+## Current implementation handoff
+
+The first coding goal is **Phase 0 + Phase 1 only**: create the TypeScript/pnpm foundation and implement a deterministic, tested local FQGate lifecycle manager for Windows. Cloudflare, remote HTTP, login UI, MCP, and other later-phase features are intentionally excluded from this handoff.
+
+Start with:
+
+1. [`docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md`](docs/tasks/phase-0-1-foundation-and-fqgate-lifecycle.md)
+2. [`docs/prompts/phase-0-1-codex-goal.md`](docs/prompts/phase-0-1-codex-goal.md)
 
 ## Current upstream baseline
 
