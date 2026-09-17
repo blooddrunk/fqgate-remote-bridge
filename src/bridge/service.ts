@@ -23,6 +23,7 @@ import {
   listRequiredFqgateContracts,
   type BridgeOperationPolicy,
 } from "./policy/registry.js";
+import type { BridgeRequestContext } from "./policy/request-context.js";
 
 export interface LifecycleStatusReader {
   status(): Promise<FqgateStatus>;
@@ -62,11 +63,12 @@ export class BridgeService {
     return { ...this.buildInfo };
   }
 
-  async capabilities(): Promise<BridgeCapabilitiesResponse> {
+  async capabilities(context: BridgeRequestContext = "local"): Promise<BridgeCapabilitiesResponse> {
     const status = await this.lifecycle.status();
     const compatibility = normalizeCompatibility(status);
     return {
       apiVersion: "v1",
+      requestContext: context,
       capabilities: { status: true, qrLogin: compatibility.validated },
       fqgate: {
         version: status.installed?.version ?? null,

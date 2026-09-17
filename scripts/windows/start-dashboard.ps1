@@ -13,14 +13,59 @@ $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).
 Set-Location -LiteralPath $repositoryRoot
 
 $node =
-    Get-Command node -CommandType Application -ErrorAction SilentlyContinue |
+    Get-Command node.exe -CommandType Application -ErrorAction SilentlyContinue |
     Select-Object -First 1
-if ($null -eq $node) {
+$script:nodePath = $null
+if ($null -ne $node) {
+    $script:nodePath = $node.Source
+} else {
+    $nodeCandidates = @()
+    if ($env:ProgramFiles) {
+        $nodeCandidates += Join-Path $env:ProgramFiles "nodejs\node.exe"
+    }
+    if (${env:ProgramFiles(x86)}) {
+        $nodeCandidates += Join-Path ${env:ProgramFiles(x86)} "nodejs\node.exe"
+    }
+    if ($env:LOCALAPPDATA) {
+        $nodeCandidates += Join-Path $env:LOCALAPPDATA "Programs\nodejs\node.exe"
+    }
+    $script:nodePath = $nodeCandidates |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+        Select-Object -First 1
+}
+if ([string]::IsNullOrWhiteSpace($script:nodePath)) {
     throw "Node.js 22 or newer is required. Install Node.js from https://nodejs.org/"
 }
 
-$script:nodePath = $node.Source
-$nodeVersionText = (& $script:nodePath --version).Trim().TrimStart("v")
+function Get-NodeVersionText {
+    param([string]$Path)
+
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $Path
+    $startInfo.Arguments = "--version"
+    $startInfo.WorkingDirectory = $env:SystemRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start Node.js at '$Path'."
+        }
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) {
+            throw "Node.js version probe failed: $stderr"
+        }
+        return $stdout.Trim()
+    } finally {
+        $process.Dispose()
+    }
+}
+
+$nodeVersionText = (Get-NodeVersionText $script:nodePath).TrimStart("v")
 $nodeVersion = [Version]$nodeVersionText
 if ($nodeVersion.Major -lt 22) {
     throw "Node.js 22 or newer is required; found $nodeVersionText."
@@ -86,31 +131,62 @@ function Add-ConfigArgument {
     return $Arguments
 }
 
+function ConvertTo-ProcessArgument {
+    param([string]$Value)
+
+    if ($Value -notmatch '[\s"]') {
+        return $Value
+    }
+    return '"' + $Value.Replace('"', '\"') + '"'
+}
+
+function Invoke-NodeCli {
+    param([string[]]$Arguments)
+
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $script:nodePath
+    $startInfo.Arguments = (@($cliPath) + $Arguments |
+        ForEach-Object { ConvertTo-ProcessArgument ([string]$_) }) -join " "
+    $startInfo.WorkingDirectory = $repositoryRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $false
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start the bridge CLI."
+        }
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) {
+            throw "fqgate-remote-bridge exited with code $($process.ExitCode)"
+        }
+        return $stdout
+    } finally {
+        $process.Dispose()
+    }
+}
+
 function Invoke-FqgateCli {
     param([string[]]$Arguments)
 
-    $cliArguments = @($cliPath) + (Add-ConfigArgument $Arguments)
-    & $script:nodePath @cliArguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "fqgate-remote-bridge exited with code $LASTEXITCODE"
+    $stdout = Invoke-NodeCli -Arguments (Add-ConfigArgument $Arguments)
+    if (-not [string]::IsNullOrWhiteSpace($stdout)) {
+        Write-Host $stdout.TrimEnd()
     }
 }
 
 function Get-FqgateStatus {
-    $statusArguments = @($cliPath) + (Add-ConfigArgument @("fqgate", "status", "--json"))
-    $statusOutput = & $script:nodePath @statusArguments
-    $statusExitCode = $LASTEXITCODE
-    if ($statusOutput.Count -eq 0) {
+    $statusOutput = Invoke-NodeCli -Arguments (Add-ConfigArgument @("fqgate", "status", "--json"))
+    if ([string]::IsNullOrWhiteSpace($statusOutput)) {
         throw "Unable to read the FQGate lifecycle status."
     }
 
     try {
-        $status = ($statusOutput -join [Environment]::NewLine) | ConvertFrom-Json
+        $status = $statusOutput | ConvertFrom-Json
     } catch {
         throw "The FQGate lifecycle status was not valid JSON."
-    }
-    if ($null -eq $status.lifecycle -and $statusExitCode -ne 0) {
-        throw "Unable to read the FQGate lifecycle status (exit code $statusExitCode)."
     }
     return $status
 }

@@ -1,6 +1,6 @@
 # Phase 4 Design — Secure Remote Human Access
 
-Status: **ACTIVE / design contract for implementation**
+Status: **CLOSED / implementation and live acceptance complete**
 
 ## Goal
 
@@ -41,19 +41,19 @@ Every bridge operation must have an explicit exposure policy. Phase 4 introduces
 
 Intended Phase 4 exposure matrix:
 
-| Operation | Local | Remote human | Reason |
-|---|---:|---:|---|
-| `bridge.version` | yes | yes | diagnostics/UI |
-| `bridge.capabilities` | yes | yes | diagnostics/UI |
-| `bridge.status` | yes | yes | Dashboard status |
-| `session.qr.begin` | yes | yes | human login workflow |
-| `session.qr.poll` | yes | yes | human login workflow |
-| `updates.status` | yes | yes | read-only operational visibility |
-| `updates.check` | yes | **no** | local maintenance only in Phase 4 |
-| `updates.plan` | yes | **no** | local maintenance only in Phase 4 |
-| `updates.apply` | yes | **no** | mutating local maintenance |
-| `openapi.catalog` | yes | yes | reference-only docs |
-| `openapi.refresh` | yes | **no** | explicit local maintenance |
+| Operation             | Local | Remote human | Reason                            |
+| --------------------- | ----: | -----------: | --------------------------------- |
+| `bridge.version`      |   yes |          yes | diagnostics/UI                    |
+| `bridge.capabilities` |   yes |          yes | diagnostics/UI                    |
+| `bridge.status`       |   yes |          yes | Dashboard status                  |
+| `session.qr.begin`    |   yes |          yes | human login workflow              |
+| `session.qr.poll`     |   yes |          yes | human login workflow              |
+| `updates.status`      |   yes |          yes | read-only operational visibility  |
+| `updates.check`       |   yes |       **no** | local maintenance only in Phase 4 |
+| `updates.plan`        |   yes |       **no** | local maintenance only in Phase 4 |
+| `updates.apply`       |   yes |       **no** | mutating local maintenance        |
+| `openapi.catalog`     |   yes |          yes | reference-only docs               |
+| `openapi.refresh`     |   yes |       **no** | explicit local maintenance        |
 
 Phase 4 adds no `market-read` operations. They remain Phase 5.
 
@@ -158,6 +158,25 @@ Remote-human UI:
 - no market-data client UI is introduced in Phase 4.
 
 Do not rely only on hiding buttons. Server operation exposure remains authoritative.
+
+## Implementation note
+
+The current code implements this design without adding a second transport or
+frontend. `src/server.ts` applies the Host/assertion gate to page/static
+requests and `src/bridge/transport/http.ts` applies it again before operation
+dispatch. The operation registry uses `local_and_remote_human` for exactly the
+seven approved operations and `local_only` for update check/plan/apply and
+OpenAPI refresh.
+
+The cloudflared manager has a fixed Cloudflare GitHub release API/asset
+contract, release identity and SHA-256 checks, explicit/manual activation,
+repo-external protected token-file handling, and a narrow Windows `sc.exe`
+adapter. It has no Cloudflare API provisioning path and no background updater.
+The implementation and the real Windows/Cloudflare edge and reconnect
+acceptance are complete. The bounded evidence is recorded in the Phase 4
+acceptance runbook and implementation handoff. A stronger remote-administrator
+policy and mobile Dashboard UI optimization remain separate future planning
+items and are not part of this design.
 
 ## Diagnostics
 

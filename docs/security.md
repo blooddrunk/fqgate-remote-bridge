@@ -194,7 +194,13 @@ Use only a scoped API token with permissions required to provision/adopt Tunnel/
 
 ### Tunnel runtime credential
 
-Use the remotely managed tunnel runtime token, store it using an OS-protected mechanism where practical, and never print it in diagnostics.
+Use the remotely managed tunnel runtime token in a repo-external Windows ACL
+protected file. The service invocation uses
+`cloudflared tunnel run --token-file <path>` and never embeds the raw value in
+the service command line. Token-file creation/read/ACL verification is
+fail-closed; status only reports `secure`, `missing`, `unreadable`, or
+`insecure`, never file contents. The current code has no token input in normal
+JSON configuration and no Cloudflare provisioning API path.
 
 ### Machine access
 
@@ -262,6 +268,35 @@ At minimum:
 - human and machine policies are distinguishable;
 - local administrative/update operations are not automatically exposed under a generic machine market-data policy;
 - bridge route policy remains authoritative after Access succeeds.
+
+### Phase 4 remote-human boundary
+
+The bridge classifies every request from the explicit `Host` header (falling
+back to the server URL only when the runtime did not provide a Host header for
+the request object):
+
+- `127.0.0.1`/`localhost` with no port or the configured bridge port is local;
+- exactly one configured DNS hostname is remote-human;
+- all unknown values fail closed with a normalized host error.
+
+`X-Forwarded-Host`, `Forwarded`, source IP, and other proxy metadata do not
+select a context. A remote-human request must contain a non-empty
+`Cf-Access-Jwt-Assertion`. This is only an assertion-presence/drift check;
+Cloudflare `Protect with Access` at the published application is the primary
+JWT validation layer. The assertion value is never placed in structured log
+context, diagnostics, responses, browser state, or test fixtures.
+
+The operation registry has a complete Phase 4 matrix. The seven
+`local_and_remote_human` operations are the Dashboard/status, QR,
+read-only update status, and reference catalog surfaces. The four
+`local_only` operations are update check/plan/apply and OpenAPI refresh. The
+handler enforces the matrix before dispatch, so hiding a button is not an
+authorization control.
+
+Unknown/raw `/v1/...` routes are still rejected before any FQGate request is
+made. The top-level application transport applies the same Host/assertion
+gate to page and static requests, so an untrusted Host cannot use a UI route
+as a side channel.
 
 ## Network constraints
 

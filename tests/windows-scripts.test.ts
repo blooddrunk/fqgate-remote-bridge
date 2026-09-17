@@ -54,6 +54,24 @@ describe("Windows entry points", () => {
     expect(script).toContain("$catalog.snapshot.fingerprint");
   });
 
+  it("provides an explicit Phase 4 loopback, service, and Access acceptance mode", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("[switch]$VerifyPhase4");
+    expect(script).toContain("[string]$RemoteUrl");
+    expect(script).toContain('@("cloudflared", "status", "--json")');
+    expect(script).toContain("Win32_Service");
+    expect(script).toContain("--token-file");
+    expect(script).toContain("Get-HttpStatusWithoutRedirect");
+    expect(script).toContain("AllowAutoRedirect = $false");
+    expect(script).toContain(
+      "authenticated human and remote-denial checks remain manual evidence steps",
+    );
+  });
+
   it("provides an explicit one-command dashboard launcher without silent FQGate installation", () => {
     const script = readFileSync(
       new URL("../scripts/windows/start-dashboard.ps1", import.meta.url),
@@ -65,12 +83,38 @@ describe("Windows entry points", () => {
     );
 
     expect(script).toContain("[switch]$InstallFqgate");
+    expect(script).toContain("Get-Command node.exe");
+    expect(script).toContain("$nodeCandidates");
+    expect(script).toContain("Get-NodeVersionText");
+    expect(script).toContain("System.Diagnostics.ProcessStartInfo");
     expect(script).toContain("corepack.cmd");
     expect(script).toContain("install --dry-run");
     expect(script).toContain("if (-not $InstallFqgate)");
     expect(script).toContain('fqgate", "start');
     expect(script).toContain("127.0.0.1:$bridgePort/api/v1/version");
     expect(wrapper).toContain("start-dashboard.ps1");
+    expect(wrapper).toContain("%*");
+  });
+
+  it("provides a Phase 4 launcher that starts the existing service before the local runtime", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/start-phase4.ps1", import.meta.url),
+      "utf8",
+    );
+    const wrapper = readFileSync(
+      new URL("../scripts/windows/start-phase4.cmd", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("[string]$ConfigPath");
+    expect(script).toContain("FQGateRemoteBridgeCloudflared");
+    expect(script).toContain("Get-Service");
+    expect(script).toContain("Start-Service");
+    expect(script).toContain("start-dashboard.ps1");
+    expect(script).toContain("-SkipInstall");
+    expect(script).toContain("-SkipBuild");
+    expect(script).toContain("-NoBrowser");
+    expect(wrapper).toContain("start-phase4.ps1");
     expect(wrapper).toContain("%*");
   });
 });

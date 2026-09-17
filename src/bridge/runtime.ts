@@ -11,8 +11,11 @@ import {
   type BridgeHttpHandler,
 } from "./transport/http.js";
 import { FetchHttpTransport } from "../fqgate/release/http.js";
+import { resolveBridgePort } from "./runtime-config.js";
+import type { RequestContextPolicyOptions } from "./policy/request-context.js";
 
 let handlerPromise: Promise<BridgeHttpHandler> | undefined;
+let requestContextOptionsPromise: Promise<RequestContextPolicyOptions> | undefined;
 
 /**
  * Build the single production bridge runtime. The promise is intentionally
@@ -25,6 +28,21 @@ export function getBridgeHttpHandler(): Promise<BridgeHttpHandler> {
 
 export function resetBridgeHttpHandlerForTests(): void {
   handlerPromise = undefined;
+  requestContextOptionsPromise = undefined;
+}
+
+export function getBridgeRequestContextOptions(): Promise<RequestContextPolicyOptions> {
+  requestContextOptionsPromise ??= loadConfig(
+    process.env.FQGATE_REMOTE_BRIDGE_CONFIG === ""
+      ? undefined
+      : process.env.FQGATE_REMOTE_BRIDGE_CONFIG,
+  ).then((config) => ({
+    bridgePort: resolveBridgePort(process.env.BRIDGE_PORT ?? process.env.PORT),
+    ...(config.remoteAccess.remoteHostname === undefined
+      ? {}
+      : { remoteHostname: config.remoteAccess.remoteHostname }),
+  }));
+  return requestContextOptionsPromise;
 }
 
 async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
@@ -48,6 +66,12 @@ async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
     return createBridgeHttpHandler({
       service,
       logger: new StructuredLogger({ level: config.logLevel }),
+      requestContext: {
+        bridgePort: resolveBridgePort(process.env.BRIDGE_PORT ?? process.env.PORT),
+        ...(config.remoteAccess.remoteHostname === undefined
+          ? {}
+          : { remoteHostname: config.remoteAccess.remoteHostname }),
+      },
     });
   } catch (error) {
     return async () => createBridgeErrorResponse(error);

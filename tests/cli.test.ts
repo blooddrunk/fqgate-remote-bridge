@@ -35,7 +35,7 @@ describe("local CLI", () => {
     });
   });
 
-  it("shows the local-only command surface without Cloudflare commands", async () => {
+  it("shows the local and explicit cloudflared command surfaces", async () => {
     const capture = ioCapture();
     const exitCode = await runCli(["help"], {
       stdout: (line) => capture.stdout.push(line),
@@ -44,6 +44,6 @@ describe("local CLI", () => {
 
     expect(exitCode).toBe(0);
     expect(capture.stdout[0]).toContain("fqgate-remote-bridge fqgate update --check|--apply");
-    expect(capture.stdout[0]).not.toContain("cloudflare");
+    expect(capture.stdout[0]).toContain("cloudflared service install|start|stop|restart|status");
   });
 });

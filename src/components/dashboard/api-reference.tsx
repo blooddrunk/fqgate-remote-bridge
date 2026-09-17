@@ -24,6 +24,7 @@ export interface ApiReferenceViewProps {
   readonly onRefresh: () => void;
   readonly isRefreshing: boolean;
   readonly refreshError: Error | null;
+  readonly isRemoteHuman?: boolean;
 }
 
 export function ApiReferenceView({
@@ -33,6 +34,7 @@ export function ApiReferenceView({
   onRefresh,
   isRefreshing,
   refreshError,
+  isRemoteHuman = false,
 }: ApiReferenceViewProps) {
   const [tab, setTab] = useState<ReferenceTab>("upstream");
   const [search, setSearch] = useState("");
@@ -85,10 +87,16 @@ export function ApiReferenceView({
             才是授权边界。
           </p>
         </div>
-        <Button variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {isRefreshing ? "刷新中…" : "刷新 Runtime OpenAPI"}
-        </Button>
+        {isRemoteHuman ? (
+          <span className="rounded-xl border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+            远程仅查看 API Catalog；OpenAPI 刷新仅限本机维护
+          </span>
+        ) : (
+          <Button variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
+            <RefreshCw size={16} aria-hidden="true" />
+            {isRefreshing ? "刷新中…" : "刷新 Runtime OpenAPI"}
+          </Button>
+        )}
       </section>
 
       {refreshError !== null ? (
@@ -214,6 +222,11 @@ export function ApiReferenceView({
                       {operation.upstream === undefined
                         ? "Bridge-owned operation"
                         : `映射上游：${operation.upstream.method} ${operation.upstream.path}`}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {operation.exposure === "local_and_remote_human"
+                        ? "暴露：本地 + 已通过 Access 的远程人工"
+                        : "暴露：仅本机维护"}
                     </p>
                   </div>
                 ))}

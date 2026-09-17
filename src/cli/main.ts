@@ -7,6 +7,12 @@ import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
 import { getBuildInfo } from "../shared/build-info.js";
 import { Redactor } from "../shared/redaction.js";
 import { createLifecycleManager } from "../app/runtime.js";
+import { createApplicationServices } from "../app/runtime.js";
+import type {
+  CloudflaredInstallPlan,
+  CloudflaredManager,
+  CloudflaredStatus,
+} from "../cloudflared/manager.js";
 import type {
   FqgateLifecycleManager,
   FqgateStatus,
@@ -45,20 +51,32 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
       return 0;
     }
 
-    if (args.positionals[0] !== "fqgate") {
+    if (args.positionals[0] !== "fqgate" && args.positionals[0] !== "cloudflared") {
       throw new BridgeError(
         ERROR_CODES.CONFIG_INVALID,
-        "Command must begin with fqgate or version",
+        "Command must begin with fqgate, cloudflared, or version",
       );
     }
 
     const config = await loadConfig(args.configPath);
-    const manager = createLifecycleManager(config);
     const command = args.positionals[1];
     if (command === undefined) {
       io.stdout(usage());
       return 0;
     }
+
+    if (args.positionals[0] === "cloudflared") {
+      return await runCloudflared(
+        createApplicationServices(config).cloudflared,
+        command,
+        args.positionals[2],
+        args.dryRun,
+        args.json,
+        io,
+      );
+    }
+
+    const manager = createLifecycleManager(config);
 
     switch (command) {
       case "release":
@@ -94,6 +112,52 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
       io.stderr(`${bridgeError.code}: ${bridgeError.message}`);
     }
     return exitCodeFor(bridgeError.code);
+  }
+}
+
+async function runCloudflared(
+  manager: CloudflaredManager,
+  command: string,
+  action: string | undefined,
+  dryRun: boolean,
+  json: boolean,
+  io: CliIo,
+): Promise<number> {
+  switch (command) {
+    case "release":
+      output(await manager.release(), json, io);
+      return 0;
+    case "install":
+      output(await manager.install({ dryRun }), json, io);
+      return 0;
+    case "status":
+      output(await manager.status(), json, io);
+      return 0;
+    case "service":
+      switch (action) {
+        case "install":
+          await manager.installService();
+          return 0;
+        case "start":
+          await manager.startService();
+          return 0;
+        case "stop":
+          await manager.stopService();
+          return 0;
+        case "restart":
+          await manager.restartService();
+          return 0;
+        case "status":
+          output(await manager.status(), json, io);
+          return 0;
+        default:
+          throw new BridgeError(
+            ERROR_CODES.CONFIG_INVALID,
+            "cloudflared service requires install, start, stop, restart, or status",
+          );
+      }
+    default:
+      throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `Unknown cloudflared command: ${command}`);
   }
 }
 
@@ -204,6 +268,14 @@ function output(value: unknown, json: boolean, io: CliIo): void {
     io.stdout(formatPlan(value));
     return;
   }
+  if (isCloudflaredStatus(value)) {
+    io.stdout(formatCloudflaredStatus(value));
+    return;
+  }
+  if (isCloudflaredPlan(value)) {
+    io.stdout(formatCloudflaredPlan(value));
+    return;
+  }
   io.stdout(formatHuman(value));
 }
 
@@ -232,6 +304,27 @@ function formatPlan(plan: ReleasePlan): string {
   ].join("\n");
 }
 
+function formatCloudflaredPlan(plan: CloudflaredInstallPlan): string {
+  return [
+    `source: ${plan.source}`,
+    `version: ${plan.version}`,
+    `asset: ${plan.asset.name}`,
+    `sha256: ${plan.asset.sha256}`,
+    `action: ${plan.action}`,
+    `origin: ${plan.serviceOrigin}`,
+  ].join("\n");
+}
+
+function formatCloudflaredStatus(status: CloudflaredStatus): string {
+  return [
+    `origin: ${status.origin}`,
+    `installed: ${status.installedVersion ?? "not installed"}`,
+    `expected: ${status.expectedReleaseVersion}`,
+    `token-file: ${status.tokenFile.state}`,
+    `service: ${status.service.supported ? (status.service.installed ? (status.service.running ? "running" : "stopped") : "not installed") : "unsupported on this host"}`,
+  ].join("\n");
+}
+
 function formatHuman(value: unknown): string {
   if (typeof value === "string") return value;
   return JSON.stringify(value, null, 2) ?? "undefined";
@@ -255,6 +348,28 @@ function isPlan(value: unknown): value is ReleasePlan {
     "package" in value &&
     "action" in value &&
     "reason" in value
+  );
+}
+
+function isCloudflaredPlan(value: unknown): value is CloudflaredInstallPlan {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "source" in value &&
+    "asset" in value &&
+    "serviceOrigin" in value &&
+    "installPath" in value
+  );
+}
+
+function isCloudflaredStatus(value: unknown): value is CloudflaredStatus {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "origin" in value &&
+    "tokenFile" in value &&
+    "service" in value &&
+    "expectedReleaseVersion" in value
   );
 }
 
@@ -352,6 +467,8 @@ function usage(): string {
     "fqgate-remote-bridge fqgate install [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate update --check|--apply [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate start|stop|restart [--json]",
+    "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",
+    "fqgate-remote-bridge cloudflared service install|start|stop|restart|status [--json]",
   ].join("\n");
 }
 

@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_FQGATE_BASE_URL,
@@ -38,6 +39,28 @@ describe("configuration", () => {
     expect(validateLoopbackBaseUrl("http://127.0.0.1:17281")).toBe(DEFAULT_FQGATE_BASE_URL);
     expect(validateLoopbackBaseUrl("http://localhost:17281")).toBe("http://localhost:17281");
     expect(() => validateLoopbackBaseUrl("http://10.0.0.5:17281")).toThrowError(BridgeError);
+  });
+
+  it("constrains remote access to one DNS hostname and a protected token path", () => {
+    const config = parseConfig(
+      {
+        remoteAccess: { remoteHostname: "dashboard.example.com" },
+        cloudflared: {
+          tokenFile: "C:\\ProgramData\\FQGateRemoteBridge\\secrets\\tunnel-token",
+        },
+      },
+      {},
+      "win32",
+    );
+    expect(config.remoteAccess.remoteHostname).toBe("dashboard.example.com");
+    expect(config.remoteAccess.accessAssertionHeader).toBe("cf-access-jwt-assertion");
+    expect(config.cloudflared.origin).toBe("http://127.0.0.1:17282");
+    expect(() =>
+      parseConfig({ remoteAccess: { remoteHostname: "https://dashboard.example.com" } }),
+    ).toThrowError(BridgeError);
+    expect(() =>
+      parseConfig({ cloudflared: { tokenFile: join(process.cwd(), "token-file") } }),
+    ).toThrowError(/outside the repository/);
   });
 });
 

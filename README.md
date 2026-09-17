@@ -2,7 +2,7 @@
 
 FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQGate 始终保持本机回环运行，由 Bridge 提供明确、受控的接口和 Dashboard，再逐阶段通过 Cloudflare Tunnel + Access 将需要的能力安全带到远程环境。
 
-当前 **Phase 0–3 已关闭，Phase 4 已正式开启**。Phase 4 只实现“受 Cloudflare Access 保护的远程人工访问”，不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
+当前 **Phase 0–4 已关闭**。Phase 4 实现并验收了“受 Cloudflare Access 保护的远程人工访问”；不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
 
 ## 当前结论
 
@@ -12,6 +12,8 @@ FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQ
 - Phase 4 引入 remotely-managed Cloudflare Tunnel + Cloudflare Access human policy，`cloudflared` 只转发到 Bridge，绝不直接转发到 FQGate。
 - Tunnel **不会自动把全部本地操作暴露到远程**。Bridge 会显式区分 local 与 remote-human operation。
 - Phase 4 远程允许 Dashboard/status、QR 登录、只读更新状态和 reference-only API Catalog；更新检查/预览/执行、OpenAPI refresh 继续保持 local-only。
+- 远程 Host 必须是配置的唯一 `remoteAccess.remoteHostname`，并带有 Cloudflare Protect with Access 注入的 `Cf-Access-Jwt-Assertion`；unknown Host、缺 assertion 和转发头 spoofing 都 fail closed。
+- `cloudflared` 只接受固定 Cloudflare 官方 GitHub release metadata/Windows x64 asset，手工、显式安装；Windows service 使用 repo 外 ACL 保护的 token file 和 `tunnel run --token-file`。
 - OpenAPI 只负责描述 FQGate 当前“有什么”，不负责授权；新上游路径默认不可调用。
 - 不提供下单、撤单、资金划转、券商控制或其他金融状态变更能力。
 
@@ -80,6 +82,22 @@ node .\dist\cli\main.js fqgate status
 .\scripts\windows\start-dashboard.cmd
 ```
 
+Windows 重启后，`cloudflared` 服务可以先恢复为 Running，但 FQGate 是交互式用户会话进程，Bridge 也不是 Windows 服务；在公网访问前仍需在已登录的用户会话中运行上述 launcher。若服务显示 Running 但公网返回 502，先确认 `127.0.0.1:17281` 和 `127.0.0.1:17282` 都有监听，再启动本机 Dashboard。
+
+### 一键启动 Phase 4 本地运行时
+
+Windows 重启后，在已登录的用户会话中执行下面的命令；它会先确认并启动现有的
+`FQGateRemoteBridgeCloudflared` 服务，再启动 FQGate 和 loopback Bridge：
+
+```powershell
+.\scripts\windows\start-phase4.cmd `
+  -ConfigPath D:\code\research\fqgate-phase4-acceptance-config.json
+```
+
+如果不需要自动打开浏览器，可追加 `-NoBrowser`。首次安装、服务安装或 token-file
+ACL 调整仍须使用对应的显式命令和管理员 PowerShell；这个 launcher 不会自动安装
+FQGate、cloudflared 或修改 Cloudflare 资源。
+
 本地页面：
 
 - Dashboard：<http://127.0.0.1:17282/>
@@ -128,7 +146,7 @@ Phase 4 的关键不是简单运行 `cloudflared`，而是同时建立三层约�
 2. Tunnel 只连接 `127.0.0.1:17282`；
 3. Bridge 根据请求上下文继续执行显式 operation exposure policy。
 
-计划中的 remote-human operation：
+Phase 4 remote-human operation：
 
 ```text
 bridge.version
@@ -159,9 +177,31 @@ cloudflared tunnel run --token-file <protected-token-file>
 
 Phase 4 使用**预先创建的 remotely-managed Tunnel 和人工 Access policy**。自动通过 Cloudflare API 创建 Tunnel/DNS/Access 属于 Phase 6，不在当前开发范围。
 
-## 当前开发任务
+本地 cloudflared 管理命令为显式操作，不会在页面加载、Bridge 启动或后台定时器中下载/更新：
 
-Phase 4 task package：
+```powershell
+node .\dist\cli\main.js cloudflared release --json
+node .\dist\cli\main.js cloudflared install --dry-run --json
+node .\dist\cli\main.js cloudflared status --json
+node .\dist\cli\main.js cloudflared service install --json
+node .\dist\cli\main.js cloudflared service restart --json
+```
+
+配置只保存 remote hostname、固定 origin、cloudflared release version、安装目录和 token-file 路径；Tunnel token 本身不进入配置、service command、日志、UI、浏览器存储、tests 或 Git。
+
+Phase 4 实现、deterministic tests 以及真实 Windows x64 + Cloudflare 验收均已完成，状态为
+**CLOSED**。边界、运行步骤和不含敏感值的验收证据见 [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)；实现与 live handoff 见 [Phase 4 implementation handoff](docs/status/phase-4-implementation-handoff.md)。
+
+## 未来计划（未实现）
+
+- 单独设计带更强认证、设备限制和二次确认的远程管理员策略；它不能隐式复用 Phase 4 的远程人工只读策略。
+- 优化现有 Dashboard 的移动端 UI，继续复用 React 19/TanStack 应用，不创建第二套前端。
+
+这两项只是后续规划，不属于已关闭的 Phase 4，也不代表当前仓库已经提供远程管理员能力或移动端改版。
+
+## 已完成的 Phase 4 任务包
+
+Phase 4 已关闭；以下文件保留为实现、设计和历史执行指令的完整记录：
 
 ```text
 docs/tasks/phase-4-cloudflare-tunnel-access.md
@@ -179,7 +219,7 @@ Codex goal：
 docs/prompts/phase-4-codex-goal.md
 ```
 
-可直接交给 Codex goal 的入口：
+Phase 4 历史 Codex goal 入口（不是新的活动任务）：
 
 ```text
 在 https://github.com/blooddrunk/fqgate-remote-bridge 工作。同步最新 main 后，严格按照 AGENTS.md、docs/tasks/phase-4-cloudflare-tunnel-access.md、docs/plans/phase-4-secure-remote-human-access.md 和 docs/prompts/phase-4-codex-goal.md 完整执行 Phase 4。实现 Cloudflare Tunnel + Access 保护下的远程人工 Dashboard/QR/status/reference 访问，同时保持 FQGate 和 Bridge loopback-only，并用显式 local/remote-human operation policy 保证 updates.check/plan/apply 与 openapi.refresh 仍然只能本地调用。使用 remotely-managed Tunnel 和受 Windows ACL 保护的 token file，不在 service command line/日志/配置中暴露 raw token。完成代码、测试、文档和可执行的 Windows 验收；如果没有真实 Cloudflare 资源，不得伪造验收或关闭 Phase 4。不要提前实现 Phase 5+ 的机器行情 API、service-token auth、自动 Cloudflare provisioning、supervisor、自动更新、MCP/WebSocket 或交易能力。
@@ -197,4 +237,6 @@ docs/prompts/phase-4-codex-goal.md
 - [Phase 4 Codex Goal](docs/prompts/phase-4-codex-goal.md)
 - [Phase 3 完成交接](docs/status/phase-3-implementation-handoff.md)
 - [Windows Phase 3 验收](docs/operations/windows-phase-3-acceptance.md)
+- [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)
+- [Phase 4 实现交接](docs/status/phase-4-implementation-handoff.md)
 - [Agent 快速交接](docs/agent-guide.md)

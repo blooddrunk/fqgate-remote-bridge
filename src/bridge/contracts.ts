@@ -4,6 +4,7 @@ import type { ManagedProcessState } from "../fqgate/process/types.js";
 import type { BuildInfo } from "../shared/build-info.js";
 import type { OpenApiCatalog } from "../fqgate/openapi/types.js";
 import type { UpdateStatusView } from "../fqgate/update/service.js";
+import type { BridgeRequestContext } from "./policy/request-context.js";
 
 export type BridgeVersionResponse = BuildInfo;
 export type BridgeUpdateStatusResponse = UpdateStatusView;
@@ -19,6 +20,7 @@ export interface CompatibilityResponse {
 
 export interface BridgeCapabilitiesResponse {
   readonly apiVersion: "v1";
+  readonly requestContext: BridgeRequestContext;
   readonly capabilities: {
     readonly status: true;
     readonly qrLogin: boolean;

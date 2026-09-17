@@ -1,6 +1,15 @@
 {
   "manifestUrl": "https://raw.githubusercontent.com/zhuyifang/fqgate-releases/main/releases/stable.json",
   "fqgateBaseUrl": "http://127.0.0.1:17281",
+  "remoteAccess": {
+    "remoteHostname": "dashboard.example.com"
+  },
+  "cloudflared": {
+    "releaseVersion": "2026.9.0",
+    "installDirectory": "C:\\Program Files\\FQGateRemoteBridge\\cloudflared",
+    "tokenFile": "C:\\ProgramData\\FQGateRemoteBridge\\secrets\\tunnel-token",
+    "serviceName": "FQGateRemoteBridgeCloudflared"
+  },
   "compatibility": {
     "supportedRange": ">=1.0.0 <2.0.0",
     "validatedVersions": ["1.0.0"]

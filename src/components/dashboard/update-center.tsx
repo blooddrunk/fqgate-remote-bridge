@@ -31,6 +31,8 @@ export interface UpdateCenterViewProps {
   readonly onApply: (planId: string) => void;
   readonly isApplying: boolean;
   readonly applyError: Error | null;
+  readonly isRemoteHuman?: boolean;
+  readonly contextReady?: boolean;
 }
 
 export function UpdateCenterView({
@@ -47,6 +49,8 @@ export function UpdateCenterView({
   onApply,
   isApplying,
   applyError,
+  isRemoteHuman = false,
+  contextReady = true,
 }: UpdateCenterViewProps) {
   const [confirmedPlanId, setConfirmedPlanId] = useState<string | undefined>();
 
@@ -73,6 +77,7 @@ export function UpdateCenterView({
   const planCanApply = plan?.action === "install" || plan?.action === "update";
   const confirmed = plan !== undefined && confirmedPlanId === plan.planId;
   const errorMessage = checkError?.message ?? previewError?.message ?? applyError?.message;
+  const localMaintenanceEnabled = contextReady && !isRemoteHuman;
 
   return (
     <div className="space-y-8">
@@ -88,14 +93,23 @@ export function UpdateCenterView({
             只在你明确操作后检查、预览和执行安装。每一次候选激活都会经过版本、大小、SHA-256、健康与运行时契约校验。
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={onRefreshStatus} disabled={isLoading || isApplying}>
             <RefreshCw size={16} aria-hidden="true" /> 刷新状态
           </Button>
-          <Button onClick={onCheck} disabled={isChecking || isApplying}>
-            <Download size={16} aria-hidden="true" />
-            {isChecking ? "检查中…" : "检查更新"}
-          </Button>
+          {isRemoteHuman ? (
+            <span className="rounded-xl border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+              远程人工访问为只读；更新检查、预览和执行仅限本机维护
+            </span>
+          ) : (
+            <Button
+              onClick={onCheck}
+              disabled={!localMaintenanceEnabled || isChecking || isApplying}
+            >
+              <Download size={16} aria-hidden="true" />
+              {isChecking ? "检查中…" : "检查更新"}
+            </Button>
+          )}
         </div>
       </section>
 
@@ -160,7 +174,14 @@ export function UpdateCenterView({
           </CardHeader>
           <CardContent>
             {plan === undefined ? (
-              <EmptyPlan />
+              isRemoteHuman ? (
+                <Alert tone="neutral">
+                  远程仅允许查看 updates.status。更新 check / plan / apply 必须通过 127.0.0.1
+                  的本机维护访问执行。
+                </Alert>
+              ) : (
+                <EmptyPlan />
+              )
             ) : (
               <div className="space-y-5">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -193,7 +214,12 @@ export function UpdateCenterView({
                   )}
                   <span>{plan.reason}</span>
                 </div>
-                {planCanApply ? (
+                {isRemoteHuman ? (
+                  <Alert tone="neutral">
+                    远程仅允许查看 updates.status。更新 check / plan / apply 必须通过 127.0.0.1
+                    的本机维护访问执行。
+                  </Alert>
+                ) : planCanApply ? (
                   <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
                     <label className="flex items-start gap-3">
                       <input
@@ -312,15 +338,21 @@ export function UpdateCenterView({
       <Alert tone="neutral">
         <p className="font-semibold">CLI 兜底</p>
         <p className="mt-1 leading-6">
-          如需在 Dashboard 不可用时操作，可运行
-          <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs dark:bg-white/10">
-            node .\dist\cli\main.js fqgate update --check
-          </code>
-          或使用
-          <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs dark:bg-white/10">
-            fqgate update --apply --dry-run
-          </code>
-          预览。GitHub 是当前唯一启用的固定可信源；本页面没有任意 URL 输入框。
+          {isRemoteHuman
+            ? "远程页面不提供维护命令；请在 Bridge 所在 Windows 主机的本机回环环境执行维护。"
+            : "如需在 Dashboard 不可用时操作，可运行"}
+          {!isRemoteHuman ? (
+            <>
+              <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs dark:bg-white/10">
+                node .\dist\cli\main.js fqgate update --check
+              </code>
+              或使用
+              <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs dark:bg-white/10">
+                fqgate update --apply --dry-run
+              </code>
+              预览。GitHub 是当前唯一启用的固定可信源；本页面没有任意 URL 输入框。
+            </>
+          ) : null}
         </p>
       </Alert>
     </div>

@@ -319,6 +319,39 @@ If the running FQGate version is unknown, runtime OpenAPI cannot be validated, o
 - status reports an incompatible/degraded condition;
 - the bridge must not fall back to transparent proxying.
 
+## cloudflared Phase 4 contract
+
+The Phase 4 adapter treats Cloudflare's official `cloudflare/cloudflared`
+GitHub release metadata as a trusted-source observation, not as an arbitrary
+download service. The selected calendar-version tag is requested through the
+fixed official release API path, and the only accepted Windows x64 artifact is
+`cloudflared-windows-amd64.exe` at the matching official release path.
+
+The release must identify the requested tag and publish a SHA-256 either in
+the GitHub asset digest or in the release checksum body; when both are
+present, they must agree. Asset size and the staged candidate's reported
+`--version` are checked before activation. No user-supplied binary URL,
+manifest URL, GitHub repository, or arbitrary release source is accepted.
+
+Cloudflare documents the remotely managed Tunnel runtime form as:
+
+```text
+cloudflared tunnel run --token-file <protected-token-file>
+```
+
+Phase 4 requires a cloudflared build whose `tunnel run --help` output contains
+`--token-file`. The Windows service adapter uses a fixed command shape and
+keeps the raw Tunnel token in a repo-external ACL-protected file. The
+published application/origin is an operator-managed Cloudflare setting and
+must be exactly:
+
+```text
+http://127.0.0.1:17282
+```
+
+This project does not provision the Tunnel, DNS, Access application, or human
+Allow policy through Cloudflare APIs in Phase 4.
+
 ## Source ownership and licensing
 
 FQGate's main executable is not source code owned by this project. This repository should not vendor or redistribute the binary unless upstream licensing explicitly permits it and there is a compelling reason.

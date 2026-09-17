@@ -8,7 +8,7 @@
 - Phase 1：已关闭，并已验证 Windows x64 生命周期、校验和、回滚和健康检查。
 - Phase 2：已关闭，并已在目标 Windows x64 主机完成真实 QR begin/poll/scan。
 - Phase 3：已关闭，本地升级中心、Runtime OpenAPI/API Reference 和目标 Windows x64 安全验收均完成。
-- Phase 4：**当前 ACTIVE**，目标是通过 Cloudflare Tunnel + Cloudflare Access 提供受控的远程人工访问；Phase 5+ 不要顺手实现。
+- Phase 4：**已 CLOSED**，已通过真实 Windows x64 + Cloudflare 验收；后续任务仍不得顺手实现 Phase 5+。
 
 当前 Phase 4 仍要求：Bridge 固定 `127.0.0.1:17282`，FQGate 固定 `127.0.0.1:17281`。Cloudflare 只能通过 `cloudflared` 连接 Bridge，不能直连 FQGate。
 
@@ -65,6 +65,7 @@ Phase 4 使用预先创建的 remotely-managed Tunnel，不通过 Cloudflare API
 
 - FQGate 安装不是隐式行为；用户先 dry-run 再明确执行。
 - 推荐 Windows 用户使用 `scripts/windows/start-dashboard.cmd`。
+- Windows 重启后需要在交互式用户会话再次启动 FQGate/Bridge；cloudflared 服务单独显示 Running 不代表 `127.0.0.1:17282` origin 已就绪。
 - CLI 和 Dashboard 更新共用 lifecycle/update application service。
 - GitHub 仍是启用的固定可信 FQGate release source；Gitee 未启用。
 - API Reference 使用固定 `127.0.0.1:17281/openapi.json`，reference-only，不提供 raw upstream Try it out。
@@ -106,6 +107,17 @@ Phase 4 使用预先创建的 remotely-managed Tunnel，不通过 Cloudflare API
 - `src/routes`、`src/components`：薄 TanStack transport/UI，不拥有授权和 secret handling。
 - `scripts/windows`：Windows 启动/验收/系统集成入口，不复制 TypeScript 核心业务逻辑。
 
+Phase 4 当前代码入口：
+
+- `src/bridge/policy/request-context.ts`：Host 分类、Access assertion presence 和 remote-human exposure gate；
+- `src/cloudflared/`：固定 Cloudflare release source/integrity、候选激活、token-file 和 Windows service 适配；
+- `src/cli/main.ts`：显式 `cloudflared release/install/status` 与 `cloudflared service ...` 命令；
+- `scripts/windows/acceptance.ps1 -VerifyPhase4`：安全 loopback/service/Access 验收工具，不自动创建 Cloudflare 资源。
+
+配置使用 `remoteAccess.remoteHostname` 和 `cloudflared.tokenFile`。token-file
+必须是 repo 外绝对路径；运行时只报告安全状态，不返回文件内容。默认/强制
+origin 是 `http://127.0.0.1:17282`。
+
 ## 本地检查
 
 ```text
@@ -138,16 +150,20 @@ Phase 4 的 normal CI 不得依赖真实 Cloudflare credentials。
 - local maintenance 仍可通过 loopback 使用；
 - cloudflared service restart 后能恢复连接。
 
-如果 coding environment 没有真实 Cloudflare 资源，只能记录 live acceptance pending，不能伪造证据或关闭 Phase 4。
+本次实现的 deterministic 和质量门禁结果、真实环境证据与 closure 记录统一在
+`docs/status/phase-4-implementation-handoff.md` 和
+`docs/operations/windows-phase-4-acceptance.md`。Phase 4 已 CLOSED；若未来
+修改远程管理员边界，必须作为独立规划/任务重新评审，不得隐式扩大现有 remote-human 策略。
 
-## 当前 Codex handoff
+## Phase 4 历史 Codex handoff
 
 ```text
 docs/prompts/phase-4-codex-goal.md
 ```
 
-短入口：
+Phase 4 已完成并关闭。未来如需继续工作，应先为下一阶段建立新的任务包；不能把下面的历史入口当作活动任务：
 
 ```text
-请在 fqgate-remote-bridge 最新 main 完整执行 docs/prompts/phase-4-codex-goal.md。严格保持 FQGate/Bridge loopback-only，用 Cloudflare Tunnel + Access 实现受控 remote-human 访问，并在 Bridge server policy 中区分 local 与 remote-human operation；updates.check/plan/apply 和 openapi.refresh 必须继续 local-only。采用 remotely-managed Tunnel + protected token file，raw token 不得进入 service command line/日志/config。完成代码、测试、文档和 Windows acceptance material；没有真实 Cloudflare evidence 时不要关闭 Phase 4，也不要提前实现 Phase 5+。
+Phase 4 已按 `docs/prompts/phase-4-codex-goal.md` 完成并关闭。后续任务必须继续保持
+FQGate/Bridge loopback-only、现有 remote-human operation 边界和 token-file 秘密处理；远程管理员强化策略与移动端 Dashboard UI 优化只能作为新的规划任务，不得在未评审时混入 Phase 5+。
 ```

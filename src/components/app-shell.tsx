@@ -34,7 +34,9 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
             </span>
             <span>
               <span className="block text-sm font-semibold tracking-tight">FQGate Bridge</span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400">本机操作台</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">
+                本机 / 远程人工操作台
+              </span>
             </span>
           </Link>
           <nav className="flex items-center gap-1.5" aria-label="主导航">
@@ -91,7 +93,8 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
         {children}
       </main>
       <footer className="relative z-10 mx-auto max-w-6xl px-5 pb-8 text-xs text-slate-400 sm:px-8">
-        仅限本机回环 · QR 状态只保存在内存中，并会自动过期
+        FQGate 与 Bridge 始终只绑定 IPv4 loopback · 远程访问由 Cloudflare Access 保护 · QR
+        状态只保存在内存中，并会自动过期
       </footer>
     </div>
   );

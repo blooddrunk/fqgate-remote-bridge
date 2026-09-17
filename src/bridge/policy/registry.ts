@@ -17,7 +17,7 @@ export type BridgeOperationId =
 export type BridgeOperationClassification = "diagnostic" | "session_maintenance" | "local_admin";
 export type BridgeSensitivity = "none" | "qr_payload";
 export type BridgeOperationIntent = "read_only" | "session_maintenance" | "local_admin";
-export type BridgeExposure = "local_only";
+export type BridgeExposure = "local_only" | "local_and_remote_human";
 
 export interface BridgeOperationPolicy {
   readonly id: BridgeOperationId;
@@ -44,7 +44,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/version",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 1_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -57,7 +57,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/capabilities",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 1_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -70,7 +70,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/status",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -83,7 +83,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/session/qr/begin",
     classification: "session_maintenance",
     intent: "session_maintenance",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "qr_payload",
@@ -97,7 +97,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/session/qr/poll",
     classification: "session_maintenance",
     intent: "session_maintenance",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "none",
@@ -111,7 +111,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/updates/status",
     classification: "local_admin",
     intent: "read_only",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -163,7 +163,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/openapi/catalog",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_only",
+    exposure: "local_and_remote_human",
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",

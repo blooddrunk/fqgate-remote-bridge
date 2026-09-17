@@ -13,11 +13,18 @@ import { StructuredLogger } from "../shared/logger.js";
 import { listRequiredFqgateContracts } from "../bridge/policy/registry.js";
 import { FqgateOpenApiService, RequiredContractOpenApiProbe } from "../fqgate/openapi/service.js";
 import { FqgateUpdateService } from "../fqgate/update/service.js";
+import { CloudflaredManager } from "../cloudflared/manager.js";
+import { SafeCloudflaredArtifactDownloader } from "../cloudflared/release/downloader.js";
+import { OfficialCloudflaredReleaseSource } from "../cloudflared/release/source.js";
+import { PosixTokenFileAcl, ProtectedTokenFileStore } from "../cloudflared/token-file.js";
+import { WindowsTokenFileAcl } from "../cloudflared/windows/acl.js";
+import { WindowsCloudflaredServiceController } from "../cloudflared/windows/service.js";
 
 export interface ApplicationServices {
   readonly lifecycle: FqgateLifecycleManager;
   readonly openApi: FqgateOpenApiService;
   readonly update: FqgateUpdateService;
+  readonly cloudflared: CloudflaredManager;
 }
 
 export function createApplicationServices(config: AppConfig): ApplicationServices {
@@ -59,10 +66,41 @@ export function createApplicationServices(config: AppConfig): ApplicationService
     runtimeOpenApiProbe: new RequiredContractOpenApiProbe(openApi, listRequiredFqgateContracts()),
     logger: new StructuredLogger({ level: config.logLevel }),
   });
+  const cloudflaredTokenAcl =
+    process.platform === "win32"
+      ? new WindowsTokenFileAcl({ runner, platform: process.platform })
+      : new PosixTokenFileAcl();
+  const cloudflaredTokenFiles = new ProtectedTokenFileStore({
+    platform: process.platform,
+    acl: cloudflaredTokenAcl,
+  });
+  const cloudflaredService =
+    process.platform === "win32"
+      ? new WindowsCloudflaredServiceController({
+          runner,
+          tokenFiles: cloudflaredTokenFiles,
+          serviceName: config.cloudflared.serviceName,
+        })
+      : undefined;
+  const cloudflared = new CloudflaredManager({
+    config: config.cloudflared,
+    releaseSource: new OfficialCloudflaredReleaseSource(
+      http,
+      config.cloudflared.releaseVersion,
+      config.download.timeoutMs,
+    ),
+    downloader: new SafeCloudflaredArtifactDownloader(http),
+    runner,
+    tokenFiles: cloudflaredTokenFiles,
+    ...(cloudflaredService === undefined ? {} : { serviceController: cloudflaredService }),
+    downloadOptions: config.download,
+    platform: process.platform,
+  });
   return {
     lifecycle,
     openApi,
     update: new FqgateUpdateService({ lifecycle }),
+    cloudflared,
   };
 }
 

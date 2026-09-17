@@ -255,7 +255,8 @@ describe("bridge service and HTTP policy boundary", () => {
       qrRegistry: new QrFlowRegistry({ idFactory: () => "11111111-1111-4111-8111-111111111111" }),
     });
     const began = await service.beginQr();
-    expect(JSON.stringify(began)).not.toContain("99");
+    expect(began).not.toHaveProperty("flow_id");
+    expect(JSON.stringify(began)).not.toContain('"flow_id"');
     expect(began.qr.imageBase64).toBe("aGVsbG8=");
     await expect(service.pollQr(began.sessionId)).resolves.toMatchObject({
       status: "connected",

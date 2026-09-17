@@ -4,7 +4,9 @@ param(
     [switch]$ExecuteInstall,
     [switch]$VerifyCli,
     [switch]$VerifyBridge,
-    [switch]$VerifyPhase3
+    [switch]$VerifyPhase3,
+    [switch]$VerifyPhase4,
+    [string]$RemoteUrl
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,8 +60,35 @@ function ConvertTo-ProcessArgument {
     return '"' + $Value.Replace('"', '\"') + '"'
 }
 
+function Get-HttpStatusWithoutRedirect {
+    param([string]$Uri)
+
+    $request = [System.Net.HttpWebRequest]::Create($Uri)
+    $request.AllowAutoRedirect = $false
+    $request.Method = "GET"
+    $request.Timeout = 15000
+    try {
+        $response = $request.GetResponse()
+        try {
+            return [int]$response.StatusCode
+        } finally {
+            $response.Dispose()
+        }
+    } catch [System.Net.WebException] {
+        if ($null -ne $_.Exception.Response) {
+            $response = $_.Exception.Response
+            try {
+                return [int]$response.StatusCode
+            } finally {
+                $response.Dispose()
+            }
+        }
+        throw
+    }
+}
+
 $node =
-    Get-Command node -CommandType Application -ErrorAction SilentlyContinue |
+    Get-Command node.exe -CommandType Application -ErrorAction SilentlyContinue |
     Select-Object -First 1
 $nodePath = $null
 if ($null -ne $node) {
@@ -136,10 +165,21 @@ if ($VerifyPhase3) {
     $VerifyBridge = $true
 }
 
+if ($VerifyPhase4) {
+    # Phase 4 is explicit and never silently creates a Tunnel, Access policy,
+    # service, or token file. It reuses the safe loopback checks and requires
+    # real operator-provided Cloudflare resources for the public check.
+    $VerifyCli = $true
+    $VerifyBridge = $true
+}
+
 if ($VerifyCli) {
     Invoke-BridgeCli (Add-ConfigArgument @("version", "--json"))
     if ($VerifyPhase3) {
         Invoke-BridgeCli (Add-ConfigArgument @("fqgate", "update", "--check", "--json"))
+    }
+    if ($VerifyPhase4) {
+        Invoke-BridgeCli (Add-ConfigArgument @("cloudflared", "status", "--json"))
     }
     if (-not $VerifyBridge) {
         exit 0
@@ -273,6 +313,39 @@ if ($VerifyBridge) {
             }
 
             Write-Host "Phase 3 trusted update check, live OpenAPI catalog, contract fingerprint, and deny-by-default smoke tests passed."
+        }
+
+        if ($VerifyPhase4) {
+            $fqgateListeners = @(Get-NetTCPConnection -State Listen -LocalPort 17281 -ErrorAction SilentlyContinue)
+            if ($fqgateListeners.Count -ne 1 -or $fqgateListeners[0].LocalAddress -ne "127.0.0.1") {
+                throw "FQGate must have exactly one IPv4 loopback listener on port 17281."
+            }
+
+            $serviceName = "FQGateRemoteBridgeCloudflared"
+            $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'" -ErrorAction SilentlyContinue
+            if ($null -eq $service) {
+                throw "The Phase 4 cloudflared Windows service is not installed."
+            }
+            if ($service.State -ne "Running") {
+                throw "The Phase 4 cloudflared Windows service is not running."
+            }
+            if ([string]::IsNullOrWhiteSpace($service.PathName) -or $service.PathName -notmatch '--token-file') {
+                throw "The cloudflared Windows service must use --token-file."
+            }
+            if ($service.PathName -match 'eyJ[a-zA-Z0-9_-]{20,}') {
+                throw "The cloudflared Windows service command appears to contain a raw token."
+            }
+
+            if ([string]::IsNullOrWhiteSpace($RemoteUrl)) {
+                Write-Host "Phase 4 live Cloudflare check is pending: provide -RemoteUrl to test unauthenticated Access protection."
+            } else {
+                $accessStatus = Get-HttpStatusWithoutRedirect -Uri $RemoteUrl
+                if ($accessStatus -notin @(302, 303, 307, 308, 401, 403)) {
+                    throw "The unauthenticated public hostname was not challenged or denied by Cloudflare Access; received $accessStatus."
+                }
+                Write-Host ("Unauthenticated Cloudflare Access check returned HTTP {0}; authenticated human and remote-denial checks remain manual evidence steps." -f $accessStatus)
+            }
+            Write-Host "Phase 4 local loopback, cloudflared service, token-file invocation, and origin-isolation checks passed. Do not mark Phase 4 closed until authenticated remote and restart/reconnect evidence is recorded."
         }
 
         Write-Host "Production bridge loopback and deny-by-default smoke test passed."

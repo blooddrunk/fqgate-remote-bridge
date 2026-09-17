@@ -1,6 +1,6 @@
 # Development Roadmap
 
-This roadmap is ordered to reduce risk before Internet exposure. The repository has closed the local lifecycle, local operator UI, upgrade center, and runtime API discovery milestones. Phase 4 is now explicitly opened to add **authenticated remote human access only** while preserving loopback-only origin services and deny-by-default operation policy.
+This roadmap is ordered to reduce risk before Internet exposure. The repository has closed the local lifecycle, local operator UI, upgrade center, runtime API discovery, and authenticated remote human access milestones while preserving loopback-only origin services and deny-by-default operation policy.
 
 ## Current state
 
@@ -8,7 +8,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 1: **CLOSED**
 - Phase 2: **CLOSED**
 - Phase 3: **CLOSED**
-- Phase 4: **ACTIVE / next implementation package**
+- Phase 4: **CLOSED**
 - Phase 5+: planned only
 
 Current local deployment:
@@ -80,7 +80,7 @@ Detailed closed task package:
 
 ## Phase 4 — Secure remote human access: Cloudflare Tunnel + Access
 
-Status: **ACTIVE / next implementation package**.
+Status: **CLOSED**.
 
 Goal: expose selected human-facing Dashboard/QR/status/reference capabilities remotely without exposing FQGate, without changing the bridge's loopback bind, and without turning Phase 3 local maintenance into remotely callable administration.
 
@@ -168,6 +168,27 @@ Authenticated remote humans may use:
 
 Remote UI must omit/disable update check/plan/apply and OpenAPI refresh, with clear local-maintenance messaging. No market-data API is added in this phase.
 
+### Phase 4 implementation checkpoint
+
+The current implementation has delivered the framework-agnostic and local
+pieces of this package:
+
+- request Host/context classification and server-side operation exposure gate;
+- exact local/remote-human matrix with Access assertion-presence defense in depth;
+- remote-safe React UI using the existing TanStack shell;
+- fixed-source cloudflared release parser/downloader, candidate identity checks,
+  protected token-file abstraction, and Windows `sc.exe` service adapter;
+- explicit `cloudflared` CLI lifecycle/status commands and Phase 4 acceptance
+  script mode;
+- deterministic Phase 4 tests alongside the Phase 2/3 regression suite.
+
+The operator completed the real Windows x64 + Cloudflare Tunnel/Access
+acceptance on 2026-09-17. The bounded evidence is recorded in
+`docs/operations/windows-phase-4-acceptance.md` and
+`docs/status/phase-4-implementation-handoff.md`; Phase 4 is **CLOSED**.
+Future remote-administrator hardening and mobile Dashboard UI work are
+planning items only and do not reopen or expand this phase.
+
 ### Phase 4 exit criteria
 
 On the target Windows x64 host with real Cloudflare resources:
@@ -183,7 +204,9 @@ On the target Windows x64 host with real Cloudflare resources:
 9. local-only maintenance remains usable through loopback;
 10. restarting cloudflared reconnects without changing origin listeners.
 
-If real Cloudflare acceptance is unavailable, implementation may be complete but Phase 4 remains open.
+The historical closure rule was that implementation alone could not close the
+phase when real Cloudflare acceptance was unavailable. The current repository
+records that live acceptance as complete.
 
 Detailed design:
 
@@ -206,6 +229,15 @@ Codex handoff:
 - automatic background updates;
 - MCP/WebSocket;
 - trading or financial state mutation.
+
+### Deferred future plan candidates
+
+These items are intentionally not implemented in Phase 4:
+
+- separately design a remote-administrator policy with stronger authentication,
+  device restrictions, and explicit second confirmation; and
+- optimize the existing Dashboard UI for mobile screens while preserving the
+  current React/TanStack shell and server-side operation policy.
 
 ---
 
@@ -269,10 +301,14 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-The active coding task is **Phase 4 only**.
+Phase 4 is closed; there is no active Phase 4 coding task. Future work must
+start from a new task package and preserve the closed boundary.
 
 Use:
 
 `docs/prompts/phase-4-codex-goal.md`
 
-Do not begin Phase 5 remote machine market-data APIs, service-token auth, automated Cloudflare provisioning, supervisor/notifications, automatic-update policy, MCP, WebSocket, or final packaging while implementing Phase 4.
+Phase 5 remote machine market-data APIs, service-token auth, automated
+Cloudflare provisioning, supervisor/notifications, automatic-update policy,
+MCP, WebSocket, and final packaging remain future roadmap work; closing Phase 4
+does not authorize implementing them without a separate task package.

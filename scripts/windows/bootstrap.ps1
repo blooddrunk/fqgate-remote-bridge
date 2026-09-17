@@ -23,14 +23,59 @@ function Invoke-BridgeCli {
 }
 
 $node =
-    Get-Command node -CommandType Application -ErrorAction SilentlyContinue |
+    Get-Command node.exe -CommandType Application -ErrorAction SilentlyContinue |
     Select-Object -First 1
-if ($null -eq $node) {
+$nodePath = $null
+if ($null -ne $node) {
+    $nodePath = $node.Source
+} else {
+    $nodeCandidates = @()
+    if ($env:ProgramFiles) {
+        $nodeCandidates += Join-Path $env:ProgramFiles "nodejs\node.exe"
+    }
+    if (${env:ProgramFiles(x86)}) {
+        $nodeCandidates += Join-Path ${env:ProgramFiles(x86)} "nodejs\node.exe"
+    }
+    if ($env:LOCALAPPDATA) {
+        $nodeCandidates += Join-Path $env:LOCALAPPDATA "Programs\nodejs\node.exe"
+    }
+    $nodePath = $nodeCandidates |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+        Select-Object -First 1
+}
+if ([string]::IsNullOrWhiteSpace($nodePath)) {
     throw "Node.js 22 or newer is required."
 }
 
-$nodePath = $node.Source
-$nodeVersionText = (& $nodePath --version).Trim().TrimStart("v")
+function Get-NodeVersionText {
+    param([string]$Path)
+
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $Path
+    $startInfo.Arguments = "--version"
+    $startInfo.WorkingDirectory = $env:SystemRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start Node.js at '$Path'."
+        }
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) {
+            throw "Node.js version probe failed: $stderr"
+        }
+        return $stdout.Trim()
+    } finally {
+        $process.Dispose()
+    }
+}
+
+$nodeVersionText = (Get-NodeVersionText $nodePath).TrimStart("v")
 $nodeVersion = [Version]$nodeVersionText
 if ($nodeVersion.Major -lt 22) {
     throw "Node.js 22 or newer is required; found $nodeVersionText."

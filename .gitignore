@@ -10,6 +10,7 @@ test-results/
 *.exe
 *.part
 *.candidate
+cloudflared-diag-*.zip
 downloads/
 logs/
 .fqgate-remote-bridge/

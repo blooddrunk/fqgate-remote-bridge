@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
+import { isIP } from "node:net";
 import { homedir } from "node:os";
-import { isAbsolute, join, resolve, win32 } from "node:path";
+import { isAbsolute, join, relative, resolve, win32 } from "node:path";
 import { BridgeError, ERROR_CODES } from "../shared/errors.js";
 import type { LogLevel } from "../shared/logger.js";
 import { parseVersion, parseVersionRange } from "../shared/semver.js";
@@ -8,6 +9,9 @@ import { parseVersion, parseVersionRange } from "../shared/semver.js";
 export const DEFAULT_MANIFEST_URL =
   "https://raw.githubusercontent.com/zhuyifang/fqgate-releases/main/releases/stable.json";
 export const DEFAULT_FQGATE_BASE_URL = "http://127.0.0.1:17281";
+export const DEFAULT_CLOUDFLARED_VERSION = "2026.9.0";
+export const DEFAULT_CLOUDFLARED_SERVICE_NAME = "FQGateRemoteBridgeCloudflared";
+export const CLOUDFLARED_ACCESS_ASSERTION_HEADER = "cf-access-jwt-assertion" as const;
 
 export interface CompatibilityConfig {
   readonly supportedRange: string;
@@ -27,6 +31,19 @@ export interface ActivationConfig {
   readonly processTimeoutMs: number;
 }
 
+export interface RemoteAccessConfig {
+  readonly remoteHostname?: string;
+  readonly accessAssertionHeader: typeof CLOUDFLARED_ACCESS_ASSERTION_HEADER;
+}
+
+export interface CloudflaredConfig {
+  readonly releaseVersion: string;
+  readonly installDirectory: string;
+  readonly tokenFile: string;
+  readonly serviceName: string;
+  readonly origin: "http://127.0.0.1:17282";
+}
+
 export interface AppConfig {
   readonly manifestUrl: string;
   readonly installDirectory: string;
@@ -34,6 +51,8 @@ export interface AppConfig {
   readonly compatibility: CompatibilityConfig;
   readonly download: DownloadConfig;
   readonly activation: ActivationConfig;
+  readonly remoteAccess: RemoteAccessConfig;
+  readonly cloudflared: CloudflaredConfig;
   readonly logLevel: LogLevel;
 }
 
@@ -53,6 +72,8 @@ const DEFAULT_ACTIVATION: ActivationConfig = {
   healthPollIntervalMs: 500,
   processTimeoutMs: 10_000,
 };
+
+const CLOUDFLARED_ORIGIN = "http://127.0.0.1:17282" as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -147,6 +168,116 @@ function validateManifestUrl(value: string): string {
   return url.toString();
 }
 
+function validateRemoteHostname(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized !== value ||
+    normalized.length > 253 ||
+    normalized === "localhost" ||
+    isIP(normalized) !== 0 ||
+    normalized.endsWith(".")
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.remoteHostname must be a DNS hostname, not an IP, URL, or localhost value",
+    );
+  }
+  const labels = normalized.split(".");
+  if (
+    labels.length < 2 ||
+    labels.some(
+      (label) =>
+        label.length === 0 || label.length > 63 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label),
+    )
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.remoteHostname must be a valid DNS hostname",
+    );
+  }
+  return normalized;
+}
+
+function validateCloudflaredVersion(value: string): string {
+  if (!/^\d{4}\.\d+\.\d+$/.test(value)) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "cloudflared.releaseVersion must use the official YYYY.M.patch release format",
+    );
+  }
+  return value;
+}
+
+function normalizeConfiguredPath(value: string, platform: NodeJS.Platform, scope: string): string {
+  const normalized =
+    platform === "win32"
+      ? win32.isAbsolute(value)
+        ? win32.normalize(value)
+        : win32.resolve(value)
+      : isAbsolute(value)
+        ? resolve(value)
+        : resolve(value);
+  if (normalized.length === 0) {
+    throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `${scope} must be a valid path`);
+  }
+  return normalized;
+}
+
+function assertOutsideRepository(value: string, platform: NodeJS.Platform, scope: string): void {
+  const repositoryRoot =
+    platform === "win32" ? win32.resolve(process.cwd()) : resolve(process.cwd());
+  const relativePath =
+    platform === "win32" ? win32.relative(repositoryRoot, value) : relative(repositoryRoot, value);
+  const isOutside =
+    platform === "win32"
+      ? win32.isAbsolute(relativePath) || relativePath === ".." || relativePath.startsWith("..\\")
+      : relativePath === ".." || relativePath.startsWith("../");
+  if (relativePath === "" || !isOutside) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      `${scope} must be outside the repository and must not be checked in`,
+    );
+  }
+}
+
+function defaultCloudflaredInstallDirectory(
+  environment: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform,
+): string {
+  if (platform === "win32") {
+    return win32.join(
+      environment.ProgramFiles ?? "C:\\Program Files",
+      "FQGateRemoteBridge",
+      "cloudflared",
+    );
+  }
+  return join(
+    environment.XDG_DATA_HOME ?? join(homedir(), ".local", "share"),
+    "fqgate-remote-bridge",
+    "cloudflared",
+  );
+}
+
+function defaultCloudflaredTokenFile(
+  environment: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform,
+): string {
+  if (platform === "win32") {
+    return win32.join(
+      environment.ProgramData ?? "C:\\ProgramData",
+      "FQGateRemoteBridge",
+      "secrets",
+      "tunnel-token",
+    );
+  }
+  return join(
+    environment.XDG_CONFIG_HOME ?? join(homedir(), ".config"),
+    "fqgate-remote-bridge",
+    "secrets",
+    "tunnel-token",
+  );
+}
+
 export function validateLoopbackBaseUrl(value: string): string {
   let url: URL;
   try {
@@ -209,6 +340,8 @@ export function parseConfig(
       "compatibility",
       "download",
       "activation",
+      "remoteAccess",
+      "cloudflared",
       "logLevel",
     ]),
     "config",
@@ -322,6 +455,68 @@ export function parseConfig(
       DEFAULT_ACTIVATION.processTimeoutMs,
   };
 
+  const remoteAccessInput = input.remoteAccess;
+  if (remoteAccessInput !== undefined && !isRecord(remoteAccessInput)) {
+    throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "remoteAccess must be a JSON object");
+  }
+  const remoteAccessRecord = remoteAccessInput ?? {};
+  rejectUnknownKeys(remoteAccessRecord, new Set(["remoteHostname"]), "remoteAccess");
+  const remoteHostnameInput = readOptionalString(
+    remoteAccessRecord,
+    "remoteHostname",
+    "remoteAccess",
+  );
+  const remoteAccess: RemoteAccessConfig = {
+    accessAssertionHeader: CLOUDFLARED_ACCESS_ASSERTION_HEADER,
+    ...(remoteHostnameInput === undefined
+      ? {}
+      : { remoteHostname: validateRemoteHostname(remoteHostnameInput) }),
+  };
+
+  const cloudflaredInput = input.cloudflared;
+  if (cloudflaredInput !== undefined && !isRecord(cloudflaredInput)) {
+    throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "cloudflared must be a JSON object");
+  }
+  const cloudflaredRecord = cloudflaredInput ?? {};
+  rejectUnknownKeys(
+    cloudflaredRecord,
+    new Set(["releaseVersion", "installDirectory", "tokenFile", "serviceName"]),
+    "cloudflared",
+  );
+  const cloudflaredReleaseVersion = validateCloudflaredVersion(
+    readOptionalString(cloudflaredRecord, "releaseVersion", "cloudflared") ??
+      DEFAULT_CLOUDFLARED_VERSION,
+  );
+  const cloudflaredInstallDirectory = normalizeConfiguredPath(
+    readOptionalString(cloudflaredRecord, "installDirectory", "cloudflared") ??
+      defaultCloudflaredInstallDirectory(environment, platform),
+    platform,
+    "cloudflared.installDirectory",
+  );
+  const configuredTokenFile = readOptionalString(cloudflaredRecord, "tokenFile", "cloudflared");
+  const cloudflaredTokenFile = normalizeConfiguredPath(
+    configuredTokenFile ?? defaultCloudflaredTokenFile(environment, platform),
+    platform,
+    "cloudflared.tokenFile",
+  );
+  assertOutsideRepository(cloudflaredTokenFile, platform, "cloudflared.tokenFile");
+  const cloudflaredServiceName =
+    readOptionalString(cloudflaredRecord, "serviceName", "cloudflared") ??
+    DEFAULT_CLOUDFLARED_SERVICE_NAME;
+  if (!/^[A-Za-z0-9._-]{1,80}$/.test(cloudflaredServiceName)) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "cloudflared.serviceName contains unsupported Windows service name characters",
+    );
+  }
+  const cloudflared: CloudflaredConfig = {
+    releaseVersion: cloudflaredReleaseVersion,
+    installDirectory: cloudflaredInstallDirectory,
+    tokenFile: cloudflaredTokenFile,
+    serviceName: cloudflaredServiceName,
+    origin: CLOUDFLARED_ORIGIN,
+  };
+
   const logLevelInput = input.logLevel;
   const logLevel = logLevelInput === undefined ? "info" : logLevelInput;
   if (logLevel !== "debug" && logLevel !== "info" && logLevel !== "warn" && logLevel !== "error") {
@@ -342,6 +537,8 @@ export function parseConfig(
     },
     download,
     activation,
+    remoteAccess,
+    cloudflared,
     logLevel,
   };
 }

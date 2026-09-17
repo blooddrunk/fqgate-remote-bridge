@@ -254,6 +254,16 @@ The Phase 3 registry also records an optional upstream method/path mapping and
 local-only exposure class. Runtime OpenAPI discovery never writes to this
 registry.
 
+Phase 4 adds the explicit `local_and_remote_human` exposure class. The
+remote-human set is exactly `bridge.version`, `bridge.capabilities`,
+`bridge.status`, `session.qr.begin`, `session.qr.poll`, `updates.status`, and
+`openapi.catalog`. `updates.check`, `updates.plan`, `updates.apply`, and
+`openapi.refresh` remain `local_only`. A request context is classified from
+the explicit `Host` value: accepted IPv4-loopback forms are local, one
+configured DNS hostname is remote-human, and every other Host is rejected.
+`X-Forwarded-Host` is never consulted. Remote-human requests also need a
+non-empty `Cf-Access-Jwt-Assertion`; its value is not parsed or logged.
+
 There is no generic `/* -> FQGate`, no arbitrary upstream path parameter, and no fallback when an unknown route is requested.
 
 Phase 3 local administrative install/update operations must be explicit operations, not hidden Start server-function bypasses.
@@ -320,11 +330,31 @@ Responsibilities:
 
 Tunnel ingress targets the bridge loopback port only.
 
+The implementation keeps cloudflared semantics separate from the FQGate
+release manifest. Its fixed source is the official Cloudflare GitHub release
+metadata for a selected calendar-version tag and its fixed
+`cloudflared-windows-amd64.exe` asset. The release body/API digest supplies
+SHA-256 integrity, and the staged candidate must report the selected version
+before activation. Installation is only triggered by explicit CLI commands.
+
+Windows service integration is a narrow adapter around `sc.exe`; it validates
+the token file before install/start/restart and creates a service command with
+`tunnel run --token-file <path>`. The token file is outside the repository and
+is protected through `icacls` for the service identity/administrators. The
+fixed local origin contract is `http://127.0.0.1:17282`; no FQGate port or
+arbitrary origin is accepted.
+
 ### 11. Cloudflare Access and remote policy — Phase 4/5
 
 Phase 4 secures human Dashboard access with Access as part of the same remote milestone as Tunnel. Phase 5 adds machine authentication for the read-only API.
 
-Human and machine policies should be separate. Cloudflare authentication does not authorize arbitrary FQGate operations; the bridge registry remains the authorization boundary.
+Human and machine policies should be separate. Cloudflare authentication does not authorize arbitrary FQGate operations; the bridge registry remains the authorization boundary. A stronger remote-administrator policy with device restrictions and second confirmation is a separate future design, not part of the closed Phase 4 policy. Mobile Dashboard UI optimization is also deferred and does not change this transport boundary.
+
+Phase 4 assumes a manually created self-hosted Access application with a
+human Allow policy and Protect with Access enabled on the published
+application. No Cloudflare API provisioning or service-token machine auth is
+implemented. The real Windows/Cloudflare acceptance is recorded in the Phase 4
+runbook and handoff; Phase 4 is closed.
 
 ### 12. Cloudflare provisioner — Phase 6
 

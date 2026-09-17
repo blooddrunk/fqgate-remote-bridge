@@ -1,6 +1,12 @@
 # Phase 4 Task Package — Secure Remote Human Access with Cloudflare Tunnel + Access
 
-Status: **ACTIVE / next implementation package**
+Status: **CLOSED / implementation and live acceptance complete**
+
+The repository implementation now contains the deterministic request-context,
+operation-policy, cloudflared release/token-file/service, UI, CLI, and
+acceptance-tooling pieces described below. The real Windows x64 + Cloudflare
+evidence is recorded in the Windows Phase 4 acceptance runbook and the
+implementation handoff; this task package is CLOSED.
 
 ## Goal
 
@@ -207,7 +213,10 @@ Real Phase 4 closure requires evidence from the supported Windows x64 host with 
 - local maintenance operations remain usable locally;
 - cloudflared service restart reconnects successfully.
 
-If Cloudflare credentials/resources are unavailable to the coding environment, finish deterministic implementation and runbooks, explicitly mark live acceptance pending, and **do not mark Phase 4 closed**.
+Historical safety rule: if Cloudflare credentials/resources are unavailable to
+the coding environment, finish deterministic implementation and runbooks,
+explicitly mark live acceptance pending, and **do not mark Phase 4 closed**.
+The current repository has the required live acceptance evidence.
 
 ## Documentation and completion
 
@@ -221,7 +230,9 @@ Update source-of-truth docs whenever implementation changes architecture/securit
 - `docs/roadmap.md`
 - `docs/agent-guide.md`
 
-Add `docs/status/phase-4-implementation-handoff.md` with actual checks/evidence. Mark Phase 4 CLOSED only after the real remote Windows/Cloudflare acceptance criteria are met.
+Add `docs/status/phase-4-implementation-handoff.md` with actual checks/evidence.
+Phase 4 is now marked CLOSED because the real remote Windows/Cloudflare
+acceptance criteria are met.
 
 ## Hard non-goals
 

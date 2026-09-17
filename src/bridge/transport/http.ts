@@ -9,6 +9,12 @@ import {
 } from "../policy/registry.js";
 import { BridgeError, ERROR_CODES, toBridgeError } from "../../shared/errors.js";
 import { StructuredLogger } from "../../shared/logger.js";
+import {
+  assertOperationAllowedForContext,
+  classifyRequestContext,
+  type BridgeRequestContext,
+  type RequestContextPolicyOptions,
+} from "../policy/request-context.js";
 
 export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   "content-security-policy":
@@ -26,6 +32,7 @@ export interface BridgeHttpHandlerOptions {
   readonly service: BridgeService;
   readonly logger?: StructuredLogger;
   readonly requestIdFactory?: () => string;
+  readonly requestContext?: RequestContextPolicyOptions;
 }
 
 export type BridgeHttpHandler = (
@@ -40,9 +47,12 @@ export function createBridgeHttpHandler(options: BridgeHttpHandlerOptions): Brid
   return async (request, expectedOperation) => {
     const requestId = requestIdFactory();
     let operation: BridgeOperationPolicy | undefined;
+    let requestContext: BridgeRequestContext | undefined;
     try {
+      requestContext = classifyRequestContext(request, options.requestContext);
       operation = resolveOperation(request, expectedOperation);
-      const payload = await dispatchRequest(request, operation, options.service);
+      assertOperationAllowedForContext(operation, requestContext);
+      const payload = await dispatchRequest(request, operation, options.service, requestContext);
       return jsonResponse(payload, 200);
     } catch (error) {
       const bridgeError = toBridgeError(
@@ -52,6 +62,7 @@ export function createBridgeHttpHandler(options: BridgeHttpHandlerOptions): Brid
       );
       logger.warn("Bridge request failed", {
         operationId: operation?.id ?? "unregistered",
+        requestContext: requestContext ?? "unknown",
         requestId: requestId.slice(0, 12),
         code: bridgeError.code,
       });
@@ -130,6 +141,7 @@ async function dispatchRequest(
   request: Request,
   operation: BridgeOperationPolicy,
   service: BridgeService,
+  requestContext: BridgeRequestContext,
 ): Promise<unknown> {
   switch (operation.id) {
     case "bridge.version":
@@ -137,7 +149,7 @@ async function dispatchRequest(
       return service.version();
     case "bridge.capabilities":
       rejectUnexpectedGetBody(request);
-      return service.capabilities();
+      return service.capabilities(requestContext);
     case "bridge.status":
       rejectUnexpectedGetBody(request);
       return service.status();
@@ -339,6 +351,11 @@ function httpStatusFor(code: string): number {
       return 405;
     case ERROR_CODES.REQUEST_TOO_LARGE:
       return 413;
+    case ERROR_CODES.HOST_NOT_ALLOWED:
+      return 421;
+    case ERROR_CODES.ACCESS_ASSERTION_REQUIRED:
+    case ERROR_CODES.OPERATION_FORBIDDEN:
+      return 403;
     case ERROR_CODES.QR_FLOW_EXPIRED:
     case ERROR_CODES.QR_FLOW_REPLACED:
       return 409;
@@ -374,6 +391,12 @@ function publicMessageFor(code: string): string {
       return "The request is invalid.";
     case ERROR_CODES.REQUEST_TOO_LARGE:
       return "The request body is too large.";
+    case ERROR_CODES.HOST_NOT_ALLOWED:
+      return "The bridge Host is not allowed.";
+    case ERROR_CODES.ACCESS_ASSERTION_REQUIRED:
+      return "Cloudflare Access authentication is required for this host.";
+    case ERROR_CODES.OPERATION_FORBIDDEN:
+      return "This operation is available only through local maintenance access.";
     case ERROR_CODES.ROUTE_NOT_FOUND:
       return "The bridge route was not found.";
     case ERROR_CODES.METHOD_NOT_ALLOWED:

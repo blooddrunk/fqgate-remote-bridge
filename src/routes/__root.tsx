@@ -11,7 +11,11 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "FQGate Bridge · 本机操作台" },
-      { name: "description", content: "仅限本机回环访问的 FQGate 状态与扫码登录操作台。" },
+      {
+        name: "description",
+        content:
+          "保持 FQGate 与 Bridge loopback-only，并通过 Cloudflare Access 提供受控的人类状态与扫码登录操作台。",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

@@ -44,7 +44,7 @@ The current application uses Node.js 22+, TypeScript, pnpm, React 19, TanStack S
 
 Phase 3 delivered the local update center and runtime OpenAPI/API Reference. The bridge operation registry currently owns every callable bridge route and deny-by-default behavior.
 
-## Active Phase 4 contract
+## Phase 4 contract
 
 The active task package is:
 
@@ -99,6 +99,13 @@ The design target is:
 - a remote-human request must also present the Cloudflare Access assertion expected after Access authentication;
 - the assertion itself must never be logged.
 
+The implementation uses `Cf-Access-Jwt-Assertion` only as a non-empty
+defense-in-depth presence signal. It does not parse or log the assertion;
+Cloudflare `Protect with Access` remains responsible for JWT validation before
+the origin request is forwarded. The same Host/context gate is applied at the
+Bridge API handler and the top-level TanStack/Nitro request entry so unknown
+Hosts cannot use a page/static route to bypass the boundary.
+
 Cloudflare Tunnel's **Protect with Access** origin setting should be required for the published hostname so `cloudflared` validates the Access JWT before proxying to the loopback bridge. A bridge-side assertion-presence check is defense-in-depth/drift detection, not a replacement for Cloudflare cryptographic validation.
 
 ### cloudflared rules
@@ -112,6 +119,14 @@ Cloudflare Tunnel's **Protect with Access** origin setting should be required fo
 - Prefer `cloudflared tunnel run --token-file <PATH>` for a remotely-managed Tunnel so the token is not embedded in the Windows service command line. Require a cloudflared version that supports `--token-file`.
 - Store the token file outside the repository with restrictive Windows ACLs. Never put the token in application JSON, standard logs, diagnostics, UI state, or persistent browser storage.
 - Keep PowerShell limited to Windows service/ACL/bootstrap integration; lifecycle/policy logic belongs in testable TypeScript services/interfaces.
+
+The current implementation exposes only the fixed official Cloudflare GitHub
+release metadata and the `cloudflared-windows-amd64.exe` asset. It validates
+release tag, fixed asset identity, official published SHA-256/digest, size, and
+candidate `--version` before activation. The Windows service invocation is
+`cloudflared tunnel run --token-file <protected-path>`; it never receives the
+raw token as an argument. Updates are explicit CLI actions, never background
+work.
 
 ### Cloudflare Access rules
 
@@ -181,6 +196,11 @@ Phase 4 automated coverage should include at least:
 - generated Windows service invocation contains a token-file path, not a raw Tunnel token;
 - current QR/session and Phase 3 regression tests.
 
+The deterministic Phase 4 suite additionally covers the complete exposure
+matrix, Host/forwarding-header classification, assertion redaction, fixed
+cloudflared source/integrity, arbitrary URL rejection, protected token-file
+state, and Windows service invocation construction.
+
 Target Windows x64 acceptance should prove, when real Cloudflare credentials/resources are available:
 
 - FQGate and bridge still have only their loopback listeners;
@@ -202,8 +222,13 @@ Follow `docs/roadmap.md`.
 - Phase 1: CLOSED
 - Phase 2: CLOSED
 - Phase 3: CLOSED
-- Phase 4: ACTIVE
+- Phase 4: CLOSED
 - Phase 5+: do not opportunistically implement
+
+Phase 4 implementation and the real Windows x64 + Cloudflare acceptance are
+complete; the phase is CLOSED. A stronger remote-administrator policy and
+mobile Dashboard UI optimization are future planning items, not part of the
+closed Phase 4 boundary and not implemented here.
 
 ## Documentation rule
 

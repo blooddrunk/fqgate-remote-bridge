@@ -1,7 +1,7 @@
 export const REDACTED = "[REDACTED]";
 
 const DEFAULT_SENSITIVE_KEY_PATTERN =
-  /(?:authorization|api[_-]?key|token|secret|password|cookie|credential|qr.*base64|access[_-]?(?:token|secret)|session[_-]?(?:token|secret|cookie|credential))/i;
+  /(?:authorization|api[_-]?key|token|secret|password|cookie|credential|qr.*base64|cf-access-jwt-assertion|access[_-]?(?:token|secret|assertion|jwt)|session[_-]?(?:token|secret|cookie|credential))/i;
 
 export interface RedactorOptions {
   readonly sensitiveKeys?: readonly string[];
