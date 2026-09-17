@@ -13,205 +13,186 @@ Before implementing anything, read in this order:
 5. `docs/roadmap.md`
 6. the active phase task package under `docs/tasks/`
 7. relevant design notes under `docs/plans/`
+8. `docs/agent-guide.md`
 
 If implementation ideas conflict with those documents, update the design explicitly before changing behavior.
 
 ## Project intent
 
-The project securely exposes selected **read-only FQGate market-data capabilities and login/session operations** from an always-on Windows PC through a controlled local bridge. Cloudflare Tunnel and Cloudflare Access are later layers; FQGate itself remains local-first.
+The project securely exposes selected **read-only FQGate market-data capabilities and login/session operations** from an always-on Windows PC through a controlled local bridge. FQGate itself remains local-first and must never become Internet-facing.
 
 It is an independent infrastructure/adapter project. It must not make `turtle-value-engine` or any other consumer depend exclusively on FQGate.
 
 ## Non-negotiable rules
 
-- Keep FQGate bound to loopback.
-- Keep the bridge bound to loopback.
+- Keep FQGate bound to IPv4 loopback, normally `127.0.0.1:17281`.
+- Keep the bridge bound to IPv4 loopback, normally `127.0.0.1:17282`.
+- Never create a LAN/WAN listener or router port-forward for either service.
 - Never create a generic catch-all reverse proxy to FQGate.
-- New upstream FQGate endpoints are denied until explicitly registered.
-- Runtime `/openapi.json` is an upstream **description/discovery source**, never an authorization source.
-- Showing an upstream endpoint in documentation must never make it callable through the bridge.
-- Do not implement or expose trading, order, cancellation, fund-transfer, brokerage-control, or other state-changing financial endpoints.
-- Never request a Cloudflare Global API Key; use scoped API tokens when Cloudflare work begins.
-- Do not commit secrets, QR payloads, login/session material, Access secrets, or tunnel tokens.
-- Do not vendor or redistribute the FQGate executable. Download from a registered trusted upstream source and verify checksum/size.
-- Fail closed when upstream compatibility cannot be established.
-- Preserve a known-good rollback path before replacing runtime binaries.
-- Preserve closed Phase 0/1/2 behavior while adding later layers.
+- New upstream FQGate endpoints are denied until explicitly implemented and registered.
+- Runtime `/openapi.json` is a description/discovery source, never an authorization source.
+- Do not expose trading, order, cancellation, fund-transfer, brokerage-control, or other state-changing financial endpoints.
+- Never request a Cloudflare Global API Key. Phase 4 adopts a pre-created remotely-managed Tunnel and human Access policy; API provisioning belongs to Phase 6.
+- Do not commit Tunnel tokens, Access assertions/secrets, QR payloads, login/session material, or other credentials.
+- Preserve all closed Phase 0/1/2/3 behavior while adding Phase 4.
+
+## Completed baseline
+
+Phase 0 through Phase 3 are closed.
+
+The current application uses Node.js 22+, TypeScript, pnpm, React 19, TanStack Start/Router/Query, Vite, Tailwind CSS v4, and shadcn/ui. TanStack Start is a replaceable transport/UI shell: lifecycle, compatibility, OpenAPI discovery, remote-exposure policy, cloudflared lifecycle, QR policy, and FQGate protocol logic must stay framework-agnostic.
+
+Phase 3 delivered the local update center and runtime OpenAPI/API Reference. The bridge operation registry currently owns every callable bridge route and deny-by-default behavior.
+
+## Active Phase 4 contract
+
+The active task package is:
+
+`docs/tasks/phase-4-cloudflare-tunnel-access.md`
+
+The primary design note is:
+
+`docs/plans/phase-4-secure-remote-human-access.md`
+
+The Codex handoff is:
+
+`docs/prompts/phase-4-codex-goal.md`
+
+Phase 4 is **Secure Remote Human Access only**. Its purpose is to let an authenticated human reach selected Dashboard and QR/status/reference surfaces through Cloudflare Tunnel + Cloudflare Access while FQGate and the bridge remain loopback-only.
+
+### Remote exposure is an explicit bridge policy
+
+Do not treat `cloudflared -> 127.0.0.1:17282` as permission to expose every local operation.
+
+Evolve the bridge operation policy so every operation has an explicit exposure class and request context is fail-closed.
+
+Phase 4 intended remote-human surface:
+
+- `bridge.version`
+- `bridge.capabilities`
+- `bridge.status`
+- `session.qr.begin`
+- `session.qr.poll`
+- `updates.status` (read-only status only)
+- `openapi.catalog` (reference-only catalog)
+
+Phase 4 operations that must remain **local-only**:
+
+- `updates.check`
+- `updates.plan`
+- `updates.apply`
+- `openapi.refresh`
+
+Phase 4 must not add remote market-data operations. Those belong to Phase 5.
+
+The exact implementation may refine names/types, but the security outcome above is mandatory.
+
+### Request-context rules
+
+Remote/local classification must not be inferred from `X-Forwarded-Host` or another untrusted forwarding header.
+
+The design target is:
+
+- loopback Host/origin accepted as local context;
+- exactly configured remote human hostname accepted as remote-human context;
+- any unknown Host rejected fail-closed;
+- a remote-human request must also present the Cloudflare Access assertion expected after Access authentication;
+- the assertion itself must never be logged.
+
+Cloudflare Tunnel's **Protect with Access** origin setting should be required for the published hostname so `cloudflared` validates the Access JWT before proxying to the loopback bridge. A bridge-side assertion-presence check is defense-in-depth/drift detection, not a replacement for Cloudflare cryptographic validation.
+
+### cloudflared rules
+
+- Use a remotely-managed Tunnel for Phase 4.
+- Adopt a pre-created Tunnel token; do not create Tunnel/DNS/Access resources through the Cloudflare API in Phase 4.
+- Tunnel ingress/published application service must target only `http://127.0.0.1:17282`, never FQGate port `17281`.
+- Download `cloudflared` only from a fixed official Cloudflare release source; do not accept arbitrary binary URLs.
+- Validate release identity and published integrity information before activation.
+- Windows `cloudflared` updates are manual/explicit in this project. Do not add a background update loop.
+- Prefer `cloudflared tunnel run --token-file <PATH>` for a remotely-managed Tunnel so the token is not embedded in the Windows service command line. Require a cloudflared version that supports `--token-file`.
+- Store the token file outside the repository with restrictive Windows ACLs. Never put the token in application JSON, standard logs, diagnostics, UI state, or persistent browser storage.
+- Keep PowerShell limited to Windows service/ACL/bootstrap integration; lifecycle/policy logic belongs in testable TypeScript services/interfaces.
+
+### Cloudflare Access rules
+
+Phase 4 uses a manually created self-hosted Access application and human policy. Human identity is distinct from the future machine/service-token policy in Phase 5.
+
+Authenticated human access does not authorize arbitrary bridge operations. The bridge policy remains the operation-authorization boundary after Access succeeds.
+
+### Remote UI behavior
+
+The remote UI may expose Dashboard/status, QR login, read-only update status, and API Reference. It must not provide a working remote button/path for update check/plan/apply or explicit OpenAPI refresh.
+
+Reference documentation remains descriptive only. No raw upstream `Try it out` or arbitrary upstream path execution may appear.
+
+## Phase 4 non-goals
+
+Do not opportunistically implement:
+
+- Phase 5 remote machine/read-only market-data API;
+- Access service-token machine authentication;
+- automated Tunnel/DNS/Access provisioning or Cloudflare API-token workflows;
+- supervisor/notifications;
+- automatic background updates;
+- MCP or WebSocket proxying;
+- packaging/release installers beyond what Phase 4 needs for cloudflared Windows acceptance;
+- trading or other financial state-changing operations.
 
 ## Windows-first runtime model
 
-Initial deployment target is a permanently-on Windows x64 PC.
+Initial deployment remains a permanently-on Windows x64 PC.
 
-Phase 0/1 proved FQGate running as a bridge-managed desktop process in an interactive user session. Do not claim headless Windows-service support for FQGate.
-
-Later architecture may use:
-
-- `cloudflared`: Windows service
-- bridge backend: service if/when packaging proves it safe
-- FQGate: interactive user-session process, potentially launched/supervised through Task Scheduler in a later phase
-
-## Current implementation baseline
-
-Phase 0 + Phase 1 + Phase 2 are fully closed. The current implementation uses:
-
-- Node.js 22+
-- TypeScript
-- pnpm
-- React 19
-- TanStack Start / TanStack Router
-- TanStack Query
-- Vite
-- Tailwind CSS v4
-- shadcn/ui
-- PowerShell only for Windows bootstrap/service/task integration
-
-The production bridge defaults to `127.0.0.1:17282` and must always force IPv4 loopback binding. FQGate remains at `127.0.0.1:17281`.
-
-TanStack Start is a replaceable transport/UI shell. Lifecycle, compatibility, OpenAPI discovery, update transactions, QR-flow policy, and FQGate protocol logic must remain framework-agnostic.
-
-Do not introduce a second backend or a monorepo without a concrete independent-deployment requirement.
-
-## Completed Phase 3 contract
-
-The completed task package is:
-
-`docs/tasks/phase-3-fqgate-upgrade-and-runtime-openapi.md`
-
-Relevant design notes:
-
-- `docs/plans/fqgate-install-upgrade-dashboard.md`
-- `docs/plans/runtime-openapi-and-remote-docs.md`
-
-Phase 3 implementation and target Windows x64 acceptance are complete. It remains
-**local-only**. It must not implement Cloudflare Tunnel,
-Cloudflare Access, public/LAN listeners, remote market-data APIs, MCP, WebSocket
-proxying, supervisor/notifications, or automatic background updates.
-
-### Phase 3A — upgrade center
-
-- Reuse the existing lifecycle transaction; do not duplicate updater logic in routes/components.
-- GitHub remains the default registered FQGate release source.
-- A Gitee source may be represented by an adapter/registry slot only after its exact trusted repository/path contract is documented. Never accept an arbitrary manifest or executable URL.
-- Dashboard install/update requires an explicit user action, a plan/preview, and explicit confirmation.
-- Page load, bridge startup, and background timers must not silently download or activate FQGate.
-- Candidate activation must preserve known-good rollback and use size/hash/version/compatibility/health checks.
-- Overlapping update transactions must be rejected or serialized deterministically.
-
-### Phase 3B — runtime OpenAPI/docs
-
-Observed upstream local endpoints:
-
-```text
-GET http://127.0.0.1:17281/openapi.json
-GET http://127.0.0.1:17281/docs
-```
-
-The project should consume `/openapi.json`, not copy or manually re-maintain the FQGate API catalog.
-
-Rules:
-
-- Fetch only the fixed loopback endpoint; do not accept a user-supplied OpenAPI URL.
-- Bound timeout and response size.
-- Validate JSON/OpenAPI shape before using it.
-- Use a short bounded cache and deterministic schema fingerprint.
-- The full upstream-reference view may list every FQGate endpoint, but it is reference-only and must not create a proxy path or interactive bypass.
-- A bridge/remote contract is generated only from explicit operation/mapping metadata.
-- Unknown/new upstream paths remain denied.
-- OpenAPI checks supplement endpoint-specific adapters/contract tests; schema presence alone does not prove semantic compatibility.
-- The implemented service fetches only `http://127.0.0.1:17281/openapi.json`,
-  exposes bounded structural catalog metadata, and invalidates its short cache
-  after managed FQGate restart/activation.
+- `cloudflared`: Windows service in Phase 4.
+- bridge backend: remains the existing loopback process; do not claim Windows-service support unless separately proven.
+- FQGate: interactive user-session process; do not claim headless Windows-service support.
 
 ## Architecture constraints
 
-Separate modules/interfaces for:
+Keep separate, testable modules/interfaces for:
 
-- FQGate release source and compatibility
-- FQGate process/lifecycle/update transaction
-- FQGate API adapter
-- runtime FQGate OpenAPI discovery/catalog/diff
-- bridge operation/policy registry
-- QR-flow adapter and ephemeral flow registry
-- TanStack Start route/UI transport
-- cloudflared lifecycle (later phase)
-- Cloudflare provisioning (later phase)
-- secret store (later phase)
-- supervisor state machine (later phase)
-- notification providers (later phase)
+- FQGate release source / compatibility / lifecycle;
+- FQGate API adapters;
+- runtime FQGate OpenAPI discovery;
+- bridge operation/policy registry and remote exposure gate;
+- QR flow registry;
+- TanStack Start route/UI transport;
+- cloudflared release/lifecycle/service management;
+- secret/token storage abstraction;
+- Cloudflare provisioning (Phase 6, not Phase 4);
+- supervisor and notification providers (later phases).
 
-External behavior should be testable through interfaces without needing real Cloudflare/FQGate for normal CI.
-
-Route files and React components must remain thin. They should not own upstream parsing, compatibility, update transactions, OpenAPI filtering, lifecycle, or security policy.
-
-## Upstream compatibility discipline
-
-Treat upstream FQGate API details as observations, not permanent public contracts.
-
-At minimum, isolate and test:
-
-- `/v1/market/health`
-- QR begin/poll APIs
-- `/openapi.json`
-- MCP behavior (later phase)
-- WebSocket behavior (later phase)
-
-Use fixtures, runtime probes, version gates, and explicit bridge policy. Unknown/unsupported versions should degrade safely rather than trigger transparent pass-through.
-
-## Bridge operation security checklist
-
-Before adding a bridge endpoint or server-side operation answer all of these in code/review:
-
-1. Is the operation allowed by project scope?
-2. Why is browser/remote access required?
-3. Which public method/path is exposed?
-4. Which upstream method/path, if any, does it map to?
-5. Is it explicitly represented by the bridge operation/policy registry?
-6. What request-body size and timeout limits apply?
-7. Can request/response logs expose sensitive material?
-8. What upstream versions/contracts have been validated?
-9. What happens if upstream adds fields or changes semantics?
-10. Does compatibility failure deny the operation?
-11. Is there any chance this changes financial/account state?
-
-If the operation changes financial/account state, it is out of scope.
-
-No TanStack Start route/function and no OpenAPI-driven code generation may become an implicit privileged bypass around the bridge operation policy.
-
-## QR handling rules
-
-QR/session handling is sensitive even though it is not a password flow.
-
-- Never log QR base64 data.
-- Never log upstream numeric flow IDs.
-- Do not persist QR images or active QR sessions to disk/browser storage.
-- Prefer bridge-owned opaque session identifiers over exposing upstream identifiers.
-- Bound TTL and active flow count.
-- Normalize upstream expiration/replacement semantics behind the adapter.
+Route files and React components must remain thin. They must not own authorization, Host classification, Tunnel-token handling, Windows service lifecycle, upstream parsing, or update transactions.
 
 ## Testing expectations
 
-Prefer automated tests for:
-
-- manifest/release-source parsing
-- checksum/size mismatch
-- version compatibility
-- update transaction concurrency and rollback
-- runtime OpenAPI size/timeout/schema validation
-- OpenAPI fingerprint/diff behavior
-- required path/method compatibility checks
-- full-reference versus bridge-approved API separation
-- deny behavior for newly discovered/unregistered upstream paths
-- route/operation allowlist behavior
-- loopback-only binding
-- QR lifecycle/expiry/replacement
-- secret/QR redaction
-- bridge error normalization
-
 Normal CI must not require real FQGate login or Cloudflare credentials. Use deterministic fixtures/fakes for most tests.
 
-Windows acceptance should cover lifecycle/runtime behavior that CI cannot faithfully emulate, especially a real FQGate update/no-op path and live `/openapi.json` discovery.
+Phase 4 automated coverage should include at least:
 
-Cloudflare integration tests remain out of Phase 3.
+- local versus remote-human request-context classification;
+- unknown Host denial;
+- forwarded-host spoofing does not alter context;
+- remote request without expected Access assertion is denied;
+- remote-human allowed-operation matrix;
+- local-admin update/refresh operations are denied remotely but continue to work locally;
+- raw/unregistered upstream paths remain denied;
+- Tunnel token and Access assertion redaction;
+- fixed cloudflared release-source/integrity checks and arbitrary URL rejection;
+- generated Windows service invocation contains a token-file path, not a raw Tunnel token;
+- current QR/session and Phase 3 regression tests.
+
+Target Windows x64 acceptance should prove, when real Cloudflare credentials/resources are available:
+
+- FQGate and bridge still have only their loopback listeners;
+- cloudflared runs as the Windows service and reconnects after service restart;
+- the service definition/process command does not contain the raw Tunnel token;
+- the protected public hostname rejects/challenges unauthenticated traffic;
+- an authenticated human can use Dashboard/status and QR flow;
+- remote local-admin operations are denied;
+- raw/unregistered FQGate paths remain unreachable;
+- local-only maintenance operations remain usable locally.
+
+If real Cloudflare acceptance cannot be performed, document the missing evidence and do not mark Phase 4 closed.
 
 ## Development sequence
 
@@ -221,22 +202,9 @@ Follow `docs/roadmap.md`.
 - Phase 1: CLOSED
 - Phase 2: CLOSED
 - Phase 3: CLOSED
-- Phase 4+: do not opportunistically implement
-
-Codex handoff:
-
-`docs/prompts/phase-3-codex-goal.md`
+- Phase 4: ACTIVE
+- Phase 5+: do not opportunistically implement
 
 ## Documentation rule
 
-When an implementation materially changes:
-
-- security boundary,
-- upstream assumption,
-- runtime topology,
-- framework/build shape,
-- operator workflow,
-- OpenAPI/compatibility behavior, or
-- phase completion state,
-
-update the corresponding documentation in the same change.
+When implementation changes the security boundary, request-context model, Cloudflare assumptions, runtime topology, Windows service/token behavior, operator workflow, or phase completion state, update the corresponding source-of-truth documentation in the same change.

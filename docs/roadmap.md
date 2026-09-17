@@ -1,9 +1,6 @@
 # Development Roadmap
 
-This roadmap is ordered to reduce risk before Internet exposure. The repository has
-closed the local lifecycle, upgrade center, and runtime API discovery milestones.
-Later phases must remain separately scoped and everything proven here remains
-loopback-only.
+This roadmap is ordered to reduce risk before Internet exposure. The repository has closed the local lifecycle, local operator UI, upgrade center, and runtime API discovery milestones. Phase 4 is now explicitly opened to add **authenticated remote human access only** while preserving loopback-only origin services and deny-by-default operation policy.
 
 ## Current state
 
@@ -11,160 +8,204 @@ loopback-only.
 - Phase 1: **CLOSED**
 - Phase 2: **CLOSED**
 - Phase 3: **CLOSED**
-- Phase 4+: planned only
+- Phase 4: **ACTIVE / next implementation package**
+- Phase 5+: planned only
 
-The current local deployment remains:
+Current local deployment:
 
 ```text
 browser
   -> 127.0.0.1:17282  FQGate Remote Bridge / TanStack Dashboard
        -> explicit bridge operation registry
-       -> FQGate adapters
+       -> lifecycle/update/OpenAPI/QR services
             -> 127.0.0.1:17281  FQGate
 ```
 
-Neither FQGate nor the bridge should gain LAN or public listeners in Phase 3.
+Phase 4 target adds outbound-only Cloudflare connectivity without changing either loopback listener:
+
+```text
+remote human browser
+  -> Cloudflare Access
+  -> remotely-managed Cloudflare Tunnel
+  -> cloudflared Windows service
+  -> 127.0.0.1:17282 bridge
+  -> explicit remote-human operation exposure policy
+  -> FQGate adapters
+  -> 127.0.0.1:17281 FQGate
+```
+
+There is never an intended `cloudflared -> FQGate` direct route.
 
 ---
 
 ## Phase 0 — Repository and contracts
 
-Status: **fully closed**.
+Status: **CLOSED**.
 
-Delivered the repository structure, architecture/security contracts, upstream compatibility ledger, TypeScript workspace, configuration schema, structured logging conventions, CI baseline, and secret-safe defaults.
+Delivered repository structure, architecture/security contracts, compatibility ledger, TypeScript/config/logging/CI baseline, and secret-safe defaults.
 
 ## Phase 1 — Local FQGate lifecycle manager
 
-Status: **fully closed**.
+Status: **CLOSED**.
 
-Delivered safe FQGate installation/update primitives, official manifest handling, size/SHA-256 verification, process lifecycle, health probing, rollback, version/compatibility checks, and Windows x64 acceptance.
+Delivered trusted FQGate installation/update primitives, integrity checks, process lifecycle, health/compatibility validation, rollback, and Windows x64 acceptance.
 
 ## Phase 2 — Local TanStack bridge API and QR login UI
 
-Status: **fully closed**.
+Status: **CLOSED**.
 
-Delivered the loopback-only TanStack Start application, React 19/TanStack Query Dashboard, explicit operation registry, normalized errors, FQGate QR begin/poll adapters, ephemeral QR flow registry, Chinese operator UX, Windows launcher, automated tests, and real Windows QR acceptance.
+Delivered the loopback-only TanStack Start application, React 19/TanStack Query Dashboard, explicit operation registry, FQGate QR adapters, ephemeral QR registry, Chinese operator UX, Windows launcher, automated tests, and real Windows QR acceptance.
 
-The Phase 2 boundary remains a required baseline for all later work: no catch-all FQGate proxy, no trading operations, no wildcard CORS, no raw `/v1/market/*` fallback, and no browser exposure of upstream QR flow IDs or secrets.
-
----
+Security baseline retained by every later phase: no catch-all proxy, no trading/state-changing financial operation, no wildcard CORS, no raw `/v1/market/*` fallback, and no browser exposure of upstream QR flow IDs/secrets.
 
 ## Phase 3 — Local upgrade center and runtime OpenAPI/docs foundation
 
-Status: **CLOSED / implementation and target Windows acceptance recorded**.
+Status: **CLOSED**.
 
-Goal: finish the local operational control plane before any Tunnel is introduced. The implementation combines the Dashboard upgrade workflow with runtime FQGate OpenAPI discovery so upgrades are checked against the API surface actually provided by the installed candidate. The implementation and bounded target Windows x64 evidence are recorded in `docs/operations/windows-phase-3-acceptance.md`.
+Delivered:
 
-### 3A. FQGate upgrade center
+- local `/updates` explicit check/plan/apply workflow reusing the lifecycle transaction;
+- fixed trusted GitHub release source, stale-plan rejection, concurrency protection, size/SHA/version/compatibility/health/rollback checks;
+- fixed-target runtime `http://127.0.0.1:17281/openapi.json` discovery with bounded fetch, validation, cache, deterministic fingerprint, operation catalog/diff, and required-contract checks;
+- candidate activation gating on health + runtime OpenAPI + required Bridge contracts + semantic probes;
+- local `/api-reference` separating complete upstream reference, Bridge API, and compatibility/change views;
+- deny-by-default behavior where discovery never authorizes a route;
+- target Windows x64 acceptance recorded in `docs/operations/windows-phase-3-acceptance.md`.
 
-Deliverables:
-
-- Dashboard card showing installed version, compatibility, selected release source, last explicit update check, available version, and blocking reason;
-- explicit **Check for update** action; no background timer and no update check merely because a page loaded;
-- explicit install/upgrade plan with source, target version, size, SHA-256, compatibility status, restart/session impact, and confirmation step;
-- one lifecycle transaction shared by CLI and Dashboard; do not duplicate download/activation logic in route files;
-- fixed release-source registry:
-  - `github` remains the default official source;
-  - architecture reserves a `gitee` adapter, but it must not accept arbitrary URLs and must not be enabled until an exact trusted mirror/repository contract is documented;
-- bounded download, manifest validation, size/SHA-256 verification, candidate `--version`, compatibility gates, health probe, known-good backup, and rollback;
-- concurrency/idempotency protection for double-clicks, refreshes, restart recovery, and overlapping install/update attempts;
-- operator-visible transaction/result history containing bounded non-secret metadata only.
-
-### 3B. Runtime OpenAPI and API documentation foundation
-
-Observed upstream facts are now part of the project contract:
-
-```text
-http://127.0.0.1:17281/docs
-http://127.0.0.1:17281/openapi.json
-```
-
-The upstream Python SDK explicitly says complete parameters and response fields should follow the running `/openapi.json`.
-
-Deliverables:
-
-- framework-agnostic `FqgateOpenApiService` (name may vary) that fetches only the fixed loopback `/openapi.json` endpoint;
-- response timeout and maximum-size bounds;
-- JSON/OpenAPI structure validation and normalized errors;
-- short-TTL runtime cache plus deterministic schema fingerprint (for example SHA-256 over canonicalized JSON);
-- an operator-facing local API documentation page using the **running FQGate schema as source of truth**;
-- full upstream-reference view that can show every documented FQGate endpoint but does **not** imply authorization and does not provide a bypass around bridge policy;
-- bridge/remote-contract view generated only from explicitly registered bridge operations/mappings;
-- endpoint coverage/diff information: discovered upstream paths, bridge-approved mappings, unapproved/new paths, removed paths, and required-contract changes;
-- reusable compatibility probe that verifies required paths/methods for bridge-owned FQGate adapters during install/upgrade activation.
-
-The current implementation exposes `/updates` and `/api-reference`, keeps the
-release source fixed to the official GitHub adapter, rejects stale plan
-identities, and reuses the lifecycle `installPlan` transaction. Runtime OpenAPI
-discovery remains reference-only and does not mutate the operation registry.
-
-Important rule:
-
-> Runtime OpenAPI describes what FQGate says it provides. The bridge registry decides what the bridge permits. Discovery never grants authorization.
-
-The OpenAPI probe supplements endpoint-specific runtime contract tests; it does not replace them.
-
-### Phase 3 non-goals
-
-- Cloudflare Tunnel, Cloudflare Access, public/LAN listeners, DNS provisioning, or remote hostnames;
-- generic `/* -> FQGate` proxying;
-- remotely callable arbitrary paths merely because they appear in OpenAPI;
-- MCP or WebSocket exposure;
-- automatic/background FQGate updates;
-- trading, brokerage, order, cancellation, transfer, or other financial state-changing capabilities.
-
-### Phase 3 exit criteria
-
-On the target Windows x64 host, an operator can:
-
-1. inspect the installed FQGate version and explicitly check for a trusted update;
-2. preview and explicitly confirm an installation/upgrade;
-3. observe size/hash/version/compatibility/OpenAPI/health checks;
-4. see automatic rollback after a deliberately invalid or incompatible candidate in the test harness;
-5. open local runtime FQGate API documentation sourced from the currently running `/openapi.json`;
-6. distinguish the full upstream API catalog from the bridge-approved API catalog;
-7. prove that a newly discovered/unregistered FQGate endpoint remains unreachable through the bridge;
-8. complete all of the above while both processes still listen on IPv4 loopback only.
-
-Detailed task package:
+Detailed closed task package:
 
 `docs/tasks/phase-3-fqgate-upgrade-and-runtime-openapi.md`
 
-Design note:
-
-`docs/plans/runtime-openapi-and-remote-docs.md`
-
-Codex handoff:
-
-`docs/prompts/phase-3-codex-goal.md`
-
 ---
 
-## Phase 4 — Secure remote human access: cloudflared + Tunnel + Access
+## Phase 4 — Secure remote human access: Cloudflare Tunnel + Access
 
-Goal: expose the already-proven local operator UI remotely without ever making FQGate itself Internet-facing.
+Status: **ACTIVE / next implementation package**.
 
-This phase intentionally treats **Tunnel and human Access as one security milestone**. A remotely reachable QR/status UI must not be considered accepted while it is unauthenticated.
+Goal: expose selected human-facing Dashboard/QR/status/reference capabilities remotely without exposing FQGate, without changing the bridge's loopback bind, and without turning Phase 3 local maintenance into remotely callable administration.
+
+### 4A. Explicit local vs remote-human request context
+
+Evolve operation exposure from the Phase 3 all-local model.
+
+Remote-human allowed operations for Phase 4:
+
+```text
+bridge.version
+bridge.capabilities
+bridge.status
+session.qr.begin
+session.qr.poll
+updates.status
+openapi.catalog
+```
+
+Operations that remain local-only:
+
+```text
+updates.check
+updates.plan
+updates.apply
+openapi.refresh
+```
+
+Requirements:
+
+- authorization enforced by the bridge operation policy, not UI hiding alone;
+- loopback Host forms classify local requests;
+- exactly configured remote hostname classifies candidate remote-human requests;
+- unknown Host fails closed;
+- forwarding headers such as `X-Forwarded-Host` do not grant context;
+- remote-human requests require the expected Cloudflare Access assertion after Cloudflare validation;
+- Access assertion contents are never logged.
+
+### 4B. Remotely-managed Tunnel and cloudflared Windows service
 
 Deliverables:
 
-- detect/install/update official `cloudflared`;
-- adopt a pre-created remotely managed Tunnel token first;
-- install/start/stop the Windows `cloudflared` service;
-- route ingress only to the loopback bridge, never directly to FQGate;
-- documented/manual Cloudflare Access human policy for the UI hostname;
-- secret-safe tunnel credential storage;
-- deployment diagnostics and Access-bypass checks;
-- remote browser smoke test for status, QR login, upgrade status, and API reference pages;
-- upstream full-reference docs may be visible to an authenticated human, but interactive execution must remain disabled unless an operation is explicitly bridge-approved.
+- framework-agnostic cloudflared release/lifecycle manager;
+- fixed official Cloudflare distribution source only, no arbitrary binary URL;
+- artifact/release identity and published integrity verification;
+- explicit/manual install/update only;
+- Windows service install/start/stop/restart/status;
+- origin fixed to `http://127.0.0.1:17282` and never FQGate;
+- reconnect/diagnostics behavior suitable for an always-on Windows host.
 
-Exit criteria:
+Phase 4 adopts a **pre-created remotely-managed Tunnel token**. Automated creation/adoption of Cloudflare resources through the API remains Phase 6.
 
-- direct FQGate Internet access is absent;
-- bridge still binds only to loopback;
-- unauthenticated remote UI requests are denied by Access;
-- an authenticated human can use the intended Dashboard and QR flow through Tunnel + Access;
-- unknown/raw upstream paths remain unreachable.
+### 4C. Tunnel token secret handling
+
+Preferred service runtime:
+
+```text
+cloudflared tunnel run --token-file <protected-token-file>
+```
+
+Requirements:
+
+- supported cloudflared version with `--token-file`;
+- token outside repository and ordinary application JSON;
+- restrictive Windows ACL for the service identity;
+- raw token absent from service command line, logs, diagnostics, UI, tests, and browser storage;
+- inability to secure/read the secret is a blocking setup error.
+
+### 4D. Cloudflare Access human policy
+
+The operator manually creates/configures the self-hosted Access application and human Allow policy.
+
+The Tunnel published application must use Cloudflare's **Protect with Access** origin setting so cloudflared validates the Access JWT before forwarding requests to the bridge.
+
+The bridge retains its own operation authorization after Access succeeds. Cloudflare identity never implies permission to call local-only operations.
+
+### 4E. Remote operator UX
+
+Authenticated remote humans may use:
+
+- Dashboard/status;
+- QR begin/poll;
+- read-only update status;
+- reference-only API catalog.
+
+Remote UI must omit/disable update check/plan/apply and OpenAPI refresh, with clear local-maintenance messaging. No market-data API is added in this phase.
+
+### Phase 4 exit criteria
+
+On the target Windows x64 host with real Cloudflare resources:
+
+1. FQGate remains exactly on loopback and bridge remains exactly on loopback;
+2. cloudflared runs as a Windows service and routes only to the bridge;
+3. service/process metadata contains no raw Tunnel token and token-file protection is verified;
+4. unauthenticated public requests are challenged/denied by Access;
+5. authenticated human Dashboard/status works remotely;
+6. QR begin/poll works remotely when safe to test;
+7. remote update check/plan/apply and OpenAPI refresh are denied;
+8. raw/unregistered FQGate paths remain unreachable remotely;
+9. local-only maintenance remains usable through loopback;
+10. restarting cloudflared reconnects without changing origin listeners.
+
+If real Cloudflare acceptance is unavailable, implementation may be complete but Phase 4 remains open.
+
+Detailed design:
+
+`docs/plans/phase-4-secure-remote-human-access.md`
+
+Detailed task package:
+
+`docs/tasks/phase-4-cloudflare-tunnel-access.md`
+
+Codex handoff:
+
+`docs/prompts/phase-4-codex-goal.md`
+
+### Phase 4 non-goals
+
+- remote machine/read-only market-data API;
+- Cloudflare Access service-token machine auth;
+- automated Tunnel/DNS/Access provisioning;
+- supervisor/notifications;
+- automatic background updates;
+- MCP/WebSocket;
+- trading or financial state mutation.
 
 ---
 
@@ -174,28 +215,19 @@ Goal: make selected market-data capabilities safely consumable by remote softwar
 
 Deliverables:
 
-- explicit read-only market-data operations added to the bridge policy registry;
-- stable public paths and normalized request/response contracts;
+- explicit read-only market-data operations in the bridge policy registry;
+- stable Bridge-owned request/response contracts;
 - Cloudflare Access service-token or equivalent machine policy separate from human UI policy;
-- optional defense-in-depth Access JWT verification if practical;
 - machine API smoke tests through Access + Tunnel;
-- generated **remote OpenAPI** containing only bridge-approved public operations;
-- remote interactive docs whose `Try it out` targets only the bridge-approved remote API;
-- upstream-reference docs remain clearly labeled as reference-only and may list endpoints not remotely available;
-- compatibility gates tie each public operation to validated FQGate versions/contracts.
+- generated remote OpenAPI containing only approved public operations;
+- interactive docs target only approved Bridge operations;
+- compatibility gates tied to validated FQGate versions/contracts.
 
-Exit criteria:
-
-- unauthenticated API calls are rejected;
-- an authenticated service identity can use the approved read-only API;
-- a path newly added by upstream FQGate is visible in reference/diff views but is not callable until explicitly registered;
-- no trading/state-changing financial operation exists.
-
----
+Exit criteria include authenticated machine access to approved read-only operations, deny-by-default treatment of new upstream paths, and no financial state-changing capabilities.
 
 ## Phase 6 — Automated Cloudflare provisioning and drift management
 
-Goal: turn the manually proven remote setup into a guided, idempotent setup flow.
+Goal: automate the manually proven Phase 4/5 setup safely.
 
 Deliverables:
 
@@ -203,102 +235,44 @@ Deliverables:
 - account/zone validation;
 - create/adopt named Tunnel;
 - create/adopt DNS records;
-- configure ingress and Access-related prerequisites where APIs permit;
+- configure ingress/published applications and Access prerequisites where supported;
 - plan/dry-run before mutation;
-- configuration drift detection;
-- provisioning credentials treated as setup-time credentials and removable after setup;
-- runtime retains only the minimum Tunnel/Access secrets required.
+- drift detection;
+- setup-time credentials removable after provisioning.
 
-Exit criteria:
+Never request a Global API Key.
 
-A clean supported Windows host plus an appropriately scoped Cloudflare token and operator-selected hostname can produce the same secured topology proven manually in Phase 4/5.
+## Phase 7 — Supervisor, recovery, audit trail, notifications
 
----
-
-## Phase 7 — Supervisor, recovery, audit trail, and notifications
-
-Goal: make the system dependable on an always-on Windows PC.
-
-Deliverables:
-
-- supervisor state machine for bridge, FQGate, session, tunnel, and updates;
-- bounded restart/recovery policy;
-- login/session expiration detection;
-- tunnel health monitoring;
-- local event journal with redaction;
-- generic webhook notification interface and one initial provider;
-- deduplication/cooldown plus recovery notifications.
-
-Events should include FQGate crash/recovery, incompatibility, login-required/recovered, Tunnel disconnect/recovery, bridge degradation/recovery, and update success/rollback/failure.
-
----
+Goal: make the system dependable on an always-on Windows PC with bounded recovery, session/tunnel monitoring, redacted event journal, webhook notification provider, deduplication/cooldown, and recovery events.
 
 ## Phase 8 — Safe automatic updates
 
-Goal: reduce routine maintenance only after manual update behavior has proven stable across real upstream releases.
-
-Deliverables:
-
-- conservative configurable policy for FQGate and `cloudflared`;
-- staged download and activation;
-- OpenAPI + endpoint contract compatibility probes;
-- rollback on activation failure;
-- maintenance window, pin/freeze, and update history;
-- automatic updates remain off by default until explicit policy is selected.
-
----
+Goal: add conservative configurable update policy only after manual FQGate/cloudflared updates are proven stable. Automatic updates remain off by default until explicitly configured.
 
 ## Phase 9 — MCP and realtime WebSocket compatibility
 
-Goal: expose richer protocols only after the read-only HTTP security model is stable.
-
-Deliverables:
-
-- remote MCP protocol investigation and contract tests;
-- Access machine-auth integration;
-- long-lived request/stream timeout behavior;
-- selected WebSocket market stream proxying;
-- reconnect/backpressure tests;
-- no generic transport tunnel that bypasses route/operation policy.
-
----
+Goal: investigate and expose richer protocols only after the read-only HTTP security model is stable, with no generic transport tunnel around operation policy.
 
 ## Phase 10 — Packaging and operator UX
 
-Goal: make deployment maintainable without a developer workstation.
-
-Deliverables:
-
-- versioned Windows release artifact;
-- install/uninstall/reconfigure flow;
-- startup/task/service integration where proven appropriate;
-- diagnostics bundle with redaction;
-- configuration migration;
-- release checksums;
-- operator and troubleshooting documentation.
-
----
+Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, startup integration where proven, redacted diagnostics, configuration migration, release checksums, and troubleshooting documentation.
 
 ## Future / optional
 
-Not required for the first useful remote release:
-
 - multiple FQGate hosts/failover;
-- LAN-only mode without Cloudflare;
+- LAN-only deployment mode;
 - alternative secure overlays such as Tailscale/Headscale;
 - multiple notification providers;
 - Prometheus/metrics exporter;
-- consumer-specific adapter packages such as `turtle-value-engine` integration.
-
-These should be added only when real use justifies the extra operational surface.
+- consumer-specific adapters such as `turtle-value-engine` integration.
 
 ## Current development handoff
 
-The Phase 3 handoff is complete; no Phase 4+ implementation should begin until
-a new phase is explicitly opened and scoped.
+The active coding task is **Phase 4 only**.
 
 Use:
 
-`docs/prompts/phase-3-codex-goal.md`
+`docs/prompts/phase-4-codex-goal.md`
 
-Do not begin Cloudflare/Tunnel/Access, remote market-data APIs, MCP, WebSocket, supervisor, or automatic-update implementation until the Phase 3 local upgrade + runtime OpenAPI closure criteria are satisfied and documented.
+Do not begin Phase 5 remote machine market-data APIs, service-token auth, automated Cloudflare provisioning, supervisor/notifications, automatic-update policy, MCP, WebSocket, or final packaging while implementing Phase 4.
