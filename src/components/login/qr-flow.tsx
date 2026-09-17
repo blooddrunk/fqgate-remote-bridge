@@ -39,14 +39,13 @@ export function QrFlowView({ state, onStart, onRetry }: QrFlowViewProps) {
     <div className="mx-auto max-w-4xl space-y-8">
       <section className="max-w-2xl">
         <Badge tone="info">
-          <QrCode size={13} aria-hidden="true" /> Secure local login
+          <QrCode size={13} aria-hidden="true" /> 本机扫码登录
         </Badge>
         <h1 className="mt-5 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-          Restore the market session.
+          恢复行情会话。
         </h1>
         <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
-          Scan a short-lived QR code with the FQGate companion app. The code stays in memory, and
-          the upstream flow identifier never leaves this bridge.
+          使用 FQGate 配套应用扫描短时 QR 码。二维码只保存在内存中，上游流程编号不会离开桥接。
         </p>
       </section>
 
@@ -75,12 +74,12 @@ function StartCard({ onStart }: { readonly onStart: () => void }) {
         <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cyan-50 text-cyan-600 dark:bg-cyan-400/10 dark:text-cyan-300">
           <QrCode size={29} aria-hidden="true" />
         </span>
-        <h2 className="mt-6 text-xl font-semibold">Ready when you are</h2>
+        <h2 className="mt-6 text-xl font-semibold">准备好后开始</h2>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
-          Starting a flow asks FQGate for a fresh QR code with credential caching disabled.
+          开始后，桥接会向 FQGate 请求新的 QR 码，并关闭凭据缓存。
         </p>
         <Button className="mt-7" size="lg" onClick={onStart}>
-          Generate QR code
+          生成 QR 码
         </Button>
       </CardContent>
     </Card>
@@ -91,10 +90,10 @@ function StartingCard() {
   return (
     <Card>
       <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
-        <Loader2 className="animate-spin text-cyan-400" size={30} aria-label="Generating QR code" />
-        <h2 className="mt-5 text-lg font-semibold">Generating a fresh code…</h2>
+        <Loader2 className="animate-spin text-cyan-400" size={30} aria-label="正在生成 QR 码" />
+        <h2 className="mt-5 text-lg font-semibold">正在生成新的 QR 码…</h2>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Talking to the local FQGate session endpoint.
+          正在连接本机 FQGate 会话接口。
         </p>
       </CardContent>
     </Card>
@@ -118,31 +117,29 @@ function ActiveCard({
           <img
             className="aspect-square w-full max-w-[19rem] object-contain"
             src={`data:${begin.qr.mediaType};base64,${begin.qr.imageBase64}`}
-            alt="FQGate QR login code"
+            alt="FQGate 扫码登录二维码"
           />
         </div>
         <div className="flex flex-col justify-center">
           <Badge tone={status === "waiting_for_confirmation" ? "warning" : "info"}>
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {status === "waiting_for_confirmation" ? "Confirm on device" : "Waiting for scan"}
+            {status === "waiting_for_confirmation" ? "请在手机上确认" : "等待扫码"}
           </Badge>
           <h2 className="mt-5 text-2xl font-semibold tracking-tight">
-            {status === "waiting_for_confirmation" ? "Almost there" : "Scan this code"}
+            {status === "waiting_for_confirmation" ? "即将完成" : "请扫描此二维码"}
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-            Keep this page open while the bridge checks the short-lived login flow.{" "}
-            {isPolling
-              ? "Polling securely every few seconds."
-              : "Waiting for the next status update."}
+            请保持此页面打开，桥接会检查短时登录流程。{" "}
+            {isPolling ? "系统会每隔几秒安全检查一次。" : "等待下一次状态更新。"}
           </p>
           <div className="mt-7 space-y-3 text-sm">
             <InfoRow
               icon={<Clock3 size={16} />}
-              label="Expires"
+              label="过期时间"
               value={formatExpiry(begin.expiresAt)}
             />
-            <InfoRow icon={<ShieldCheck size={16} />} label="Storage" value="Memory only" />
-            <InfoRow icon={<WifiOff size={16} />} label="Network scope" value="127.0.0.1" />
+            <InfoRow icon={<ShieldCheck size={16} />} label="保存位置" value="仅内存" />
+            <InfoRow icon={<WifiOff size={16} />} label="网络范围" value="127.0.0.1" />
           </div>
         </div>
       </CardContent>
@@ -157,29 +154,27 @@ function ConnectedCard({ loginMethod }: { readonly loginMethod?: string }) {
         <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300">
           <CheckCircle2 size={31} aria-hidden="true" />
         </span>
-        <h2 className="mt-6 text-2xl font-semibold">Session connected</h2>
+        <h2 className="mt-6 text-2xl font-semibold">行情会话已连接</h2>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
-          FQGate accepted the QR login
-          {loginMethod === undefined ? "" : ` via ${loginMethod}`}. The bridge has stopped polling
-          and refreshed the dashboard state.
+          FQGate 已接受扫码登录
+          {loginMethod === undefined ? "" : `（${formatLoginMethod(loginMethod)}）`}
+          。桥接已停止轮询，总览状态也已刷新。
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Button
             variant="secondary"
-            onClick={() => void navigator.clipboard?.writeText("Session connected")}
+            onClick={() => void navigator.clipboard?.writeText("行情会话已连接")}
           >
-            <Copy size={15} aria-hidden="true" /> Copy status
+            <Copy size={15} aria-hidden="true" /> 复制状态
           </Button>
           <a
             href="/"
             className="inline-flex h-11 items-center justify-center rounded-xl bg-cyan-400 px-4 text-sm font-medium text-slate-950 outline-none hover:bg-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
           >
-            View dashboard
+            返回总览
           </a>
         </div>
-        <p className="mt-6 text-xs text-slate-400">
-          The QR payload expired from the page state after this flow completes.
-        </p>
+        <p className="mt-6 text-xs text-slate-400">本次 QR 内容已从页面状态中清除。</p>
       </CardContent>
     </Card>
   );
@@ -199,13 +194,13 @@ function TerminalCard({
           <RefreshCw size={28} aria-hidden="true" />
         </span>
         <h2 className="mt-6 text-2xl font-semibold">
-          {state.kind === "expired" ? "Code expired" : "Code replaced"}
+          {state.kind === "expired" ? "二维码已过期" : "二维码已被替换"}
         </h2>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
           {state.message}
         </p>
         <Button className="mt-7" size="lg" onClick={onRetry}>
-          <RefreshCw size={16} aria-hidden="true" /> Generate a new code
+          <RefreshCw size={16} aria-hidden="true" /> 生成新的二维码
         </Button>
       </CardContent>
     </Card>
@@ -223,10 +218,10 @@ function ErrorCard({
     <Alert tone="danger" className="flex items-start gap-3">
       <WifiOff className="mt-0.5 shrink-0" size={18} aria-hidden="true" />
       <div>
-        <p className="font-semibold">QR login could not start</p>
+        <p className="font-semibold">无法开始扫码登录</p>
         <p className="mt-1">{message}</p>
         <Button className="mt-4" variant="secondary" size="sm" onClick={onRetry}>
-          <RefreshCw size={15} aria-hidden="true" /> Try again
+          <RefreshCw size={15} aria-hidden="true" /> 重试
         </Button>
       </div>
     </Alert>
@@ -255,6 +250,10 @@ function InfoRow({
 function formatExpiry(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.valueOf())
-    ? "Shortly"
-    : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    ? "即将过期"
+    : date.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatLoginMethod(value: string): string {
+  return value === "formal" ? "正式会话" : value;
 }

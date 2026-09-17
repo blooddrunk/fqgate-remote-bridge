@@ -29,18 +29,18 @@ test.describe("local bridge QR flow", () => {
     });
 
     await page.goto("/");
-    await expect(page.getByText("Login required")).toBeVisible();
-    await page.getByRole("button", { name: "Use dark theme" }).click();
+    await expect(page.getByText("需要登录")).toBeVisible();
+    await page.getByRole("button", { name: "切换为深色主题" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
-    await page.getByRole("link", { name: "Restore with QR" }).click();
+    await page.getByRole("link", { name: "使用扫码登录" }).click();
     await expect(page).toHaveURL(/\/login$/);
-    await page.getByRole("button", { name: "Generate QR code" }).click();
-    await expect(page.getByRole("img", { name: "FQGate QR login code" })).toBeVisible();
-    await expect(page.getByText("Confirm on device")).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText("Session connected")).toBeVisible({ timeout: 10_000 });
-    await page.getByRole("link", { name: "View dashboard" }).click();
+    await page.getByRole("button", { name: "生成 QR 码" }).click();
+    await expect(page.getByRole("img", { name: "FQGate 扫码登录二维码" })).toBeVisible();
+    await expect(page.getByText("请在手机上确认")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("行情会话已连接")).toBeVisible({ timeout: 10_000 });
+    await page.getByRole("link", { name: "返回总览" }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByText("Authenticated market session is available")).toBeVisible({
+    await expect(page.getByText("行情会话已连接", { exact: true })).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -64,9 +64,9 @@ test.describe("local bridge QR flow", () => {
     });
 
     await page.goto("/login");
-    await page.getByRole("button", { name: "Generate QR code" }).click();
-    await expect(page.getByText("Code expired")).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole("button", { name: "Generate a new code" })).toBeVisible();
+    await page.getByRole("button", { name: "生成 QR 码" }).click();
+    await expect(page.getByText("二维码已过期")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: "生成新的二维码" })).toBeVisible();
   });
 
   test("shows a replaced flow and offers a deliberate retry", async ({ page }) => {
@@ -88,9 +88,9 @@ test.describe("local bridge QR flow", () => {
     });
 
     await page.goto("/login");
-    await page.getByRole("button", { name: "Generate QR code" }).click();
-    await expect(page.getByText("Code replaced")).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole("button", { name: "Generate a new code" })).toBeVisible();
+    await page.getByRole("button", { name: "生成 QR 码" }).click();
+    await expect(page.getByText("二维码已被替换")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: "生成新的二维码" })).toBeVisible();
   });
 });
 

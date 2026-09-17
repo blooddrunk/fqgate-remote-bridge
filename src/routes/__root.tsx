@@ -10,17 +10,20 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "FQGate Bridge · Local operator console" },
-      { name: "description", content: "Loopback-only FQGate status and QR login console." },
+      { title: "FQGate Bridge · 本机操作台" },
+      { name: "description", content: "仅限本机回环访问的 FQGate 状态与扫码登录操作台。" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+    ],
   }),
   shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { readonly children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <head>
         <HeadContent />
       </head>

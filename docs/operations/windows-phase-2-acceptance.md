@@ -7,22 +7,54 @@ claim headless FQGate support.
 
 ## Preconditions
 
-- Windows x64 with Node.js 22 or newer and Corepack/pnpm available.
+- Windows x64 with Node.js 22 or newer and Corepack/pnpm available. If pnpm is not
+  installed globally, run `corepack enable` and use `corepack pnpm`; alternatively
+  install the pinned version with `npm install --global pnpm@11.23.0`.
 - An interactive desktop user session, because FQGate is a desktop application.
 - The repository checked out locally and no other process using port `17282`.
 - A managed FQGate installation may already be connected. Do not log it out just
   to manufacture a QR test. If it is not connected, a real QR test may proceed.
+
+## Install and start behavior
+
+FQGate installation is explicit and is not triggered by Dashboard startup. From
+the repository root, preview and then apply it with:
+
+```powershell
+node .\dist\cli\main.js fqgate install --dry-run
+node .\dist\cli\main.js fqgate install
+```
+
+The recommended operator entry point is:
+
+```powershell
+.\scripts\windows\start-dashboard.cmd
+```
+
+It prepares dependencies when needed, builds the production output, starts an
+already-installed but stopped FQGate desktop process, starts the bridge, and
+opens `http://127.0.0.1:17282/`. If FQGate is absent, it prints the dry-run
+command and exits without downloading anything. After reviewing the plan, the
+operator may explicitly run:
+
+```powershell
+.\scripts\windows\start-dashboard.cmd -InstallFqgate
+```
+
+Pressing `Ctrl+C` stops only the bridge process started by the launcher. The
+FQGate process remains running. `-NoBrowser` and `-SkipBuild` are available for
+non-interactive or already-built checks.
 
 ## Build and deterministic checks
 
 From the repository root in PowerShell:
 
 ```powershell
-pnpm install --frozen-lockfile
+corepack pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm lint
 pnpm test
-pnpm build
+corepack pnpm build
 pnpm format:check
 pwsh -NoProfile -NonInteractive -File .\scripts\windows\acceptance.ps1 -VerifyCli
 ```
@@ -43,8 +75,9 @@ The script starts the built Nitro output, waits for
 present and its local address is `127.0.0.1`, verifies that
 `/v1/market/health` returns `404`, and stops only the process it started.
 
-For an operator-visible check, run `pnpm start` in a separate PowerShell window
-and open `http://127.0.0.1:17282/`. Confirm the dashboard separates:
+For an operator-visible check, run the launcher above, or run `pnpm start` in a
+separate PowerShell window and open `http://127.0.0.1:17282/`. Confirm the
+dashboard separates:
 
 - bridge readiness;
 - FQGate process state and PID;
@@ -53,7 +86,8 @@ and open `http://127.0.0.1:17282/`. Confirm the dashboard separates:
 - compatibility state.
 
 The QR action must remain unavailable when FQGate is absent, stopped, unhealthy,
-or compatibility is not validated.
+or compatibility is not validated. When FQGate is absent, the dashboard must
+show the explicit `fqgate install --dry-run` guidance.
 
 If FQGate is already running, record its managed PID before starting the bridge
 and confirm it is unchanged after stopping the bridge smoke process. The bridge

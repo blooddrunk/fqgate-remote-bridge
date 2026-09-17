@@ -44,6 +44,35 @@ const begin: QrBeginResponse = {
   expiresAt: "2026-09-16T00:02:00.000Z",
 };
 
+const notInstalledStatus: BridgeStatusResponse = {
+  ...disconnectedStatus,
+  fqgate: {
+    ...disconnectedStatus.fqgate,
+    lifecycle: "not_installed",
+    process: { state: "not_running", running: false },
+    version: null,
+    compatibility: {
+      version: null,
+      status: "unknown",
+      supported: false,
+      validated: false,
+      reason: "not installed",
+    },
+    health: {
+      ...disconnectedStatus.fqgate.health,
+      available: false,
+      validPayload: false,
+      httpStatus: null,
+      networkReady: null,
+      connected: null,
+      session: "unknown",
+      status: null,
+      loginMethod: null,
+    },
+  },
+  session: { state: "unknown", loginMethod: null },
+};
+
 afterEach(() => cleanup());
 
 describe("operator dashboard UI", () => {
@@ -56,11 +85,26 @@ describe("operator dashboard UI", () => {
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByText("Running")).toBeTruthy();
-    expect(screen.getByText("Yes")).toBeTruthy();
-    expect(screen.getByText("Login required")).toBeTruthy();
-    expect(screen.getByText("Validated")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Restore with QR" })).toBeTruthy();
+    expect(screen.getByText("运行中")).toBeTruthy();
+    expect(screen.getByText("是")).toBeTruthy();
+    expect(screen.getByText("需要登录")).toBeTruthy();
+    expect(screen.getByText("已验证")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "使用扫码登录" })).toBeTruthy();
+  });
+
+  it("explains the explicit FQGate install path when no managed binary exists", () => {
+    render(
+      <DashboardStatusView
+        status={notInstalledStatus}
+        isLoading={false}
+        error={null}
+        onRetry={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("尚未检测到 FQGate")).toBeTruthy();
+    expect(screen.getByText("node .\\dist\\cli\\main.js fqgate install --dry-run")).toBeTruthy();
+    expect(screen.getByText("扫码登录暂不可用")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /扫码登录/ })).toBeNull();
   });
 
   it("shows retry and loading states with accessible controls", () => {
@@ -68,7 +112,7 @@ describe("operator dashboard UI", () => {
     const { rerender } = render(
       <DashboardStatusView status={undefined} isLoading={true} error={null} onRetry={retry} />,
     );
-    expect(screen.queryByText("Bridge status is unavailable")).toBeNull();
+    expect(screen.queryByText("暂时无法读取桥接状态")).toBeNull();
     rerender(
       <DashboardStatusView
         status={undefined}
@@ -77,7 +121,7 @@ describe("operator dashboard UI", () => {
         onRetry={retry}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+    fireEvent.click(screen.getByRole("button", { name: /重试/ }));
     expect(retry).toHaveBeenCalledTimes(1);
   });
 });
@@ -89,7 +133,7 @@ describe("QR login UI state transitions", () => {
     const { rerender } = render(
       <QrFlowView state={{ kind: "idle" }} onStart={onStart} onRetry={onRetry} />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /generate qr code/i }));
+    fireEvent.click(screen.getByRole("button", { name: /生成 QR 码/ }));
     expect(onStart).toHaveBeenCalledTimes(1);
 
     rerender(
@@ -99,8 +143,8 @@ describe("QR login UI state transitions", () => {
         onRetry={onRetry}
       />,
     );
-    expect(screen.getByRole("img", { name: "FQGate QR login code" })).toBeTruthy();
-    expect(screen.getByText("Waiting for scan")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "FQGate 扫码登录二维码" })).toBeTruthy();
+    expect(screen.getByText("等待扫码")).toBeTruthy();
     expect(window.localStorage.length).toBe(0);
     expect(window.sessionStorage.length).toBe(0);
 
@@ -120,11 +164,11 @@ describe("QR login UI state transitions", () => {
         onRetry={onRetry}
       />,
     );
-    expect(screen.getByText("Confirm on device")).toBeTruthy();
+    expect(screen.getByText("请在手机上确认")).toBeTruthy();
 
     rerender(<QrFlowView state={{ kind: "connected" }} onStart={onStart} onRetry={onRetry} />);
-    expect(screen.getByText("Session connected")).toBeTruthy();
-    expect(screen.queryByRole("img", { name: "FQGate QR login code" })).toBeNull();
+    expect(screen.getByText("行情会话已连接")).toBeTruthy();
+    expect(screen.queryByRole("img", { name: "FQGate 扫码登录二维码" })).toBeNull();
 
     rerender(
       <QrFlowView
@@ -133,19 +177,19 @@ describe("QR login UI state transitions", () => {
         onRetry={onRetry}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /generate a new code/i }));
+    fireEvent.click(screen.getByRole("button", { name: /生成新的二维码/ }));
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
   it("renders a clear upstream failure without exposing implementation details", () => {
     render(
       <QrFlowView
-        state={{ kind: "error", message: "FQGate is temporarily unavailable." }}
+        state={{ kind: "error", message: "FQGate 暂时不可用。" }}
         onStart={vi.fn()}
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByRole("alert").textContent).toContain("QR login could not start");
+    expect(screen.getByRole("alert").textContent).toContain("无法开始扫码登录");
     expect(screen.getByRole("alert").textContent).not.toContain("flow_id");
   });
 });

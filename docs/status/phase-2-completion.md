@@ -135,7 +135,7 @@ pnpm test:e2e
 ```
 
 `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `pnpm format:check` passed;
-`pnpm test` passed with 11 files and 80 tests; and the deterministic Playwright
+`pnpm test` passed with 11 files and 82 tests; and the deterministic Playwright
 suite passed with 3 Chromium tests. The production-mode Playwright run also
 passed all 3 tests. The checks should be re-run on the target Windows host using
 [`windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md).
@@ -182,7 +182,7 @@ healthy HTTP 200 envelope before the QR flow. Its initial normalized state was
 `networkReady=true`, `connected=false`, and `session=unknown`, so no logout was
 needed. The bridge served the local dashboard and `/login`; after the real QR
 scan/confirmation, the browser returned to `/` and displayed
-`Market session: Connected` with login method `formal`. A separate
+`行情会话已连接` with login method `formal`. A separate
 `GET /api/v1/status` returned `connected=true` and `session=connected`.
 The browser console had no errors after the flow completed.
 
@@ -190,7 +190,30 @@ No QR image, account identifier, cookie, full session identifier, or upstream
 numeric flow ID was recorded. Temporary browser artifacts used to show the QR
 were removed immediately after the successful transition.
 
-## 9. Known limitations
+## 9. Phase 2 usability close-out
+
+The post-acceptance operator pass keeps the Phase 2 boundary unchanged while
+making first use clearer:
+
+- the Dashboard and QR flow now use Simplified Chinese user-facing copy;
+- the Dashboard shows an explicit `fqgate install --dry-run` path when no
+  managed FQGate binary is found, and disables QR login until the runtime is
+  installed, running, healthy, and validated;
+- `scripts/windows/start-dashboard.cmd` provides a one-command production
+  launcher, uses Corepack/pnpm when available, starts an installed/stopped
+  FQGate desktop process, and opens the loopback Dashboard;
+- `-InstallFqgate` is an explicit opt-in for first installation. Normal
+  Dashboard startup never silently downloads or installs FQGate;
+- the current CLI `fqgate update --check` / `--apply` behavior is documented,
+  while Dashboard upgrade actions and GitHub/Gitee source switching remain a
+  separately documented future design in
+  [`fqgate-install-upgrade-dashboard.md`](../plans/fqgate-install-upgrade-dashboard.md).
+
+These changes are operator/documentation improvements within Phase 2. They do
+not add a privileged Dashboard install route, remote access, a Windows service,
+or any Phase 3+ integration.
+
+## 10. Known limitations
 
 TanStack Start/Nitro remains a pre-v1 transport shell, so its surface is kept
 isolated from the framework-independent bridge and FQGate modules. The QR
@@ -199,7 +222,7 @@ poll failures are retried only within the bounded in-memory flow lifetime and
 never become transparent proxy responses. A bridge restart invalidates active
 QR flows by design.
 
-## 10. Remaining blockers and next phase
+## 11. Remaining blockers and next phase
 
 There are no remaining Phase 2 acceptance blockers. Phase 2 is fully closed.
 The next task is Phase 3: design and implement the cloudflared lifecycle and

@@ -185,6 +185,11 @@ At minimum:
 - preserve previous known-good binary
 - verify version and health after activation
 - roll back on failed activation when safe
+- in Phase 2, installation and updates are explicit local CLI operations; the
+  Dashboard and bridge startup must not silently download or activate a new
+  FQGate binary
+- any future GitHub/Gitee source selection and Dashboard-triggered operation
+  must use a fixed source registry and the same transaction, not arbitrary URLs
 
 ### cloudflared
 

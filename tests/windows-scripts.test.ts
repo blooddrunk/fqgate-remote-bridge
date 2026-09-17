@@ -32,4 +32,24 @@ describe("Windows entry points", () => {
     expect(script).toContain("/v1/market/health");
     expect(script).toContain("Stop-Process -Id $bridgeProcess.Id -Force");
   });
+
+  it("provides an explicit one-command dashboard launcher without silent FQGate installation", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/start-dashboard.ps1", import.meta.url),
+      "utf8",
+    );
+    const wrapper = readFileSync(
+      new URL("../scripts/windows/start-dashboard.cmd", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("[switch]$InstallFqgate");
+    expect(script).toContain("corepack.cmd");
+    expect(script).toContain("install --dry-run");
+    expect(script).toContain("if (-not $InstallFqgate)");
+    expect(script).toContain('fqgate", "start');
+    expect(script).toContain("127.0.0.1:$bridgePort/api/v1/version");
+    expect(wrapper).toContain("start-dashboard.ps1");
+    expect(wrapper).toContain("%*");
+  });
 });

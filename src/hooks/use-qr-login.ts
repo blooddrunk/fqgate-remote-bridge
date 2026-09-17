@@ -75,8 +75,8 @@ export function useQrLogin(): {
         kind: terminal,
         message:
           terminal === "expired"
-            ? "The QR flow timed out before it was completed."
-            : "A newer QR flow replaced this code.",
+            ? "二维码在完成前已过期，请重新生成。"
+            : "此二维码已被新的登录流程替换，请重新生成。",
       };
     if (begin === undefined) return { kind: "idle" };
     return {
@@ -110,5 +110,18 @@ function isTerminalCode(code: string): boolean {
   return code === "QR_FLOW_EXPIRED" || code === "QR_FLOW_REPLACED";
 }
 function messageForError(error: unknown): string {
-  return error instanceof Error ? error.message : "The bridge could not complete the QR login.";
+  if (error instanceof BridgeApiError) {
+    const messages: Record<string, string> = {
+      FQGATE_NOT_INSTALLED: "尚未安装 FQGate，请先完成安装。",
+      FQGATE_NOT_RUNNING: "FQGate 尚未运行，请先启动 FQGate。",
+      FQGATE_INCOMPATIBLE: "当前 FQGate 版本未通过兼容性验证，无法扫码登录。",
+      FQGATE_UNHEALTHY: "FQGate 健康检查未通过，请检查本机 FQGate 状态。",
+      UPSTREAM_UNAVAILABLE: "暂时无法连接 FQGate，请确认它正在运行后重试。",
+      QR_FLOW_LIMIT: "当前扫码流程过多，请稍后重试。",
+      QR_FLOW_INVALID: "扫码流程已失效，请重新生成二维码。",
+      INTERNAL_ERROR: "桥接暂时无法完成扫码登录，请稍后重试。",
+    };
+    return messages[error.code] ?? "桥接暂时无法完成扫码登录，请稍后重试。";
+  }
+  return "桥接暂时无法完成扫码登录，请稍后重试。";
 }

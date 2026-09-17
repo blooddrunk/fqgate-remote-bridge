@@ -13,6 +13,20 @@ AGENTS.md、当前任务包和项目安全文档为准；如果内容冲突，�
 Phase 2 的核心边界是：TanStack Start 只作为本地 UI/HTTP 传输层，桥接固定绑定
 127.0.0.1:17282，FQGate 固定保持本机回环，接口必须通过显式策略注册。
 
+## 当前安装、启动与升级约定
+
+- FQGate 安装不是隐式行为。用户先运行 `fqgate install --dry-run`，确认后再运行
+  `fqgate install`；不要在 Dashboard 加载、普通启动或状态轮询中自动下载/替换 FQGate。
+- 推荐 Windows 用户使用 `scripts/windows/start-dashboard.cmd`。它会准备依赖、构建生产产物，
+  启动已安装但停止的 FQGate，并启动 loopback Dashboard。只有显式传入 `-InstallFqgate` 才会
+  执行首次安装。
+- 当前升级只通过生命周期 CLI 完成：`fqgate update --check`、`fqgate update --apply --dry-run`
+  和 `fqgate update --apply`。Dashboard 内升级、GitHub/Gitee 源切换和版本提示的完整设计见
+  [`docs/plans/fqgate-install-upgrade-dashboard.md`](plans/fqgate-install-upgrade-dashboard.md)，
+  当前任务不得提前实现其中的后续 API。
+- 用户文档中的 Windows 目录必须使用占位符或明确标为示例，不得把开发者个人目录写成推荐安装路径。
+- Dashboard 和扫码流程的用户可见文案以简体中文为准；代码、CLI 错误码和上游协议字段仍可保留英文。
+
 ## 开始工作前
 
 按顺序阅读：

@@ -34,12 +34,10 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
             </span>
             <span>
               <span className="block text-sm font-semibold tracking-tight">FQGate Bridge</span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400">
-                Local operator console
-              </span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">本机操作台</span>
             </span>
           </Link>
-          <nav className="flex items-center gap-1.5" aria-label="Primary navigation">
+          <nav className="flex items-center gap-1.5" aria-label="主导航">
             <Link
               to="/"
               activeOptions={{ exact: true }}
@@ -48,7 +46,7 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
               }}
               className="rounded-xl px-3 py-2 text-sm text-slate-600 outline-none hover:bg-slate-900/5 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-cyan-400 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
             >
-              Overview
+              总览
             </Link>
             <Link
               to="/login"
@@ -57,10 +55,10 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
               }}
               className="rounded-xl px-3 py-2 text-sm text-slate-600 outline-none hover:bg-slate-900/5 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-cyan-400 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
             >
-              Sign in
+              扫码登录
             </Link>
             <Button
-              aria-label={dark ? "Use light theme" : "Use dark theme"}
+              aria-label={dark ? "切换为浅色主题" : "切换为深色主题"}
               variant="ghost"
               size="sm"
               className="ml-1 h-9 w-9 rounded-xl px-0"
@@ -75,7 +73,7 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
         {children}
       </main>
       <footer className="relative z-10 mx-auto max-w-6xl px-5 pb-8 text-xs text-slate-400 sm:px-8">
-        Loopback only · QR state is held in memory and expires automatically
+        仅限本机回环 · QR 状态只保存在内存中，并会自动过期
       </footer>
     </div>
   );

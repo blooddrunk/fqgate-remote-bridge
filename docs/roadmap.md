@@ -86,6 +86,7 @@ Deliverables:
 - TanStack Query status/QR polling and invalidation
 - modern shadcn-based dashboard
 - QR login UI
+- Simplified Chinese operator copy, explicit first-install guidance, and a Windows one-command launcher
 - light/dark responsive UI
 - browser security headers and same-origin posture
 - unit/integration/UI/browser tests
@@ -118,6 +119,12 @@ for the recorded evidence.
 Detailed acceptance contract:
 
 `docs/tasks/phase-2-tanstack-local-bridge-and-qr-ui.md`
+
+Phase 2 intentionally keeps FQGate installation and upgrade as explicit local
+CLI operations. The follow-up design for Dashboard version checks, optional
+GitHub/Gitee release sources, and user-confirmed install/upgrade actions is
+recorded in [`docs/plans/fqgate-install-upgrade-dashboard.md`](plans/fqgate-install-upgrade-dashboard.md);
+it is not implemented as part of Phase 2.
 
 ## Phase 3 — cloudflared lifecycle and manual Tunnel integration
 

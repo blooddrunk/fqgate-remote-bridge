@@ -59,7 +59,7 @@ async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promi
     response = await fetch(input, { ...init, credentials: "same-origin" });
   } catch {
     throw new BridgeApiError(
-      "The bridge could not be reached. Check that it is running on this PC.",
+      "无法连接本机桥接，请确认本机操作台正在运行。",
       "UPSTREAM_UNAVAILABLE",
       0,
       undefined,
@@ -70,15 +70,16 @@ async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promi
   try {
     value = (await response.json()) as unknown;
   } catch {
-    throw new BridgeApiError(
-      "The bridge returned an invalid response.",
-      "INTERNAL_ERROR",
-      response.status,
-    );
+    throw new BridgeApiError("桥接返回了无法识别的响应。", "INTERNAL_ERROR", response.status);
   }
   if (!response.ok) {
     const error = readError(value);
-    throw new BridgeApiError(error.message, error.code, response.status, error.requestId);
+    throw new BridgeApiError(
+      localizedMessage(error.code, error.message),
+      error.code,
+      response.status,
+      error.requestId,
+    );
   }
   return value as T;
 }
@@ -89,19 +90,31 @@ function readError(value: unknown): {
   readonly requestId?: string;
 } {
   if (typeof value !== "object" || value === null || !("error" in value)) {
-    return { code: "INTERNAL_ERROR", message: "The bridge could not complete the request." };
+    return { code: "INTERNAL_ERROR", message: "桥接暂时无法完成请求。" };
   }
   const error = value.error;
   if (typeof error !== "object" || error === null) {
-    return { code: "INTERNAL_ERROR", message: "The bridge could not complete the request." };
+    return { code: "INTERNAL_ERROR", message: "桥接暂时无法完成请求。" };
   }
   const record = error as Record<string, unknown>;
   return {
     code: typeof record.code === "string" ? record.code : "INTERNAL_ERROR",
-    message:
-      typeof record.message === "string"
-        ? record.message
-        : "The bridge could not complete the request.",
+    message: typeof record.message === "string" ? record.message : "桥接暂时无法完成请求。",
     ...(typeof record.requestId === "string" ? { requestId: record.requestId } : {}),
   };
+}
+
+function localizedMessage(code: string, fallback: string): string {
+  const messages: Record<string, string> = {
+    FQGATE_NOT_INSTALLED: "尚未安装 FQGate，请先完成安装。",
+    FQGATE_NOT_RUNNING: "FQGate 尚未运行，请先启动 FQGate。",
+    FQGATE_INCOMPATIBLE: "当前 FQGate 版本未通过兼容性验证。",
+    FQGATE_UNHEALTHY: "FQGate 健康检查未通过。",
+    UPSTREAM_UNAVAILABLE: "暂时无法连接 FQGate，请检查它是否正在运行。",
+    QR_FLOW_EXPIRED: "二维码已过期，请重新生成。",
+    QR_FLOW_REPLACED: "二维码已被替换，请重新生成。",
+    QR_FLOW_INVALID: "扫码流程已失效，请重新生成二维码。",
+    INTERNAL_ERROR: "桥接暂时无法完成请求，请稍后重试。",
+  };
+  return messages[code] ?? (fallback.length > 0 ? fallback : "桥接暂时无法完成请求。");
 }

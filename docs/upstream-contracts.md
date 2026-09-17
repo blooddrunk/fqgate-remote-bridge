@@ -264,13 +264,19 @@ pinned:         optional operator-selected version
 autoUpdate:     off | patch | compatible | latest
 ```
 
-Default recommendation for the first production-capable release:
+For the current Phase 2 release, the effective policy is deliberately:
 
 ```text
-autoUpdate = compatible
+autoUpdate = off
 ```
 
-where an update is downloaded automatically but only activated when it satisfies the project's compatibility policy and activation probes.
+An operator must explicitly run the CLI plan/apply commands; no Dashboard
+load, bridge startup, or background timer downloads or activates FQGate. A
+future release may offer a conservative `compatible` policy, where an update
+is downloaded automatically but only activated after it satisfies the
+compatibility policy and activation probes. The user-facing source selection,
+confirmation, and rollback design is documented in
+[`docs/plans/fqgate-install-upgrade-dashboard.md`](plans/fqgate-install-upgrade-dashboard.md).
 
 ## Fail-closed rule
 
