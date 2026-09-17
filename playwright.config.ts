@@ -12,8 +12,8 @@ export default defineConfig({
     ...devices["Desktop Chrome"],
   },
   webServer: {
-    command: process.env.CI ? "pnpm start" : "pnpm dev",
-    url: "http://127.0.0.1:17282",
+    command: process.env.CI ? "node scripts/start-bridge.mjs" : "pnpm dev",
+    port: 17282,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
