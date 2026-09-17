@@ -4,16 +4,25 @@ import type { HealthObservation } from "../fqgate/health/types.js";
 import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
 import type { BuildInfo } from "../shared/build-info.js";
 import {
+  type BridgeOpenApiCatalogResponse,
   type BridgeCapabilitiesResponse,
   type BridgeStatusResponse,
   type BridgeVersionResponse,
   type QrBeginResponse,
   type QrPollResponse,
+  type BridgeUpdateStatusResponse,
   normalizeCompatibility,
 } from "./contracts.js";
 import { QR_FLOW_TTL_MS, type FqgateQrAdapter, type QrPollUpstreamResult } from "./qr/adapter.js";
 import type { QrFlowRegistry, StoredQrFlow } from "./qr/registry.js";
 import { Redactor } from "../shared/redaction.js";
+import type { FqgateOpenApiServicePort } from "../fqgate/openapi/service.js";
+import type { FqgateUpdateServicePort } from "../fqgate/update/service.js";
+import {
+  listBridgeOperations,
+  listRequiredFqgateContracts,
+  type BridgeOperationPolicy,
+} from "./policy/registry.js";
 
 export interface LifecycleStatusReader {
   status(): Promise<FqgateStatus>;
@@ -24,6 +33,8 @@ export interface BridgeServiceOptions {
   readonly lifecycle: LifecycleStatusReader | FqgateLifecycleManager;
   readonly qrAdapter: FqgateQrAdapter;
   readonly qrRegistry: QrFlowRegistry;
+  readonly updateService?: FqgateUpdateServicePort;
+  readonly openApiService?: FqgateOpenApiServicePort;
   readonly now?: () => string;
 }
 
@@ -32,6 +43,8 @@ export class BridgeService {
   private readonly lifecycle: LifecycleStatusReader;
   private readonly qrAdapter: FqgateQrAdapter;
   private readonly qrRegistry: QrFlowRegistry;
+  private readonly updateService: FqgateUpdateServicePort | undefined;
+  private readonly openApiService: FqgateOpenApiServicePort | undefined;
   private readonly now: () => string;
   private readonly redactor = new Redactor();
 
@@ -40,6 +53,8 @@ export class BridgeService {
     this.lifecycle = options.lifecycle;
     this.qrAdapter = options.qrAdapter;
     this.qrRegistry = options.qrRegistry;
+    this.updateService = options.updateService;
+    this.openApiService = options.openApiService;
     this.now = options.now ?? (() => new Date().toISOString());
   }
 
@@ -112,6 +127,50 @@ export class BridgeService {
     }
   }
 
+  async updateStatus(): Promise<BridgeUpdateStatusResponse> {
+    return this.requireUpdateService().getStatus();
+  }
+
+  async checkForUpdate(): Promise<BridgeUpdateStatusResponse> {
+    return this.requireUpdateService().checkForUpdate();
+  }
+
+  async planInstallOrUpdate(): Promise<BridgeUpdateStatusResponse> {
+    return this.requireUpdateService().planInstallOrUpdate();
+  }
+
+  async applyUpdate(planId: string): Promise<BridgeUpdateStatusResponse> {
+    return this.requireUpdateService().applyConfirmed(planId);
+  }
+
+  async openApiCatalog(refresh = false): Promise<BridgeOpenApiCatalogResponse> {
+    const service = this.requireOpenApiService();
+    if (refresh) {
+      await service.refresh();
+    }
+    return service.catalog(
+      listBridgeOperations().map(toCatalogOperation),
+      listRequiredFqgateContracts(),
+    );
+  }
+
+  private requireUpdateService(): FqgateUpdateServicePort {
+    if (this.updateService === undefined) {
+      throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, "The update service is not available");
+    }
+    return this.updateService;
+  }
+
+  private requireOpenApiService(): FqgateOpenApiServicePort {
+    if (this.openApiService === undefined) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        "The runtime OpenAPI service is not available",
+      );
+    }
+    return this.openApiService;
+  }
+
   private completePoll(
     sessionId: string,
     flow: StoredQrFlow,
@@ -135,6 +194,20 @@ export class BridgeService {
       expiresAt: new Date(flow.expiresAtMs).toISOString(),
     };
   }
+}
+
+function toCatalogOperation(operation: BridgeOperationPolicy) {
+  return {
+    id: operation.id,
+    method: operation.method,
+    path: operation.path,
+    classification: operation.classification,
+    intent: operation.intent,
+    exposure: operation.exposure,
+    requiredCompatibility: operation.requiredCompatibility,
+    documentationVisible: operation.documentationVisible,
+    ...(operation.upstream === undefined ? {} : { upstream: operation.upstream }),
+  };
 }
 
 function assertQrReady(status: FqgateStatus): void {

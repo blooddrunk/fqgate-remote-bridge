@@ -1,5 +1,5 @@
 import { loadConfig } from "../config/config.js";
-import { createLifecycleManager } from "../app/runtime.js";
+import { createApplicationServices } from "../app/runtime.js";
 import { getBuildInfo } from "../shared/build-info.js";
 import { StructuredLogger } from "../shared/logger.js";
 import { BridgeService } from "./service.js";
@@ -32,9 +32,12 @@ async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
     const configPath = process.env.FQGATE_REMOTE_BRIDGE_CONFIG;
     const config = await loadConfig(configPath === "" ? undefined : configPath);
     const http = new FetchHttpTransport();
+    const application = createApplicationServices(config);
     const service = new BridgeService({
       buildInfo: getBuildInfo(),
-      lifecycle: createLifecycleManager(config),
+      lifecycle: application.lifecycle,
+      updateService: application.update,
+      openApiService: application.openApi,
       qrAdapter: new FqgateQrAdapter({
         baseUrl: config.fqgateBaseUrl,
         http,

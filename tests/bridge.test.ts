@@ -300,6 +300,10 @@ describe("bridge service and HTTP policy boundary", () => {
 
     const raw = await handler(new Request("http://127.0.0.1/v1/market/health"));
     expect(raw.status).toBe(404);
+    const discoveredButUnregistered = await handler(
+      new Request("http://127.0.0.1/v1/new/unregistered"),
+    );
+    expect(discoveredButUnregistered.status).toBe(404);
     const wrongMethod = await handler(
       new Request("http://127.0.0.1/api/v1/status", { method: "POST" }),
     );

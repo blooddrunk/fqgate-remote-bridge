@@ -2,13 +2,13 @@
 
 FQGate Remote Bridge 是运行在 Windows 本机的安全操作台，用来查看 FQGate 状态、完成 QR 登录，并逐步把 FQGate 的只读行情能力安全地带到远程环境。桥接和 FQGate 当前都只绑定 `127.0.0.1`，不会把 FQGate 直接暴露给局域网或公网。
 
-当前仓库已完成 Phase 0、Phase 1 和 Phase 2。下一阶段正式进入 **Phase 3：FQGate 本地升级中心 + Runtime OpenAPI/API Docs 基座**。Cloudflare Tunnel、Cloudflare Access 和远程行情 API 仍然属于后续阶段。
+当前仓库已完成 Phase 0、Phase 1、Phase 2 和 Phase 3。Phase 3 的本地升级中心、Runtime OpenAPI/API Reference 及目标 Windows x64 安全验收均已记录；Cloudflare Tunnel、Cloudflare Access 和远程行情 API 仍然属于后续阶段。
 
 ## 先看结论
 
 - FQGate **不会自动安装或自动升级**。首次安装和更新都必须由用户明确触发。
 - 当前已有安全的 CLI 生命周期：下载、大小/SHA-256 校验、版本/兼容性检查、健康检查和失败回滚。
-- Phase 3 会把这套生命周期接入 Dashboard，但不会另写一套 Web updater。
+- Phase 3 Dashboard 复用同一套 lifecycle/update transaction，不另写 Web updater；更新检查、预览和安装都必须由用户显式操作。
 - Phase 3 会直接读取运行中的 `http://127.0.0.1:17281/openapi.json` 作为 FQGate 当前接口描述的 source of truth，不手工复制官方接口清单。
 - **OpenAPI 只负责描述，不负责授权。** 新出现的 FQGate 接口即使能在文档里看到，也不会自动变成 Bridge 可调用接口。
 - Cloudflare Tunnel/Access 会在本地升级和 API 文档闭环完成后再进入下一阶段。
@@ -141,7 +141,13 @@ node .\dist\cli\main.js fqgate update --apply --dry-run
 node .\dist\cli\main.js fqgate update --apply
 ```
 
-Phase 3 会把同一个 lifecycle/update transaction 接入 Dashboard，并增加运行时 OpenAPI compatibility probe。
+Dashboard 等价入口：
+
+- 更新中心：<http://127.0.0.1:17282/updates>；
+- API Reference：<http://127.0.0.1:17282/api-reference>。
+
+Dashboard 与 CLI 共用同一个 lifecycle/update application service；候选激活在
+health 后还会执行 Runtime OpenAPI validation、required Bridge contract 检查和既有语义探针。
 
 ## Runtime OpenAPI / API Docs 设计
 
@@ -178,10 +184,12 @@ Phase 3 不会复制 `/docs` 页面，也不会把 `/v1/*` 透明代理出来，
 - 不允许任意 manifest/EXE URL；
 - 新上游接口默认拒绝；
 - OpenAPI 发现不会自动修改授权；
+- Upstream FQGate Reference 只读展示，不提供 raw upstream `Try it out`；
+- Bridge API 只来自显式 operation registry；
 - QR/session 数据保持临时、脱敏、不写浏览器持久存储；
 - FQGate 未通过兼容性验证时相关操作 fail closed。
 
-## 当前 API（Phase 2 已实现，仅本机回环）
+## 当前 API（Phase 3，仅本机回环）
 
 ```text
 GET  /api/v1/version
@@ -189,9 +197,15 @@ GET  /api/v1/capabilities
 GET  /api/v1/status
 POST /api/v1/session/qr/begin
 POST /api/v1/session/qr/poll
+GET  /api/v1/updates/status
+POST /api/v1/updates/check
+POST /api/v1/updates/plan
+POST /api/v1/updates/apply
+GET  /api/v1/openapi/catalog
+POST /api/v1/openapi/refresh
 ```
 
-Phase 3 会新增明确注册的本地 update/OpenAPI/catalog 操作；最终路径以实现和 operation registry 为准。
+更新操作均为本机 loopback-only 的显式注册操作；`updates/apply` 只接受服务端已生成且仍然匹配的 `planId`，不接受 manifest/EXE/OpenAPI URL。
 
 ## 当前开发任务
 
@@ -225,4 +239,5 @@ docs/prompts/phase-3-codex-goal.md
 - [Runtime OpenAPI / Remote Docs 设计](docs/plans/runtime-openapi-and-remote-docs.md)
 - [Phase 2 完成报告](docs/status/phase-2-completion.md)
 - [Windows Phase 2 验收](docs/operations/windows-phase-2-acceptance.md)
+- [Windows Phase 3 验收](docs/operations/windows-phase-3-acceptance.md)
 - [Agent 工作约定](docs/agent-guide.md)

@@ -3,7 +3,8 @@ param(
     [string]$ConfigPath,
     [switch]$ExecuteInstall,
     [switch]$VerifyCli,
-    [switch]$VerifyBridge
+    [switch]$VerifyBridge,
+    [switch]$VerifyPhase3
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,21 +18,103 @@ if (-not (Test-Path -LiteralPath $cliPath -PathType Leaf)) {
 function Invoke-BridgeCli {
     param([string[]]$Arguments)
 
-    & $script:nodePath $script:cliPath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "fqgate-remote-bridge exited with code $LASTEXITCODE"
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $script:nodePath
+    $startInfo.Arguments = (@($script:cliPath) + $Arguments |
+        ForEach-Object { ConvertTo-ProcessArgument ([string]$_) }) -join " "
+    $startInfo.WorkingDirectory = $script:repositoryRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start the bridge CLI."
+        }
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        if ($stdout) {
+            Write-Host $stdout.TrimEnd()
+        }
+        if ($stderr) {
+            Write-Host $stderr.TrimEnd()
+        }
+        if ($process.ExitCode -ne 0) {
+            throw "fqgate-remote-bridge exited with code $($process.ExitCode)"
+        }
+    } finally {
+        $process.Dispose()
     }
+}
+
+function ConvertTo-ProcessArgument {
+    param([string]$Value)
+
+    if ($Value -notmatch '[\s"]') {
+        return $Value
+    }
+    return '"' + $Value.Replace('"', '\"') + '"'
 }
 
 $node =
     Get-Command node -CommandType Application -ErrorAction SilentlyContinue |
     Select-Object -First 1
-if ($null -eq $node) {
+$nodePath = $null
+if ($null -ne $node) {
+    $nodePath = $node.Source
+} else {
+    $nodeCandidates = @()
+    if ($env:ProgramFiles) {
+        $nodeCandidates += Join-Path $env:ProgramFiles "nodejs\node.exe"
+    }
+    if (${env:ProgramFiles(x86)}) {
+        $nodeCandidates += Join-Path ${env:ProgramFiles(x86)} "nodejs\node.exe"
+    }
+    if ($env:LOCALAPPDATA) {
+        $nodeCandidates += Join-Path $env:LOCALAPPDATA "Programs\nodejs\node.exe"
+    }
+    $nodePath = $nodeCandidates |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+        Select-Object -First 1
+}
+if ([string]::IsNullOrWhiteSpace($nodePath)) {
     throw "Node.js 22 or newer is required."
 }
 
-$nodePath = $node.Source
-$nodeVersionText = (& $nodePath --version).Trim().TrimStart("v")
+function Get-NodeVersionText {
+    param([string]$Path)
+
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $Path
+    $startInfo.Arguments = "--version"
+    $startInfo.WorkingDirectory = $env:SystemRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start Node.js at '$Path'."
+        }
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) {
+            throw "Node.js version probe failed: $stderr"
+        }
+        return $stdout.Trim()
+    } finally {
+        $process.Dispose()
+    }
+}
+
+$nodeVersionText = (Get-NodeVersionText $nodePath).TrimStart("v")
+if ([string]::IsNullOrWhiteSpace($nodeVersionText)) {
+    throw "Node.js 22 or newer is required; the version probe returned no version."
+}
 $nodeVersion = [Version]$nodeVersionText
 if ($nodeVersion.Major -lt 22) {
     throw "Node.js 22 or newer is required; found $nodeVersionText."
@@ -46,8 +129,18 @@ function Add-ConfigArgument {
     return $Arguments
 }
 
+if ($VerifyPhase3) {
+    # Phase 3 verification deliberately implies the ordinary CLI and bridge
+    # smoke checks, but never applies an update or changes the FQGate binary.
+    $VerifyCli = $true
+    $VerifyBridge = $true
+}
+
 if ($VerifyCli) {
     Invoke-BridgeCli (Add-ConfigArgument @("version", "--json"))
+    if ($VerifyPhase3) {
+        Invoke-BridgeCli (Add-ConfigArgument @("fqgate", "update", "--check", "--json"))
+    }
     if (-not $VerifyBridge) {
         exit 0
     }
@@ -112,6 +205,74 @@ if ($VerifyBridge) {
 
         if ($rawStatus -ne 404) {
             throw "The raw FQGate path must remain unreachable; expected HTTP 404, received $rawStatus."
+        }
+
+        if ($VerifyPhase3) {
+            $fqgateListeners = @(Get-NetTCPConnection -State Listen -LocalPort 17281 -ErrorAction SilentlyContinue)
+            if ($fqgateListeners.Count -ne 1 -or $fqgateListeners[0].LocalAddress -ne "127.0.0.1") {
+                throw "FQGate must have exactly one IPv4 loopback listener on port 17281."
+            }
+
+            $updateStatusResponse = Invoke-WebRequest `
+                -UseBasicParsing `
+                -Uri "http://127.0.0.1:$bridgePort/api/v1/updates/status" `
+                -TimeoutSec 5
+            $updateStatus = ($updateStatusResponse.Content | ConvertFrom-Json)
+            if ($updateStatus.releaseSource.id -ne "github") {
+                throw "The Dashboard update source must remain the fixed GitHub adapter."
+            }
+
+            $catalogResponse = Invoke-WebRequest `
+                -UseBasicParsing `
+                -Uri "http://127.0.0.1:$bridgePort/api/v1/openapi/catalog" `
+                -TimeoutSec 5
+            $catalog = ($catalogResponse.Content | ConvertFrom-Json)
+            if ($catalog.snapshot.endpoint -ne "http://127.0.0.1:17281/openapi.json") {
+                throw "Runtime OpenAPI discovery did not use the fixed loopback endpoint."
+            }
+            if ($catalog.snapshot.fingerprint -notmatch '^[a-f0-9]{64}$') {
+                throw "Runtime OpenAPI did not return a deterministic SHA-256 fingerprint."
+            }
+            $operationCount = @($catalog.snapshot.operations).Count
+            $missingContractCount = @($catalog.contractCoverage.missing).Count
+            Write-Host ("Runtime OpenAPI live check: openapi={0}; bytes={1}; fingerprint={2}; operations={3}; missing_required={4}." -f `
+                $catalog.snapshot.openapiVersion,
+                $catalog.snapshot.byteLength,
+                $catalog.snapshot.fingerprint,
+                $operationCount,
+                $missingContractCount)
+
+            $checkResponse = Invoke-WebRequest `
+                -UseBasicParsing `
+                -Method Post `
+                -ContentType "application/json" `
+                -Body "{}" `
+                -Uri "http://127.0.0.1:$bridgePort/api/v1/updates/check" `
+                -TimeoutSec 30
+            $check = ($checkResponse.Content | ConvertFrom-Json)
+            if ($check.releaseSource.id -ne "github") {
+                throw "Dashboard update check did not use the fixed GitHub adapter."
+            }
+
+            $unknownStatus = 0
+            try {
+                $unknownResponse = Invoke-WebRequest `
+                    -UseBasicParsing `
+                    -Uri "http://127.0.0.1:$bridgePort/v1/new/unregistered" `
+                    -TimeoutSec 2
+                $unknownStatus = [int]$unknownResponse.StatusCode
+            } catch {
+                if ($null -ne $_.Exception.Response) {
+                    $unknownStatus = [int]$_.Exception.Response.StatusCode
+                } else {
+                    throw
+                }
+            }
+            if ($unknownStatus -ne 404) {
+                throw "An unregistered upstream endpoint must remain unreachable; received $unknownStatus."
+            }
+
+            Write-Host "Phase 3 trusted update check, live OpenAPI catalog, contract fingerprint, and deny-by-default smoke tests passed."
         }
 
         Write-Host "Production bridge loopback and deny-by-default smoke test passed."

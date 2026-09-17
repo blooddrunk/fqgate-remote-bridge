@@ -1,13 +1,16 @@
 # Development Roadmap
 
-This roadmap is ordered to reduce risk before Internet exposure. The repository has closed the local lifecycle and local Dashboard milestones. The next step is to make FQGate upgrades and runtime API discovery safe and observable **while everything still remains loopback-only**.
+This roadmap is ordered to reduce risk before Internet exposure. The repository has
+closed the local lifecycle, upgrade center, and runtime API discovery milestones.
+Later phases must remain separately scoped and everything proven here remains
+loopback-only.
 
 ## Current state
 
 - Phase 0: **CLOSED**
 - Phase 1: **CLOSED**
 - Phase 2: **CLOSED**
-- Phase 3: **ACTIVE / next implementation package**
+- Phase 3: **CLOSED**
 - Phase 4+: planned only
 
 The current local deployment remains:
@@ -48,9 +51,9 @@ The Phase 2 boundary remains a required baseline for all later work: no catch-al
 
 ## Phase 3 — Local upgrade center and runtime OpenAPI/docs foundation
 
-Status: **ACTIVE / next implementation package**.
+Status: **CLOSED / implementation and target Windows acceptance recorded**.
 
-Goal: finish the local operational control plane before any Tunnel is introduced. This phase combines the already-planned Dashboard upgrade workflow with runtime FQGate OpenAPI discovery so upgrades can be checked against the API surface actually provided by the installed candidate.
+Goal: finish the local operational control plane before any Tunnel is introduced. The implementation combines the Dashboard upgrade workflow with runtime FQGate OpenAPI discovery so upgrades are checked against the API surface actually provided by the installed candidate. The implementation and bounded target Windows x64 evidence are recorded in `docs/operations/windows-phase-3-acceptance.md`.
 
 ### 3A. FQGate upgrade center
 
@@ -89,6 +92,11 @@ Deliverables:
 - bridge/remote-contract view generated only from explicitly registered bridge operations/mappings;
 - endpoint coverage/diff information: discovered upstream paths, bridge-approved mappings, unapproved/new paths, removed paths, and required-contract changes;
 - reusable compatibility probe that verifies required paths/methods for bridge-owned FQGate adapters during install/upgrade activation.
+
+The current implementation exposes `/updates` and `/api-reference`, keeps the
+release source fixed to the official GitHub adapter, rejects stale plan
+identities, and reuses the lifecycle `installPlan` transaction. Runtime OpenAPI
+discovery remains reference-only and does not mutate the operation registry.
 
 Important rule:
 
@@ -286,7 +294,8 @@ These should be added only when real use justifies the extra operational surface
 
 ## Current development handoff
 
-The active coding task is **Phase 3 only**.
+The Phase 3 handoff is complete; no Phase 4+ implementation should begin until
+a new phase is explicitly opened and scoped.
 
 Use:
 

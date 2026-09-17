@@ -14,9 +14,14 @@ describe("Windows entry points", () => {
       expect(script).toContain('"dist\\cli\\main.js"');
       expect(script).toContain("Test-Path -LiteralPath $cliPath -PathType Leaf");
       expect(script).toContain("Select-Object -First 1");
-      expect(script).toContain("& $script:nodePath $script:cliPath @Arguments");
       expect(script).toContain("--config");
       expect(script).not.toContain("pnpm exec fqgate-remote-bridge");
+      if (scriptName === "acceptance.ps1") {
+        expect(script).toContain("System.Diagnostics.ProcessStartInfo");
+        expect(script).toContain("ConvertTo-ProcessArgument");
+      } else {
+        expect(script).toContain("& $script:nodePath $script:cliPath @Arguments");
+      }
     },
   );
 
@@ -31,6 +36,22 @@ describe("Windows entry points", () => {
     expect(script).toContain('LocalAddress -ne "127.0.0.1"');
     expect(script).toContain("/v1/market/health");
     expect(script).toContain("Stop-Process -Id $bridgeProcess.Id -Force");
+  });
+
+  it("contains the non-mutating Phase 3 live OpenAPI and update-source checks", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("[switch]$VerifyPhase3");
+    expect(script).toContain("$nodeCandidates");
+    expect(script).toContain("Get-NodeVersionText");
+    expect(script).toContain('fqgate", "update", "--check", "--json"');
+    expect(script).toContain("/api/v1/openapi/catalog");
+    expect(script).toContain("http://127.0.0.1:17281/openapi.json");
+    expect(script).toContain("/v1/new/unregistered");
+    expect(script).toContain("$catalog.snapshot.fingerprint");
   });
 
   it("provides an explicit one-command dashboard launcher without silent FQGate installation", () => {

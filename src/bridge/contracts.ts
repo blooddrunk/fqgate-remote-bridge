@@ -2,8 +2,12 @@ import type { CompatibilityEvaluation } from "../fqgate/compatibility/policy.js"
 import type { FqgateLifecycleState, FqgateStatus } from "../fqgate/install/lifecycle.js";
 import type { ManagedProcessState } from "../fqgate/process/types.js";
 import type { BuildInfo } from "../shared/build-info.js";
+import type { OpenApiCatalog } from "../fqgate/openapi/types.js";
+import type { UpdateStatusView } from "../fqgate/update/service.js";
 
 export type BridgeVersionResponse = BuildInfo;
+export type BridgeUpdateStatusResponse = UpdateStatusView;
+export type BridgeOpenApiCatalogResponse = OpenApiCatalog;
 
 export interface CompatibilityResponse {
   readonly version: string | null;

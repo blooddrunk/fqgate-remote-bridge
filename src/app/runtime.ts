@@ -10,18 +10,33 @@ import { ChildProcessRunner } from "../fqgate/process/runner.js";
 import { FqgateCandidateValidator } from "../fqgate/process/candidate.js";
 import { NativeManagedProcessController } from "../fqgate/process/native.js";
 import { StructuredLogger } from "../shared/logger.js";
+import { listRequiredFqgateContracts } from "../bridge/policy/registry.js";
+import { FqgateOpenApiService, RequiredContractOpenApiProbe } from "../fqgate/openapi/service.js";
+import { FqgateUpdateService } from "../fqgate/update/service.js";
 
-export function createLifecycleManager(config: AppConfig): FqgateLifecycleManager {
+export interface ApplicationServices {
+  readonly lifecycle: FqgateLifecycleManager;
+  readonly openApi: FqgateOpenApiService;
+  readonly update: FqgateUpdateService;
+}
+
+export function createApplicationServices(config: AppConfig): ApplicationServices {
   const http = new FetchHttpTransport();
   const policy = new CompatibilityPolicy(config.compatibility);
   const runner = new ChildProcessRunner();
   const layout = createFqgateLayout(config.installDirectory);
+  const openApi = new FqgateOpenApiService({
+    http,
+    timeoutMs: Math.min(config.activation.processTimeoutMs, 5_000),
+    maxBytes: 4 * 1024 * 1024,
+    ttlMs: 5_000,
+  });
   const healthProbe = new FqgateHealthProbe({
     baseUrl: config.fqgateBaseUrl,
     http,
     timeoutMs: Math.min(config.activation.processTimeoutMs, 5_000),
   });
-  return new FqgateLifecycleManager({
+  const lifecycle = new FqgateLifecycleManager({
     layout,
     releaseSource: new OfficialFqgateReleaseSource(
       http,
@@ -41,6 +56,16 @@ export function createLifecycleManager(config: AppConfig): FqgateLifecycleManage
     activationHealthTimeoutMs: config.activation.healthTimeoutMs,
     activationHealthPollIntervalMs: config.activation.healthPollIntervalMs,
     processTimeoutMs: config.activation.processTimeoutMs,
+    runtimeOpenApiProbe: new RequiredContractOpenApiProbe(openApi, listRequiredFqgateContracts()),
     logger: new StructuredLogger({ level: config.logLevel }),
   });
+  return {
+    lifecycle,
+    openApi,
+    update: new FqgateUpdateService({ lifecycle }),
+  };
+}
+
+export function createLifecycleManager(config: AppConfig): FqgateLifecycleManager {
+  return createApplicationServices(config).lifecycle;
 }

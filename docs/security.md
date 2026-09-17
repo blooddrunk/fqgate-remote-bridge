@@ -115,6 +115,23 @@ Requirements:
 - CLI and Dashboard must reuse the same lifecycle/update transaction;
 - failures preserve or restore the previous known-good binary where the established lifecycle transaction supports rollback.
 
+The exposed local operations are explicit registry entries only:
+
+```text
+GET  /api/v1/updates/status
+POST /api/v1/updates/check
+POST /api/v1/updates/plan
+POST /api/v1/updates/apply
+GET  /api/v1/openapi/catalog
+POST /api/v1/openapi/refresh
+```
+
+`updates/apply` accepts only a server-issued plan identity. It does not accept
+release URLs, executable URLs, manifest bodies, or upstream paths. The update
+service re-checks the fixed trusted candidate before passing the original plan
+to the lifecycle manager. Runtime OpenAPI catalog responses contain bounded
+structural metadata rather than the raw upstream document.
+
 ## Release source / supply-chain policy
 
 ### FQGate
@@ -130,6 +147,7 @@ Requirements:
 - preserve previous known-good binary;
 - verify health after activation;
 - Phase 3 additionally verifies the runtime OpenAPI required-contract baseline before activation is considered successful;
+- the Runtime OpenAPI target is fixed to `http://127.0.0.1:17281/openapi.json`;
 - rollback on failed activation when safe.
 
 OpenAPI compatibility is not a binary equality check against the whole upstream API. Unrelated added endpoints do not automatically block an update; missing/invalid bridge-required contracts do.

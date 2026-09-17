@@ -148,12 +148,37 @@ async function dispatchRequest(
       const body = await readJsonBody(request, operation.maxBodyBytes, "poll");
       return service.pollQr(readSessionId(body));
     }
+    case "updates.status":
+      rejectUnexpectedGetBody(request);
+      return service.updateStatus();
+    case "updates.check":
+      rejectEmptyBody(await readJsonBody(request, operation.maxBodyBytes, "update check"));
+      return service.checkForUpdate();
+    case "updates.plan":
+      rejectEmptyBody(await readJsonBody(request, operation.maxBodyBytes, "update plan"));
+      return service.planInstallOrUpdate();
+    case "updates.apply": {
+      const body = await readJsonBody(request, operation.maxBodyBytes, "update apply");
+      return service.applyUpdate(readPlanId(body));
+    }
+    case "openapi.catalog":
+      rejectUnexpectedGetBody(request);
+      return service.openApiCatalog();
+    case "openapi.refresh":
+      rejectEmptyBody(await readJsonBody(request, operation.maxBodyBytes, "OpenAPI refresh"));
+      return service.openApiCatalog(true);
   }
 }
 
 function rejectBeginBody(body: Record<string, unknown>): void {
   if (Object.keys(body).length > 0) {
     throw new BridgeError(ERROR_CODES.REQUEST_INVALID, "The begin body must be empty");
+  }
+}
+
+function rejectEmptyBody(body: Record<string, unknown>): void {
+  if (Object.keys(body).length > 0) {
+    throw new BridgeError(ERROR_CODES.REQUEST_INVALID, "This request body must be empty");
   }
 }
 
@@ -170,7 +195,7 @@ function rejectUnexpectedGetBody(request: Request): void {
 async function readJsonBody(
   request: Request,
   maxBytes: number,
-  operation: "begin" | "poll",
+  operation: "begin" | "poll" | "update check" | "update plan" | "update apply" | "OpenAPI refresh",
 ): Promise<Record<string, unknown>> {
   const contentLengthHeader = request.headers.get("content-length");
   if (contentLengthHeader !== null && parseContentLength(contentLengthHeader) > maxBytes) {
@@ -238,6 +263,21 @@ async function readJsonBody(
     );
   }
   return value;
+}
+
+function readPlanId(value: Record<string, unknown>): string {
+  const keys = Object.keys(value);
+  if (keys.length !== 1 || keys[0] !== "planId") {
+    throw new BridgeError(
+      ERROR_CODES.REQUEST_INVALID,
+      "The update apply body must contain only planId",
+    );
+  }
+  const planId = value.planId;
+  if (typeof planId !== "string" || planId.length > 128) {
+    throw new BridgeError(ERROR_CODES.REQUEST_INVALID, "planId must be a valid opaque identifier");
+  }
+  return planId;
 }
 
 function readSessionId(value: Record<string, unknown>): string {
@@ -309,6 +349,15 @@ function httpStatusFor(code: string): number {
     case ERROR_CODES.UPSTREAM_UNAVAILABLE:
     case ERROR_CODES.QR_FLOW_LIMIT:
       return 503;
+    case ERROR_CODES.OPENAPI_FETCH_FAILED:
+    case ERROR_CODES.OPENAPI_RESPONSE_TOO_LARGE:
+      return 503;
+    case ERROR_CODES.OPENAPI_INVALID:
+    case ERROR_CODES.OPENAPI_CONTRACT_MISSING:
+      return 502;
+    case ERROR_CODES.UPDATE_CONFIRMATION_STALE:
+    case ERROR_CODES.UPDATE_IN_PROGRESS:
+      return 409;
     case ERROR_CODES.UPSTREAM_RESPONSE_INVALID:
       return 502;
     case ERROR_CODES.BRIDGE_NOT_READY:
@@ -349,6 +398,18 @@ function publicMessageFor(code: string): string {
       return "The QR login flow was replaced. Start a new flow.";
     case ERROR_CODES.QR_FLOW_LIMIT:
       return "Too many QR login flows are active.";
+    case ERROR_CODES.OPENAPI_FETCH_FAILED:
+      return "无法读取 FQGate 当前 OpenAPI 文档。";
+    case ERROR_CODES.OPENAPI_RESPONSE_TOO_LARGE:
+      return "FQGate OpenAPI 文档超过安全大小限制。";
+    case ERROR_CODES.OPENAPI_INVALID:
+      return "FQGate 当前 OpenAPI 文档无效。";
+    case ERROR_CODES.OPENAPI_CONTRACT_MISSING:
+      return "FQGate 当前 OpenAPI 缺少桥接所需契约。";
+    case ERROR_CODES.UPDATE_CONFIRMATION_STALE:
+      return "安装计划已过期，请重新检查并预览。";
+    case ERROR_CODES.UPDATE_IN_PROGRESS:
+      return "已有 FQGate 更新事务正在执行，请稍候。";
     case ERROR_CODES.BRIDGE_NOT_READY:
       return "The bridge is not ready.";
     default:

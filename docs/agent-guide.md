@@ -8,7 +8,8 @@ AGENTS.md、当前任务包和项目安全文档为准；如果内容冲突，�
 - Phase 0：已关闭。
 - Phase 1：已关闭，并已验证 Windows x64 生命周期、校验和、回滚和健康检查。
 - Phase 2：已关闭，并已在目标 Windows x64 主机完成真实 QR begin/poll/scan。
-- Phase 3+：未开始，不要在普通维护任务中顺手实现。
+- Phase 3：本地升级中心、Runtime OpenAPI/API Reference 和目标 Windows x64
+  安全验收已完成；Phase 4+ 不要在普通维护任务中顺手实现。
 
 Phase 2 的核心边界是：TanStack Start 只作为本地 UI/HTTP 传输层，桥接固定绑定
 127.0.0.1:17282，FQGate 固定保持本机回环，接口必须通过显式策略注册。
@@ -20,12 +21,14 @@ Phase 2 的核心边界是：TanStack Start 只作为本地 UI/HTTP 传输层，
 - 推荐 Windows 用户使用 `scripts/windows/start-dashboard.cmd`。它会准备依赖、构建生产产物，
   启动已安装但停止的 FQGate，并启动 loopback Dashboard。只有显式传入 `-InstallFqgate` 才会
   执行首次安装。
-- 当前升级只通过生命周期 CLI 完成：`fqgate update --check`、`fqgate update --apply --dry-run`
-  和 `fqgate update --apply`。Dashboard 内升级、GitHub/Gitee 源切换和版本提示的完整设计见
-  [`docs/plans/fqgate-install-upgrade-dashboard.md`](plans/fqgate-install-upgrade-dashboard.md)，
-  当前任务不得提前实现其中的后续 API。
+- CLI 和 Dashboard 更新都通过同一个生命周期/update application service 完成：CLI 使用
+  `fqgate update --check`、`fqgate update --apply --dry-run` 和 `fqgate update --apply`，
+  Dashboard 使用 `/updates` 的显式检查、预览和确认操作。页面加载、普通启动和状态轮询
+  不会自动更新；GitHub 仍是唯一启用的固定可信源，Gitee 未启用。
 - 用户文档中的 Windows 目录必须使用占位符或明确标为示例，不得把开发者个人目录写成推荐安装路径。
 - Dashboard 和扫码流程的用户可见文案以简体中文为准；代码、CLI 错误码和上游协议字段仍可保留英文。
+- API Reference 使用运行中的固定 `127.0.0.1:17281/openapi.json`，仅提供上游参考目录、
+  Bridge registry 目录和兼容性变化；不提供 raw upstream Try it out。
 
 ## 开始工作前
 

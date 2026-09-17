@@ -111,9 +111,11 @@ Responsibilities:
 - maintain active/previous known-good binaries;
 - start/stop/restart the FQGate desktop process;
 - verify `--version` and `/v1/market/health`;
-- invoke runtime OpenAPI compatibility probes during candidate activation;
+- invoke runtime `/openapi.json` validation, required Bridge path/method checks,
+  and endpoint-specific compatibility probes during candidate activation;
 - roll back when activation fails;
-- expose one transaction interface reused by CLI and Dashboard.
+- expose one transaction interface reused by CLI and Dashboard through the
+  framework-agnostic update application service.
 
 Phase 0/1 implemented the lifecycle boundary. Phase 3 extends the same boundary rather than reimplementing updater logic in web routes.
 
@@ -158,6 +160,12 @@ Responsibilities:
 - compare two observed schemas for added/removed/changed operations;
 - test the presence of path/method contracts required by bridge adapters;
 - provide source data for local documentation and upgrade compatibility checks.
+
+The service uses a short in-memory TTL cache, explicit refresh/invalidation, a
+deterministic SHA-256 fingerprint over canonical JSON, bounded response bytes,
+and normalized errors. FQGate restart, stop, and candidate activation
+invalidate the cache. A required-contract failure is an activation failure and
+therefore enters the existing rollback path.
 
 OpenAPI is **descriptive, not authoritative for security**. An endpoint discovered in the schema is not remotely or locally bridge-callable unless it is separately represented by bridge policy.
 
@@ -242,6 +250,10 @@ Every intended bridge operation should be represented explicitly by metadata suc
 - compatibility requirement;
 - documentation visibility.
 
+The Phase 3 registry also records an optional upstream method/path mapping and
+local-only exposure class. Runtime OpenAPI discovery never writes to this
+registry.
+
 There is no generic `/* -> FQGate`, no arbitrary upstream path parameter, and no fallback when an unknown route is requested.
 
 Phase 3 local administrative install/update operations must be explicit operations, not hidden Start server-function bypasses.
@@ -286,6 +298,12 @@ Phase 3 adds two operator surfaces without changing the technology shape:
 
 - FQGate version/update center;
 - API reference/compatibility page.
+
+The update center has explicit status, check, plan, and apply operations. A
+plan identity includes the fixed source, candidate version, file name, size,
+SHA-256, and installed candidate context; apply rejects stale identities. The
+API reference page has separate Upstream FQGate, Bridge API, and
+Compatibility/Changes views and never offers raw upstream execution.
 
 The UI remains an operator dashboard, not a general web platform.
 

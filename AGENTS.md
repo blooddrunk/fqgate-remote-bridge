@@ -71,9 +71,9 @@ TanStack Start is a replaceable transport/UI shell. Lifecycle, compatibility, Op
 
 Do not introduce a second backend or a monorepo without a concrete independent-deployment requirement.
 
-## Active Phase 3 contract
+## Completed Phase 3 contract
 
-The active task is:
+The completed task package is:
 
 `docs/tasks/phase-3-fqgate-upgrade-and-runtime-openapi.md`
 
@@ -82,7 +82,10 @@ Relevant design notes:
 - `docs/plans/fqgate-install-upgrade-dashboard.md`
 - `docs/plans/runtime-openapi-and-remote-docs.md`
 
-Phase 3 remains **local-only**. It must not implement Cloudflare Tunnel, Cloudflare Access, public/LAN listeners, remote market-data APIs, MCP, WebSocket proxying, supervisor/notifications, or automatic background updates.
+Phase 3 implementation and target Windows x64 acceptance are complete. It remains
+**local-only**. It must not implement Cloudflare Tunnel,
+Cloudflare Access, public/LAN listeners, remote market-data APIs, MCP, WebSocket
+proxying, supervisor/notifications, or automatic background updates.
 
 ### Phase 3A — upgrade center
 
@@ -115,6 +118,9 @@ Rules:
 - A bridge/remote contract is generated only from explicit operation/mapping metadata.
 - Unknown/new upstream paths remain denied.
 - OpenAPI checks supplement endpoint-specific adapters/contract tests; schema presence alone does not prove semantic compatibility.
+- The implemented service fetches only `http://127.0.0.1:17281/openapi.json`,
+  exposes bounded structural catalog metadata, and invalidates its short cache
+  after managed FQGate restart/activation.
 
 ## Architecture constraints
 
@@ -214,7 +220,7 @@ Follow `docs/roadmap.md`.
 - Phase 0: CLOSED
 - Phase 1: CLOSED
 - Phase 2: CLOSED
-- Phase 3: ACTIVE
+- Phase 3: CLOSED
 - Phase 4+: do not opportunistically implement
 
 Codex handoff:

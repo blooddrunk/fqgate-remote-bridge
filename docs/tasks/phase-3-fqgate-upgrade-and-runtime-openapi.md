@@ -1,6 +1,6 @@
 # Phase 3 Task Package — FQGate Upgrade Center and Runtime OpenAPI Foundation
 
-Status: **ACTIVE / next implementation package**
+Status: **CLOSED / implementation and target Windows acceptance recorded**
 
 ## Goal
 

@@ -89,6 +89,25 @@ Therefore the bridge adopts this rule:
 
 > The running FQGate `/openapi.json` is the preferred source of truth for the upstream API catalog and structural compatibility observations.
 
+Phase 3 consumes only the fixed target:
+
+```text
+http://127.0.0.1:17281/openapi.json
+```
+
+The bridge validates OpenAPI 3.0/3.1 shape, records only bounded metadata in
+the operator view, and computes a deterministic SHA-256 fingerprint over
+canonicalized JSON. The required activation baseline is the presence of:
+
+```text
+GET  /v1/market/health
+POST /v1/market/session/qr/begin
+POST /v1/market/session/qr/poll
+```
+
+Unrelated new paths are surfaced as reference/diff information and do not
+block activation or become Bridge routes.
+
 Important limitations:
 
 - this is an observed upstream contract, not a guarantee that the path/schema will never change;

@@ -19,6 +19,8 @@ import type {
   FqgateRelease,
   FqgateReleaseSource,
 } from "../src/fqgate/release/types.js";
+import type { FqgateActivationOpenApiProbe } from "../src/fqgate/openapi/service.js";
+import type { OpenApiSnapshot } from "../src/fqgate/openapi/types.js";
 import { BridgeError, ERROR_CODES } from "../src/shared/errors.js";
 import type {
   ManagedProcessController,
@@ -122,6 +124,27 @@ class FakeManagedProcess implements ManagedProcessController {
   }
 }
 
+class FakeActivationOpenApiProbe implements FqgateActivationOpenApiProbe {
+  invalidations = 0;
+  probes = 0;
+  fail = false;
+
+  invalidate(): void {
+    this.invalidations += 1;
+  }
+
+  async probe(): Promise<OpenApiSnapshot> {
+    this.probes += 1;
+    if (this.fail) {
+      throw new BridgeError(
+        ERROR_CODES.OPENAPI_CONTRACT_MISSING,
+        "required contract missing in fixture",
+      );
+    }
+    return {} as OpenApiSnapshot;
+  }
+}
+
 function packageFor(version: string, content: string): FqgatePackage {
   const body = Buffer.from(content, "utf8");
   return {
@@ -173,6 +196,7 @@ async function createManager(options: {
   readonly process: FakeManagedProcess;
   readonly healthResponses: Array<HttpResponse | Error>;
   readonly validatedVersions?: readonly string[];
+  readonly runtimeOpenApiProbe?: FqgateActivationOpenApiProbe;
 }): Promise<FqgateLifecycleManager> {
   const downloadHttp = new ArtifactHttp(options.bodies);
   const policy = new CompatibilityPolicy({
@@ -205,6 +229,9 @@ async function createManager(options: {
     activationHealthTimeoutMs: 0,
     activationHealthPollIntervalMs: 1,
     processTimeoutMs: 100,
+    ...(options.runtimeOpenApiProbe === undefined
+      ? {}
+      : { runtimeOpenApiProbe: options.runtimeOpenApiProbe }),
     now: () => "2026-09-16T00:00:00.000Z",
   });
 }
@@ -388,6 +415,38 @@ describe("FQGate lifecycle transaction", () => {
     await expect(manager.install()).rejects.toMatchObject({ code: ERROR_CODES.HEALTH_TIMEOUT });
     expect(await readFile(join(root, "fqgate", "current", "fqgate.exe"), "utf8")).toBe("1.0.0");
     expect(await readdir(layout.downloadsDirectory)).toEqual([]);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rolls back when the runtime OpenAPI required-contract probe fails", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-lifecycle-"));
+    const oldPkg = packageFor("1.0.0", "1.0.0");
+    const newPkg = packageFor("1.0.1", "1.0.1");
+    const bodies = new Map<string, Uint8Array>([
+      [oldPkg.sha256, Buffer.from("1.0.0")],
+      [newPkg.sha256, Buffer.from("1.0.1")],
+    ]);
+    const source = new MutableReleaseSource(releaseFor(oldPkg, "1.0.0"));
+    const process = new FakeManagedProcess();
+    const runtimeProbe = new FakeActivationOpenApiProbe();
+    const manager = await createManager({
+      root,
+      source,
+      bodies,
+      process,
+      runtimeOpenApiProbe: runtimeProbe,
+      healthResponses: [readyHealth(), readyHealth(), readyHealth(), readyHealth()],
+    });
+    await manager.install();
+    source.release = releaseFor(newPkg, "1.0.1");
+    runtimeProbe.fail = true;
+
+    await expect(manager.install()).rejects.toMatchObject({
+      code: ERROR_CODES.OPENAPI_CONTRACT_MISSING,
+    });
+    expect(await readFile(join(root, "fqgate", "current", "fqgate.exe"), "utf8")).toBe("1.0.0");
+    expect(runtimeProbe.probes).toBe(2);
+    expect(runtimeProbe.invalidations).toBeGreaterThan(0);
     await rm(root, { recursive: true, force: true });
   });
 });

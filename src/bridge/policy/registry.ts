@@ -1,25 +1,40 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
+import type { OpenApiHttpMethod, RequiredOpenApiContract } from "../../fqgate/openapi/types.js";
 
 export type BridgeOperationId =
   | "bridge.version"
   | "bridge.capabilities"
   | "bridge.status"
   | "session.qr.begin"
-  | "session.qr.poll";
+  | "session.qr.poll"
+  | "updates.status"
+  | "updates.check"
+  | "updates.plan"
+  | "updates.apply"
+  | "openapi.catalog"
+  | "openapi.refresh";
 
-export type BridgeOperationClassification = "diagnostic" | "session_maintenance";
+export type BridgeOperationClassification = "diagnostic" | "session_maintenance" | "local_admin";
 export type BridgeSensitivity = "none" | "qr_payload";
+export type BridgeOperationIntent = "read_only" | "session_maintenance" | "local_admin";
+export type BridgeExposure = "local_only";
 
 export interface BridgeOperationPolicy {
   readonly id: BridgeOperationId;
   readonly method: "GET" | "POST";
   readonly path: string;
   readonly classification: BridgeOperationClassification;
-  readonly intent: "read_only" | "session_maintenance";
+  readonly intent: BridgeOperationIntent;
+  readonly exposure: BridgeExposure;
   readonly timeoutMs: number;
   readonly maxBodyBytes: number;
   readonly sensitivity: BridgeSensitivity;
   readonly requiredCompatibility: "none" | "validated";
+  readonly documentationVisible: boolean;
+  readonly upstream?: {
+    readonly method: OpenApiHttpMethod;
+    readonly path: string;
+  };
 }
 
 const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
@@ -29,10 +44,12 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/version",
     classification: "diagnostic",
     intent: "read_only",
+    exposure: "local_only",
     timeoutMs: 1_000,
     maxBodyBytes: 0,
     sensitivity: "none",
     requiredCompatibility: "none",
+    documentationVisible: true,
   },
   {
     id: "bridge.capabilities",
@@ -40,10 +57,12 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/capabilities",
     classification: "diagnostic",
     intent: "read_only",
+    exposure: "local_only",
     timeoutMs: 1_000,
     maxBodyBytes: 0,
     sensitivity: "none",
     requiredCompatibility: "none",
+    documentationVisible: true,
   },
   {
     id: "bridge.status",
@@ -51,10 +70,12 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/status",
     classification: "diagnostic",
     intent: "read_only",
+    exposure: "local_only",
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",
     requiredCompatibility: "none",
+    documentationVisible: true,
   },
   {
     id: "session.qr.begin",
@@ -62,10 +83,13 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/session/qr/begin",
     classification: "session_maintenance",
     intent: "session_maintenance",
+    exposure: "local_only",
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "qr_payload",
     requiredCompatibility: "validated",
+    documentationVisible: true,
+    upstream: { method: "POST", path: "/v1/market/session/qr/begin" },
   },
   {
     id: "session.qr.poll",
@@ -73,10 +97,112 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/session/qr/poll",
     classification: "session_maintenance",
     intent: "session_maintenance",
+    exposure: "local_only",
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "none",
     requiredCompatibility: "validated",
+    documentationVisible: true,
+    upstream: { method: "POST", path: "/v1/market/session/qr/poll" },
+  },
+  {
+    id: "updates.status",
+    method: "GET",
+    path: "/api/v1/updates/status",
+    classification: "local_admin",
+    intent: "read_only",
+    exposure: "local_only",
+    timeoutMs: 5_000,
+    maxBodyBytes: 0,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+  {
+    id: "updates.check",
+    method: "POST",
+    path: "/api/v1/updates/check",
+    classification: "local_admin",
+    intent: "local_admin",
+    exposure: "local_only",
+    timeoutMs: 30_000,
+    maxBodyBytes: 1_024,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+  {
+    id: "updates.plan",
+    method: "POST",
+    path: "/api/v1/updates/plan",
+    classification: "local_admin",
+    intent: "local_admin",
+    exposure: "local_only",
+    timeoutMs: 30_000,
+    maxBodyBytes: 1_024,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+  {
+    id: "updates.apply",
+    method: "POST",
+    path: "/api/v1/updates/apply",
+    classification: "local_admin",
+    intent: "local_admin",
+    exposure: "local_only",
+    timeoutMs: 10 * 60_000,
+    maxBodyBytes: 2_048,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+  {
+    id: "openapi.catalog",
+    method: "GET",
+    path: "/api/v1/openapi/catalog",
+    classification: "diagnostic",
+    intent: "read_only",
+    exposure: "local_only",
+    timeoutMs: 5_000,
+    maxBodyBytes: 0,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+  {
+    id: "openapi.refresh",
+    method: "POST",
+    path: "/api/v1/openapi/refresh",
+    classification: "diagnostic",
+    intent: "local_admin",
+    exposure: "local_only",
+    timeoutMs: 5_000,
+    maxBodyBytes: 1_024,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+];
+
+const REQUIRED_FQGATE_CONTRACTS: readonly RequiredOpenApiContract[] = [
+  {
+    id: "fqgate.market.health",
+    method: "GET",
+    path: "/v1/market/health",
+    description: "用于生命周期和桥接状态的健康响应",
+  },
+  {
+    id: "fqgate.session.qr.begin",
+    method: "POST",
+    path: "/v1/market/session/qr/begin",
+    description: "用于开始受管 QR 登录流程",
+  },
+  {
+    id: "fqgate.session.qr.poll",
+    method: "POST",
+    path: "/v1/market/session/qr/poll",
+    description: "用于轮询受管 QR 登录流程",
   },
 ];
 
@@ -109,6 +235,10 @@ export function findBridgeOperation(
 
 export function findBridgeOperationsForPath(path: string): readonly BridgeOperationPolicy[] {
   return OPERATION_POLICIES.filter((operation) => operation.path === path);
+}
+
+export function listRequiredFqgateContracts(): readonly RequiredOpenApiContract[] {
+  return REQUIRED_FQGATE_CONTRACTS;
 }
 
 export function assertOperationRegistryInvariants(): void {

@@ -1,6 +1,6 @@
 # Runtime OpenAPI and Remote API Documentation Design
 
-Status: **planned for Phase 3 foundation; remote exposure deferred to Phase 4/5**.
+Status: **Phase 3 local foundation verified; remote exposure deferred to Phase 4/5**.
 
 ## Why this exists
 
@@ -14,6 +14,12 @@ http://127.0.0.1:17281/openapi.json
 The upstream Python SDK explicitly states that complete parameters and return fields should follow the running `/openapi.json`. That makes the runtime document the best available source for keeping the FQGate API catalog synchronized with the installed version.
 
 The bridge should therefore **consume** the runtime OpenAPI document rather than copy, vendor, or manually reproduce the upstream API documentation.
+
+The current local implementation fetches only
+`http://127.0.0.1:17281/openapi.json`, validates and bounds it, caches it for a
+short TTL, computes a canonical SHA-256 fingerprint, and returns a structural
+catalog to the local Reference UI. It does not expose the raw document or
+proxy `/docs`.
 
 ## Core design rule
 

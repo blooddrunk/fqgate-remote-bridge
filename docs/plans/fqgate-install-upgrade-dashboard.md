@@ -1,6 +1,6 @@
 # FQGate 安装与升级设计
 
-状态：**Phase 3 已激活，作为下一阶段正式实现范围**。
+状态：**Phase 3 实现与目标 Windows x64 验收已完成**。
 
 本文记录 Dashboard 中 FQGate 安装/升级能力的产品与安全设计。Phase 3 实现必须与 `docs/tasks/phase-3-fqgate-upgrade-and-runtime-openapi.md`、`docs/plans/runtime-openapi-and-remote-docs.md` 一致。
 
@@ -8,10 +8,13 @@
 
 - FQGate 不会自动安装。首次安装使用 CLI 预览并明确执行。
 - 当前已有安全的 CLI 安装/升级生命周期：下载、大小/SHA-256 校验、候选版本校验、兼容性检查、启动/健康检查、known-good 回滚。
-- Dashboard 当前只展示状态和安装引导，尚未发起更新事务。
+- Dashboard 当前已通过框架无关 update application service 发起显式检查、预览和确认事务。
 - 当前可信发布源为代码登记的官方 GitHub 源。
 - 任意 manifest/可执行文件 URL 不能作为发布源。
 - Gitee 仅允许作为未来固定可信 adapter；在没有明确可信固定仓库/路径契约前不得启用。
+
+当前实现的 `/updates` 页面只展示固定 GitHub 源，并把确认绑定到
+candidate/plan identity；Gitee 仍未启用。
 
 ## Phase 3 用户体验
 

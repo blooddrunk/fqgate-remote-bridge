@@ -57,6 +57,24 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
             >
               扫码登录
             </Link>
+            <Link
+              to="/updates"
+              activeProps={{
+                className: "bg-slate-900/5 text-slate-950 dark:bg-white/10 dark:text-white",
+              }}
+              className="rounded-xl px-3 py-2 text-sm text-slate-600 outline-none hover:bg-slate-900/5 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-cyan-400 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              更新
+            </Link>
+            <Link
+              to="/api-reference"
+              activeProps={{
+                className: "bg-slate-900/5 text-slate-950 dark:bg-white/10 dark:text-white",
+              }}
+              className="rounded-xl px-3 py-2 text-sm text-slate-600 outline-none hover:bg-slate-900/5 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-cyan-400 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              API Reference
+            </Link>
             <Button
               aria-label={dark ? "切换为浅色主题" : "切换为深色主题"}
               variant="ghost"

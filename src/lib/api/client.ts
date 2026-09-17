@@ -1,6 +1,8 @@
 import type {
+  BridgeOpenApiCatalogResponse,
   BridgeCapabilitiesResponse,
   BridgeStatusResponse,
+  BridgeUpdateStatusResponse,
   QrBeginResponse,
   QrPollResponse,
 } from "../../bridge/contracts.js";
@@ -53,6 +55,42 @@ export async function pollQrLogin(
   });
 }
 
+export async function fetchUpdateStatus(signal?: AbortSignal): Promise<BridgeUpdateStatusResponse> {
+  return fetchJson<BridgeUpdateStatusResponse>(
+    "/api/v1/updates/status",
+    signal === undefined ? undefined : { signal },
+  );
+}
+
+export async function checkForUpdate(): Promise<BridgeUpdateStatusResponse> {
+  return postEmpty<BridgeUpdateStatusResponse>("/api/v1/updates/check");
+}
+
+export async function planInstallOrUpdate(): Promise<BridgeUpdateStatusResponse> {
+  return postEmpty<BridgeUpdateStatusResponse>("/api/v1/updates/plan");
+}
+
+export async function applyUpdate(planId: string): Promise<BridgeUpdateStatusResponse> {
+  return fetchJson<BridgeUpdateStatusResponse>("/api/v1/updates/apply", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ planId }),
+  });
+}
+
+export async function fetchOpenApiCatalog(
+  signal?: AbortSignal,
+): Promise<BridgeOpenApiCatalogResponse> {
+  return fetchJson<BridgeOpenApiCatalogResponse>(
+    "/api/v1/openapi/catalog",
+    signal === undefined ? undefined : { signal },
+  );
+}
+
+export async function refreshOpenApiCatalog(): Promise<BridgeOpenApiCatalogResponse> {
+  return postEmpty<BridgeOpenApiCatalogResponse>("/api/v1/openapi/refresh");
+}
+
 async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -82,6 +120,14 @@ async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promi
     );
   }
   return value as T;
+}
+
+async function postEmpty<T>(input: RequestInfo | URL): Promise<T> {
+  return fetchJson<T>(input, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: "{}",
+  });
 }
 
 function readError(value: unknown): {
@@ -114,6 +160,21 @@ function localizedMessage(code: string, fallback: string): string {
     QR_FLOW_EXPIRED: "二维码已过期，请重新生成。",
     QR_FLOW_REPLACED: "二维码已被替换，请重新生成。",
     QR_FLOW_INVALID: "扫码流程已失效，请重新生成二维码。",
+    OPENAPI_FETCH_FAILED: "无法读取 FQGate 当前 API 文档，请确认 FQGate 正在运行。",
+    OPENAPI_RESPONSE_TOO_LARGE: "FQGate API 文档超过安全大小限制。",
+    OPENAPI_INVALID: "FQGate 当前 API 文档无效。",
+    OPENAPI_CONTRACT_MISSING: "FQGate 当前版本缺少桥接所需接口契约。",
+    UPDATE_CONFIRMATION_STALE: "安装计划已过期，请重新检查并预览。",
+    UPDATE_IN_PROGRESS: "已有 FQGate 更新事务正在执行，请稍候。",
+    MANIFEST_FETCH_FAILED: "无法读取固定可信源的 FQGate 发布清单。",
+    MANIFEST_INVALID: "可信源返回的 FQGate 发布清单无效。",
+    DOWNLOAD_FAILED: "FQGate 下载失败。",
+    SIZE_MISMATCH: "FQGate 下载大小与清单不一致。",
+    CHECKSUM_MISMATCH: "FQGate 下载校验和与清单不一致。",
+    CANDIDATE_INVALID: "FQGate 候选程序未通过版本校验。",
+    VERSION_INCOMPATIBLE: "候选 FQGate 版本未通过兼容性策略。",
+    HEALTH_TIMEOUT: "候选 FQGate 健康检查超时，已拒绝激活。",
+    ROLLBACK_FAILED: "FQGate 激活失败且回滚未完成，请使用 CLI 诊断。",
     INTERNAL_ERROR: "桥接暂时无法完成请求，请稍后重试。",
   };
   return messages[code] ?? (fallback.length > 0 ? fallback : "桥接暂时无法完成请求。");

@@ -10,10 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiReferenceRouteImport } from './routes/api-reference'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as ApiV1CapabilitiesRouteImport } from './routes/api/v1/capabilities'
 import { Route as ApiV1StatusRouteImport } from './routes/api/v1/status'
 import { Route as ApiV1VersionRouteImport } from './routes/api/v1/version'
+import { Route as ApiV1OpenapiCatalogRouteImport } from './routes/api/v1/openapi/catalog'
+import { Route as ApiV1OpenapiRefreshRouteImport } from './routes/api/v1/openapi/refresh'
+import { Route as ApiV1UpdatesApplyRouteImport } from './routes/api/v1/updates/apply'
+import { Route as ApiV1UpdatesCheckRouteImport } from './routes/api/v1/updates/check'
+import { Route as ApiV1UpdatesPlanRouteImport } from './routes/api/v1/updates/plan'
+import { Route as ApiV1UpdatesStatusRouteImport } from './routes/api/v1/updates/status'
 import { Route as ApiV1SessionQrBeginRouteImport } from './routes/api/v1/session/qr/begin'
 import { Route as ApiV1SessionQrPollRouteImport } from './routes/api/v1/session/qr/poll'
 
@@ -22,9 +30,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReferenceRoute = ApiReferenceRouteImport.update({
+  id: '/api-reference',
+  path: '/api-reference',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdatesRoute = UpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiV1CapabilitiesRoute = ApiV1CapabilitiesRouteImport.update({
@@ -42,6 +60,36 @@ const ApiV1VersionRoute = ApiV1VersionRouteImport.update({
   path: '/api/v1/version',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1OpenapiCatalogRoute = ApiV1OpenapiCatalogRouteImport.update({
+  id: '/api/v1/openapi/catalog',
+  path: '/api/v1/openapi/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1OpenapiRefreshRoute = ApiV1OpenapiRefreshRouteImport.update({
+  id: '/api/v1/openapi/refresh',
+  path: '/api/v1/openapi/refresh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1UpdatesApplyRoute = ApiV1UpdatesApplyRouteImport.update({
+  id: '/api/v1/updates/apply',
+  path: '/api/v1/updates/apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1UpdatesCheckRoute = ApiV1UpdatesCheckRouteImport.update({
+  id: '/api/v1/updates/check',
+  path: '/api/v1/updates/check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1UpdatesPlanRoute = ApiV1UpdatesPlanRouteImport.update({
+  id: '/api/v1/updates/plan',
+  path: '/api/v1/updates/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1UpdatesStatusRoute = ApiV1UpdatesStatusRouteImport.update({
+  id: '/api/v1/updates/status',
+  path: '/api/v1/updates/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1SessionQrBeginRoute = ApiV1SessionQrBeginRouteImport.update({
   id: '/api/v1/session/qr/begin',
   path: '/api/v1/session/qr/begin',
@@ -55,29 +103,53 @@ const ApiV1SessionQrPollRoute = ApiV1SessionQrPollRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api-reference': typeof ApiReferenceRoute
   '/login': typeof LoginRoute
+  '/updates': typeof UpdatesRoute
   '/api/v1/capabilities': typeof ApiV1CapabilitiesRoute
   '/api/v1/status': typeof ApiV1StatusRoute
   '/api/v1/version': typeof ApiV1VersionRoute
+  '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
+  '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
+  '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
+  '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
+  '/api/v1/updates/plan': typeof ApiV1UpdatesPlanRoute
+  '/api/v1/updates/status': typeof ApiV1UpdatesStatusRoute
   '/api/v1/session/qr/begin': typeof ApiV1SessionQrBeginRoute
   '/api/v1/session/qr/poll': typeof ApiV1SessionQrPollRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api-reference': typeof ApiReferenceRoute
   '/login': typeof LoginRoute
+  '/updates': typeof UpdatesRoute
   '/api/v1/capabilities': typeof ApiV1CapabilitiesRoute
   '/api/v1/status': typeof ApiV1StatusRoute
   '/api/v1/version': typeof ApiV1VersionRoute
+  '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
+  '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
+  '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
+  '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
+  '/api/v1/updates/plan': typeof ApiV1UpdatesPlanRoute
+  '/api/v1/updates/status': typeof ApiV1UpdatesStatusRoute
   '/api/v1/session/qr/begin': typeof ApiV1SessionQrBeginRoute
   '/api/v1/session/qr/poll': typeof ApiV1SessionQrPollRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api-reference': typeof ApiReferenceRoute
   '/login': typeof LoginRoute
+  '/updates': typeof UpdatesRoute
   '/api/v1/capabilities': typeof ApiV1CapabilitiesRoute
   '/api/v1/status': typeof ApiV1StatusRoute
   '/api/v1/version': typeof ApiV1VersionRoute
+  '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
+  '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
+  '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
+  '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
+  '/api/v1/updates/plan': typeof ApiV1UpdatesPlanRoute
+  '/api/v1/updates/status': typeof ApiV1UpdatesStatusRoute
   '/api/v1/session/qr/begin': typeof ApiV1SessionQrBeginRoute
   '/api/v1/session/qr/poll': typeof ApiV1SessionQrPollRoute
 }
@@ -85,38 +157,70 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/api-reference'
     | '/login'
+    | '/updates'
     | '/api/v1/capabilities'
     | '/api/v1/status'
     | '/api/v1/version'
+    | '/api/v1/openapi/catalog'
+    | '/api/v1/openapi/refresh'
+    | '/api/v1/updates/apply'
+    | '/api/v1/updates/check'
+    | '/api/v1/updates/plan'
+    | '/api/v1/updates/status'
     | '/api/v1/session/qr/begin'
     | '/api/v1/session/qr/poll'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api-reference'
     | '/login'
+    | '/updates'
     | '/api/v1/capabilities'
     | '/api/v1/status'
     | '/api/v1/version'
+    | '/api/v1/openapi/catalog'
+    | '/api/v1/openapi/refresh'
+    | '/api/v1/updates/apply'
+    | '/api/v1/updates/check'
+    | '/api/v1/updates/plan'
+    | '/api/v1/updates/status'
     | '/api/v1/session/qr/begin'
     | '/api/v1/session/qr/poll'
   id:
     | '__root__'
     | '/'
+    | '/api-reference'
     | '/login'
+    | '/updates'
     | '/api/v1/capabilities'
     | '/api/v1/status'
     | '/api/v1/version'
+    | '/api/v1/openapi/catalog'
+    | '/api/v1/openapi/refresh'
+    | '/api/v1/updates/apply'
+    | '/api/v1/updates/check'
+    | '/api/v1/updates/plan'
+    | '/api/v1/updates/status'
     | '/api/v1/session/qr/begin'
     | '/api/v1/session/qr/poll'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiReferenceRoute: typeof ApiReferenceRoute
   LoginRoute: typeof LoginRoute
+  UpdatesRoute: typeof UpdatesRoute
   ApiV1CapabilitiesRoute: typeof ApiV1CapabilitiesRoute
   ApiV1StatusRoute: typeof ApiV1StatusRoute
   ApiV1VersionRoute: typeof ApiV1VersionRoute
+  ApiV1OpenapiCatalogRoute: typeof ApiV1OpenapiCatalogRoute
+  ApiV1OpenapiRefreshRoute: typeof ApiV1OpenapiRefreshRoute
+  ApiV1UpdatesApplyRoute: typeof ApiV1UpdatesApplyRoute
+  ApiV1UpdatesCheckRoute: typeof ApiV1UpdatesCheckRoute
+  ApiV1UpdatesPlanRoute: typeof ApiV1UpdatesPlanRoute
+  ApiV1UpdatesStatusRoute: typeof ApiV1UpdatesStatusRoute
   ApiV1SessionQrBeginRoute: typeof ApiV1SessionQrBeginRoute
   ApiV1SessionQrPollRoute: typeof ApiV1SessionQrPollRoute
 }
@@ -130,11 +234,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api-reference': {
+      id: '/api-reference'
+      path: '/api-reference'
+      fullPath: '/api-reference'
+      preLoaderRoute: typeof ApiReferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/updates': {
+      id: '/updates'
+      path: '/updates'
+      fullPath: '/updates'
+      preLoaderRoute: typeof UpdatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v1/capabilities': {
@@ -158,6 +276,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1VersionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/openapi/catalog': {
+      id: '/api/v1/openapi/catalog'
+      path: '/api/v1/openapi/catalog'
+      fullPath: '/api/v1/openapi/catalog'
+      preLoaderRoute: typeof ApiV1OpenapiCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/openapi/refresh': {
+      id: '/api/v1/openapi/refresh'
+      path: '/api/v1/openapi/refresh'
+      fullPath: '/api/v1/openapi/refresh'
+      preLoaderRoute: typeof ApiV1OpenapiRefreshRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/updates/apply': {
+      id: '/api/v1/updates/apply'
+      path: '/api/v1/updates/apply'
+      fullPath: '/api/v1/updates/apply'
+      preLoaderRoute: typeof ApiV1UpdatesApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/updates/check': {
+      id: '/api/v1/updates/check'
+      path: '/api/v1/updates/check'
+      fullPath: '/api/v1/updates/check'
+      preLoaderRoute: typeof ApiV1UpdatesCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/updates/plan': {
+      id: '/api/v1/updates/plan'
+      path: '/api/v1/updates/plan'
+      fullPath: '/api/v1/updates/plan'
+      preLoaderRoute: typeof ApiV1UpdatesPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/updates/status': {
+      id: '/api/v1/updates/status'
+      path: '/api/v1/updates/status'
+      fullPath: '/api/v1/updates/status'
+      preLoaderRoute: typeof ApiV1UpdatesStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/session/qr/begin': {
       id: '/api/v1/session/qr/begin'
       path: '/api/v1/session/qr/begin'
@@ -177,10 +337,18 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiReferenceRoute: ApiReferenceRoute,
   LoginRoute: LoginRoute,
+  UpdatesRoute: UpdatesRoute,
   ApiV1CapabilitiesRoute: ApiV1CapabilitiesRoute,
   ApiV1StatusRoute: ApiV1StatusRoute,
   ApiV1VersionRoute: ApiV1VersionRoute,
+  ApiV1OpenapiCatalogRoute: ApiV1OpenapiCatalogRoute,
+  ApiV1OpenapiRefreshRoute: ApiV1OpenapiRefreshRoute,
+  ApiV1UpdatesApplyRoute: ApiV1UpdatesApplyRoute,
+  ApiV1UpdatesCheckRoute: ApiV1UpdatesCheckRoute,
+  ApiV1UpdatesPlanRoute: ApiV1UpdatesPlanRoute,
+  ApiV1UpdatesStatusRoute: ApiV1UpdatesStatusRoute,
   ApiV1SessionQrBeginRoute: ApiV1SessionQrBeginRoute,
   ApiV1SessionQrPollRoute: ApiV1SessionQrPollRoute,
 }

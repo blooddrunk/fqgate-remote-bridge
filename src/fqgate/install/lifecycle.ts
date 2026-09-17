@@ -15,6 +15,7 @@ import type {
   FqgateCandidateValidator,
 } from "../process/candidate.js";
 import type { ManagedProcessController, ManagedProcessSnapshot } from "../process/types.js";
+import type { FqgateActivationOpenApiProbe } from "../openapi/service.js";
 import {
   cleanupStagingArtifacts,
   createFqgateLayout,
@@ -80,6 +81,7 @@ export interface LifecycleDependencies {
   readonly activationHealthTimeoutMs: number;
   readonly activationHealthPollIntervalMs: number;
   readonly processTimeoutMs: number;
+  readonly runtimeOpenApiProbe?: FqgateActivationOpenApiProbe;
   readonly logger?: StructuredLogger;
   readonly now?: () => string;
 }
@@ -97,6 +99,7 @@ export class FqgateLifecycleManager {
   private readonly activationHealthTimeoutMs: number;
   private readonly activationHealthPollIntervalMs: number;
   private readonly processTimeoutMs: number;
+  private readonly runtimeOpenApiProbe: FqgateActivationOpenApiProbe | undefined;
   private readonly logger: StructuredLogger;
   private readonly now: () => string;
 
@@ -112,6 +115,7 @@ export class FqgateLifecycleManager {
     this.activationHealthTimeoutMs = dependencies.activationHealthTimeoutMs;
     this.activationHealthPollIntervalMs = dependencies.activationHealthPollIntervalMs;
     this.processTimeoutMs = dependencies.processTimeoutMs;
+    this.runtimeOpenApiProbe = dependencies.runtimeOpenApiProbe;
     this.logger = dependencies.logger ?? new StructuredLogger({ level: "warn" });
     this.now = dependencies.now ?? (() => new Date().toISOString());
   }
@@ -169,6 +173,17 @@ export class FqgateLifecycleManager {
 
   async install(options: { readonly dryRun?: boolean } = {}): Promise<InstallResult> {
     const plan = await this.plan();
+    return this.installPlan(plan, options);
+  }
+
+  /**
+   * Apply an already observed release plan. Dashboard confirmation uses this
+   * boundary so the web layer cannot grow a second updater implementation.
+   */
+  async installPlan(
+    plan: ReleasePlan,
+    options: { readonly dryRun?: boolean } = {},
+  ): Promise<InstallResult> {
     if (options.dryRun) {
       return { plan, action: "planned" };
     }
@@ -227,6 +242,7 @@ export class FqgateLifecycleManager {
 
   async start(): Promise<FqgateStatus> {
     const installed = await this.requireActivatableCurrent();
+    this.runtimeOpenApiProbe?.invalidate();
     await this.processController.start(this.layout.currentExecutable, this.layout.processFile, {
       timeoutMs: this.processTimeoutMs,
     });
@@ -239,6 +255,7 @@ export class FqgateLifecycleManager {
     if (installed === undefined) {
       return this.status();
     }
+    this.runtimeOpenApiProbe?.invalidate();
     await this.processController.stop(this.layout.currentExecutable, this.layout.processFile, {
       timeoutMs: this.processTimeoutMs,
     });
@@ -301,6 +318,7 @@ export class FqgateLifecycleManager {
 
     try {
       await this.stopIfManaged(currentBefore);
+      this.runtimeOpenApiProbe?.invalidate();
       await writeJsonAtomically(this.layout.transactionFile, {
         schemaVersion: 1,
         id: transactionId,
@@ -338,6 +356,17 @@ export class FqgateLifecycleManager {
         throw new BridgeError(
           ERROR_CODES.HEALTH_TIMEOUT,
           "FQGate activation health was not usable",
+        );
+      }
+
+      if (this.runtimeOpenApiProbe !== undefined) {
+        await this.runtimeOpenApiProbe.probe();
+        // Re-run the endpoint-specific semantic health probe after the
+        // structural OpenAPI contract check. OpenAPI presence alone does not
+        // prove that the adapter can safely consume the live response.
+        await this.healthProbe.waitUntilReady(
+          this.activationHealthTimeoutMs,
+          this.activationHealthPollIntervalMs,
         );
       }
 
@@ -379,7 +408,12 @@ export class FqgateLifecycleManager {
       if (!rollback.success) {
         throw rollback.error;
       }
-      throw activationError;
+      throw new BridgeError(
+        activationError.code,
+        activationError.message,
+        { ...(activationError.details ?? {}), rollbackRestored: rollback.restored },
+        { cause: activationError },
+      );
     }
   }
 
@@ -452,6 +486,7 @@ export class FqgateLifecycleManager {
             "Known-good FQGate executable is missing during rollback",
           );
         }
+        this.runtimeOpenApiProbe?.invalidate();
         await this.processController.start(this.layout.currentExecutable, this.layout.processFile, {
           timeoutMs: this.processTimeoutMs,
         });
