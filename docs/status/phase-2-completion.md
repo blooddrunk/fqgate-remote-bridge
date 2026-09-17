@@ -140,10 +140,13 @@ suite passed with 3 Chromium tests. The production-mode Playwright run also
 passed all 3 tests. The checks should be re-run on the target Windows host using
 [`windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md).
 
-The target Windows run additionally passed `pnpm install --frozen-lockfile`,
+The target Windows follow-up on the current runtime-hardening revision
+`00e4258` additionally passed `pnpm install --frozen-lockfile`,
 `pnpm typecheck`, `pnpm lint`, `pnpm test` (11 files, 80 tests), `pnpm build`,
 `pnpm format:check`, `acceptance.ps1 -VerifyCli`, and
-`acceptance.ps1 -VerifyBridge`.
+`acceptance.ps1 -VerifyBridge`. The follow-up did not repeat QR login or log out
+the already-connected account; the hardening change is limited to production
+request-error handling.
 
 ## 7. Production loopback evidence
 

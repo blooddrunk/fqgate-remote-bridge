@@ -103,7 +103,7 @@ The following acceptance completed on 2026-09-17:
   pnpm `11.23.0`.
 - FQGate: managed version `1.0.0`, validated, running on its expected
   loopback process path.
-- Checks: frozen-lockfile install, typecheck, lint, 80 unit/integration/UI
+- Checks: frozen-lockfile install, typecheck, lint, 78 unit/integration/UI
   tests, production build, format check, `-VerifyCli`, and `-VerifyBridge`.
 - Bridge: exactly one listener on `127.0.0.1:17282`; raw
   `/v1/market/health` returned HTTP 404.
@@ -123,3 +123,8 @@ from logs.
 Phase 2 is fully closed after this safe real QR login on the target
 Windows/FQGate combination. Future re-runs must still avoid destructive logout
 or recording QR/session material.
+
+After this real-QR run, the current revision `00e4258` was reinstalled and
+passed the same Windows checks with 80 tests, including the production
+client-abort logging hardening. The already-connected FQGate process remained
+running and was not logged out for that follow-up.
