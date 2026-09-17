@@ -9,19 +9,10 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 2: **CLOSED**
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
+- Phase 4.5: **PLANNED**
 - Phase 5+: planned only
 
-Current local deployment:
-
-```text
-browser
-  -> 127.0.0.1:17282  FQGate Remote Bridge / TanStack Dashboard
-       -> explicit bridge operation registry
-       -> lifecycle/update/OpenAPI/QR services
-            -> 127.0.0.1:17281  FQGate
-```
-
-Phase 4 target adds outbound-only Cloudflare connectivity without changing either loopback listener:
+Current deployed topology remains:
 
 ```text
 remote human browser
@@ -82,13 +73,9 @@ Detailed closed task package:
 
 Status: **CLOSED**.
 
-Goal: expose selected human-facing Dashboard/QR/status/reference capabilities remotely without exposing FQGate, without changing the bridge's loopback bind, and without turning Phase 3 local maintenance into remotely callable administration.
+Delivered selected authenticated remote human Dashboard/QR/status/reference access while preserving loopback-only FQGate/Bridge listeners and a server-side operation allowlist.
 
-### 4A. Explicit local vs remote-human request context
-
-Evolve operation exposure from the Phase 3 all-local model.
-
-Remote-human allowed operations for Phase 4:
+Remote-human allowed operations remain:
 
 ```text
 bridge.version
@@ -100,7 +87,7 @@ updates.status
 openapi.catalog
 ```
 
-Operations that remain local-only:
+The following remain local-only until the separately reviewed Phase 4.5C admin boundary is implemented and accepted:
 
 ```text
 updates.check
@@ -109,157 +96,125 @@ updates.apply
 openapi.refresh
 ```
 
-Requirements:
+Phase 4 uses a pre-created remotely-managed Tunnel, Cloudflare Access human policy, fixed loopback Bridge origin, protected token file, fixed-source cloudflared lifecycle, unknown-Host fail-closed handling, and assertion-presence defense-in-depth. The real Windows x64 + Cloudflare acceptance was completed on 2026-09-17.
 
-- authorization enforced by the bridge operation policy, not UI hiding alone;
-- loopback Host forms classify local requests;
-- exactly configured remote hostname classifies candidate remote-human requests;
-- unknown Host fails closed;
-- forwarding headers such as `X-Forwarded-Host` do not grant context;
-- remote-human requests require the expected Cloudflare Access assertion after Cloudflare validation;
-- Access assertion contents are never logged.
+Historical artifacts:
 
-### 4B. Remotely-managed Tunnel and cloudflared Windows service
+- `docs/plans/phase-4-secure-remote-human-access.md`
+- `docs/tasks/phase-4-cloudflare-tunnel-access.md`
+- `docs/prompts/phase-4-codex-goal.md`
+- `docs/status/phase-4-implementation-handoff.md`
+- `docs/operations/windows-phase-4-acceptance.md`
 
-Deliverables:
+Phase 4 remains closed; future work must not retroactively expand its contract.
 
-- framework-agnostic cloudflared release/lifecycle manager;
-- fixed official Cloudflare distribution source only, no arbitrary binary URL;
-- artifact/release identity and published integrity verification;
-- explicit/manual install/update only;
-- Windows service install/start/stop/restart/status;
-- origin fixed to `http://127.0.0.1:17282` and never FQGate;
-- reconnect/diagnostics behavior suitable for an always-on Windows host.
+---
 
-Phase 4 adopts a **pre-created remotely-managed Tunnel token**. Automated creation/adoption of Cloudflare resources through the API remains Phase 6.
+## Phase 4.5 — Remote administrator hardening + mobile Dashboard
 
-### 4C. Tunnel token secret handling
+Status: **PLANNED**.
 
-Preferred service runtime:
-
-```text
-cloudflared tunnel run --token-file <protected-token-file>
-```
-
-Requirements:
-
-- supported cloudflared version with `--token-file`;
-- token outside repository and ordinary application JSON;
-- restrictive Windows ACL for the service identity;
-- raw token absent from service command line, logs, diagnostics, UI, tests, and browser storage;
-- inability to secure/read the secret is a blocking setup error.
-
-### 4D. Cloudflare Access human policy
-
-The operator manually creates/configures the self-hosted Access application and human Allow policy.
-
-The Tunnel published application must use Cloudflare's **Protect with Access** origin setting so cloudflared validates the Access JWT before forwarding requests to the bridge.
-
-The bridge retains its own operation authorization after Access succeeds. Cloudflare identity never implies permission to call local-only operations.
-
-### 4E. Remote operator UX
-
-Authenticated remote humans may use:
-
-- Dashboard/status;
-- QR begin/poll;
-- read-only update status;
-- reference-only API catalog.
-
-Remote UI must omit/disable update check/plan/apply and OpenAPI refresh, with clear local-maintenance messaging. No market-data API is added in this phase.
-
-### Phase 4 implementation checkpoint
-
-The current implementation has delivered the framework-agnostic and local
-pieces of this package:
-
-- request Host/context classification and server-side operation exposure gate;
-- exact local/remote-human matrix with Access assertion-presence defense in depth;
-- remote-safe React UI using the existing TanStack shell;
-- fixed-source cloudflared release parser/downloader, candidate identity checks,
-  protected token-file abstraction, and Windows `sc.exe` service adapter;
-- explicit `cloudflared` CLI lifecycle/status commands and Phase 4 acceptance
-  script mode;
-- deterministic Phase 4 tests alongside the Phase 2/3 regression suite.
-
-The operator completed the real Windows x64 + Cloudflare Tunnel/Access
-acceptance on 2026-09-17. The bounded evidence is recorded in
-`docs/operations/windows-phase-4-acceptance.md` and
-`docs/status/phase-4-implementation-handoff.md`; Phase 4 is **CLOSED**.
-Future remote-administrator hardening and mobile Dashboard UI work are
-planning items only and do not reopen or expand this phase.
-
-### Phase 4 exit criteria
-
-On the target Windows x64 host with real Cloudflare resources:
-
-1. FQGate remains exactly on loopback and bridge remains exactly on loopback;
-2. cloudflared runs as a Windows service and routes only to the bridge;
-3. service/process metadata contains no raw Tunnel token and token-file protection is verified;
-4. unauthenticated public requests are challenged/denied by Access;
-5. authenticated human Dashboard/status works remotely;
-6. QR begin/poll works remotely when safe to test;
-7. remote update check/plan/apply and OpenAPI refresh are denied;
-8. raw/unregistered FQGate paths remain unreachable remotely;
-9. local-only maintenance remains usable through loopback;
-10. restarting cloudflared reconnects without changing origin listeners.
-
-The historical closure rule was that implementation alone could not close the
-phase when real Cloudflare acceptance was unavailable. The current repository
-records that live acceptance as complete.
+Goal: introduce a separately authenticated and separately authorized remote-administrator context for a very small existing maintenance surface, and optimize the existing React/TanStack Dashboard for phone use, without weakening Phase 4 or implementing Phase 5 market-data APIs.
 
 Detailed design:
 
-`docs/plans/phase-4-secure-remote-human-access.md`
+`docs/plans/phase-4-5-remote-admin-and-mobile-dashboard.md`
 
 Detailed task package:
 
-`docs/tasks/phase-4-cloudflare-tunnel-access.md`
+`docs/tasks/phase-4-5-remote-admin-and-mobile-dashboard.md`
 
 Codex handoff:
 
-`docs/prompts/phase-4-codex-goal.md`
+`docs/prompts/phase-4-5-codex-goal.md`
 
-### Phase 4 non-goals
+### 4.5A — Policy/authentication foundation, no privilege expansion
 
-- remote machine/read-only market-data API;
-- Cloudflare Access service-token machine auth;
-- automated Tunnel/DNS/Access provisioning;
-- supervisor/notifications;
-- automatic background updates;
-- MCP/WebSocket;
-- trading or financial state mutation.
+Refactor caller context and operation authorization into orthogonal policy dimensions so the project can represent:
 
-### Deferred future plan candidates
+```text
+local
+remote_human
+remote_admin
+later: remote_machine
+```
 
-These items are intentionally not implemented in Phase 4:
+without combinatorial exposure enums.
 
-- separately design a remote-administrator policy with stronger authentication,
-  device restrictions, and explicit second confirmation; and
-- optimize the existing Dashboard UI for mobile screens while preserving the
-  current React/TanStack shell and server-side operation policy.
+Add a distinct admin hostname and distinct Cloudflare Access application/audience. Remote-admin requests require stronger origin-side Cloudflare Access JWT verification with exact issuer/AUD/signature/time checks and bounded fixed-source JWK handling. The admin Access application must be human-only, require MFA, enforce device posture, use a short administrative session, enable Protect with Access, and contain no Bypass/Service Auth path.
+
+At the end of 4.5A there is **no maintenance privilege expansion**: remote admin may use only the same safe surface as the current remote human. This checkpoint must land before any admin mutation becomes remotely callable.
+
+### 4.5B — Mobile Dashboard optimization, no authorization changes
+
+Keep one React 19/TanStack Start application and existing routes. Optimize Dashboard, QR login, update view, and API reference for ~360px+ viewports, touch targets, bounded long content, safe responsive navigation, mobile viewport/safe-area behavior, keyboard/focus usability, and phone/tablet Playwright coverage.
+
+Responsive UI must never become an authorization mechanism. Ordinary remote-human update behavior remains read-only.
+
+### 4.5C — Minimal remote-admin maintenance + second confirmation
+
+Only after 4.5A/4.5B are stable, permit strongly authenticated remote admin to call exactly:
+
+```text
+updates.check
+updates.plan
+updates.apply
+openapi.refresh
+```
+
+`updates.apply` additionally requires a short-lived, one-time, server-side confirmation grant bound to verified admin principal, admin audience, operation, and exact update plan/candidate identity. Existing stale-plan/source/version/size/hash/compatibility/health/rollback checks remain mandatory and additive.
+
+Remote-admin control POSTs also require explicit browser-origin/CSRF protections. cloudflared management, Tunnel-token operations, Cloudflare provisioning, arbitrary process/service control, raw FQGate routes, Bridge self-update, and market-data operations remain outside remote admin.
+
+### Phase 4.5 exit criteria
+
+Phase 4.5 may close only when:
+
+1. Phase 4 remote-human behavior is preserved;
+2. admin hostname/AUD/context is independently authenticated and authorized;
+3. MFA + device posture + short-session admin Access policy is live;
+4. Bridge validates real admin Access JWTs without logging them;
+5. mobile Dashboard requirements and viewport tests pass;
+6. only the four listed maintenance operations gain remote-admin permission;
+7. remote `updates.apply` requires one-time principal/action/plan-bound confirmation and rejects expiry/replay/mismatch;
+8. CSRF/origin defenses are tested;
+9. all deterministic quality gates pass;
+10. real Windows x64 + Cloudflare acceptance re-proves loopback-only listeners, ordinary-human denial, device-policy denial, admin flow, confirmation flow, raw-path denial, local maintenance, and mobile-browser smoke behavior;
+11. one known-safe real remote-admin update apply is proven, or the phase remains open if no safe candidate is available.
+
+Phase 4.5 non-goals include Phase 5 machine APIs/service tokens, Phase 6 provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, final packaging, generic remote shell/process control, and any financial state-changing capability.
 
 ---
 
 ## Phase 5 — Remote read-only HTTP API and filtered API docs
 
+Status: planned after the Phase 4.5 policy foundation.
+
 Goal: make selected market-data capabilities safely consumable by remote software.
 
 Deliverables:
 
-- explicit read-only market-data operations in the bridge policy registry;
+- a distinct `remote_machine` caller context;
+- a separate machine/API hostname and separate Cloudflare Access application/policy/audience;
+- Cloudflare Access service-token or equivalent machine identity separate from human/admin policies;
+- explicit read-only market-data operations in the Bridge registry;
 - stable Bridge-owned request/response contracts;
-- Cloudflare Access service-token or equivalent machine policy separate from human UI policy;
 - machine API smoke tests through Access + Tunnel;
 - generated remote OpenAPI containing only approved public operations;
-- interactive docs target only approved Bridge operations;
+- interactive docs targeting only approved Bridge operations;
 - compatibility gates tied to validated FQGate versions/contracts.
+
+A Phase 5 machine identity must never inherit QR/session maintenance, update/admin operations, OpenAPI refresh, or browser confirmation grants. Runtime upstream OpenAPI still cannot authorize a route.
+
+Phase 5 may reuse generic JWT/JWK/context infrastructure from Phase 4.5A only when hostname, Access app/audience, identity type, operation allowlist, configuration, and tests remain independent.
 
 Exit criteria include authenticated machine access to approved read-only operations, deny-by-default treatment of new upstream paths, and no financial state-changing capabilities.
 
+---
+
 ## Phase 6 — Automated Cloudflare provisioning and drift management
 
-Goal: automate the manually proven Phase 4/5 setup safely.
+Goal: automate the manually proven Phase 4/4.5/5 setup safely.
 
 Deliverables:
 
@@ -280,7 +235,7 @@ Goal: make the system dependable on an always-on Windows PC with bounded recover
 
 ## Phase 8 — Safe automatic updates
 
-Goal: add conservative configurable update policy only after manual FQGate/cloudflared updates are proven stable. Automatic updates remain off by default until explicitly configured.
+Goal: add conservative configurable update policy only after manual local and remote-admin update workflows are proven stable. Automatic updates remain off by default until explicitly configured.
 
 ## Phase 9 — MCP and realtime WebSocket compatibility
 
@@ -301,14 +256,16 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 4 is closed; there is no active Phase 4 coding task. Future work must
-start from a new task package and preserve the closed boundary.
+Phase 4 is closed. The next planned implementation package is Phase 4.5:
 
-Use:
+`docs/tasks/phase-4-5-remote-admin-and-mobile-dashboard.md`
 
-`docs/prompts/phase-4-codex-goal.md`
+The design source is:
 
-Phase 5 remote machine market-data APIs, service-token auth, automated
-Cloudflare provisioning, supervisor/notifications, automatic-update policy,
-MCP, WebSocket, and final packaging remain future roadmap work; closing Phase 4
-does not authorize implementing them without a separate task package.
+`docs/plans/phase-4-5-remote-admin-and-mobile-dashboard.md`
+
+The implementation handoff is:
+
+`docs/prompts/phase-4-5-codex-goal.md`
+
+Do not implement Phase 5 machine market-data APIs, service-token auth, automated Cloudflare provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, or packaging inside the Phase 4.5 goal.
