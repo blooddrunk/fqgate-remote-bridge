@@ -2,170 +2,279 @@
 
 ## Goals
 
-FQGate Remote Bridge is a Windows-first edge service that turns one local FQGate instance into a remotely reachable, authenticated, observable, and maintainable market-data endpoint without changing FQGate's local-first posture.
+FQGate Remote Bridge is a Windows-first edge service that turns one local FQGate instance into a remotely usable, authenticated, observable, and maintainable market-data endpoint **without changing FQGate's local-first posture**.
 
-The bridge must absorb operational concerns that do not belong in consumers such as `turtle-value-engine`:
+The bridge absorbs operational concerns that should not belong in consumers such as `turtle-value-engine`:
 
 - FQGate installation and upgrades
 - local application/API boundary
 - browser login flows
+- runtime API discovery and compatibility checks
 - health monitoring
-- cloudflared installation and upgrades
-- Cloudflare Tunnel lifecycle
-- notifications
+- cloudflared installation/lifecycle in later phases
+- Cloudflare Tunnel/Access integration in later phases
+- notifications and recovery in later phases
 - upstream compatibility handling
 
-Consumers should only see a stable provider endpoint and a small compatibility contract.
+Consumers should eventually see a stable provider endpoint and a small compatibility contract rather than raw FQGate implementation details.
 
 ## Non-goals
 
 - trading or brokerage operations
 - generic reverse-proxying of arbitrary localhost services
+- generic transparent proxying of FQGate
+- treating an OpenAPI document as an authorization policy
 - replacing Cloudflare Access with home-grown Internet authentication
 - implementing a complete FQGate clone
 - making FQGate a mandatory dependency of any consuming project
 
-## Component model
+## Current and target topology
+
+### Through Phase 3: local-only
 
 ```text
-                           Cloudflare control plane             later phases
-                          /                         \
-                Tunnel configuration           Access policy
-                         |                           |
-                         +-------------+-------------+
-                                       |
-Internet client                         |
-(browser / agent)                       |
-       |                                |
-       +-------- HTTPS / WSS -----------+
-                                       |
-                                cloudflared service
-                                       |
-                              127.0.0.1:<bridge>
-                                       |
-            +--------------------------+--------------------------+
-            |                          |                          |
-     TanStack Start UI          bridge server routes         later supervisor
-            |                          |                          |
-            |                    operation registry       process/update/state
-            |                          |                          |
-            +--------------------------+--------------------------+
-                                       |
-                               FQGate adapter layer
-                                       |
-                               127.0.0.1:17281
-                                       |
-                                    FQGate
+Local browser
+    |
+    | http://127.0.0.1:17282
+    v
++-------------------------------------------+
+| FQGate Remote Bridge / TanStack Start     |
+|                                           |
+| Dashboard / routes                        |
+|     |                                     |
+|     +-> operation policy registry         |
+|     +-> lifecycle/update service          |
+|     +-> runtime OpenAPI catalog           |
+|     +-> QR/session service                |
+|                    |                      |
++--------------------|----------------------+
+                     |
+                     | fixed loopback calls
+                     v
+             127.0.0.1:17281
+                  FQGate
 ```
 
-Phase 2 implements only the local TanStack Start/UI/API portion of this model. The
-local implementation is complete and Cloudflare/supervisor components remain later
-work.
+Both processes remain IPv4-loopback-only.
 
-## Bridge modules
+### Later remote topology
+
+```text
+remote browser / machine client
+             |
+             v
+      Cloudflare Access
+             |
+             v
+      Cloudflare Tunnel
+             |
+             v
+       cloudflared service
+             |
+             v
+     127.0.0.1:<bridge>
+             |
+             v
+   explicit bridge operations
+             |
+             v
+       FQGate adapters
+             |
+             v
+      127.0.0.1:17281
+           FQGate
+```
+
+There is never an intended `cloudflared -> FQGate` direct route.
+
+## Core components
 
 ### 1. Bootstrap / installer
 
-Windows-oriented bootstrap logic should be implemented in PowerShell with minimal responsibility:
+Windows-oriented bootstrap logic should stay small and PowerShell-oriented:
 
-- detect supported OS/architecture
-- install application payload
-- arrange startup/service/task integration in later phases
-- create required directories
-- call the bridge CLI/runtime for configuration and verification
+- detect supported OS/architecture;
+- prepare/install bridge payload in later packaging phases;
+- create required directories;
+- call TypeScript CLI/runtime for configuration and verification;
+- later integrate startup/service/task behavior where appropriate.
 
-Business logic should stay in TypeScript, not be duplicated in PowerShell.
+Business logic belongs in TypeScript rather than duplicated PowerShell.
 
-### 2. FQGate manager
-
-Responsibilities:
-
-- read the upstream stable release manifest
-- select the Windows package
-- verify file size and SHA-256 before activation
-- maintain `current` and `previous` binaries for rollback
-- start/stop/restart the FQGate process
-- verify `--version` and `/v1/market/health`
-- refuse upgrades whose compatibility has not passed policy
-
-Phase 0/1 implemented and accepted this boundary on real Windows x64. Later phases must reuse it rather than recreate lifecycle logic in web routes.
-
-### 3. Local application transport — TanStack Start
-
-Phase 2 uses **TanStack Start** as the local full-stack HTTP/UI transport.
+### 2. FQGate lifecycle and update manager
 
 Responsibilities:
 
-- bind the production server only to IPv4 loopback;
+- read a registered trusted release source;
+- select the Windows package;
+- verify manifest schema, size, SHA-256, and candidate identity;
+- maintain active/previous known-good binaries;
+- start/stop/restart the FQGate desktop process;
+- verify `--version` and `/v1/market/health`;
+- invoke runtime OpenAPI compatibility probes during candidate activation;
+- roll back when activation fails;
+- expose one transaction interface reused by CLI and Dashboard.
+
+Phase 0/1 implemented the lifecycle boundary. Phase 3 extends the same boundary rather than reimplementing updater logic in web routes.
+
+#### Release-source registry
+
+The source model is an explicit registry, not a URL text box.
+
+Initial policy:
+
+```text
+github  -> enabled/default, fixed official repository + manifest rules
+gitee   -> reserved adapter slot; disabled until an exact trusted mirror contract exists
+```
+
+Any future source must be code-registered and must enforce HTTPS/host/path/schema/integrity rules. Arbitrary manifest/executable URLs remain forbidden.
+
+### 3. Runtime FQGate OpenAPI catalog
+
+Phase 3 introduces a framework-agnostic service around the observed FQGate endpoint:
+
+```text
+GET http://127.0.0.1:17281/openapi.json
+```
+
+The upstream project also exposes local interactive docs at:
+
+```text
+http://127.0.0.1:17281/docs
+```
+
+The bridge should consume the JSON specification rather than copy or manually maintain the API catalog.
+
+Responsibilities:
+
+- fetch only the fixed loopback OpenAPI path;
+- apply a bounded timeout and response-size limit;
+- parse JSON and validate a supported OpenAPI shape;
+- normalize errors without leaking upstream bodies;
+- keep a short bounded cache;
+- compute a deterministic schema fingerprint;
+- enumerate path/method operations;
+- compare two observed schemas for added/removed/changed operations;
+- test the presence of path/method contracts required by bridge adapters;
+- provide source data for local documentation and upgrade compatibility checks.
+
+OpenAPI is **descriptive, not authoritative for security**. An endpoint discovered in the schema is not remotely or locally bridge-callable unless it is separately represented by bridge policy.
+
+The OpenAPI check supplements endpoint-specific contract parsing and probes. Schema presence does not prove runtime semantics.
+
+### 4. Documentation/catalog model
+
+The product should distinguish two concepts.
+
+#### Upstream FQGate reference
+
+Source: the running FQGate `/openapi.json`.
+
+Purpose: tell the operator what the installed FQGate version documents.
+
+Properties:
+
+- may display the complete upstream catalog;
+- follows upstream upgrades automatically;
+- clearly labels version/fingerprint/time of observation;
+- is reference-only by default;
+- must not create a generic proxy or arbitrary `Try it out` path.
+
+#### Bridge/remote API contract
+
+Source: explicit bridge operation/mapping metadata, optionally enriched with schema details from the runtime upstream OpenAPI document.
+
+Purpose: tell clients what the bridge actually permits.
+
+Properties:
+
+- deny-by-default;
+- stable bridge-owned public paths;
+- only registered operations appear;
+- newly discovered upstream operations do not appear automatically;
+- future remote interactive execution targets only bridge-approved routes.
+
+Conceptually:
+
+```text
+runtime FQGate OpenAPI  -----> upstream reference catalog
+          |
+          +----> compatibility/mapping input
+                         |
+bridge operation registry ----+----> bridge/remote OpenAPI
+```
+
+It is not a simple transparent `intersection by path`: bridge public paths may differ from upstream paths, so the registry should own explicit mapping metadata.
+
+### 5. Local application transport — TanStack Start
+
+Phase 2 established TanStack Start as the local full-stack HTTP/UI transport.
+
+Responsibilities:
+
+- bind production only to IPv4 loopback;
 - provide React 19/TanStack Router pages;
-- provide explicit server routes for bridge-owned APIs;
-- integrate TanStack Query for browser server-state polling and mutations;
-- apply security headers and normalized bridge error responses;
-- host the QR login/status UI;
-- remain a thin transport over framework-agnostic bridge/FQGate services.
+- provide explicit bridge-owned server routes;
+- use TanStack Query for browser/server state;
+- apply security headers and normalized bridge errors;
+- host status, QR login, Phase 3 upgrade UI, and API reference UI;
+- remain a thin transport over framework-agnostic services.
 
-The production bundle is launched through `scripts/start-bridge.mjs`, which fixes
-the listener to `127.0.0.1` and defaults to port `17282`. The five server routes
-delegate to the explicit operation registry and normalized service; they are not a
-generic framework proxy. Start's generated SSR bootstrap requires a narrowly
-scoped inline script allowance in the current CSP; no eval, external script, or
-external connection allowance is enabled. The production Nitro shell also
-normalizes client-closed requests to `499` and replaces raw H3 stack logging with
-bounded structured error metadata.
+The production bundle is launched through `scripts/start-bridge.mjs`, defaults to `127.0.0.1:17282`, and must not become a generic upstream proxy.
 
-TanStack Start replaces the earlier Phase 2 Fastify + Vue plan. Do not run a second Fastify backend merely to preserve the old plan.
+TanStack Start is replaceable. Core services must not depend on Start-specific request/context types.
 
-Because TanStack Start is pre-v1/RC, core bridge operations must not depend on Start-specific request/context types. A future framework replacement should not require rewriting FQGate compatibility, lifecycle, QR state, or policy logic.
-
-### 4. Bridge operation / policy registry
+### 6. Bridge operation / policy registry
 
 The bridge is **not** an unrestricted reverse proxy.
 
-Every intended bridge operation is represented explicitly by policy metadata such as:
+Every intended bridge operation should be represented explicitly by metadata such as:
 
-- operation ID
-- public method/path
-- classification
-- timeout
-- maximum request-body size
-- logging/sensitivity policy
-- compatibility requirement
+- operation ID;
+- public method/path;
+- optional upstream method/path mapping;
+- classification (`diagnostic`, `session`, `local-admin`, later `market-read`);
+- local/remote exposure class;
+- timeout;
+- maximum request-body size;
+- logging/sensitivity policy;
+- compatibility requirement;
+- documentation visibility.
 
-Initial Phase 2 operations are limited to bridge version/capabilities/status and QR login begin/poll.
+There is no generic `/* -> FQGate`, no arbitrary upstream path parameter, and no fallback when an unknown route is requested.
 
-There is no generic `/* -> FQGate` operation, no arbitrary upstream-path parameter, and no transparent fallback when an unknown route is requested.
+Phase 3 local administrative install/update operations must be explicit operations, not hidden Start server-function bypasses.
 
-### 5. FQGate API adapter
+### 7. FQGate API adapter
 
 Responsibilities:
 
 - own upstream HTTP-envelope decoding;
 - validate endpoint-specific response data;
-- normalize upstream errors and states;
-- isolate observed FQGate API quirks from bridge clients;
+- normalize upstream errors/states;
+- isolate observed FQGate quirks from bridge clients;
 - enforce compatibility requirements before an operation reaches FQGate.
 
-Phase 2 adds the QR begin/poll adapter alongside the existing health adapter.
+Existing health and QR adapters remain the model. Later read-only market-data routes should receive their own typed adapters or well-defined generic read adapters only after Phase 5 policy work.
 
-### 6. QR flow registry
+### 8. QR flow registry
 
-Phase 2 introduces an in-memory bridge-owned QR-flow registry.
+The browser receives an opaque random bridge session ID; upstream numeric FQGate `flow_id` stays server-side.
 
-The browser receives an opaque random bridge `sessionId`; the upstream numeric FQGate `flow_id` remains server-side only.
-
-The registry is:
+The registry remains:
 
 - memory-only;
 - TTL-bounded;
 - count-bounded;
-- cleared on terminal states;
-- intentionally invalidated by bridge process restart.
+- cleared/tombstoned on terminal states;
+- intentionally invalidated by bridge restart.
 
-QR image data, upstream flow IDs, and active login-session data are not persisted or logged.
+QR payloads, upstream flow IDs, credentials, and active login material are not persisted or logged.
 
-### 7. Web UI
+### 9. Web UI
 
-Phase 2 UI stack:
+Baseline stack:
 
 - React 19
 - TanStack Start / TanStack Router
@@ -173,51 +282,46 @@ Phase 2 UI stack:
 - Tailwind CSS v4
 - shadcn/ui
 
-Minimal responsibilities:
+Phase 3 adds two operator surfaces without changing the technology shape:
 
-- bridge status/version
-- FQGate process/version/compatibility/health
-- market session status
-- QR login initiation and polling
-- clear error/retry states
+- FQGate version/update center;
+- API reference/compatibility page.
 
-The UI should be a modern, restrained operator dashboard rather than a marketing page. shadcn/ui is the baseline component source. Aceternity UI/Magic UI are not required Phase 2 dependencies.
+The UI remains an operator dashboard, not a general web platform.
 
-The browser never receives local filesystem credentials, Cloudflare API tokens, upstream numeric QR flow IDs, or other service secrets.
+### 10. cloudflared manager — Phase 4
 
-### 8. cloudflared manager — later phase
+Responsibilities:
 
-Responsibilities when Phase 3 begins:
+- detect installed version;
+- download/verify official cloudflared distribution;
+- adopt a remotely managed Tunnel token;
+- install/reconfigure the Windows service;
+- verify connector health;
+- support controlled rollback when update work is later enabled.
 
-- detect installed version
-- download and verify official cloudflared releases
-- provision or adopt a remotely managed tunnel
-- install/reconfigure the Windows service
-- verify the connector is healthy
-- support controlled rollback when a new cloudflared release causes failure
+Tunnel ingress targets the bridge loopback port only.
 
-The bridge should prefer a remotely-managed tunnel token for runtime. Broad Cloudflare API credentials are setup-time credentials and should not be retained when no longer needed.
+### 11. Cloudflare Access and remote policy — Phase 4/5
 
-### 9. Cloudflare provisioner — later phase
+Phase 4 secures human Dashboard access with Access as part of the same remote milestone as Tunnel. Phase 5 adds machine authentication for the read-only API.
+
+Human and machine policies should be separate. Cloudflare authentication does not authorize arbitrary FQGate operations; the bridge registry remains the authorization boundary.
+
+### 12. Cloudflare provisioner — Phase 6
 
 Setup-time functionality:
 
-- validate account/zone configuration
-- create or adopt a named tunnel
-- create/update DNS records for configured hostnames
-- configure ingress toward the local bridge port
-- provide enough output for the operator to create or verify Cloudflare Access policies
+- validate scoped account/zone configuration;
+- create/adopt a named Tunnel;
+- create/adopt DNS records;
+- configure ingress;
+- help establish/verify Access prerequisites;
+- provide plan/dry-run and drift detection.
 
-Recommended hostname split:
+Broad setup credentials should not remain required at runtime.
 
-```text
-fqgate.example.com      -> human status + QR login
-fqgate-api.example.com  -> machine API / MCP gateway
-```
-
-### 10. Supervisor/state machine — later phase
-
-Normalize low-level observations into a small state model.
+### 13. Supervisor/state machine — Phase 7
 
 Suggested dimensions:
 
@@ -226,24 +330,23 @@ bridge:      starting | ready | degraded | failed
 fqgate:      stopped | starting | ready | unhealthy | incompatible
 session:     connected | guest | login_required | login_in_progress | unknown
 tunnel:      stopped | connecting | connected | degraded
-updates:     idle | available | applying | rollback | failed
+updates:     idle | checking | available | applying | rollback | failed
+openapi:     unknown | ready | changed | incompatible | failed
 ```
 
-State transitions should produce events for logs, UI, and later notifier plugins.
+State transitions should feed logs, UI, event journal, and later notification providers.
 
-### 11. Notification subsystem — later phase
+### 14. Notification subsystem — Phase 7
 
-Use a small interface rather than hard-code a vendor.
-
-Initial provider may be a generic JSON webhook, with later adapters for ntfy, Bark, Telegram, Feishu, WeCom, etc.
+Use a small provider interface rather than hard-code a vendor. An initial generic JSON webhook can be followed by optional adapters such as ntfy, Bark, Telegram, Feishu, or WeCom.
 
 ## Windows process model
 
 FQGate is a desktop executable and may require an interactive user session. Phase 0/1 acceptance proved the bridge-managed process in that model.
 
-Planned separation remains:
+Planned separation:
 
-- `cloudflared`: Windows service in a later phase
+- `cloudflared`: Windows service in Phase 4+
 - bridge backend: service only after packaging/runtime behavior is proven
 - FQGate: interactive user-session process; Task Scheduler/logon startup may be added later
 
@@ -257,38 +360,21 @@ FQGate remains on:
 127.0.0.1:17281
 ```
 
-Phase 2 bridge also binds only to IPv4 loopback, with the task package recommending:
+The bridge remains on an IPv4 loopback address, default:
 
 ```text
 127.0.0.1:17282
 ```
 
-A different port may be configured later, but Phase 2 must not add a LAN/public host mode.
+Adding OpenAPI discovery or API documentation does not relax either rule.
 
-`cloudflared` will eventually create outbound connections to Cloudflare, so the design should not require inbound router port forwarding or public Windows Firewall rules.
+## Compatibility philosophy
 
-## Consumer contract
+The bridge should combine four signals rather than trust any one mechanism:
 
-A consumer must not depend on upstream FQGate quirks directly when avoidable. The bridge should expose:
+1. FQGate reported version;
+2. endpoint-specific runtime parsing/probes;
+3. runtime OpenAPI path/method/schema observations;
+4. bridge compatibility policy and validation history.
 
-- version endpoint
-- provider capability endpoint
-- health/status endpoint
-- stable error envelope for bridge-generated failures
-- upstream version/compatibility metadata in diagnostics
-
-The consumer remains responsible for fallback to other market-data providers.
-
-## Current phase boundary
-
-Phase 0 + Phase 1 are fully closed and provide the local lifecycle manager.
-
-Phase 2 implementation is complete in the repository and adds only:
-
-- local loopback TanStack Start runtime;
-- explicit bridge version/capability/status routes;
-- QR login begin/poll adapter;
-- ephemeral bridge QR session state;
-- React/shadcn status and QR UI.
-
-Phase 2 does **not** add Cloudflare, public exposure, read-only market-data forwarding, MCP, WebSocket proxying, SMS login, notifications, or trading operations.
+Unknown or incompatible behavior should degrade/fail closed. A new upstream endpoint is information to review, not permission to expose it.

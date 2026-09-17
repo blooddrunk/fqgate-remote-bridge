@@ -8,10 +8,11 @@ The security model uses layered controls:
 
 1. FQGate binds to loopback only.
 2. The bridge binds to loopback only.
-3. `cloudflared` creates outbound-only connectivity.
-4. Cloudflare Access authenticates users and machines.
+3. `cloudflared` creates outbound-only connectivity in later phases.
+4. Cloudflare Access authenticates users and machines in later phases.
 5. The bridge applies its own explicit route allowlist and method policy.
-6. Secrets are stored outside source control and redacted from logs.
+6. Runtime OpenAPI is descriptive only and never grants authorization.
+7. Secrets are stored outside source control and redacted from logs.
 
 No single layer should be treated as sufficient on its own.
 
@@ -21,22 +22,25 @@ No single layer should be treated as sufficient on its own.
 
 - bridge process
 - FQGate process
-- cloudflared process
+- local lifecycle/update state
+- local OpenAPI discovery cache
+- `cloudflared` process in later phases
 - local configuration/secrets store
 
 ### External control plane
 
-- Cloudflare Tunnel
-- Cloudflare Access
-- GitHub upstream release repositories
+- Cloudflare Tunnel / Access in later phases
+- trusted registered FQGate release sources
+- official cloudflared distribution in later phases
 
 ### Untrusted / semi-trusted clients
 
-- remote browsers
-- remote agents
-- consuming applications
+- browser requests, even when originating locally
+- remote browsers in later phases
+- remote agents and consuming applications in later phases
+- upstream FQGate API responses and OpenAPI documents, which must be parsed defensively
 
-Cloudflare authentication proves an identity or service credential was accepted; it does **not** authorize arbitrary FQGate operations. Authorization remains constrained by the bridge route policy.
+Cloudflare authentication proves an identity/service credential was accepted; it does **not** authorize arbitrary FQGate operations. Authorization remains constrained by the bridge route policy.
 
 ## FQGate exposure policy
 
@@ -46,226 +50,282 @@ The bridge must never implement a catch-all rule such as:
 /* -> http://127.0.0.1:17281/*
 ```
 
-Instead, supported upstream paths must be registered explicitly.
+Supported upstream paths must be represented explicitly.
 
-Each route declaration should include:
+Each intended operation should include policy metadata such as:
 
-- HTTP method
-- upstream path
-- read-only classification
-- authentication class
+- bridge operation ID
+- public HTTP method/path
+- optional upstream method/path mapping
+- classification
+- local/remote exposure class
 - timeout
 - maximum body size
+- logging/sensitivity policy
 - compatibility requirement
-- whether response streaming/WebSocket behavior is allowed
+- documentation visibility
 
-A new FQGate upstream endpoint is **not remotely reachable by default**.
+A new FQGate upstream endpoint is **not reachable through the bridge by default**.
+
+## Runtime OpenAPI boundary
+
+FQGate exposes a runtime document at:
+
+```text
+http://127.0.0.1:17281/openapi.json
+```
+
+This document is treated as untrusted structured input.
+
+Security requirements:
+
+- the fetch target is fixed in code/config policy to loopback; no arbitrary OpenAPI URL;
+- timeout and maximum response size are enforced;
+- malformed/unsupported documents fail closed;
+- raw upstream bodies are not logged on parse/validation failure;
+- discovered operations cannot mutate or extend the route registry at runtime;
+- full upstream reference may show an endpoint that is unavailable through the bridge;
+- remote interactive documentation, when added later, may execute only bridge-approved public routes;
+- schema availability/presence does not replace endpoint-specific semantic validation.
+
+Threat: upstream FQGate adds a sensitive or dangerous endpoint.
+
+Mitigation: the endpoint can appear in the upstream reference/diff view, but remains non-callable until a bridge developer explicitly implements and registers an allowed operation. Financial state-changing operations remain out of project scope regardless of upstream documentation.
 
 ## Trading boundary
 
 The project deliberately excludes trading and brokerage control.
 
-Even if a future or older FQGate version exposes trading-related APIs, this project must not automatically proxy them. Adding any state-changing financial endpoint would require a separate project-level design decision and explicit review; it is outside the current scope.
+Even if a future/older FQGate exposes trading-related APIs, this project must not proxy them. This includes order placement, cancellation, fund transfer, brokerage/account control, and comparable financial state mutation.
 
-## Cloudflare credentials
+## Phase 3 local administrative boundary
 
-### Setup-time API token
+Phase 3 adds local FQGate installation/update actions to the Dashboard. These are privileged local maintenance operations, not market-data operations.
 
-Use a scoped API token with only the permissions required to provision/adopt the tunnel and DNS records. Do not ask for or document use of the Global API Key.
+Requirements:
 
-The setup flow should support removing the provisioning token after successful configuration.
+- they remain reachable only through the loopback bridge in Phase 3;
+- each action is explicitly represented by bridge-owned policy metadata;
+- no unconstrained TanStack server function may bypass operation policy;
+- update check occurs only after an explicit user action;
+- installation/update requires plan/preview and explicit confirmation;
+- confirmation is bound to the intended candidate/plan identity;
+- only one mutating lifecycle transaction runs at a time;
+- page load, startup, polling, or a background timer must not silently download/activate FQGate;
+- CLI and Dashboard must reuse the same lifecycle/update transaction;
+- failures preserve or restore the previous known-good binary where the established lifecycle transaction supports rollback.
 
-### Tunnel runtime credential
-
-Use the remotely-managed tunnel token required by `cloudflared` at runtime. Store it using an OS-protected mechanism where practical and ensure it is never printed in diagnostics.
-
-### Machine access
-
-Machine-to-machine callers should use Cloudflare Access service credentials or another Access-supported machine identity. Human login and machine login should have separate policies.
-
-## Secret storage
-
-Initial Windows implementation should use one of:
-
-- Windows Credential Manager, or
-- DPAPI-protected local configuration
-
-Plaintext `.env` may be allowed only as an explicit development-mode fallback and must be ignored by Git.
-
-Potential secrets include:
-
-- Cloudflare provisioning token
-- tunnel token
-- Cloudflare Access service credentials used for self-tests
-- notifier credentials/webhook secrets
-
-## Logging and redaction
-
-Structured logs should be the default.
-
-Never log:
-
-- Cloudflare API/token values
-- Access client secrets
-- tunnel credentials
-- QR image payloads
-- SMS verification data
-- FQGate saved credentials/cookies/session material
-- full authorization headers
-
-Request logs should prefer route IDs over raw URLs when query strings may contain sensitive values.
-
-The production Nitro/H3 shell suppresses raw framework stack output. A browser
-that closes a request while navigating is normalized to HTTP `499` and omitted
-from error logs; other unexpected framework errors are recorded with bounded
-method/path/tag metadata only. Bridge operation failures continue to use the
-structured operation/request-id logger.
-
-## Browser login page
-
-The login UI is protected by Cloudflare Access and should additionally:
-
-- use secure response headers
-- reject cross-site form requests where applicable
-- avoid persisting QR image/session information in browser storage
-- expire local QR flows promptly
-- not expose administrative configuration endpoints to ordinary login-page users
-
-QR image data should remain ephemeral.
-
-## Phase 2 local API boundary
-
-The Phase 2 bridge exposes only these same-origin, loopback routes:
-
-```text
-GET  /api/v1/version
-GET  /api/v1/capabilities
-GET  /api/v1/status
-POST /api/v1/session/qr/begin
-POST /api/v1/session/qr/poll
-```
-
-The registry rejects duplicate/wildcard/raw-upstream paths at module load, and
-the HTTP handler rejects unknown routes, wrong methods, query strings, oversized
-bodies, and malformed JSON. There is no route parameter that selects an arbitrary
-FQGate path. The QR begin body is an empty JSON object; the adapter sends
-`cache_credentials: false` upstream. The browser receives only an opaque UUID
-session ID. The upstream numeric `flow_id` and QR image are held in bounded
-process memory, expire after 120 seconds, and are never written to storage or
-logs. At most three active QR flows are retained; replacement and terminal
-states are tombstoned briefly so stale polling cannot revive a flow.
-
-Bridge-generated errors use `{ error: { code, message, requestId } }`. Messages
-are stable and generic; request bodies, QR payloads, upstream flow IDs, response
-details, and stack traces are not returned. Response headers include no-store,
-same-origin framing/resource policies, `nosniff`, `no-referrer`, and a restrictive
-CSP. The current TanStack Start SSR output includes an inline hydration bootstrap,
-so `script-src` permits inline scripts only for this framework-generated output;
-`unsafe-eval`, external scripts, wildcard CORS, and external `connect-src` values
-remain disallowed.
-
-## API authentication and authorization
-
-The bridge should rely on Cloudflare Access at the edge and also support defense-in-depth verification where practical.
-
-At minimum:
-
-- API and UI hostnames should be protected by Access policies.
-- machine API access should be distinguishable from human browser access.
-- administrative endpoints should not share the same policy as read-only market-data access.
-
-## Updates and supply chain
+## Release source / supply-chain policy
 
 ### FQGate
 
-- fetch upstream stable manifest
-- require expected file size and SHA-256
-- download only from the documented upstream repository/release URL
-- stage before replacing active binary
-- preserve previous known-good binary
-- verify version and health after activation
-- roll back on failed activation when safe
-- in Phase 2, installation and updates are explicit local CLI operations; the
-  Dashboard and bridge startup must not silently download or activate a new
-  FQGate binary
-- any future GitHub/Gitee source selection and Dashboard-triggered operation
-  must use a fixed source registry and the same transaction, not arbitrary URLs
+- default source remains a code-registered official GitHub source;
+- future Gitee support requires a fixed, documented trusted repository/path contract;
+- arbitrary manifest/release/executable URLs are forbidden;
+- fetch manifest through a source-specific adapter;
+- validate manifest schema;
+- require expected file size and SHA-256;
+- validate candidate identity/version;
+- stage before replacement;
+- preserve previous known-good binary;
+- verify health after activation;
+- Phase 3 additionally verifies the runtime OpenAPI required-contract baseline before activation is considered successful;
+- rollback on failed activation when safe.
 
-### cloudflared
+OpenAPI compatibility is not a binary equality check against the whole upstream API. Unrelated added endpoints do not automatically block an update; missing/invalid bridge-required contracts do.
 
-- download from official Cloudflare distribution/GitHub release source
-- verify release integrity/signature/checksum when official metadata makes that practical
-- stage and health-check before considering update successful
+### cloudflared (later phase)
+
+- download from official Cloudflare distribution/release source;
+- validate official integrity metadata when available;
+- stage/health-check before considering an update successful.
 
 ### Bridge
 
-- releases should be reproducible enough to identify version/commit
-- release checksums should be published
-- updater should not execute unsigned arbitrary scripts from remote sources
+- releases should identify source version/commit;
+- release checksums should be published in packaging phases;
+- updater must not execute arbitrary remote scripts.
+
+## Update transaction state
+
+Any Phase 3 state persisted for crash recovery/history must be minimal and non-secret.
+
+Allowed examples:
+
+- transaction ID
+- source identifier
+- planned/target version
+- bounded timestamps/status/error code
+- candidate checksum already public in manifest
+- rollback/success state
+
+Do not persist:
+
+- executable bytes in history records
+- QR/session data
+- login credentials/cookies
+- Cloudflare secrets
+- authorization headers
+- arbitrary upstream response bodies
+
+## Cloudflare credentials (later phase)
+
+### Setup-time API token
+
+Use only a scoped API token with permissions required to provision/adopt Tunnel/DNS/related resources. Never request/document Global API Key use.
+
+### Tunnel runtime credential
+
+Use the remotely managed tunnel runtime token, store it using an OS-protected mechanism where practical, and never print it in diagnostics.
+
+### Machine access
+
+Machine callers should use Cloudflare Access service credentials or another Access-supported identity, separate from human login policy.
+
+## Secret storage
+
+Later Windows implementation should use one of:
+
+- Windows Credential Manager; or
+- DPAPI-protected local configuration.
+
+Plaintext `.env` may be used only as an explicit development fallback and must remain ignored by Git.
+
+Potential secrets include Cloudflare setup tokens, tunnel tokens, Access service credentials used by self-tests, and notifier credentials.
+
+## Logging and redaction
+
+Structured logs are the default.
+
+Never log:
+
+- Cloudflare credentials
+- Access secrets
+- Tunnel credentials
+- QR image payloads
+- SMS verification data
+- FQGate saved credentials/cookies/session material
+- upstream numeric QR flow IDs
+- full authorization headers
+- raw failed OpenAPI response bodies
+
+Prefer route/operation IDs over raw sensitive URLs. OpenAPI diagnostics should record bounded metadata such as status, byte count, OpenAPI version, operation count, and fingerprint rather than entire documents.
+
+## Browser UI security
+
+The local and future remote UI should:
+
+- use secure response headers;
+- avoid persisting active QR state in browser storage;
+- avoid exposing local filesystem secrets/credentials;
+- distinguish reference documentation from executable bridge operations;
+- never embed a raw upstream documentation page in a way that creates an execution bypass.
+
+The current TanStack Start SSR shell may require its narrowly scoped inline hydration bootstrap; `unsafe-eval`, wildcard CORS, and unconstrained external connections remain disallowed.
+
+## Current local API boundary
+
+Phase 2 established explicit same-origin loopback routes for status and QR login. Phase 3 may add explicit update/OpenAPI/catalog operations, but it must preserve the same model:
+
+- no route parameter selecting an arbitrary FQGate path;
+- unknown methods/routes rejected;
+- request/body/timeout limits applied;
+- normalized errors;
+- no stack/upstream body leakage;
+- no generic `/v1/*` fallback.
+
+## API authentication and authorization (remote phases)
+
+The bridge will rely on Cloudflare Access at the edge and may add defense-in-depth verification where practical.
+
+At minimum:
+
+- UI and API hostnames are protected by Access;
+- human and machine policies are distinguishable;
+- local administrative/update operations are not automatically exposed under a generic machine market-data policy;
+- bridge route policy remains authoritative after Access succeeds.
 
 ## Network constraints
 
-Desired local firewall posture:
+Desired posture:
 
-- no inbound WAN rule for FQGate
-- no inbound WAN rule for bridge
-- no router port forwarding
-- outbound HTTPS allowed for Cloudflare, GitHub/upstream downloads, and notifier destinations
+- no inbound WAN rule for FQGate;
+- no inbound WAN rule for bridge;
+- no router port forwarding;
+- both FQGate and bridge remain loopback-bound;
+- outbound HTTPS allowed only as needed for trusted release sources, Cloudflare in later phases, and configured notifiers.
 
 ## Threats considered
 
-### Stolen Cloudflare Access service token
+### Malicious/unexpected runtime OpenAPI document
 
 Mitigations:
 
-- narrow Access application/policy
-- bridge route allowlist
-- token rotation support
-- no trading routes
-- audit logs
+- fixed loopback target;
+- bounded fetch size/time;
+- structural validation;
+- no raw logging;
+- schema cannot change authorization;
+- fail closed for required compatibility.
 
-### Cloudflare Tunnel misconfiguration
-
-Mitigations:
-
-- startup self-check confirms expected Access protection
-- documentation warns against public bypass hostname
-- bridge still enforces route allowlist
-
-### Upstream FQGate adds dangerous endpoints
+### Stale update confirmation
 
 Mitigation:
 
-- deny-by-default route registry; no transparent proxy
+- bind confirmation to candidate/plan identity and reject when release state changed.
 
-### Compromised upstream download
+### Concurrent update requests
+
+Mitigation:
+
+- one mutating lifecycle transaction at a time; duplicate/parallel applies rejected or deterministically serialized.
+
+### Upstream adds dangerous endpoints
+
+Mitigation:
+
+- deny-by-default registry; reference visibility does not imply callability; financial state-changing endpoints remain forbidden.
+
+### Compromised/incorrect upstream package
 
 Mitigations:
 
-- checksum verification against upstream manifest
-- staged activation
-- rollback
-- optional pin/freeze policy
+- trusted fixed source registry;
+- size/SHA-256 verification;
+- candidate identity/version checks;
+- compatibility/health/OpenAPI probes;
+- staged activation and rollback.
 
-### FQGate protocol changes
+### Stolen Cloudflare Access service token (later phase)
 
 Mitigations:
 
-- compatibility profile
-- startup probes
-- fail closed for unsupported operations
-- expose `incompatible` state rather than forwarding blindly
+- narrow Access policy;
+- bridge allowlist;
+- token rotation;
+- no trading routes;
+- audit/event logs.
 
-## Security acceptance criteria for first remote release
+### Cloudflare Tunnel misconfiguration (later phase)
 
-A release is not considered remotely deployable until all are true:
+Mitigations:
 
-- direct external access to FQGate is impossible by intended configuration
-- bridge only binds to loopback
-- unknown proxy paths are rejected
-- Cloudflare Access is required for UI and API hostnames
-- secrets are absent from repository and standard logs
-- upstream package checksum verification is tested
-- login QR payloads are ephemeral
-- no trading endpoints are registered
-- remote health/API tests pass through Access
+- Access-protected remote milestone;
+- self-tests for expected protection;
+- no direct FQGate ingress;
+- bridge still enforces route policy.
+
+## Security acceptance criteria before first remote release
+
+A release is not remotely deployable until all are true:
+
+- direct intended external access to FQGate is impossible;
+- bridge only binds to loopback;
+- unknown/raw upstream paths are rejected;
+- runtime OpenAPI cannot create routes;
+- remote UI/API are protected by Cloudflare Access;
+- secrets are absent from repo/standard logs;
+- package integrity/update rollback are tested;
+- QR payloads are ephemeral;
+- no trading/state-changing financial endpoints are registered;
+- remote approved API tests pass through Access.
