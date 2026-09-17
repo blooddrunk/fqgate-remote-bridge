@@ -135,5 +135,5 @@ explicit local bridge registry, compatibility-gated QR begin/poll adapter,
 ephemeral opaque session registry, normalized API errors, and React/TanStack
 Query UI. See [`phase-2-completion.md`](phase-2-completion.md) for the current
 implementation evidence and [`windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md)
-for the target-host procedure. The real Windows QR success check remains an
-external acceptance item; Cloudflare and other Phase 3+ work remains excluded.
+for the target-host procedure. The real Windows QR acceptance is complete;
+Cloudflare and other Phase 3+ work remains excluded.

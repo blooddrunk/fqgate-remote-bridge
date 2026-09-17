@@ -1,13 +1,12 @@
 # Phase 2 Completion Report — TanStack Local Bridge and QR UI
 
-Date: **2026-09-16**
+Date: **2026-09-17**
 
-Status: **implementation complete; real Windows QR acceptance pending**
+Status: **fully closed after real Windows x64 QR acceptance**
 
-The Phase 2 repository package is implemented and verified locally. The target
-Windows x64 host still needs one safe real QR begin/poll/scan acceptance before
-the roadmap can call Phase 2 fully closed. No destructive logout was performed
-to manufacture that evidence.
+The Phase 2 repository package is implemented, verified locally and accepted on
+the target Windows x64 host. The real QR begin/poll/scan flow completed without
+forcing a logout or changing an already-connected session.
 
 ## 1. Final architecture
 
@@ -141,6 +140,11 @@ suite passed with 3 Chromium tests. The production-mode Playwright run also
 passed all 3 tests. The checks should be re-run on the target Windows host using
 [`windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md).
 
+The target Windows run additionally passed `pnpm install --frozen-lockfile`,
+`pnpm typecheck`, `pnpm lint`, `pnpm test` (10 files, 78 tests), `pnpm build`,
+`pnpm format:check`, `acceptance.ps1 -VerifyCli`, and
+`acceptance.ps1 -VerifyBridge`.
+
 ## 7. Production loopback evidence
 
 On the development host, the built production runtime was started with
@@ -150,29 +154,37 @@ route returned HTTP 200 with security headers; the raw
 FQGate returned the stable `FQGATE_NOT_INSTALLED` error. The process was then
 stopped cleanly.
 
-The target Windows procedure repeats this check on the default
-`127.0.0.1:17282` listener and records the exact listener ownership.
+The target Windows procedure repeated this check on the default
+`127.0.0.1:17282` listener. `Get-NetTCPConnection` reported exactly one
+listener with `LocalAddress=127.0.0.1`, and the raw
+`/v1/market/health` request returned HTTP 404. The bridge process was the only
+process stopped after the check; the managed FQGate process remained running.
 
 ## 8. Windows and real QR acceptance
 
 The procedure is documented in
 [`docs/operations/windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md)
-and in `scripts/windows/acceptance.ps1 -VerifyBridge`. It verifies build/CLI
-behavior, production readiness, exact loopback binding, raw-route denial, and
-the normalized dashboard state against the real managed FQGate.
+and in `scripts/windows/acceptance.ps1 -VerifyBridge`. On 2026-09-17, the
+acceptance ran from `D:\code\research\fqgate-remote-bridge` on Windows 11
+`10.0.26200`, 64-bit, with Node `v24.15.0` and pnpm `11.23.0`. The tested
+source revision was `d794259`.
 
-Real QR begin/poll/scan was **not executed in this change**. The existing target
-host had a safe Phase 0/1 acceptance baseline, but this agent did not perform a
-destructive logout or claim a QR success without evidence. That single external
-acceptance item blocks the phrase “Phase 2 fully closed”; it does not block the
-implementation handoff.
+The managed FQGate was version `1.0.0`, with a validated installation and a
+healthy HTTP 200 envelope before the QR flow. Its initial normalized state was
+`networkReady=true`, `connected=false`, and `session=unknown`, so no logout was
+needed. The bridge served the local dashboard and `/login`; after the real QR
+scan/confirmation, the browser returned to `/` and displayed
+`Market session: Connected` with login method `formal`. A separate
+`GET /api/v1/status` returned `connected=true` and `session=connected`.
+The browser console had no errors after the flow completed.
+
+No QR image, account identifier, cookie, full session identifier, or upstream
+numeric flow ID was recorded. Temporary browser artifacts used to show the QR
+were removed immediately after the successful transition.
 
 ## 9. Remaining blockers and next phase
 
-Before Phase 2 can be fully closed, run one safe real QR login on the target
-Windows/FQGate combination and record only non-sensitive evidence. If the account
-is already connected and logout would be unsafe, retain the pending status.
-
+There are no remaining Phase 2 acceptance blockers. Phase 2 is fully closed.
 The next task is Phase 3: design and implement the cloudflared lifecycle and
 manual Cloudflare Tunnel integration. It is intentionally not part of this
 change.

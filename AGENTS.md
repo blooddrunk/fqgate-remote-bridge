@@ -49,9 +49,9 @@ Later architecture may use:
 
 ## Phase 2 implementation shape
 
-Phase 0 + Phase 1 are fully closed. The Phase 2 implementation package is complete
-in the repository; real QR success on the target Windows/FQGate host is still the
-final external acceptance item before the phase is fully closed.
+Phase 0 + Phase 1 + Phase 2 are fully closed. Phase 2 implementation, automated
+checks, production runtime, and one safe real QR success on the target
+Windows/FQGate host are recorded in the completion report.
 
 Use:
 
@@ -174,7 +174,7 @@ Follow `docs/roadmap.md`.
 
 - Phase 0: CLOSED
 - Phase 1: CLOSED
-- Phase 2: implementation complete; Windows QR acceptance pending
+- Phase 2: CLOSED
 - Phase 3+: do not opportunistically implement
 
 The active Phase 2 acceptance contract is:

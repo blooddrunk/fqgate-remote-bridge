@@ -11,7 +11,7 @@ claim headless FQGate support.
 - An interactive desktop user session, because FQGate is a desktop application.
 - The repository checked out locally and no other process using port `17282`.
 - A managed FQGate installation may already be connected. Do not log it out just
-  to manufacture a QR test; record that QR acceptance is pending in that case.
+  to manufacture a QR test. If it is not connected, a real QR test may proceed.
 
 ## Build and deterministic checks
 
@@ -83,8 +83,8 @@ explicitly authorizes a reversible test logout. When a QR test is safe:
    IDs only, not QR base64, flow IDs, or session material.
 
 If the real QR flow cannot be tested without destructive account/session
-manipulation, stop at the safe loopback and fake-E2E checks and record the real QR
-item as pending. Do not weaken the bridge to make the test pass.
+manipulation, stop at the safe loopback and fake-E2E checks. Do not weaken the
+bridge to make the test pass.
 
 ## Evidence to record
 
@@ -93,6 +93,28 @@ FQGate version, listener check, API status response, raw-path `404`, and whether
 real QR begin/poll/scan was completed. Do not record QR images, account data,
 cookies, credentials, or full session identifiers.
 
-Phase 2 is fully closed only after one safe real QR login succeeds against the
-target Windows/FQGate combination. Until then, the implementation can be handed
-off as complete with the external acceptance item clearly pending.
+## Recorded acceptance
+
+The following acceptance completed on 2026-09-17:
+
+- Repository: `D:\code\research\fqgate-remote-bridge`, source revision
+  `d794259`.
+- Host: Windows 11 version `10.0.26200`, 64-bit; Node `v24.15.0`;
+  pnpm `11.23.0`.
+- FQGate: managed version `1.0.0`, validated, running on its expected
+  loopback process path.
+- Checks: frozen-lockfile install, typecheck, lint, 78 unit/integration/UI
+  tests, production build, format check, `-VerifyCli`, and `-VerifyBridge`.
+- Bridge: exactly one listener on `127.0.0.1:17282`; raw
+  `/v1/market/health` returned HTTP 404.
+- QR: initial state was `connected=false`/ `session=unknown`; the browser
+  opened `/login`, rendered a short-lived QR, completed the real scan and
+  confirmation, then returned to the dashboard with `Connected / formal`.
+- Final API: `GET /api/v1/status` returned `connected=true` and
+  `session=connected`; browser console had no errors after completion.
+- Cleanup: only the bridge process started for this test was stopped; FQGate
+  remained running. Temporary QR screenshots/logs were removed.
+
+Phase 2 is fully closed after this safe real QR login on the target
+Windows/FQGate combination. Future re-runs must still avoid destructive logout
+or recording QR/session material.
