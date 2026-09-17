@@ -213,6 +213,17 @@ These changes are operator/documentation improvements within Phase 2. They do
 not add a privileged Dashboard install route, remote access, a Windows service,
 or any Phase 3+ integration.
 
+On 2026-09-17, the close-out revision `723c9c7` was also checked on the target
+Windows x64 copy at `D:\code\research\fqgate-remote-bridge` with native Node
+`v24.15.0` and pnpm `11.23.0`: frozen-lockfile install, typecheck, lint,
+`pnpm test` (11 files, 82 tests), production build, format check,
+`acceptance.ps1 -VerifyCli`, and `acceptance.ps1 -VerifyBridge` passed. The
+launcher was run once with `-NoBrowser -SkipInstall` and once through its full
+build path; both served the production Dashboard on exactly
+`127.0.0.1:17282`. Cleanup stopped only the launcher bridge process; the
+managed FQGate process remained running at PID `20636`. The already-connected
+account was not logged out and real QR acceptance was not repeated.
+
 ## 10. Known limitations
 
 TanStack Start/Nitro remains a pre-v1 transport shell, so its surface is kept

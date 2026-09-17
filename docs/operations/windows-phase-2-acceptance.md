@@ -162,3 +162,13 @@ After this real-QR run, the current revision `00e4258` was reinstalled and
 passed the same Windows checks with 80 tests, including the production
 client-abort logging hardening. The already-connected FQGate process remained
 running and was not logged out for that follow-up.
+
+The Phase 2 operator close-out was then verified on 2026-09-17 at the same
+Windows copy with revision `723c9c7`, native Node `v24.15.0`, and pnpm
+`11.23.0`: frozen-lockfile install, typecheck, lint, 82 tests, production
+build, format check, `-VerifyCli`, and `-VerifyBridge` passed. The new
+`start-dashboard.ps1` launcher passed both a ready-built run and a full build
+run with `-NoBrowser`; each exposed only `127.0.0.1:17282`. Cleanup stopped
+only the bridge process started by the launcher, and the managed FQGate process
+remained running at PID `20636`. No real QR flow was repeated because the
+existing account was already connected.
