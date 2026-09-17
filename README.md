@@ -1,139 +1,95 @@
 # FQGate Remote Bridge
 
-FQGate Remote Bridge 是运行在 Windows 本机的安全操作台，用来查看 FQGate 状态、完成 QR 登录，并逐步把 FQGate 的只读行情能力安全地带到远程环境。桥接和 FQGate 当前都只绑定 `127.0.0.1`，不会把 FQGate 直接暴露给局域网或公网。
+FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQGate 始终保持本机回环运行，由 Bridge 提供明确、受控的接口和 Dashboard，再逐阶段通过 Cloudflare Tunnel + Access 将需要的能力安全带到远程环境。
 
-当前仓库已完成 Phase 0、Phase 1、Phase 2 和 Phase 3。Phase 3 的本地升级中心、Runtime OpenAPI/API Reference 及目标 Windows x64 安全验收均已记录；Cloudflare Tunnel、Cloudflare Access 和远程行情 API 仍然属于后续阶段。
+当前 **Phase 0–3 已关闭，Phase 4 已正式开启**。Phase 4 只实现“受 Cloudflare Access 保护的远程人工访问”，不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
 
-## 先看结论
+## 当前结论
 
-- FQGate **不会自动安装或自动升级**。首次安装和更新都必须由用户明确触发。
-- 当前已有安全的 CLI 生命周期：下载、大小/SHA-256 校验、版本/兼容性检查、健康检查和失败回滚。
-- Phase 3 Dashboard 复用同一套 lifecycle/update transaction，不另写 Web updater；更新检查、预览和安装都必须由用户显式操作。
-- Phase 3 会直接读取运行中的 `http://127.0.0.1:17281/openapi.json` 作为 FQGate 当前接口描述的 source of truth，不手工复制官方接口清单。
-- **OpenAPI 只负责描述，不负责授权。** 新出现的 FQGate 接口即使能在文档里看到，也不会自动变成 Bridge 可调用接口。
-- Cloudflare Tunnel/Access 会在本地升级和 API 文档闭环完成后再进入下一阶段。
+- FQGate：固定保持 `127.0.0.1:17281`。
+- Bridge：生产环境固定保持 IPv4 loopback，默认 `127.0.0.1:17282`。
+- Phase 3 已完成本地升级中心、Runtime OpenAPI/API Reference 和目标 Windows x64 验收。
+- Phase 4 引入 remotely-managed Cloudflare Tunnel + Cloudflare Access human policy，`cloudflared` 只转发到 Bridge，绝不直接转发到 FQGate。
+- Tunnel **不会自动把全部本地操作暴露到远程**。Bridge 会显式区分 local 与 remote-human operation。
+- Phase 4 远程允许 Dashboard/status、QR 登录、只读更新状态和 reference-only API Catalog；更新检查/预览/执行、OpenAPI refresh 继续保持 local-only。
+- OpenAPI 只负责描述 FQGate 当前“有什么”，不负责授权；新上游路径默认不可调用。
+- 不提供下单、撤单、资金划转、券商控制或其他金融状态变更能力。
 
-## 当前阶段架构
+## 当前与目标架构
+
+当前本地：
 
 ```text
 浏览器
-  -> 127.0.0.1:17282  FQGate Remote Bridge / Dashboard
-       -> 显式 operation policy
-       -> lifecycle / update service
-       -> runtime OpenAPI catalog
-       -> QR / status adapters
+  -> 127.0.0.1:17282  Bridge / TanStack Dashboard
+       -> explicit operation policy
+       -> lifecycle / update / OpenAPI / QR services
             -> 127.0.0.1:17281  FQGate
 ```
 
-当前不开放 LAN/WAN 监听，也没有 Cloudflare Tunnel。
+Phase 4 目标：
 
-## 快速开始（Windows）
+```text
+远程浏览器
+  -> Cloudflare Access
+  -> Cloudflare Tunnel
+  -> cloudflared Windows service
+  -> 127.0.0.1:17282 Bridge
+  -> remote-human exposure policy
+  -> FQGate adapters
+  -> 127.0.0.1:17281 FQGate
+```
 
-### 1. 准备环境
+不会出现 `cloudflared -> 127.0.0.1:17281`。
 
-需要：
+## 快速开始（Windows，本地 Phase 3 基线）
 
-- Windows x64；使用 FQGate 时保持 Windows 桌面用户会话登录；
-- Node.js 22 或更高版本；
-- Git。
-
-本项目使用锁定版本的 pnpm。优先使用 Corepack：
+需要 Windows x64、Node.js 22+、Git。项目使用锁定 pnpm 版本，优先使用 Corepack：
 
 ```powershell
 corepack enable
 corepack pnpm --version
 ```
 
-如果系统没有 `corepack`：
-
-```powershell
-npm install --global pnpm@11.23.0
-pnpm --version
-```
-
-### 2. 下载源码
+下载与构建：
 
 ```powershell
 Set-Location "<你的代码目录>"
 git clone https://github.com/blooddrunk/fqgate-remote-bridge.git
 Set-Location .\fqgate-remote-bridge
-```
-
-已有工作副本：
-
-```powershell
-Set-Location "<你的代码目录>\fqgate-remote-bridge"
-git pull --ff-only
-```
-
-### 3. 安装依赖并构建
-
-```powershell
 corepack pnpm install --frozen-lockfile
 corepack pnpm build
 ```
 
-### 4. 首次安装 FQGate
-
-先预览：
+首次安装 FQGate 先预览：
 
 ```powershell
 node .\dist\cli\main.js fqgate install --dry-run
 ```
 
-确认来源、版本、大小和 SHA-256 后再执行：
+确认来源、版本、大小、SHA-256 后执行：
 
 ```powershell
 node .\dist\cli\main.js fqgate install
 node .\dist\cli\main.js fqgate status
 ```
 
-默认管理目录：
-
-```text
-%LOCALAPPDATA%\FQGateRemoteBridge\
-```
-
-### 5. 启动 Dashboard 和 FQGate
-
-推荐：
+推荐启动方式：
 
 ```powershell
 .\scripts\windows\start-dashboard.cmd
 ```
 
-如果 FQGate 尚未安装，普通启动不会自动下载。确认预览后可以明确要求安装：
+本地页面：
 
-```powershell
-.\scripts\windows\start-dashboard.cmd -InstallFqgate
-```
+- Dashboard：<http://127.0.0.1:17282/>
+- QR 登录：<http://127.0.0.1:17282/login>
+- 更新中心：<http://127.0.0.1:17282/updates>
+- API Reference：<http://127.0.0.1:17282/api-reference>
 
-常用选项：
+## Phase 3 已有更新能力
 
-```powershell
-.\scripts\windows\start-dashboard.cmd -NoBrowser
-.\scripts\windows\start-dashboard.cmd -SkipBuild
-.\scripts\windows\start-dashboard.cmd -ConfigPath .\config.local.json
-```
-
-手动启动生产桥接：
-
-```powershell
-pnpm start
-```
-
-浏览器地址：
-
-- 总览：<http://127.0.0.1:17282/>
-- 扫码登录：<http://127.0.0.1:17282/login>
-
-按 `Ctrl+C` 只停止桥接。停止 FQGate：
-
-```powershell
-node .\dist\cli\main.js fqgate stop
-```
-
-## 当前 CLI 更新能力
+CLI：
 
 ```powershell
 node .\dist\cli\main.js fqgate update --check
@@ -141,103 +97,104 @@ node .\dist\cli\main.js fqgate update --apply --dry-run
 node .\dist\cli\main.js fqgate update --apply
 ```
 
-Dashboard 等价入口：
+Dashboard 与 CLI 共用同一个 lifecycle/update transaction；候选激活会经过大小/SHA-256、版本、兼容性、health、Runtime OpenAPI required contract 与既有语义探针，并保留 known-good rollback。
 
-- 更新中心：<http://127.0.0.1:17282/updates>；
-- API Reference：<http://127.0.0.1:17282/api-reference>。
+## Runtime OpenAPI / API Reference
 
-Dashboard 与 CLI 共用同一个 lifecycle/update application service；候选激活在
-health 后还会执行 Runtime OpenAPI validation、required Bridge contract 检查和既有语义探针。
-
-## Runtime OpenAPI / API Docs 设计
-
-FQGate 官方配套项目公开了本机文档与 OpenAPI：
+FQGate 本机提供：
 
 ```text
 http://127.0.0.1:17281/docs
 http://127.0.0.1:17281/openapi.json
 ```
 
-Phase 3 不会复制 `/docs` 页面，也不会把 `/v1/*` 透明代理出来，而是：
+Bridge 使用运行中的 `/openapi.json` 构建 upstream reference，而不是手工复制接口清单：
 
 ```text
-运行中的 /openapi.json
-    -> FQGate 完整参考目录
+runtime FQGate /openapi.json
+    -> FQGate Reference（描述）
 
-显式 Bridge operation registry
-    -> Bridge API 目录
+explicit Bridge operation registry
+    -> Bridge API（授权）
 ```
 
-后续进入远程阶段后，也继续区分：
+因此“FQGate 文档中出现”不等于“Bridge 可以调用”。
 
-- **FQGate Reference**：告诉你当前安装版本“有什么”；
-- **Bridge API**：告诉远程客户端“允许调用什么”。
+## Phase 4：远程人工访问
 
-详细设计见 `docs/plans/runtime-openapi-and-remote-docs.md`。
+Phase 4 的关键不是简单运行 `cloudflared`，而是同时建立三层约束：
 
-## 安全边界
+1. Cloudflare Access 对远程 human 做身份认证；
+2. Tunnel 只连接 `127.0.0.1:17282`；
+3. Bridge 根据请求上下文继续执行显式 operation exposure policy。
 
-- FQGate：`127.0.0.1:17281`；
-- Bridge：默认 `127.0.0.1:17282`；
-- 不提供下单、撤单、资金划转、券商账户控制或其他金融状态变更能力；
-- 不做任意 URL 反向代理；
-- 不允许任意 manifest/EXE URL；
-- 新上游接口默认拒绝；
-- OpenAPI 发现不会自动修改授权；
-- Upstream FQGate Reference 只读展示，不提供 raw upstream `Try it out`；
-- Bridge API 只来自显式 operation registry；
-- QR/session 数据保持临时、脱敏、不写浏览器持久存储；
-- FQGate 未通过兼容性验证时相关操作 fail closed。
-
-## 当前 API（Phase 3，仅本机回环）
+计划中的 remote-human operation：
 
 ```text
-GET  /api/v1/version
-GET  /api/v1/capabilities
-GET  /api/v1/status
-POST /api/v1/session/qr/begin
-POST /api/v1/session/qr/poll
-GET  /api/v1/updates/status
-POST /api/v1/updates/check
-POST /api/v1/updates/plan
-POST /api/v1/updates/apply
-GET  /api/v1/openapi/catalog
-POST /api/v1/openapi/refresh
+bridge.version
+bridge.capabilities
+bridge.status
+session.qr.begin
+session.qr.poll
+updates.status
+openapi.catalog
 ```
 
-更新操作均为本机 loopback-only 的显式注册操作；`updates/apply` 只接受服务端已生成且仍然匹配的 `planId`，不接受 manifest/EXE/OpenAPI URL。
+继续 local-only：
+
+```text
+updates.check
+updates.plan
+updates.apply
+openapi.refresh
+```
+
+Tunnel token 使用受保护的 token file，目标 service command 形态为：
+
+```text
+cloudflared tunnel run --token-file <protected-token-file>
+```
+
+原始 token 不应出现在 Windows service command line、普通配置、日志、诊断、浏览器或仓库中。
+
+Phase 4 使用**预先创建的 remotely-managed Tunnel 和人工 Access policy**。自动通过 Cloudflare API 创建 Tunnel/DNS/Access 属于 Phase 6，不在当前开发范围。
 
 ## 当前开发任务
 
-Phase 3 任务包：
+Phase 4 task package：
 
 ```text
-docs/tasks/phase-3-fqgate-upgrade-and-runtime-openapi.md
+docs/tasks/phase-4-cloudflare-tunnel-access.md
+```
+
+设计：
+
+```text
+docs/plans/phase-4-secure-remote-human-access.md
 ```
 
 Codex goal：
 
 ```text
-docs/prompts/phase-3-codex-goal.md
+docs/prompts/phase-4-codex-goal.md
 ```
 
-### 可直接交给 Codex goal 的精简入口
+可直接交给 Codex goal 的入口：
 
 ```text
-在 https://github.com/blooddrunk/fqgate-remote-bridge 工作。同步最新代码后，严格按照 AGENTS.md 和 docs/prompts/phase-3-codex-goal.md 完整执行 Phase 3：实现本地 FQGate Dashboard 升级中心和 runtime OpenAPI/API Reference 基座，复用现有 lifecycle/update transaction，保持 loopback-only、deny-by-default、无任意 URL/透明代理/交易能力；完成代码、测试、UI、文档和安全可行的 Windows 验收，不要提前实现 Cloudflare/Tunnel/Access 或其他 Phase 4+ 能力。
+在 https://github.com/blooddrunk/fqgate-remote-bridge 工作。同步最新 main 后，严格按照 AGENTS.md、docs/tasks/phase-4-cloudflare-tunnel-access.md、docs/plans/phase-4-secure-remote-human-access.md 和 docs/prompts/phase-4-codex-goal.md 完整执行 Phase 4。实现 Cloudflare Tunnel + Access 保护下的远程人工 Dashboard/QR/status/reference 访问，同时保持 FQGate 和 Bridge loopback-only，并用显式 local/remote-human operation policy 保证 updates.check/plan/apply 与 openapi.refresh 仍然只能本地调用。使用 remotely-managed Tunnel 和受 Windows ACL 保护的 token file，不在 service command line/日志/配置中暴露 raw token。完成代码、测试、文档和可执行的 Windows 验收；如果没有真实 Cloudflare 资源，不得伪造验收或关闭 Phase 4。不要提前实现 Phase 5+ 的机器行情 API、service-token auth、自动 Cloudflare provisioning、supervisor、自动更新、MCP/WebSocket 或交易能力。
 ```
 
 ## 文档索引
 
+- [Agent 规范](AGENTS.md)
 - [架构](docs/architecture.md)
 - [安全模型](docs/security.md)
-- [上游契约与兼容性](docs/upstream-contracts.md)
+- [上游契约](docs/upstream-contracts.md)
 - [开发路线图](docs/roadmap.md)
-- [Phase 3 任务包](docs/tasks/phase-3-fqgate-upgrade-and-runtime-openapi.md)
-- [Phase 3 Codex Goal](docs/prompts/phase-3-codex-goal.md)
-- [升级中心设计](docs/plans/fqgate-install-upgrade-dashboard.md)
-- [Runtime OpenAPI / Remote Docs 设计](docs/plans/runtime-openapi-and-remote-docs.md)
-- [Phase 2 完成报告](docs/status/phase-2-completion.md)
-- [Windows Phase 2 验收](docs/operations/windows-phase-2-acceptance.md)
+- [Phase 4 设计](docs/plans/phase-4-secure-remote-human-access.md)
+- [Phase 4 任务包](docs/tasks/phase-4-cloudflare-tunnel-access.md)
+- [Phase 4 Codex Goal](docs/prompts/phase-4-codex-goal.md)
+- [Phase 3 完成交接](docs/status/phase-3-implementation-handoff.md)
 - [Windows Phase 3 验收](docs/operations/windows-phase-3-acceptance.md)
-- [Agent 工作约定](docs/agent-guide.md)
+- [Agent 快速交接](docs/agent-guide.md)
