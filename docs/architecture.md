@@ -109,7 +109,9 @@ the listener to `127.0.0.1` and defaults to port `17282`. The five server routes
 delegate to the explicit operation registry and normalized service; they are not a
 generic framework proxy. Start's generated SSR bootstrap requires a narrowly
 scoped inline script allowance in the current CSP; no eval, external script, or
-external connection allowance is enabled.
+external connection allowance is enabled. The production Nitro shell also
+normalizes client-closed requests to `499` and replaces raw H3 stack logging with
+bounded structured error metadata.
 
 TanStack Start replaces the earlier Phase 2 Fastify + Vue plan. Do not run a second Fastify backend merely to preserve the old plan.
 

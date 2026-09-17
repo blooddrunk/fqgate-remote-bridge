@@ -115,6 +115,12 @@ Never log:
 
 Request logs should prefer route IDs over raw URLs when query strings may contain sensitive values.
 
+The production Nitro/H3 shell suppresses raw framework stack output. A browser
+that closes a request while navigating is normalized to HTTP `499` and omitted
+from error logs; other unexpected framework errors are recorded with bounded
+method/path/tag metadata only. Bridge operation failures continue to use the
+structured operation/request-id logger.
+
 ## Browser login page
 
 The login UI is protected by Cloudflare Access and should additionally:

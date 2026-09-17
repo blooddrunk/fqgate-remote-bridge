@@ -15,5 +15,13 @@ export default defineConfig({
     port: 17282,
     strictPort: true,
   },
-  plugins: [tailwindcss(), tanstackStart({ srcDirectory: "src" }), react(), nitro()],
+  plugins: [
+    tailwindcss(),
+    tanstackStart({ srcDirectory: "src" }),
+    react(),
+    nitro({
+      errorHandler: "./server/error-handler.ts",
+      plugins: ["./server/plugins/runtime.ts"],
+    }),
+  ],
 });

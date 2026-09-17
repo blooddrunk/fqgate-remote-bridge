@@ -135,13 +135,13 @@ pnpm test:e2e
 ```
 
 `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `pnpm format:check` passed;
-`pnpm test` passed with 10 files and 78 tests; and the deterministic Playwright
+`pnpm test` passed with 11 files and 80 tests; and the deterministic Playwright
 suite passed with 3 Chromium tests. The production-mode Playwright run also
 passed all 3 tests. The checks should be re-run on the target Windows host using
 [`windows-phase-2-acceptance.md`](../operations/windows-phase-2-acceptance.md).
 
 The target Windows run additionally passed `pnpm install --frozen-lockfile`,
-`pnpm typecheck`, `pnpm lint`, `pnpm test` (10 files, 78 tests), `pnpm build`,
+`pnpm typecheck`, `pnpm lint`, `pnpm test` (11 files, 80 tests), `pnpm build`,
 `pnpm format:check`, `acceptance.ps1 -VerifyCli`, and
 `acceptance.ps1 -VerifyBridge`.
 
@@ -159,6 +159,11 @@ The target Windows procedure repeated this check on the default
 listener with `LocalAddress=127.0.0.1`, and the raw
 `/v1/market/health` request returned HTTP 404. The bridge process was the only
 process stopped after the check; the managed FQGate process remained running.
+
+The production Nitro shell handles browser/client disconnects as a `499`
+response and suppresses raw H3 stack traces. Other unexpected framework errors
+retain structured method/path/tag metadata without request bodies, QR data,
+upstream flow IDs, or stack traces.
 
 ## 8. Windows and real QR acceptance
 
@@ -182,7 +187,16 @@ No QR image, account identifier, cookie, full session identifier, or upstream
 numeric flow ID was recorded. Temporary browser artifacts used to show the QR
 were removed immediately after the successful transition.
 
-## 9. Remaining blockers and next phase
+## 9. Known limitations
+
+TanStack Start/Nitro remains a pre-v1 transport shell, so its surface is kept
+isolated from the framework-independent bridge and FQGate modules. The QR
+adapter fails closed on unknown upstream response shapes; transient upstream
+poll failures are retried only within the bounded in-memory flow lifetime and
+never become transparent proxy responses. A bridge restart invalidates active
+QR flows by design.
+
+## 10. Remaining blockers and next phase
 
 There are no remaining Phase 2 acceptance blockers. Phase 2 is fully closed.
 The next task is Phase 3: design and implement the cloudflared lifecycle and
