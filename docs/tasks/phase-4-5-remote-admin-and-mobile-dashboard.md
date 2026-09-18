@@ -56,7 +56,11 @@ Tasks:
    - separate hostname/AUD;
    - human-only policy;
    - MFA requirement;
-   - device posture requirement;
+   - short admin session;
+   - no Bypass or Service Auth path;
+   - for the current operator-approved low-friction profile, no WARP, client
+     certificate, hostname mTLS, or device-posture prerequisite; a stronger
+     posture profile must be separately documented rather than assumed;
    - short admin session;
    - Protect with Access;
    - no Bypass/Service Auth path.
@@ -176,8 +180,9 @@ Create `docs/operations/windows-phase-4-5-acceptance.md` and record bounded evid
 3. Ordinary Phase 4 human access still works.
 4. Ordinary human Access identity cannot call any of the four admin operations.
 5. Unauthenticated admin access is denied/challenged.
-6. Device-noncompliant admin access is denied.
-7. Intended compliant device + MFA reaches admin Dashboard.
+6. The live admin policy matches the approved profile and contains no stale
+   WARP, certificate, device-posture, Bypass, or Service Auth requirement.
+7. Intended operator + MFA reaches admin Dashboard.
 8. Bridge cryptographically validates the real admin assertion for exact issuer/AUD without logging it.
 9. Wrong-app/ordinary-human assertion cannot become admin.
 10. Remote admin check/plan/OpenAPI refresh work.
@@ -260,4 +265,4 @@ Do not opportunistically implement:
 
 ## Closure rule
 
-Phase 4.5 status remains OPEN until 4.5A, 4.5B, and 4.5C are implemented, deterministic quality gates pass, and real Windows + Cloudflare admin/MFA/device/confirmation/mobile acceptance is recorded. Implementation alone is not sufficient to close the phase.
+Phase 4.5 status remains OPEN until 4.5A, 4.5B, and 4.5C are implemented, deterministic quality gates pass, and real Windows + Cloudflare admin/MFA/confirmation/mobile acceptance for the approved edge profile is recorded. Implementation alone is not sufficient to close the phase.

@@ -110,41 +110,37 @@ and no `17281` route. The existing cloudflared service uses `tunnel run` with
 the service to `Running`, and the ordinary public route returned its expected
 unauthenticated Access challenge (`302`) after reconnect.
 
-The 2026-09-18 network-compatible admin reconfiguration now uses Cloudflare One
-Client `PostureOnly`, zone client-certificate provisioning, and a
-Cloudflare-managed CA hostname association for the admin hostname. The admin
-Access policy requires the intended email, a valid client certificate, Windows
-OS posture, independent MFA, and a 15-minute session; it does not require the
-`WARP` or `Gateway` traffic-tunnel selector. A TLS probe confirmed that the
-admin hostname requests a client certificate. A bounded Windows request using
-the installed WARP client certificate reached the unauthenticated Access
-challenge with `MTLS Status: SUCCESS`; a request without that certificate was
-denied with `403`. The browser must still complete the visible certificate
-selection/login/MFA flow before T8 can be recorded.
+The 2026-09-18 operator-approved admin reconfiguration now uses the low-friction
+profile: exact operator email, Access MFA, and a 15-minute session. The policy
+has an empty `require` list, so Cloudflare One Client, WARP, client certificates,
+hostname mTLS, and device posture are not prerequisites. The independent admin
+application/AUD, Protect with Access, no Bypass/Service Auth, Bridge-side JWT
+validation, exact Origin/intent checks, and one-time apply grant remain active.
+Both public roots returned the expected unauthenticated Access challenge (`302`)
+after the change; the browser still needs one post-change login before T8 can be
+recorded.
 
-The admin Access application, independent audience, MFA/device-posture policy,
-and second Tunnel route are provisioned. A separate WARP enrollment application
-and identity-only enrollment policy has also been provisioned with independent
-MFA; the posture rules remain downstream checks after device registration. The
-team App Launcher is now enabled with its own identity-only Allow policy so the
-intended operator can reach the MFA enrollment flow. DNS has now been
-published, and the intended operator has completed the browser WARP/MFA
-enrollment flow. The service-scoped first-level admin hostname is now
+The admin Access application, independent audience, MFA policy, and second
+Tunnel route are provisioned. DNS has been published. The service-scoped
+first-level admin hostname is now
 `fqgate-admin.haoqi90.top`; the Access application and Tunnel route have been
 updated to that hostname. A bounded public probe negotiates TLS successfully
 and receives the expected unauthenticated Access challenge (`302`), while the
-ordinary hostname continues to return its own `302`. The real admin Access
-session had been reported successful before the PostureOnly reconfiguration;
-the post-reconfiguration browser session is not yet recorded. The public admin
-request matrix, remote maintenance, confirmation negative cases, mobile
-browser smoke, and a safe real update candidate therefore remain unavailable
-for full acceptance. The executable helper
+ordinary hostname continues to return its own `302`. The post-reconfiguration
+browser session is not yet recorded. The public admin request matrix, remote
+maintenance, confirmation negative cases, mobile browser smoke, and final apply
+evidence therefore remain unavailable for full acceptance. The executable helper
 `scripts/windows/phase45-acceptance.ps1` now records the machine-verifiable
 part: loopback listeners, token-file service shape, unknown-host/forwarded-host
 denial, unauthenticated public Access challenges, raw-route denial, and local
-check/plan/OpenAPI refresh all passed on 2026-09-18. The real update plan also
-found only an unsigned, unvalidated `1.0.1`; it is correctly blocked and is
-recorded as `T13 NOT AVAILABLE`, not applied. The repeatable setup and
+check/plan/OpenAPI refresh all passed on 2026-09-18. A separate Windows x64
+verification of the official 1.0.1 candidate matched its size and SHA-256,
+passed `--verify-installation`/`--version`, and passed isolated OpenAPI, health,
+and required health/QR contract checks on `17283`. The live config now marks
+1.0.1 validated. Two real local apply attempts reached candidate activation but
+ended in `HEALTH_TIMEOUT`; the existing rollback restored managed 1.0.0 and
+`ready` health. Remote-admin apply evidence is therefore still open, and the
+repeatable setup and
 reconfiguration procedure is
 documented in `docs/operations/windows-phase-4-5-remote-admin-setup.md`; the
 plain-language one-command acceptance procedure is documented in

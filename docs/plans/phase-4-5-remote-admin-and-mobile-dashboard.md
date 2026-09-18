@@ -166,7 +166,18 @@ Requirements:
 
 ### 3.3 Stronger edge policy for the admin Access application
 
-The admin Access application should be human-only and materially stronger than the ordinary Phase 4 policy.
+The design baseline below was written for a stronger device-bound deployment. On
+2026-09-18 the operator explicitly approved a low-friction live profile for the
+OpenWrt + daed/passwall2 environment: exact human identity, independent MFA,
+short session, Protect with Access, no Bypass, and no Service Auth; WARP,
+client certificates, hostname mTLS, and device posture are not required. This
+is a documented deployment-profile choice, not a privilege expansion. Bridge
+JWT verification, exact Host/Origin/intent checks, operation allowlists, and
+one-time update confirmation remain mandatory.
+
+For a future deployment that chooses the stronger profile, the admin Access
+application should be human-only and materially stronger than the ordinary
+Phase 4 policy.
 
 Required policy intent:
 
@@ -191,7 +202,10 @@ Cloudflare currently documents the relevant building blocks here:
 - Posture-only mode and client certificate: <https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/cloudflare-one-client/configure/modes/device-information-only/>
 - Hostname mTLS association: <https://developers.cloudflare.com/ssl/client-certificates/enable-mtls/>
 
-The exact device-posture profile is operator-configurable because this is a personal Windows-first deployment, but the admin application must have at least one enforceable device restriction before Phase 4.5C can close.
+The exact device-posture profile is optional for the current explicitly approved
+low-friction profile. If a future deployment enables it, it must be documented
+and accepted as a separate profile; it must never be inherited by a future
+`remote_machine` identity automatically.
 
 ### 3.4 Bridge-side cryptographic verification for remote-admin requests
 
@@ -525,7 +539,7 @@ Threat: attacker obtains an admin browser session.
 Controls:
 
 - independent MFA at Access;
-- required device posture;
+- optional device posture only when a stronger profile is explicitly selected;
 - short admin session;
 - one-time confirmation for activation;
 - confirmation bound to principal/action/plan and short TTL.
@@ -693,8 +707,10 @@ On the target Windows x64 host, record bounded/non-secret evidence proving:
 3. Ordinary remote-human behavior from Phase 4 still works.
 4. Ordinary human hostname cannot call `updates.check`, `updates.plan`, `updates.apply`, or `openapi.refresh`.
 5. Unauthenticated admin hostname is challenged/denied by Access.
-6. A non-compliant/non-enrolled device is denied by the admin device policy.
-7. A compliant intended device plus MFA can reach the admin Dashboard.
+6. The live admin policy matches the approved profile: intended identity plus
+   MFA/short session, no unintended Bypass or Service Auth, and no stale WARP,
+   certificate, or device-posture requirement.
+7. The intended operator plus MFA can reach the admin Dashboard.
 8. Bridge accepts the real admin Access JWT only for the configured issuer/AUD and does not log it.
 9. A wrong-app token / ordinary-human application token cannot obtain admin context.
 10. Remote admin can perform update check/plan and OpenAPI refresh.

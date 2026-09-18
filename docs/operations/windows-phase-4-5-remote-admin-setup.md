@@ -8,30 +8,27 @@ Cloudflare Access 策略和排查远程管理员网络问题的操作者。READM
 撤单、转账、券商控制和其他金融状态变更能力仍然禁止远程暴露的约束。Cloudflare
 资源自动化仍属于 Phase 6。
 
-## 先看结论：最简单、最适合家庭代理网络的用法
+## 先看结论：当前实例的最简单用法
 
-远程管理员每天真正需要做的事情只有：
+2026-09-18，操作者明确批准将当前管理员策略简化为：指定管理员邮箱 + Access
+MFA + 15 分钟会话。当前管理员应用的 `require` 为空，不再要求 WARP、客户端
+证书或设备姿态。后文标记为“历史”的 Posture-only/mTLS 步骤不适用于当前实例。
 
-1. Windows 用户已经登录；
-2. Cloudflare One Client 已注册，并处于 **Posture only（仅设备姿态）** 模式；
-3. 在浏览器书签打开 `https://<admin-hostname>/`；
-4. Access 会话过期时重新完成 MFA。
+远程管理员每天只需要：
 
-不需要每天打开 Access App Launcher，也不需要为了访问管理页面手动切换“全流量
-WARP”。管理员仍然保留独立 hostname、独立 Access 应用和 AUD、MFA、Windows
-设备姿态、Bridge 侧 JWT 校验、精确 Origin/intent 校验以及 `updates.apply` 的
-一次性确认。
+1. 确认 Windows 上 Bridge 和 cloudflared 正常运行；不需要打开 Cloudflare One
+   Client，也不需要切换 WARP；
+2. 浏览器打开 `https://<admin-hostname>/`，完成指定邮箱的 Access 登录和 MFA；
+3. 在 `/updates` 执行“检查 → 计划 → 精确候选复核 → 第二次确认”。
 
-这里推荐 **Posture only**，是因为它保留 Cloudflare 对设备注册和姿态的判断，
-但不接管 Windows 的普通互联网流量和 DNS。这样 OpenWrt + daed/passwall2
-继续负责家庭网络的出网路径，Cloudflare One 不再和它争抢默认路由或 DNS。
+管理员仍然保留独立 hostname、独立 Access 应用和 AUD、Protect with Access、无
+Bypass/Service Auth、Bridge 侧 JWT 校验、精确 Origin/intent 校验，以及
+`updates.apply` 的一次性确认。这样取消的是容易和 OpenWrt + daed/passwall2
+冲突的设备接入条件，不是取消应用层授权。
 
-如果当前客户端显示 `WarpWithDnsOverHttps`，说明它仍在全流量/全 DNS 模式；这
-是本手册后面的第一项网络简化调整。切换设备配置文件可能让客户端短暂重启，
-所以不要在重要网络操作中途切换。Cloudflare 的官方说明见：
-
-- [Cloudflare One Client 模式](https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/cloudflare-one-client/configure/modes/)
-- [Posture only 模式](https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/cloudflare-one-client/configure/modes/device-information-only/)
+如果验证码页显示 `Network error`：关闭旧的 `cloudflareaccess.com` 和管理员标签页，
+从管理员 hostname 根地址重新开始并申请新验证码；不要反复提交旧验证码。不要发送
+验证码、JWT、cookie 或完整跳转地址。
 
 ## 1. 目标拓扑和不可改变的边界
 
@@ -86,7 +83,7 @@ Cloudflare zone、两个公网 hostname。不要把不同电脑的 FQGate 账号
 | 普通 Access 应用       | hostname 和电脑不变时可复用                          | 为新 hostname 新建应用                 |
 | 管理员 Access 应用/AUD | hostname 不变时可复用                                | 新建独立 admin 应用和独立 AUD          |
 | Bridge 配置            | 更新 `adminHostname`/`adminAccess.audience`          | 使用新实例的完整外部配置               |
-| WARP/MFA               | 当前操作者设备重新确认已注册                         | 每台新设备独立注册和验证               |
+| Access MFA             | 当前管理员重新完成 MFA                               | 新实例重新配置管理员 Access 和 MFA     |
 | FQGate 登录会话        | 仍属于这台电脑和这个实例，不共享                     | 在新电脑建立新账号/会话                |
 
 同一个 named Tunnel 可以安全发布多个 hostname，前提是它们有意指向同一台电脑
@@ -148,7 +145,7 @@ Cloudflare 控制台名称可能略有变化，但安全意图不能变化。
 它只提供 Phase 4 的普通远程只读能力。普通 remote_human 即使绕过前端直接调用
 接口，也必须被 Bridge 拒绝四个维护操作。
 
-### 4.2 独立 remote_admin 应用
+### 4.2 独立 remote_admin 应用（当前使用）
 
 新建第二个 self-hosted application，不要把普通应用改成管理员应用：
 
@@ -156,19 +153,19 @@ Cloudflare 控制台名称可能略有变化，但安全意图不能变化。
 2. 使用新建的 Access application，取得不同于普通应用的 AUD；
 3. 开启 **Protect with Access**；
 4. Allow 只写预期的管理员身份/组；
-5. 要求有效的 Cloudflare 客户端证书（managed CA hostname association）和 Windows
-   OS posture；在 **Posture only** 模式下不要把 `WARP` 或 `Gateway` selector
-   作为强制条件，因为这两个值描述的是流量接入状态，不是本方案需要的客户端证书；
-6. 要求独立 MFA（例如 TOTP 或安全密钥）；
-7. 使用短管理员会话，目前按 15 分钟配置；
-8. 如果策略要求直接走 IdP 登录，保持该应用的 WARP 登录认证关闭；
-9. 确认整个应用没有 Bypass policy，也没有 Service Auth policy。
+5. 要求独立 MFA（例如 TOTP 或安全密钥）；
+6. 使用短管理员会话，目前按 15 分钟配置；
+7. 不添加 `certificate`、`device_posture`、`warp` 或 `gateway` Require 条件；
+8. 确认整个应用没有 Bypass policy，也没有 Service Auth policy。
 
 Cloudflare Access 是第一道门。Bridge 还会独立校验管理员 JWT 的 RS256 签名、
 精确 issuer、精确管理员 AUD、时间声明和 `kid`。Access 页面显示通过，不代表
 Bridge 自动授予管理员权限。
 
-### 4.3 首次 MFA、WARP 注册和姿态策略
+### 4.3 历史配置：首次 MFA、WARP 注册和姿态策略（当前不执行）
+
+> 本节保留历史记录，解释之前为什么出现证书选择、WARP 注册和设备姿态步骤。
+> 当前 live 管理员策略已经移除这些条件；新环境不要按本节配置。
 
 首次配置时需要人工完成 Cloudflare 账号登录、MFA 注册、设备注册和姿态确认。
 可按以下顺序做：
@@ -192,7 +189,11 @@ Bridge 自动授予管理员权限。
 5. 在浏览器中完成预期身份和 MFA；不要把 enrollment URL、Access JWT 或 MFA secret
    发到聊天或写入日志。
 
-### 4.4 推荐：改成 Posture only，避免抢占家庭网络
+### 4.4 历史配置：Posture only 和 mTLS（当前不执行）
+
+> 本节不再是当前方案。当前管理员应用不需要 Cloudflare One Client、hostname
+> mTLS、客户端证书 provisioning 或 Windows posture。保留原始说明仅供审计历史，
+> 不要重新打开这些 Require 条件。
 
 这是针对 OpenWrt + daed/passwall2 的推荐配置。它不是取消 WARP 设备姿态，而是
 让 Cloudflare One Client 只提供设备身份/姿态，不代理普通互联网流量和 DNS。
@@ -281,7 +282,7 @@ Posture only 不适用于 Windows 登录前场景；Windows 用户需要先登�
 不要把 **Split Tunnels** 当作第一选择：它主要处理 IP 流量，DNS 仍可能与家庭
 代理策略冲突。Posture only 已足够满足本阶段的设备姿态目标，故障面更小。
 
-### 4.5 App Launcher 不是日常入口
+### 4.5 当前结论：App Launcher 和 Cloudflare One 都不是日常入口
 
 App Launcher 只是 Cloudflare 账户级的应用列表。如果曾经看到“请管理员启用 App
 Launcher”，不代表管理员 hostname 配置错误，也不代表必须依赖它访问服务。
@@ -292,8 +293,9 @@ Launcher”，不代表管理员 hostname 配置错误，也不代表必须依�
 https://<admin-hostname>/
 ```
 
-管理员 hostname 自己的 Access application、MFA、设备姿态和 Bridge JWT 校验仍然
-生效；不需要为了省一步点击而添加 Bypass 或 Service Auth。
+管理员 hostname 自己的 Access application、MFA、短会话和 Bridge JWT 校验仍然
+生效；不需要为了省一步点击而添加 Bypass 或 Service Auth。当前策略不要求设备
+姿态或客户端证书。
 
 ## 5. DNS 和 Tunnel ingress
 
@@ -345,11 +347,32 @@ curl.exe -sS -o NUL -w "admin=%{http_code}`n" https://fqgate-admin.example.com/
 
 1. 普通 remote_human 的 Dashboard/status/QR/reference；
 2. 普通用户四个维护操作都被服务器拒绝；
-3. MFA + 有效客户端证书 + 合规 Windows posture 的管理员登录；
+3. 指定管理员邮箱 + MFA 的管理员登录；不应弹出客户端证书选择；
 4. 管理员 `updates.check`、`updates.plan`、`openapi.refresh`；
 5. 先验证 apply 的过期、重放、错人、错操作、错计划等失败用例；
 6. 最后才在有批准的安全候选版本时验证 apply；
 7. 本地维护和移动浏览器冒烟测试。
+
+### 6.1 2026-09-18：FQGate 1.0.1 真实 Windows 验证结果
+
+这次验证已经实际完成了下载、大小、SHA-256、`--version`、
+`--verify-installation`、隔离启动、`/openapi.json` 和
+`/v1/market/health` 检查；官方 1.0.1 候选在隔离目录的临时端口
+`127.0.0.1:17283` 可用，所需 health/QR 合同也存在。该候选已加入当前实例的
+`validatedVersions`，因此不再是“兼容性策略阻止”。
+
+随后又通过本机 loopback 的真实更新流程实际尝试了两次安装。两次都在候选切换后
+触发 `HEALTH_TIMEOUT`，Bridge 自动恢复了已知良好的 1.0.0；当前 FQGate 仍是
+1.0.0，状态为 `ready`。这说明当前 blocker 是 1.0.1 在受管的 17281 切换流程中
+没有在 30 秒内提供有效健康响应，不是哈希、版本或兼容性拒绝。Windows FQGate
+日志同时记录了桌面风险声明和 MCP Apps 初始化警告；不要删除现有 WebView 或登录
+目录来“修复”它。
+
+下一次重试前，操作者需要观察 Windows 上是否出现 FQGate 自己的首次启动/风险声明
+确认窗口；若出现，请由操作者在本机完成该软件自己的确认，然后只重新执行同一份
+计划。不要把这类第三方确认替换成 Bypass，也不要输入或复制账号、验证码、JWT。
+如果没有确认窗口，保留当前 1.0.0，不要反复重试；记录窗口标题和 FQGate 日志的
+错误摘要，Phase 4.5 继续保持 OPEN。
 
 完整验收清单见 [Windows Phase 4.5 验收](windows-phase-4-5-acceptance.md)，
 易读操作版见 [一页验收单](windows-phase-4-5-acceptance-simple.md)。缺少真实
@@ -360,43 +383,41 @@ Windows/Cloudflare 证据，或者没有已批准的安全更新候选版本时�
 
 ### 正常日常流程
 
-1. 登录 Windows；
-2. 确认 Cloudflare One Client 已注册且是 Posture only；
+1. 确认 Windows 上 Bridge 和 cloudflared 正常运行；
+2. 不需要启动或切换 Cloudflare One Client；
 3. 打开管理员书签；
-4. Access 会话过期时完成 MFA；
+4. Access 会话过期时完成邮箱身份和 MFA；
 5. 页面中的管理员标识、操作结果和失败原因应与当前上下文一致。
 
 ### 常见现象怎么判断
 
-| 现象                                           | 先看什么                                                                                                                         | 不要做什么                                   |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| 普通 hostname 可以访问，管理员被拒绝           | 是否确实访问了 admin hostname；Access app/AUD 是否对应                                                                           | 不要把普通应用改成管理员应用                 |
-| 登录后 Bridge 返回 `ACCESS_ASSERTION_REQUIRED` | 是否经过正确 Access app；请求是否被脚本/代理改写                                                                                 | 不要把 JWT 手工塞进 URL、localStorage 或日志 |
-| 管理员被 `DEVICE_POSTURE_REQUIRED` 拒绝        | 客户端证书是否发送、`MTLS Status` 是否为 `SUCCESS`、Windows posture 是否合规                                                     | 不要用 Bypass/Service Auth 绕过              |
-| 管理员页显示 403 且 `MTLS Status: NONE`        | hostname association 是否已部署、浏览器是否选择了 `ZT-Client` 证书                                                               | 不要把 WARP 切回全流量模式作为第一反应       |
-| 管理员页显示 `MTLS Status: SUCCESS` 仍 403     | 邮箱身份、MFA、管理员 Access AUD 和 Windows posture；`WARP/Gateway: off` 本身正常                                                | 不要把普通应用改成管理员应用                 |
-| 验证码正确但最后显示 `Network error`           | 是否还在使用策略变更前的旧 `cloudflareaccess.com/...` 验证码页；关闭旧页，从管理员 hostname 根地址重新开始，并重新选择客户端证书 | 不要在旧页面反复提交同一个验证码             |
-| WARP 能用但家庭网络变慢或 DNS 异常             | `warp-cli settings` 是否仍为 `WarpWithDnsOverHttps`                                                                              | 不要同时强行叠加全流量 WARP 和 passwall2     |
-| 管理员页面打不开但普通互联网正常               | Access policy、admin DNS、Tunnel hostname、Bridge admin config                                                                   | 不要把 Tunnel 改到 17281                     |
-| App Launcher 不显示应用                        | App Launcher 自身策略和可见性                                                                                                    | 不要把 Launcher 当作管理员授权               |
+| 现象                                           | 先看什么                                                                               | 不要做什么                                   |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 普通 hostname 可以访问，管理员被拒绝           | 是否确实访问了 admin hostname；Access app/AUD 是否对应                                 | 不要把普通应用改成管理员应用                 |
+| 登录后 Bridge 返回 `ACCESS_ASSERTION_REQUIRED` | 是否经过正确 Access app；请求是否被脚本/代理改写                                       | 不要把 JWT 手工塞进 URL、localStorage 或日志 |
+| 管理员被 `DEVICE_POSTURE_REQUIRED` 拒绝        | 这是旧策略残留；读取当前 Access policy，确认 `require` 为空                            | 不要重新安装 WARP 或添加 Bypass              |
+| 管理员页显示 403                               | hostname、独立 Access app/AUD、指定邮箱、MFA 和 Bridge JWT 配置                        | 不要把普通应用改成管理员应用                 |
+| 验证码正确但最后显示 `Network error`           | 关闭旧的 `cloudflareaccess.com` 验证页，从管理员 hostname 根地址重新开始并申请新验证码 | 不要反复提交旧验证码                         |
+| OpenWrt/passwall2 网络变慢                     | 当前方案不要求 Cloudflare One Client；检查是否有遗留 WARP 全流量模式                   | 不要为本管理员入口重新启用全流量 WARP        |
+| 管理员页面打不开但普通互联网正常               | Access policy、admin DNS、Tunnel hostname、Bridge admin config                         | 不要把 Tunnel 改到 17281                     |
+| App Launcher 不显示应用                        | App Launcher 自身策略和可见性                                                          | 不要把 Launcher 当作管理员授权               |
 
-如果 Posture only 仍不能解决家庭网络问题，临时关闭 WARP 会让管理员设备姿态
-失败，这是预期的安全结果；不要为了连通性删除姿态策略。完全不安装 WARP 的
-替代方案需要另一种可验证设备身份/证书姿态设计，应单独评审，不是本阶段的快捷
-改动。
+当前方案已经不依赖 WARP、客户端证书和设备姿态；如果 Windows 上仍运行 Cloudflare
+One Client，它不是管理员登录的必要条件，也不应接管 OpenWrt + daed/passwall2 的
+默认路由或 DNS。
 
 ## 8. 操作者与 agent 的分工
 
-| 工作                                        | 必须由操作者完成           | agent 可以完成                                                               |
-| ------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
-| 选择 hostname、电脑和 FQGate 账号归属       | 是                         | 解释取舍                                                                     |
-| Cloudflare 登录、账单、MFA seed、安全密钥   | 是                         | 不能安全代替人操作                                                           |
-| DNS、Access policy、设备 profile 的最终确认 | 是，尤其是会造成断网的改动 | 读配置、给出逐步操作和检查标准                                               |
-| WARP 注册、浏览器证书提示、真实 MFA         | 是                         | 准备策略和执行有界状态检查                                                   |
-| 仓库代码、配置 schema、测试、文档           | 可复核                     | 可以实现、验证、提交和推送                                                   |
-| 已存在资源的受限 API 修改                   | 明确授权后                 | 可以使用最小权限凭据执行；会先读取现状，保留其他 hostname/策略，再做有界修改 |
-| 已批准安全更新的最终 apply                  | 是                         | 只能在明确批准和全部检查通过后执行                                           |
-| Phase 4.5 CLOSED 判断                       | 共同                       | 没有 T1–T17 证据时不能宣称关闭                                               |
+| 工作                                      | 必须由操作者完成               | agent 可以完成                                                               |
+| ----------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------- |
+| 选择 hostname、电脑和 FQGate 账号归属     | 是                             | 解释取舍                                                                     |
+| Cloudflare 登录、账单、MFA seed、安全密钥 | 是                             | 不能安全代替人操作                                                           |
+| DNS、Access policy 的最终确认             | 是，尤其是会影响公网入口的改动 | 读配置、执行已授权的有界修改和检查标准                                       |
+| Access 邮箱验证码、真实 MFA               | 是                             | 不能代替操作者输入                                                           |
+| 仓库代码、配置 schema、测试、文档         | 可复核                         | 可以实现、验证、提交和推送                                                   |
+| 已存在资源的受限 API 修改                 | 明确授权后                     | 可以使用最小权限凭据执行；会先读取现状，保留其他 hostname/策略，再做有界修改 |
+| 已批准安全更新的最终 apply                | 是                             | 只能在明确批准和全部检查通过后执行                                           |
+| Phase 4.5 CLOSED 判断                     | 共同                           | 没有 T1–T17 证据时不能宣称关闭                                               |
 
 ## 9. 常见重配置场景
 
@@ -406,9 +427,9 @@ Windows/Cloudflare 证据，或者没有已批准的安全更新候选版本时�
   hostname 的 Access 映射一致，测试通过后再停用旧应用。
 - **team domain 改名：** 同步修改 Access 策略和外部 JSON；Bridge 会根据新的固定
   team domain 派生证书端点。绝不能填自定义 JWKS URL。
-- **设备 profile 改为 Posture only：** 先确认该 profile 不会误伤其他设备，保存后
-  等待传播，再用 `warp-cli settings`、hostname association、客户端证书提示和
-  实际网页访问双重确认。
+- **管理员策略简化：** 保留独立 hostname、Access application/AUD、指定邮箱、MFA
+  和短会话；删除证书、device posture、WARP/Gateway Require 条件，然后重启 Bridge
+  并从管理员 hostname 根地址重新登录。
 - **Windows 电脑更换：** 建立新 Tunnel、新 token、新 hostname，不能复制旧 token，
   也不能假设共享 Tunnel 会把请求送到正确的 FQGate 账号。
 - **同一台电脑只要普通用户访问：** 可以省略整个 admin 配置；此时 admin hostname
@@ -435,10 +456,9 @@ tests 或 Git。
 Phase 6 Cloudflare 自动 provision，不实现自动更新、supervisor、MCP/WebSocket、
 最终打包，也不增加任何金融能力。
 
-未来可以实现一个不改变权限的 setup doctor/launcher：检查 WARP 是否为 Posture only、
-hostname mTLS association 和浏览器客户端证书是否可用、hostname/AUD 是否匹配、
-DNS/Tunnel 是否正确、loopback 是否正常，然后用浏览器打开管理员书签。它不能静默
-创建宽权限 Cloudflare policy，也不能自动关闭 MFA、姿态或
+未来可以实现一个不改变权限的 setup doctor/launcher：检查 hostname/AUD、Access
+身份/MFA 策略、DNS/Tunnel、loopback 和 Bridge 配置，然后用浏览器打开管理员书签。
+它不能静默创建宽权限 Cloudflare policy，也不能自动关闭 MFA 或
 一次性确认。多账号/多 Profile 另见
 [future-multi-profile-account-isolation.md](../plans/future-multi-profile-account-isolation.md)，
 当前不实现。

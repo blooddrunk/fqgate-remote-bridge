@@ -1,9 +1,10 @@
 # Phase 4.5 一页验收单：谁来做、怎么判断
 
-这页是给不想读实现细节的部署者看的。Phase 4.5 的安全条件不会删掉，
-但不需要你逐项理解 JWT、Origin、竞态或 Bridge registry。脚本和浏览器会
-执行检查；你只需要完成真实账户必须由本人完成的登录/MFA，并在确实有安全
-更新时做最后一次确认。
+这页是给不想读实现细节的部署者看的。当前管理员采用已批准的简化策略：指定
+邮箱 + MFA + 15 分钟会话，不需要 WARP、客户端证书或设备姿态。Bridge 仍然
+执行 JWT、Origin、竞态、registry、候选完整性和回滚检查。脚本和浏览器会执行
+检查；你只需要完成真实账户必须由本人完成的登录/MFA，并在确实有安全更新时做
+最后一次确认。
 
 ## 先做这一件事
 
@@ -54,23 +55,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
    `https://fqgate-admin.haoqi90.top/`，用同一个预期管理员身份登录。
 2. 邮箱验证码、TOTP 或安全密钥必须由你本人在浏览器中输入。不要把验证码、
    Access JWT、cookie 或完整重定向地址发给代理。登录完成后只需说“已登录”。
-3. 管理员地址登录前，Cloudflare One Client 必须已经注册，且
-   `warp-cli settings` 能确认 service mode 为 **PostureOnly**（不要是
-   `WarpWithDnsOverHttps`），Windows 设备姿态也必须合规。首次访问时浏览器可能
-   弹出客户端证书选择框，请选择 Cloudflare 的 `ZT-Client` 证书。管理员拒绝页中
-   `MTLS Status: SUCCESS` 才表示证书已经到达 Cloudflare；`WARP: off` 和
-   `Gateway: off` 在 Posture-only 模式下是正常值。未注册、未选择证书或姿态不合规
-   会被拒绝，这是预期行为。
+3. 管理员地址不需要启动 Cloudflare One Client，也不需要选择客户端证书。完成
+   指定邮箱的 Access 登录和 MFA 即可。浏览器不弹证书选择框是当前策略的正常结果。
 
-如果看到 `403` 且 `MTLS Status: NONE`：关闭旧的 403 标签页，打开 Edge InPrivate
-窗口（`Ctrl+Shift+N`）重新访问管理员地址，按提示选择证书；不要先把 WARP 改成
-全流量模式。若 `MTLS Status: SUCCESS` 仍为 403，再检查邮箱身份、MFA、管理员
-Access policy 和 Windows posture。
+如果看到 `403`：确认访问的是管理员 hostname，检查管理员 Access 应用、指定邮箱、
+MFA、独立 AUD 和 Bridge 配置；不要安装 WARP、选择证书或添加 Bypass。
 
 如果验证码输入正确但最后显示 `Network error`，不要继续使用当前验证码页。关闭
 所有 `cloudflareaccess.com` 和管理员标签页，从管理员 hostname 根地址重新开始，
-重新选择 `ZT-Client` 证书，再申请一封新验证码。旧验证码页绑定的是旧的 Access
-设备状态，策略刚调整后继续提交会被 Cloudflare 拒绝。
+再申请一封新验证码。不要反复提交旧验证码，也不要把验证码、JWT、cookie 或完整
+重定向地址发给代理。
 
 登录完成后，代理可以在不读取秘密的情况下继续操作浏览器，验证 Dashboard、
 更新页面、API Reference、直接 API 调用、CSRF、移动尺寸和管理员 JWT 的真实
@@ -96,26 +90,34 @@ Access policy 和 Windows posture。
 
 ## 关于“批准的安全更新”
 
-当前机器的真实计划已经说明了原因：候选 `1.0.1` 是 `UNSIGNED`，且尚未通过
-项目验证门，计划状态为 `blocked`。因此不能为了满足验收而安装它。
+当前机器已经完成 1.0.1 的真实 Windows x64 验证：官方文件大小和 SHA-256 一致，
+`--verify-installation` 和 `--version` 成功；临时 17283 实例的 OpenAPI、健康接口
+和 Bridge 所需 health/QR 合同通过。1.0.1 已加入这台实例的 validated list，
+本地 plan 现在返回 `action: update`。文件名仍标明 `UNSIGNED`，所以最终替换
+安装仍必须由操作者明确批准。随后本机 loopback 的真实 apply 已尝试两次；两次
+都在候选切换后因 `HEALTH_TIMEOUT` 自动回滚，当前生产 FQGate 仍为 1.0.0 且
+`ready`。因此“兼容性阻止”已经解决，但 1.0.1 的受管激活还没有成功。
 
-只有当固定可信源提供一个已验证、兼容、完整性校验通过的候选时，才执行一次
-真实管理员 apply。执行前页面必须明确显示：来源、目标版本、文件大小、SHA-256、
-兼容性和健康状态；执行后必须看到成功或受控回滚。没有这样的候选时，把 T13
-记为 `NOT AVAILABLE`，Phase 4.5 保持 OPEN；这不是用户操作失败，而是系统
-正确阻止了不安全更新。
+这不是让你继续盲目点击 apply 的信号：下一步只需观察 FQGate 是否弹出它自己的
+首次启动/风险声明确认窗口。若出现，由你在 Windows 本机完成确认后再通知我；若
+没有弹窗，不要删除 WebView/登录目录，也不要继续重试，保留 1.0.0 并把这一项
+作为待修复 blocker。
+
+执行真实管理员 apply 前，页面必须明确显示：来源、目标版本、文件大小、SHA-256、
+兼容性和健康状态；执行后必须看到成功或受控回滚。未得到最终明确批准时，不要
+调用 apply；验证通过不等于已经安装。
 
 ## 谁负责哪些项目
 
-| 项目                                            | 代理可以完成             | 必须由你完成                                   |
-| ----------------------------------------------- | ------------------------ | ---------------------------------------------- |
-| 本机监听、Tunnel 路由、未认证拒绝、原始路径拒绝 | 是                       | 否                                             |
-| 本地 check/plan/OpenAPI refresh                 | 是                       | 否                                             |
-| 普通用户页面和直接 API 拒绝                     | 登录后由代理执行         | 提供一次普通用户登录                           |
-| 管理员 JWT、MFA、客户端证书、Windows 姿态       | 登录后由代理验证请求结果 | 你输入验证码/MFA，并确认 Client 为 PostureOnly |
-| apply 过期/重放/竞态/计划不匹配                 | 是，代理执行，不安装更新 | 否                                             |
-| 真实安全更新 apply                              | 可以执行流程             | 你只做最后一次明确批准                         |
-| 没有安全候选时的处理                            | 记录 `NOT AVAILABLE`     | 不要批准未验证候选                             |
+| 项目                                            | 代理可以完成             | 必须由你完成                                     |
+| ----------------------------------------------- | ------------------------ | ------------------------------------------------ |
+| 本机监听、Tunnel 路由、未认证拒绝、原始路径拒绝 | 是                       | 否                                               |
+| 本地 check/plan/OpenAPI refresh                 | 是                       | 否                                               |
+| 普通用户页面和直接 API 拒绝                     | 登录后由代理执行         | 提供一次普通用户登录                             |
+| 管理员 JWT、MFA 和管理员策略                    | 登录后由代理验证请求结果 | 你输入验证码/MFA                                 |
+| apply 过期/重放/竞态/计划不匹配                 | 是，代理执行，不安装更新 | 否                                               |
+| 真实安全更新 apply                              | 可以执行流程和回滚验证   | 你完成 FQGate 自身首次确认，并做最后一次明确批准 |
+| 没有安全候选时的处理                            | 记录 `NOT AVAILABLE`     | 不要批准未验证候选                               |
 
 完整证据表仍在
 [`windows-phase-4-5-acceptance.md`](./windows-phase-4-5-acceptance.md)；本页只是

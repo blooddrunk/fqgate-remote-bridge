@@ -151,7 +151,7 @@ later: remote_machine
 
 without combinatorial exposure enums.
 
-Add a distinct admin hostname and distinct Cloudflare Access application/audience. Remote-admin requests require stronger origin-side Cloudflare Access JWT verification with exact issuer/AUD/signature/time checks and bounded fixed-source JWK handling. The admin Access application must be human-only, require MFA, enforce device posture, use a short administrative session, enable Protect with Access, and contain no Bypass/Service Auth path.
+Add a distinct admin hostname and distinct Cloudflare Access application/audience. Remote-admin requests require stronger origin-side Cloudflare Access JWT verification with exact issuer/AUD/signature/time checks and bounded fixed-source JWK handling. The admin Access application must be human-only, require MFA, use a short administrative session, enable Protect with Access, and contain no Bypass/Service Auth path. The current operator-approved low-friction profile does not require WARP, client certificates, hostname mTLS, or device posture; a future stronger posture profile must remain separately documented and must not be inherited by `remote_machine`.
 
 At the end of 4.5A there is **no maintenance privilege expansion**: remote admin may use only the same safe surface as the current remote human. This checkpoint must land before any admin mutation becomes remotely callable.
 
@@ -187,14 +187,14 @@ Phase 4.5 may close only when:
 
 1. Phase 4 remote-human behavior is preserved;
 2. admin hostname/AUD/context is independently authenticated and authorized;
-3. MFA + device posture + short-session admin Access policy is live;
+3. The approved short-session admin Access policy with MFA is live, with any optional device-posture choice documented explicitly;
 4. Bridge validates real admin Access JWTs without logging them;
 5. mobile Dashboard requirements and viewport tests pass;
 6. only the four listed maintenance operations gain remote-admin permission;
 7. remote `updates.apply` requires one-time principal/action/plan-bound confirmation and rejects expiry/replay/mismatch;
 8. CSRF/origin defenses are tested;
 9. all deterministic quality gates pass;
-10. real Windows x64 + Cloudflare acceptance re-proves loopback-only listeners, ordinary-human denial, device-policy denial, admin flow, confirmation flow, raw-path denial, local maintenance, and mobile-browser smoke behavior;
+10. real Windows x64 + Cloudflare acceptance re-proves loopback-only listeners, ordinary-human denial, the approved admin edge policy, admin flow, confirmation flow, raw-path denial, local maintenance, and mobile-browser smoke behavior;
 11. one known-safe real remote-admin update apply is proven, or the phase remains open if no safe candidate is available.
 
 Phase 4.5 non-goals include Phase 5 machine APIs/service tokens, Phase 6 provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, final packaging, generic remote shell/process control, and any financial state-changing capability.
@@ -205,21 +205,14 @@ Status: **PLANNED; no implementation in Phase 4.5**.
 
 The repeatable operator procedure is maintained as the Chinese long-lived
 reference in `docs/operations/windows-phase-4-5-remote-admin-setup.md`. For
-OpenWrt + daed/passwall2 deployments, the documented target is Cloudflare One
-Client `Posture only`: retain device registration/posture without taking over
-ordinary Windows traffic or DNS. Moving a live device profile to that mode is
-an operator-controlled Cloudflare action because it can briefly restart the
-client and affect network connectivity; it is not silently performed by the
-Bridge.
-
-A future setup doctor/wizard may validate the selected service-scoped
-hostnames, certificate coverage and hostname mTLS association, DNS, Access
-application/AUD, Tunnel ingress, loopback listeners, token-file shape, WARP
-service mode, and device posture with plan/dry-run behavior. A future browser
-launcher may open the bookmarked admin hostname after those checks. Neither may
-silently create broad
-Cloudflare permissions, disable MFA/device posture, or bypass the one-time
-apply confirmation; Cloudflare provisioning remains Phase 6 scope.
+OpenWrt + daed/passwall2 deployments, the current documented target is direct
+Access email + MFA with no Cloudflare One Client prerequisite. A future setup
+doctor/wizard may validate the selected service-scoped hostnames, Access
+application/AUD, Tunnel ingress, loopback listeners, token-file shape, and
+policy/Bridge agreement with plan/dry-run behavior. A separate future profile
+may opt into device posture, but neither profile may silently create broad
+Cloudflare permissions, disable MFA, or bypass the one-time apply confirmation;
+Cloudflare provisioning remains Phase 6 scope.
 
 The related multi-account idea is recorded separately in
 `docs/plans/future-multi-profile-account-isolation.md`. It must first establish

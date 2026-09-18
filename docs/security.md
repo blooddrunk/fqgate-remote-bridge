@@ -317,10 +317,14 @@ claim checks. Only `{ kind, subject, audience }` is propagated as the principal;
 the assertion is never logged, persisted, echoed, or placed in browser state.
 
 The intended admin Access application is human-only and independently requires
-the operator identity, MFA, enforceable device posture, a short session,
-Protect with Access, and no Bypass or Service Auth policy. Edge policy remains
-the primary Access validation layer; Bridge-side cryptographic validation is a
-fail-closed drift/authentication check.
+the operator identity, MFA, a short session, Protect with Access, and no Bypass
+or Service Auth policy. The current operator-approved low-friction deployment
+profile does not require WARP, client certificates, hostname mTLS, or device
+posture because they conflict with the operator's OpenWrt/daed/passwall2 path.
+Edge policy remains the primary Access validation layer; Bridge-side
+cryptographic validation is a fail-closed drift/authentication check. A future
+deployment may opt into device posture as a separate documented profile, but it
+must not be inherited by a future `remote_machine` context.
 
 Remote-admin control POSTs enabled by 4.5C, including the existing QR session
 POSTs, use the exact HTTPS admin Origin and a Bridge-owned non-simple intent

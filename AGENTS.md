@@ -136,15 +136,20 @@ For `remote_admin`, the Bridge must cryptographically validate `Cf-Access-Jwt-As
 
 The verified principal should be reduced to minimal identity metadata needed for authorization/confirmation binding.
 
-The admin Access application must be human-only and must require stronger controls than Phase 4 ordinary human access:
+The admin Access application must be human-only and must require stronger controls than Phase 4 ordinary human access. The current operator-approved live profile is the low-friction variant documented in `docs/operations/windows-phase-4-5-remote-admin-setup.md`:
 
 - intended operator identity/group;
 - MFA or equivalent independent Access MFA requirement;
-- enforceable device posture;
 - short admin session;
 - Protect with Access;
 - no Bypass policy;
 - no Service Auth policy.
+
+For the current live instance, WARP, client certificates, hostname mTLS, and device posture
+are deliberately not required. This is an explicit operator-approved deployment-profile
+change for OpenWrt/daed/passwall2 compatibility; it does not remove Bridge-side JWT,
+Origin/intent, operation-registry, one-time apply, integrity, health, or rollback checks.
+Do not silently apply this reduced profile to a future `remote_machine` context.
 
 At the end of 4.5A, `remote_admin` gains **no maintenance privilege**. It may use only the same safe surface as current `remote_human`. All four maintenance operations remain remotely denied.
 
@@ -289,7 +294,7 @@ Phase 4.5 automated coverage should include at least:
 - mobile viewport coverage at 360x800, 390x844, 430x932, 768x1024 and desktop regression;
 - direct forbidden-operation tests independent of UI visibility.
 
-Target Windows x64 + Cloudflare acceptance must additionally prove admin MFA/device policy, wrong-app denial, real admin JWT validation, remote-admin maintenance behavior, one-time apply confirmation, continued loopback-only listeners, raw-path denial, local-maintenance preservation, and real mobile-browser usability.
+Target Windows x64 + Cloudflare acceptance must additionally prove the approved admin MFA/edge policy, wrong-app denial, real admin JWT validation, remote-admin maintenance behavior, one-time apply confirmation, continued loopback-only listeners, raw-path denial, local-maintenance preservation, and real mobile-browser usability.
 
 If there is no known-safe real update candidate for proving remote `updates.apply`, document the missing evidence and keep Phase 4.5 open rather than fabricating closure.
 
