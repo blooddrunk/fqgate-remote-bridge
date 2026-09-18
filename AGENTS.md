@@ -75,9 +75,17 @@ maintenance operations remotely.
 
 ## Active Phase 4.5 contract
 
-The active task package is:
+The active closure task package is:
+
+`docs/tasks/phase-4-5-closure-and-phase-5-foundation.md`
+
+The Phase 4.5 implementation package remains historical/current evidence context:
 
 `docs/tasks/phase-4-5-remote-admin-and-mobile-dashboard.md`
+
+The active Codex closure handoff is:
+
+`docs/prompts/phase-4-5-closure-and-phase-5-foundation-codex-goal.md`
 
 The primary design note is:
 
