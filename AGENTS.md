@@ -87,7 +87,9 @@ The Codex handoff is:
 
 `docs/prompts/phase-4-5-codex-goal.md`
 
-The repeatable Windows/Cloudflare operator procedure is:
+The repeatable Windows/Cloudflare operator procedure is the Chinese
+long-lived reference (including new-instance, multi-instance, reconfiguration,
+and OpenWrt/daed/passwall2-compatible Posture-only guidance):
 
 `docs/operations/windows-phase-4-5-remote-admin-setup.md`
 

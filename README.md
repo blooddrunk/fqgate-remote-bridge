@@ -208,8 +208,9 @@ Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`�
 OPEN，验收记录见 [Windows Phase 4.5 验收](docs/operations/windows-phase-4-5-acceptance.md)，
 不熟悉实现细节时先看[一页验收单](docs/operations/windows-phase-4-5-acceptance-simple.md)，
 实现交接见 [Phase 4.5 implementation handoff](docs/status/phase-4-5-implementation-handoff.md)。
-重新配置、新环境和多实例部署步骤见
-[Phase 4.5 remote-admin setup](docs/operations/windows-phase-4-5-remote-admin-setup.md)。
+重新配置、新环境、多实例部署，以及 OpenWrt + daed/passwall2 网络兼容步骤，长期
+统一维护在中文参考文档
+[Phase 4.5 远程管理员配置与重配置（中文长期参考）](docs/operations/windows-phase-4-5-remote-admin-setup.md)。
 
 ## 已完成的 Phase 4 任务包
 
@@ -250,7 +251,7 @@ Phase 4 历史 Codex goal 入口（不是新的活动任务）：
 - [Phase 3 完成交接](docs/status/phase-3-implementation-handoff.md)
 - [Windows Phase 3 验收](docs/operations/windows-phase-3-acceptance.md)
 - [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)
-- [Windows Phase 4.5 远程管理员配置](docs/operations/windows-phase-4-5-remote-admin-setup.md)
+- [Windows Phase 4.5 远程管理员配置与重配置（中文长期参考）](docs/operations/windows-phase-4-5-remote-admin-setup.md)
 - [Windows Phase 4.5 一页验收单](docs/operations/windows-phase-4-5-acceptance-simple.md)
 - [未来多 Profile 账号隔离计划](docs/plans/future-multi-profile-account-isolation.md)
 - [Phase 4 实现交接](docs/status/phase-4-implementation-handoff.md)

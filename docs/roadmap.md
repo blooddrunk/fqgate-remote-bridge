@@ -203,13 +203,22 @@ Phase 4.5 non-goals include Phase 5 machine APIs/service tokens, Phase 6 provisi
 
 Status: **PLANNED; no implementation in Phase 4.5**.
 
-The repeatable operator procedure is documented in
-`docs/operations/windows-phase-4-5-remote-admin-setup.md`. A future setup
-doctor/wizard may validate the selected service-scoped hostnames, certificate
-coverage, DNS, Access application/AUD, Tunnel ingress, loopback listeners,
-token-file shape, and device posture with plan/dry-run behavior. It must not
-silently create broad Cloudflare permissions; Cloudflare provisioning remains
-Phase 6 scope.
+The repeatable operator procedure is maintained as the Chinese long-lived
+reference in `docs/operations/windows-phase-4-5-remote-admin-setup.md`. For
+OpenWrt + daed/passwall2 deployments, the documented target is Cloudflare One
+Client `Posture only`: retain device registration/posture without taking over
+ordinary Windows traffic or DNS. Moving a live device profile to that mode is
+an operator-controlled Cloudflare action because it can briefly restart the
+client and affect network connectivity; it is not silently performed by the
+Bridge.
+
+A future setup doctor/wizard may validate the selected service-scoped
+hostnames, certificate coverage, DNS, Access application/AUD, Tunnel ingress,
+loopback listeners, token-file shape, WARP service mode, and device posture
+with plan/dry-run behavior. A future browser launcher may open the bookmarked
+admin hostname after those checks. Neither may silently create broad
+Cloudflare permissions, disable MFA/device posture, or bypass the one-time
+apply confirmation; Cloudflare provisioning remains Phase 6 scope.
 
 The related multi-account idea is recorded separately in
 `docs/plans/future-multi-profile-account-isolation.md`. It must first establish
