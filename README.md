@@ -194,6 +194,22 @@ node .\dist\cli\main.js cloudflared service restart --json
 Phase 4 实现、deterministic tests 以及真实 Windows x64 + Cloudflare 验收均已完成，状态为
 **CLOSED**。边界、运行步骤和不含敏感值的验收证据见 [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)；实现与 live handoff 见 [Phase 4 implementation handoff](docs/status/phase-4-implementation-handoff.md)。
 
+## Phase 4.5 closure 当前活动任务
+
+Phase 4.5 的代码实现已经完成，但在开始 Phase 5 前，当前活动工作是先恢复完整绿色的跨平台 CI，并把剩余 T1-T17 真实验收尽可能自动化。活动任务包：
+
+```text
+docs/tasks/phase-4-5-closure-and-phase-5-foundation.md
+```
+
+Codex goal：
+
+```text
+docs/prompts/phase-4-5-closure-and-phase-5-foundation-codex-goal.md
+```
+
+只有 GitHub Actions 的 Ubuntu/Windows 都通过，且 T1-T17（包括真实 authenticated remote-admin apply）都有非敏感证据后，Phase 4.5 才能 CLOSED，随后才进入 Phase 5 remote-machine read-only API。
+
 ## Phase 4.5：远程管理员基础与移动 Dashboard
 
 Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`、
