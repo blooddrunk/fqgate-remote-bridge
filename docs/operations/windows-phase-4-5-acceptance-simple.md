@@ -67,6 +67,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 全流量模式。若 `MTLS Status: SUCCESS` 仍为 403，再检查邮箱身份、MFA、管理员
 Access policy 和 Windows posture。
 
+如果验证码输入正确但最后显示 `Network error`，不要继续使用当前验证码页。关闭
+所有 `cloudflareaccess.com` 和管理员标签页，从管理员 hostname 根地址重新开始，
+重新选择 `ZT-Client` 证书，再申请一封新验证码。旧验证码页绑定的是旧的 Access
+设备状态，策略刚调整后继续提交会被 Cloudflare 拒绝。
+
 登录完成后，代理可以在不读取秘密的情况下继续操作浏览器，验证 Dashboard、
 更新页面、API Reference、直接 API 调用、CSRF、移动尺寸和管理员 JWT 的真实
 请求路径。

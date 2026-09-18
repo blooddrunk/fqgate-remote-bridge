@@ -368,16 +368,17 @@ Windows/Cloudflare 证据，或者没有已批准的安全更新候选版本时�
 
 ### 常见现象怎么判断
 
-| 现象                                           | 先看什么                                                                          | 不要做什么                                   |
-| ---------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
-| 普通 hostname 可以访问，管理员被拒绝           | 是否确实访问了 admin hostname；Access app/AUD 是否对应                            | 不要把普通应用改成管理员应用                 |
-| 登录后 Bridge 返回 `ACCESS_ASSERTION_REQUIRED` | 是否经过正确 Access app；请求是否被脚本/代理改写                                  | 不要把 JWT 手工塞进 URL、localStorage 或日志 |
-| 管理员被 `DEVICE_POSTURE_REQUIRED` 拒绝        | 客户端证书是否发送、`MTLS Status` 是否为 `SUCCESS`、Windows posture 是否合规      | 不要用 Bypass/Service Auth 绕过              |
-| 管理员页显示 403 且 `MTLS Status: NONE`        | hostname association 是否已部署、浏览器是否选择了 `ZT-Client` 证书                | 不要把 WARP 切回全流量模式作为第一反应       |
-| 管理员页显示 `MTLS Status: SUCCESS` 仍 403     | 邮箱身份、MFA、管理员 Access AUD 和 Windows posture；`WARP/Gateway: off` 本身正常 | 不要把普通应用改成管理员应用                 |
-| WARP 能用但家庭网络变慢或 DNS 异常             | `warp-cli settings` 是否仍为 `WarpWithDnsOverHttps`                               | 不要同时强行叠加全流量 WARP 和 passwall2     |
-| 管理员页面打不开但普通互联网正常               | Access policy、admin DNS、Tunnel hostname、Bridge admin config                    | 不要把 Tunnel 改到 17281                     |
-| App Launcher 不显示应用                        | App Launcher 自身策略和可见性                                                     | 不要把 Launcher 当作管理员授权               |
+| 现象                                           | 先看什么                                                                                                                         | 不要做什么                                   |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 普通 hostname 可以访问，管理员被拒绝           | 是否确实访问了 admin hostname；Access app/AUD 是否对应                                                                           | 不要把普通应用改成管理员应用                 |
+| 登录后 Bridge 返回 `ACCESS_ASSERTION_REQUIRED` | 是否经过正确 Access app；请求是否被脚本/代理改写                                                                                 | 不要把 JWT 手工塞进 URL、localStorage 或日志 |
+| 管理员被 `DEVICE_POSTURE_REQUIRED` 拒绝        | 客户端证书是否发送、`MTLS Status` 是否为 `SUCCESS`、Windows posture 是否合规                                                     | 不要用 Bypass/Service Auth 绕过              |
+| 管理员页显示 403 且 `MTLS Status: NONE`        | hostname association 是否已部署、浏览器是否选择了 `ZT-Client` 证书                                                               | 不要把 WARP 切回全流量模式作为第一反应       |
+| 管理员页显示 `MTLS Status: SUCCESS` 仍 403     | 邮箱身份、MFA、管理员 Access AUD 和 Windows posture；`WARP/Gateway: off` 本身正常                                                | 不要把普通应用改成管理员应用                 |
+| 验证码正确但最后显示 `Network error`           | 是否还在使用策略变更前的旧 `cloudflareaccess.com/...` 验证码页；关闭旧页，从管理员 hostname 根地址重新开始，并重新选择客户端证书 | 不要在旧页面反复提交同一个验证码             |
+| WARP 能用但家庭网络变慢或 DNS 异常             | `warp-cli settings` 是否仍为 `WarpWithDnsOverHttps`                                                                              | 不要同时强行叠加全流量 WARP 和 passwall2     |
+| 管理员页面打不开但普通互联网正常               | Access policy、admin DNS、Tunnel hostname、Bridge admin config                                                                   | 不要把 Tunnel 改到 17281                     |
+| App Launcher 不显示应用                        | App Launcher 自身策略和可见性                                                                                                    | 不要把 Launcher 当作管理员授权               |
 
 如果 Posture only 仍不能解决家庭网络问题，临时关闭 WARP 会让管理员设备姿态
 失败，这是预期的安全结果；不要为了连通性删除姿态策略。完全不安装 WARP 的
