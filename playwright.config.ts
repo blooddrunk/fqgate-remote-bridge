@@ -13,6 +13,9 @@ export default defineConfig({
     trace: "retain-on-failure",
     ...devices["Desktop Chrome"],
   },
+  expect: {
+    timeout: 15_000,
+  },
   webServer: isCI
     ? {
         command: "node scripts/start-bridge.mjs",

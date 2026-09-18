@@ -9,6 +9,13 @@
 - Phase 2：已关闭，并已在目标 Windows x64 主机完成真实 QR begin/poll/scan。
 - Phase 3：已关闭，本地升级中心、Runtime OpenAPI/API Reference 和目标 Windows x64 安全验收均完成。
 - Phase 4：**已 CLOSED**，已通过真实 Windows x64 + Cloudflare 验收；后续任务仍不得顺手实现 Phase 5+。
+- Phase 4.5A：已实现正交 caller-context/operation policy、可选独立 admin Host/AUD 和 Bridge 侧 RS256/JWK 验证。
+- Phase 4.5B：已在同一前端完成移动端响应式改造和目标 viewport 覆盖。
+- Phase 4.5C：四个明确的远程管理员维护操作、CSRF/Origin 防护和一次性 apply 确认已实现；真实 Windows x64 + Cloudflare 验收仍 OPEN。
+
+Phase 4.5 的重复配置、新环境和多实例操作步骤见
+`docs/operations/windows-phase-4-5-remote-admin-setup.md`；未来多账号
+Profile 隔离设计见 `docs/plans/future-multi-profile-account-isolation.md`。
 
 当前 Phase 4 仍要求：Bridge 固定 `127.0.0.1:17282`，FQGate 固定 `127.0.0.1:17281`。Cloudflare 只能通过 `cloudflared` 连接 Bridge，不能直连 FQGate。
 
@@ -28,7 +35,7 @@ updates.status
 openapi.catalog
 ```
 
-继续 local-only：
+对 Phase 4 的 ordinary `remote_human` 继续 local-only：
 
 ```text
 updates.check
@@ -36,6 +43,10 @@ updates.plan
 updates.apply
 openapi.refresh
 ```
+
+独立且已验证的 `remote_admin` 只可额外调用上述四个维护操作；其中
+`updates.apply` 还必须通过 exact admin Origin、Bridge intent 和绑定当前
+principal/AUD/计划/候选的一次性内存确认。UI 隐藏按钮不构成授权。
 
 服务器端 policy 是最终授权边界，不能只靠前端隐藏按钮。
 
@@ -47,6 +58,12 @@ openapi.refresh
 - remote hostname 请求必须包含预期的 Cloudflare Access assertion；
 - assertion 内容不得进入日志；
 - Cloudflare published application 应启用 **Protect with Access**，由 cloudflared 验证 Access JWT 后再转发。
+
+4.5A 的 admin hostname 必须使用独立 Access application/AUD；Bridge 仅从配置
+的 Cloudflare team-domain cert endpoint 获取有界 JWK，并校验 RS256、精确
+issuer/AUD、`sub`/`iat`/`exp` 和时间条件。管理员 Access policy 还必须是
+human-only、MFA、可执行的 device posture、短 session、Protect with Access，
+且没有 Bypass 或 Service Auth。
 
 ## cloudflared / Tunnel 约定
 
@@ -109,7 +126,8 @@ Phase 4 使用预先创建的 remotely-managed Tunnel，不通过 Cloudflare API
 
 Phase 4 当前代码入口：
 
-- `src/bridge/policy/request-context.ts`：Host 分类、Access assertion presence 和 remote-human exposure gate；
+- `src/bridge/policy/request-context.ts`：Host 分类、remote-human assertion presence、admin principal 和正交 operation-context gate；
+- `src/bridge/auth/cloudflare-access.ts`：固定 Cloudflare team-domain cert endpoint 的有界 JWK/RS256 admin verifier；
 - `src/cloudflared/`：固定 Cloudflare release source/integrity、候选激活、token-file 和 Windows service 适配；
 - `src/cli/main.ts`：显式 `cloudflared release/install/status` 与 `cloudflared service ...` 命令；
 - `scripts/windows/acceptance.ps1 -VerifyPhase4`：安全 loopback/service/Access 验收工具，不自动创建 Cloudflare 资源。
@@ -150,10 +168,13 @@ Phase 4 的 normal CI 不得依赖真实 Cloudflare credentials。
 - local maintenance 仍可通过 loopback 使用；
 - cloudflared service restart 后能恢复连接。
 
-本次实现的 deterministic 和质量门禁结果、真实环境证据与 closure 记录统一在
+本次 Phase 4 的 deterministic 和质量门禁结果、真实环境证据与 closure 记录仍在
 `docs/status/phase-4-implementation-handoff.md` 和
-`docs/operations/windows-phase-4-acceptance.md`。Phase 4 已 CLOSED；若未来
-修改远程管理员边界，必须作为独立规划/任务重新评审，不得隐式扩大现有 remote-human 策略。
+`docs/operations/windows-phase-4-acceptance.md`。Phase 4 已 CLOSED；Phase 4.5
+的实现交接和待完成真实证据分别记录在
+`docs/status/phase-4-5-implementation-handoff.md` 与
+`docs/operations/windows-phase-4-5-acceptance.md`。若未来修改远程管理员边界，
+必须作为独立规划/任务重新评审，不得隐式扩大现有策略。
 
 ## Phase 4 历史 Codex handoff
 
@@ -161,7 +182,8 @@ Phase 4 的 normal CI 不得依赖真实 Cloudflare credentials。
 docs/prompts/phase-4-codex-goal.md
 ```
 
-Phase 4 已完成并关闭。未来如需继续工作，应先为下一阶段建立新的任务包；不能把下面的历史入口当作活动任务：
+Phase 4 已完成并关闭；Phase 4.5 当前有独立任务包。不能把下面的 Phase 4
+历史入口当作活动任务：
 
 ```text
 Phase 4 已按 `docs/prompts/phase-4-codex-goal.md` 完成并关闭。后续任务必须继续保持

@@ -243,26 +243,31 @@ Every intended bridge operation should be represented explicitly by metadata suc
 - public method/path;
 - optional upstream method/path mapping;
 - classification (`diagnostic`, `session`, `local-admin`, later `market-read`);
-- local/remote exposure class;
+- allowed caller contexts as an independent policy dimension;
+- whether the operation requires a separate remote-admin confirmation grant;
 - timeout;
 - maximum request-body size;
 - logging/sensitivity policy;
 - compatibility requirement;
 - documentation visibility.
 
-The Phase 3 registry also records an optional upstream method/path mapping and
-local-only exposure class. Runtime OpenAPI discovery never writes to this
+The Phase 3 registry records an optional upstream method/path mapping. Phase
+4.5 replaces combination exposure enums with independent `allowedContexts` and
+`requiresConfirmation` fields. Runtime OpenAPI discovery never writes to this
 registry.
 
-Phase 4 adds the explicit `local_and_remote_human` exposure class. The
-remote-human set is exactly `bridge.version`, `bridge.capabilities`,
-`bridge.status`, `session.qr.begin`, `session.qr.poll`, `updates.status`, and
-`openapi.catalog`. `updates.check`, `updates.plan`, `updates.apply`, and
-`openapi.refresh` remain `local_only`. A request context is classified from
-the explicit `Host` value: accepted IPv4-loopback forms are local, one
-configured DNS hostname is remote-human, and every other Host is rejected.
-`X-Forwarded-Host` is never consulted. Remote-human requests also need a
-non-empty `Cf-Access-Jwt-Assertion`; its value is not parsed or logged.
+The safe Phase 4 surface is allowed for `local`, `remote_human`, and the
+cryptographically verified `remote_admin` context. In the Phase 4 baseline the
+four maintenance operations were local-only; the implemented 4.5C policy adds
+remote-admin permission to exactly those four operations and no others. A
+request context is classified from the explicit `Host` value:
+accepted IPv4-loopback forms are local, the configured human hostname is
+remote-human, and the optional distinct admin hostname is remote-admin only
+after exact Cloudflare Access JWT verification. Every other Host is rejected.
+`X-Forwarded-Host` is never consulted. Remote-human requests require a
+non-empty `Cf-Access-Jwt-Assertion`; admin requests additionally validate
+RS256, issuer, audience, temporal claims, and `kid` against a bounded cache
+fetched only from the fixed team-domain cert endpoint.
 
 There is no generic `/* -> FQGate`, no arbitrary upstream path parameter, and no fallback when an unknown route is requested.
 
@@ -348,7 +353,15 @@ arbitrary origin is accepted.
 
 Phase 4 secures human Dashboard access with Access as part of the same remote milestone as Tunnel. Phase 5 adds machine authentication for the read-only API.
 
-Human and machine policies should be separate. Cloudflare authentication does not authorize arbitrary FQGate operations; the bridge registry remains the authorization boundary. A stronger remote-administrator policy with device restrictions and second confirmation is a separate future design, not part of the closed Phase 4 policy. Mobile Dashboard UI optimization is also deferred and does not change this transport boundary.
+Human, admin, and future machine policies are separate. Cloudflare
+authentication does not authorize arbitrary FQGate operations; the bridge
+registry remains the authorization boundary after Access succeeds. Phase 4.5A
+adds an optional admin hostname/AUD and Bridge-side verifier; 4.5B keeps the
+existing responsive application and server-side authorization model. The
+implemented Phase 4.5C policy adds only the four explicitly named maintenance
+operations to `remote_admin`, with a one-time confirmation for apply and
+exact-origin/intent CSRF checks. Live Windows/Cloudflare acceptance is still
+required before Phase 4.5 can close.
 
 Phase 4 assumes a manually created self-hosted Access application with a
 human Allow policy and Protect with Access enabled on the published

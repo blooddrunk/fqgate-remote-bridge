@@ -4,6 +4,7 @@ import {
   checkForUpdate,
   fetchUpdateStatus,
   planInstallOrUpdate,
+  prepareUpdateApply,
 } from "../lib/api/client.js";
 
 const UPDATE_STATUS_KEY = ["bridge", "updates"] as const;
@@ -26,9 +27,11 @@ export function useUpdateCenter() {
     onSuccess: (value) => queryClient.setQueryData(UPDATE_STATUS_KEY, value),
   });
   const apply = useMutation({
-    mutationFn: applyUpdate,
+    mutationFn: ({ planId, confirmationGrant }: { planId: string; confirmationGrant?: string }) =>
+      applyUpdate(planId, confirmationGrant),
     onSuccess: (value) => queryClient.setQueryData(UPDATE_STATUS_KEY, value),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: UPDATE_STATUS_KEY }),
   });
-  return { status, check, preview, apply };
+  const prepareApply = useMutation({ mutationFn: prepareUpdateApply });
+  return { status, check, preview, prepareApply, apply };
 }

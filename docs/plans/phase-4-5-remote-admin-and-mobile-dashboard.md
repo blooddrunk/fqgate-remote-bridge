@@ -2,7 +2,7 @@
 
 Date: 2026-09-17
 
-Status: **PLANNED / no implementation in this document change**
+Status: **IN PROGRESS / 4.5A, 4.5B, and 4.5C implemented; live acceptance open**
 
 This phase is a new post-Phase-4 phase. It does **not** reopen Phase 4 and it does not authorize Phase 5 market-data APIs. Phase 4 remains CLOSED with its existing `remote_human` surface unchanged.
 
@@ -120,6 +120,8 @@ UI visibility is never an authorization mechanism.
 ---
 
 ## 3. Phase 4.5A — policy and authentication foundation
+
+Implementation checkpoint: **complete without privilege expansion**.
 
 ### 3.1 Goal
 
@@ -299,6 +301,9 @@ The UI should consume server-provided capabilities/context and handle authorizat
 
 ## 5. Phase 4.5C — remote-admin minimal surface and second confirmation
 
+Implementation status: **implemented in code; live Windows x64 + Cloudflare
+acceptance remains open**.
+
 ### 5.1 Goal
 
 Only after 4.5A and 4.5B are stable, allow strongly authenticated `remote_admin` callers to perform the existing local maintenance workflow through a deliberately narrow server-side policy.
@@ -433,16 +438,16 @@ Conversely, a Phase 5 service token must not grant `remote_admin`, QR/session, u
 
 Conceptually the final matrix should look like this:
 
-| Operation class | local | remote_human | remote_admin | remote_machine |
-| --- | --- | --- | --- | --- |
-| safe diagnostics/reference | yes | selected | selected | Phase 5 decides minimal subset |
-| QR session maintenance | yes | yes | yes | no |
-| update status | yes | yes | yes | no |
-| update check/plan | yes | no | yes | no |
-| update apply | yes | no | yes + one-time confirmation | no |
-| OpenAPI refresh | yes | no | yes | no |
-| approved market-read | later yes | no by default | no by default | Phase 5 only |
-| financial state mutation | no | no | no | no |
+| Operation class            | local     | remote_human  | remote_admin                | remote_machine                 |
+| -------------------------- | --------- | ------------- | --------------------------- | ------------------------------ |
+| safe diagnostics/reference | yes       | selected      | selected                    | Phase 5 decides minimal subset |
+| QR session maintenance     | yes       | yes           | yes                         | no                             |
+| update status              | yes       | yes           | yes                         | no                             |
+| update check/plan          | yes       | no            | yes                         | no                             |
+| update apply               | yes       | no            | yes + one-time confirmation | no                             |
+| OpenAPI refresh            | yes       | no            | yes                         | no                             |
+| approved market-read       | later yes | no by default | no by default               | Phase 5 only                   |
+| financial state mutation   | no        | no            | no                          | no                             |
 
 Phase 5 must continue to register each market-read operation explicitly with a Bridge-owned stable contract. Runtime upstream OpenAPI may help compatibility checks but never auto-exposes new paths.
 

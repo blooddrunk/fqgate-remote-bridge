@@ -20,6 +20,7 @@ function ApiReferencePage() {
       isRefreshing={reference.refresh.isPending}
       refreshError={reference.refresh.error}
       isRemoteHuman={context.data?.requestContext === "remote_human"}
+      isRemoteAdmin={context.data?.requestContext === "remote_admin"}
     />
   );
 }

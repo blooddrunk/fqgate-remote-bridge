@@ -2,7 +2,7 @@
 
 FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQGate 始终保持本机回环运行，由 Bridge 提供明确、受控的接口和 Dashboard，再逐阶段通过 Cloudflare Tunnel + Access 将需要的能力安全带到远程环境。
 
-当前 **Phase 0–4 已关闭**。Phase 4 实现并验收了“受 Cloudflare Access 保护的远程人工访问”；不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
+当前 **Phase 0–4 已关闭，Phase 4.5 已完成代码实现但仍 OPEN 等待完整真实验收**。Phase 4 实现并验收了“受 Cloudflare Access 保护的远程人工访问”；不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
 
 ## 当前结论
 
@@ -11,8 +11,9 @@ FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQ
 - Phase 3 已完成本地升级中心、Runtime OpenAPI/API Reference 和目标 Windows x64 验收。
 - Phase 4 引入 remotely-managed Cloudflare Tunnel + Cloudflare Access human policy，`cloudflared` 只转发到 Bridge，绝不直接转发到 FQGate。
 - Tunnel **不会自动把全部本地操作暴露到远程**。Bridge 会显式区分 local 与 remote-human operation。
-- Phase 4 远程允许 Dashboard/status、QR 登录、只读更新状态和 reference-only API Catalog；更新检查/预览/执行、OpenAPI refresh 继续保持 local-only。
-- 远程 Host 必须是配置的唯一 `remoteAccess.remoteHostname`，并带有 Cloudflare Protect with Access 注入的 `Cf-Access-Jwt-Assertion`；unknown Host、缺 assertion 和转发头 spoofing 都 fail closed。
+- Phase 4 远程允许 Dashboard/status、QR 登录、只读更新状态和 reference-only API Catalog；对 ordinary `remote_human`，更新检查/预览/执行、OpenAPI refresh 仍保持 local-only。
+- Phase 4.5C 代码仅向独立、强认证的 `remote_admin` 开放 `updates.check`、`updates.plan`、`updates.apply` 和 `openapi.refresh`；远程 `updates.apply` 还要求 exact admin Origin/Bridge intent 及绑定当前管理员、计划和候选的一次性内存确认。
+- 远程 human Host 必须是配置的唯一 `remoteAccess.remoteHostname`，并带有 Cloudflare Protect with Access 注入的 `Cf-Access-Jwt-Assertion`；可选的 admin Host 必须是独立的 `remoteAccess.adminHostname`，并使用独立的 Access team domain/AUD 与 Bridge 侧 RS256 验证；unknown Host、缺 assertion 和转发头 spoofing 都 fail closed。
 - `cloudflared` 只接受固定 Cloudflare 官方 GitHub release metadata/Windows x64 asset，手工、显式安装；Windows service 使用 repo 外 ACL 保护的 token file 和 `tunnel run --token-file`。
 - OpenAPI 只负责描述 FQGate 当前“有什么”，不负责授权；新上游路径默认不可调用。
 - 不提供下单、撤单、资金划转、券商控制或其他金融状态变更能力。
@@ -192,12 +193,22 @@ node .\dist\cli\main.js cloudflared service restart --json
 Phase 4 实现、deterministic tests 以及真实 Windows x64 + Cloudflare 验收均已完成，状态为
 **CLOSED**。边界、运行步骤和不含敏感值的验收证据见 [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)；实现与 live handoff 见 [Phase 4 implementation handoff](docs/status/phase-4-implementation-handoff.md)。
 
-## 未来计划（未实现）
+## Phase 4.5：远程管理员基础与移动 Dashboard
 
-- 单独设计带更强认证、设备限制和二次确认的远程管理员策略；它不能隐式复用 Phase 4 的远程人工只读策略。
-- 优化现有 Dashboard 的移动端 UI，继续复用 React 19/TanStack 应用，不创建第二套前端。
+Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`、
+`remote_human` 和独立强认证的 `remote_admin` 使用同一套 Bridge registry，
+但 4.5A 仍不授予管理员维护权限。管理员配置是可选的，缺少
+`adminHostname`、`adminAccess.teamDomain` 或 `adminAccess.audience` 时该 Host
+不会启用。
 
-这两项只是后续规划，不属于已关闭的 Phase 4，也不代表当前仓库已经提供远程管理员能力或移动端改版。
+4.5B 已在同一 React/TanStack 前端中完成移动端响应式优化，覆盖现有四个
+页面和目标 viewport。4.5C 的远程 check/plan/apply/OpenAPI refresh、CSRF
+和一次性 apply confirmation 已实现；ordinary remote human 仍由服务器拒绝
+这些操作。真实 Windows x64 + Cloudflare 管理员验收完成前，Phase 4.5 保持
+OPEN，验收记录见 [Windows Phase 4.5 验收](docs/operations/windows-phase-4-5-acceptance.md)，
+实现交接见 [Phase 4.5 implementation handoff](docs/status/phase-4-5-implementation-handoff.md)。
+重新配置、新环境和多实例部署步骤见
+[Phase 4.5 remote-admin setup](docs/operations/windows-phase-4-5-remote-admin-setup.md)。
 
 ## 已完成的 Phase 4 任务包
 
@@ -238,5 +249,8 @@ Phase 4 历史 Codex goal 入口（不是新的活动任务）：
 - [Phase 3 完成交接](docs/status/phase-3-implementation-handoff.md)
 - [Windows Phase 3 验收](docs/operations/windows-phase-3-acceptance.md)
 - [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)
+- [Windows Phase 4.5 远程管理员配置](docs/operations/windows-phase-4-5-remote-admin-setup.md)
+- [未来多 Profile 账号隔离计划](docs/plans/future-multi-profile-account-isolation.md)
 - [Phase 4 实现交接](docs/status/phase-4-implementation-handoff.md)
+- [Phase 4.5 实现交接](docs/status/phase-4-5-implementation-handoff.md)
 - [Agent 快速交接](docs/agent-guide.md)

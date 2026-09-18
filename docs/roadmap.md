@@ -9,7 +9,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 2: **CLOSED**
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
-- Phase 4.5: **PLANNED**
+- Phase 4.5: **IN PROGRESS (4.5A/4.5B/4.5C implemented; live acceptance open)**
 - Phase 5+: planned only
 
 Current deployed topology remains:
@@ -87,7 +87,9 @@ updates.status
 openapi.catalog
 ```
 
-The following remain local-only until the separately reviewed Phase 4.5C admin boundary is implemented and accepted:
+For the Phase 4 `remote_human` context, the following remain local-only. The
+separately reviewed Phase 4.5C policy gives only `remote_admin` access to them
+after independent authentication and control-request checks:
 
 ```text
 updates.check
@@ -112,7 +114,8 @@ Phase 4 remains closed; future work must not retroactively expand its contract.
 
 ## Phase 4.5 — Remote administrator hardening + mobile Dashboard
 
-Status: **PLANNED**.
+Status: **IN PROGRESS**; 4.5A, 4.5B, and 4.5C are implemented in code, with
+live Windows x64 + Cloudflare acceptance still open.
 
 Goal: introduce a separately authenticated and separately authorized remote-administrator context for a very small existing maintenance surface, and optimize the existing React/TanStack Dashboard for phone use, without weakening Phase 4 or implementing Phase 5 market-data APIs.
 
@@ -129,6 +132,13 @@ Codex handoff:
 `docs/prompts/phase-4-5-codex-goal.md`
 
 ### 4.5A — Policy/authentication foundation, no privilege expansion
+
+Status: **IMPLEMENTED**. The operation registry now uses independent allowed
+caller contexts and confirmation metadata. An optional distinct admin Host and
+Access team/AUD can produce `remote_admin` only after Bridge-side RS256 JWT
+verification with exact issuer/audience, temporal claims, `kid` rotation, and a
+bounded fixed-endpoint JWK cache. The admin context still has no maintenance
+permission; the four update/OpenAPI control operations remain local-only.
 
 Refactor caller context and operation authorization into orthogonal policy dimensions so the project can represent:
 
@@ -147,11 +157,16 @@ At the end of 4.5A there is **no maintenance privilege expansion**: remote admin
 
 ### 4.5B — Mobile Dashboard optimization, no authorization changes
 
+Status: **IMPLEMENTED**.
+
 Keep one React 19/TanStack Start application and existing routes. Optimize Dashboard, QR login, update view, and API reference for ~360px+ viewports, touch targets, bounded long content, safe responsive navigation, mobile viewport/safe-area behavior, keyboard/focus usability, and phone/tablet Playwright coverage.
 
 Responsive UI must never become an authorization mechanism. Ordinary remote-human update behavior remains read-only.
 
 ### 4.5C — Minimal remote-admin maintenance + second confirmation
+
+Status: **IMPLEMENTED IN CODE**; live Windows x64 + Cloudflare acceptance is
+still required before Phase 4.5 can close.
 
 Only after 4.5A/4.5B are stable, permit strongly authenticated remote admin to call exactly:
 
@@ -183,6 +198,27 @@ Phase 4.5 may close only when:
 11. one known-safe real remote-admin update apply is proven, or the phase remains open if no safe candidate is available.
 
 Phase 4.5 non-goals include Phase 5 machine APIs/service tokens, Phase 6 provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, final packaging, generic remote shell/process control, and any financial state-changing capability.
+
+## Future planning item — operator setup simplification and multi-profile isolation
+
+Status: **PLANNED; no implementation in Phase 4.5**.
+
+The repeatable operator procedure is documented in
+`docs/operations/windows-phase-4-5-remote-admin-setup.md`. A future setup
+doctor/wizard may validate the selected service-scoped hostnames, certificate
+coverage, DNS, Access application/AUD, Tunnel ingress, loopback listeners,
+token-file shape, and device posture with plan/dry-run behavior. It must not
+silently create broad Cloudflare permissions; Cloudflare provisioning remains
+Phase 6 scope.
+
+The related multi-account idea is recorded separately in
+`docs/plans/future-multi-profile-account-isolation.md`. It must first establish
+whether FQGate supports isolated multi-login sessions. The future design must
+use explicit Bridge-owned profile IDs, per-profile secrets/session state,
+cross-profile isolation tests, and profile-bound authorization/confirmation.
+It must not be implemented by adding a raw profile/account parameter to an
+upstream path, and it must not be conflated with the later `remote_machine`
+context of Phase 5.
 
 ---
 
@@ -256,7 +292,8 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 4 is closed. The next planned implementation package is Phase 4.5:
+Phase 4 is closed. Phase 4.5 is implemented in code and remains open pending
+the live acceptance evidence:
 
 `docs/tasks/phase-4-5-remote-admin-and-mobile-dashboard.md`
 
@@ -267,5 +304,13 @@ The design source is:
 The implementation handoff is:
 
 `docs/prompts/phase-4-5-codex-goal.md`
+
+The acceptance runbook is:
+
+`docs/operations/windows-phase-4-5-acceptance.md`
+
+The final implementation handoff is:
+
+`docs/status/phase-4-5-implementation-handoff.md`
 
 Do not implement Phase 5 machine market-data APIs, service-token auth, automated Cloudflare provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, or packaging inside the Phase 4.5 goal.

@@ -11,8 +11,10 @@ import {
   type QrBeginResponse,
   type QrPollResponse,
   type BridgeUpdateStatusResponse,
+  type UpdateApplyConfirmationResponse,
   normalizeCompatibility,
 } from "./contracts.js";
+import { AdminConfirmationService, bindingForAdminPlan } from "./admin/confirmation.js";
 import { QR_FLOW_TTL_MS, type FqgateQrAdapter, type QrPollUpstreamResult } from "./qr/adapter.js";
 import type { QrFlowRegistry, StoredQrFlow } from "./qr/registry.js";
 import { Redactor } from "../shared/redaction.js";
@@ -23,7 +25,7 @@ import {
   listRequiredFqgateContracts,
   type BridgeOperationPolicy,
 } from "./policy/registry.js";
-import type { BridgeRequestContext } from "./policy/request-context.js";
+import type { BridgePrincipal, BridgeRequestContext } from "./policy/request-context.js";
 
 export interface LifecycleStatusReader {
   status(): Promise<FqgateStatus>;
@@ -36,6 +38,7 @@ export interface BridgeServiceOptions {
   readonly qrRegistry: QrFlowRegistry;
   readonly updateService?: FqgateUpdateServicePort;
   readonly openApiService?: FqgateOpenApiServicePort;
+  readonly adminConfirmations?: AdminConfirmationService;
   readonly now?: () => string;
 }
 
@@ -46,6 +49,7 @@ export class BridgeService {
   private readonly qrRegistry: QrFlowRegistry;
   private readonly updateService: FqgateUpdateServicePort | undefined;
   private readonly openApiService: FqgateOpenApiServicePort | undefined;
+  private readonly adminConfirmations: AdminConfirmationService;
   private readonly now: () => string;
   private readonly redactor = new Redactor();
 
@@ -56,6 +60,7 @@ export class BridgeService {
     this.qrRegistry = options.qrRegistry;
     this.updateService = options.updateService;
     this.openApiService = options.openApiService;
+    this.adminConfirmations = options.adminConfirmations ?? new AdminConfirmationService();
     this.now = options.now ?? (() => new Date().toISOString());
   }
 
@@ -145,6 +150,27 @@ export class BridgeService {
     return this.requireUpdateService().applyConfirmed(planId);
   }
 
+  async prepareAdminUpdateApply(
+    planId: string,
+    principal: BridgePrincipal,
+  ): Promise<UpdateApplyConfirmationResponse> {
+    const status = await this.requireUpdateService().getStatus();
+    const plan = requireActivatablePlan(status.plan, planId);
+    return this.adminConfirmations.issue(bindingForAdminPlan(principal, plan));
+  }
+
+  async applyAdminUpdate(
+    planId: string,
+    confirmationGrant: string,
+    principal: BridgePrincipal,
+  ): Promise<BridgeUpdateStatusResponse> {
+    const updateService = this.requireUpdateService();
+    const status = await updateService.getStatus();
+    const plan = requireActivatablePlan(status.plan, planId);
+    this.adminConfirmations.consume(confirmationGrant, bindingForAdminPlan(principal, plan));
+    return updateService.applyConfirmed(planId);
+  }
+
   async openApiCatalog(refresh = false): Promise<BridgeOpenApiCatalogResponse> {
     const service = this.requireOpenApiService();
     if (refresh) {
@@ -198,6 +224,23 @@ export class BridgeService {
   }
 }
 
+function requireActivatablePlan(
+  plan: BridgeUpdateStatusResponse["plan"],
+  planId: string,
+): NonNullable<BridgeUpdateStatusResponse["plan"]> {
+  if (
+    plan === undefined ||
+    plan.planId !== planId ||
+    (plan.action !== "install" && plan.action !== "update")
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.UPDATE_CONFIRMATION_STALE,
+      "The FQGate update plan is stale or not activatable",
+    );
+  }
+  return plan;
+}
+
 function toCatalogOperation(operation: BridgeOperationPolicy) {
   return {
     id: operation.id,
@@ -205,7 +248,8 @@ function toCatalogOperation(operation: BridgeOperationPolicy) {
     path: operation.path,
     classification: operation.classification,
     intent: operation.intent,
-    exposure: operation.exposure,
+    allowedContexts: operation.allowedContexts,
+    requiresConfirmation: operation.requiresConfirmation,
     requiredCompatibility: operation.requiredCompatibility,
     documentationVisible: operation.documentationVisible,
     ...(operation.upstream === undefined ? {} : { upstream: operation.upstream }),

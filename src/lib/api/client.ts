@@ -5,7 +5,12 @@ import type {
   BridgeUpdateStatusResponse,
   QrBeginResponse,
   QrPollResponse,
+  UpdateApplyConfirmationResponse,
 } from "../../bridge/contracts.js";
+
+const BRIDGE_ADMIN_INTENT_HEADERS = {
+  "x-bridge-admin-intent": "fqgate-remote-bridge-admin-v1",
+} as const;
 
 export class BridgeApiError extends Error {
   readonly code: string;
@@ -38,7 +43,7 @@ export async function fetchCapabilities(signal?: AbortSignal): Promise<BridgeCap
 export async function beginQrLogin(): Promise<QrBeginResponse> {
   return fetchJson<QrBeginResponse>("/api/v1/session/qr/begin", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...BRIDGE_ADMIN_INTENT_HEADERS },
     body: "{}",
   });
 }
@@ -49,7 +54,7 @@ export async function pollQrLogin(
 ): Promise<QrPollResponse> {
   return fetchJson<QrPollResponse>("/api/v1/session/qr/poll", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...BRIDGE_ADMIN_INTENT_HEADERS },
     body: JSON.stringify({ sessionId }),
     ...(signal === undefined ? {} : { signal }),
   });
@@ -70,11 +75,31 @@ export async function planInstallOrUpdate(): Promise<BridgeUpdateStatusResponse>
   return postEmpty<BridgeUpdateStatusResponse>("/api/v1/updates/plan");
 }
 
-export async function applyUpdate(planId: string): Promise<BridgeUpdateStatusResponse> {
+export async function prepareUpdateApply(planId: string): Promise<UpdateApplyConfirmationResponse> {
+  return fetchJson<UpdateApplyConfirmationResponse>("/api/v1/updates/apply", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...BRIDGE_ADMIN_INTENT_HEADERS,
+    },
+    body: JSON.stringify({ planId, phase: "prepare" }),
+  });
+}
+
+export async function applyUpdate(
+  planId: string,
+  confirmationGrant?: string,
+): Promise<BridgeUpdateStatusResponse> {
+  const remoteAdminApply = confirmationGrant !== undefined;
   return fetchJson<BridgeUpdateStatusResponse>("/api/v1/updates/apply", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ planId }),
+    headers: {
+      "content-type": "application/json",
+      ...(remoteAdminApply ? BRIDGE_ADMIN_INTENT_HEADERS : {}),
+    },
+    body: JSON.stringify(
+      remoteAdminApply ? { planId, phase: "execute", confirmationGrant } : { planId },
+    ),
   });
 }
 
@@ -125,7 +150,10 @@ async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promi
 async function postEmpty<T>(input: RequestInfo | URL): Promise<T> {
   return fetchJson<T>(input, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      ...BRIDGE_ADMIN_INTENT_HEADERS,
+    },
     body: "{}",
   });
 }
@@ -168,7 +196,15 @@ function localizedMessage(code: string, fallback: string): string {
     UPDATE_IN_PROGRESS: "已有 FQGate 更新事务正在执行，请稍候。",
     HOST_NOT_ALLOWED: "当前 Host 不在 Bridge 允许范围内。",
     ACCESS_ASSERTION_REQUIRED: "远程访问需要先通过 Cloudflare Access 身份认证。",
+    ACCESS_ASSERTION_INVALID: "Cloudflare Access 身份认证无效。",
     OPERATION_FORBIDDEN: "此操作仅限 Bridge 所在主机的本机维护访问。",
+    ADMIN_CONFIRMATION_REQUIRED: "远程应用更新前需要新的管理员确认。",
+    ADMIN_CONFIRMATION_INVALID: "管理员确认无效或已使用。",
+    ADMIN_CONFIRMATION_EXPIRED: "管理员确认已过期，请重新确认。",
+    ADMIN_CONFIRMATION_MISMATCH: "管理员确认与当前更新计划或身份不匹配。",
+    ADMIN_CONFIRMATION_LIMIT: "待处理管理员确认过多，请稍后重试。",
+    CSRF_ORIGIN_INVALID: "管理员请求来源不受允许。",
+    CSRF_INTENT_REQUIRED: "管理员请求缺少 Bridge intent。",
     CLOUDFLARED_TOKEN_INVALID: "cloudflared Tunnel token file 不存在或未通过安全保护检查。",
     CLOUDFLARED_UNSUPPORTED: "当前 cloudflared 版本或主机不支持安全 Tunnel service 配置。",
     MANIFEST_FETCH_FAILED: "无法读取固定可信源的 FQGate 发布清单。",

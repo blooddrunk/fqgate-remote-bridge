@@ -11,8 +11,10 @@ import { BridgeError, ERROR_CODES, toBridgeError } from "../../shared/errors.js"
 import { StructuredLogger } from "../../shared/logger.js";
 import {
   assertOperationAllowedForContext,
-  classifyRequestContext,
+  assertRemoteAdminControlRequest,
+  authenticateRequestContext,
   type BridgeRequestContext,
+  type BridgePrincipal,
   type RequestContextPolicyOptions,
 } from "../policy/request-context.js";
 
@@ -49,10 +51,20 @@ export function createBridgeHttpHandler(options: BridgeHttpHandlerOptions): Brid
     let operation: BridgeOperationPolicy | undefined;
     let requestContext: BridgeRequestContext | undefined;
     try {
-      requestContext = classifyRequestContext(request, options.requestContext);
+      const authenticated = await authenticateRequestContext(request, options.requestContext);
+      requestContext = authenticated.context;
       operation = resolveOperation(request, expectedOperation);
       assertOperationAllowedForContext(operation, requestContext);
-      const payload = await dispatchRequest(request, operation, options.service, requestContext);
+      if (requestContext === "remote_admin" && operation.method === "POST") {
+        assertRemoteAdminControlRequest(request, options.requestContext ?? {});
+      }
+      const payload = await dispatchRequest(
+        request,
+        operation,
+        options.service,
+        requestContext,
+        authenticated.principal,
+      );
       return jsonResponse(payload, 200);
     } catch (error) {
       const bridgeError = toBridgeError(
@@ -142,6 +154,7 @@ async function dispatchRequest(
   operation: BridgeOperationPolicy,
   service: BridgeService,
   requestContext: BridgeRequestContext,
+  principal: BridgePrincipal | undefined,
 ): Promise<unknown> {
   switch (operation.id) {
     case "bridge.version":
@@ -171,7 +184,22 @@ async function dispatchRequest(
       return service.planInstallOrUpdate();
     case "updates.apply": {
       const body = await readJsonBody(request, operation.maxBodyBytes, "update apply");
-      return service.applyUpdate(readPlanId(body));
+      const applyRequest = readUpdateApplyRequest(body, requestContext);
+      if (applyRequest.kind === "local") return service.applyUpdate(applyRequest.planId);
+      if (principal === undefined) {
+        throw new BridgeError(
+          ERROR_CODES.ACCESS_ASSERTION_INVALID,
+          "A verified administrator principal is required for this operation",
+        );
+      }
+      if (applyRequest.kind === "prepare") {
+        return service.prepareAdminUpdateApply(applyRequest.planId, principal);
+      }
+      return service.applyAdminUpdate(
+        applyRequest.planId,
+        applyRequest.confirmationGrant,
+        principal,
+      );
     }
     case "openapi.catalog":
       rejectUnexpectedGetBody(request);
@@ -277,6 +305,58 @@ async function readJsonBody(
   return value;
 }
 
+type UpdateApplyRequest =
+  | { readonly kind: "local"; readonly planId: string }
+  | { readonly kind: "prepare"; readonly planId: string }
+  | { readonly kind: "execute"; readonly planId: string; readonly confirmationGrant: string };
+
+function readUpdateApplyRequest(
+  value: Record<string, unknown>,
+  requestContext: BridgeRequestContext,
+): UpdateApplyRequest {
+  if (requestContext === "local") {
+    return { kind: "local", planId: readPlanId(value) };
+  }
+  if (requestContext !== "remote_admin") {
+    throw new BridgeError(
+      ERROR_CODES.OPERATION_FORBIDDEN,
+      "This update apply request is not allowed for the current request context",
+    );
+  }
+
+  const planId = readPlanIdField(value);
+  const phase = value.phase;
+  if (phase === "prepare") {
+    if (Object.keys(value).length !== 2) {
+      throw new BridgeError(
+        ERROR_CODES.REQUEST_INVALID,
+        "The administrator confirmation request contains unexpected fields",
+      );
+    }
+    return { kind: "prepare", planId };
+  }
+  if (phase === "execute") {
+    if (Object.keys(value).length !== 3) {
+      throw new BridgeError(
+        ERROR_CODES.REQUEST_INVALID,
+        "The administrator apply request contains unexpected fields",
+      );
+    }
+    const confirmationGrant = value.confirmationGrant;
+    if (typeof confirmationGrant !== "string" || confirmationGrant.length > 256) {
+      throw new BridgeError(
+        ERROR_CODES.ADMIN_CONFIRMATION_INVALID,
+        "The administrator confirmation grant is invalid",
+      );
+    }
+    return { kind: "execute", planId, confirmationGrant };
+  }
+  throw new BridgeError(
+    ERROR_CODES.ADMIN_CONFIRMATION_REQUIRED,
+    "A prepare-and-confirm administrator apply request is required",
+  );
+}
+
 function readPlanId(value: Record<string, unknown>): string {
   const keys = Object.keys(value);
   if (keys.length !== 1 || keys[0] !== "planId") {
@@ -284,6 +364,13 @@ function readPlanId(value: Record<string, unknown>): string {
       ERROR_CODES.REQUEST_INVALID,
       "The update apply body must contain only planId",
     );
+  }
+  return readPlanIdField(value);
+}
+
+function readPlanIdField(value: Record<string, unknown>): string {
+  if (!("planId" in value)) {
+    throw new BridgeError(ERROR_CODES.REQUEST_INVALID, "planId is required");
   }
   const planId = value.planId;
   if (typeof planId !== "string" || planId.length > 128) {
@@ -354,7 +441,10 @@ function httpStatusFor(code: string): number {
     case ERROR_CODES.HOST_NOT_ALLOWED:
       return 421;
     case ERROR_CODES.ACCESS_ASSERTION_REQUIRED:
+    case ERROR_CODES.ACCESS_ASSERTION_INVALID:
     case ERROR_CODES.OPERATION_FORBIDDEN:
+    case ERROR_CODES.CSRF_ORIGIN_INVALID:
+    case ERROR_CODES.CSRF_INTENT_REQUIRED:
       return 403;
     case ERROR_CODES.QR_FLOW_EXPIRED:
     case ERROR_CODES.QR_FLOW_REPLACED:
@@ -374,7 +464,14 @@ function httpStatusFor(code: string): number {
       return 502;
     case ERROR_CODES.UPDATE_CONFIRMATION_STALE:
     case ERROR_CODES.UPDATE_IN_PROGRESS:
+    case ERROR_CODES.ADMIN_CONFIRMATION_EXPIRED:
+    case ERROR_CODES.ADMIN_CONFIRMATION_MISMATCH:
       return 409;
+    case ERROR_CODES.ADMIN_CONFIRMATION_REQUIRED:
+    case ERROR_CODES.ADMIN_CONFIRMATION_INVALID:
+      return 400;
+    case ERROR_CODES.ADMIN_CONFIRMATION_LIMIT:
+      return 429;
     case ERROR_CODES.UPSTREAM_RESPONSE_INVALID:
       return 502;
     case ERROR_CODES.BRIDGE_NOT_READY:
@@ -395,8 +492,24 @@ function publicMessageFor(code: string): string {
       return "The bridge Host is not allowed.";
     case ERROR_CODES.ACCESS_ASSERTION_REQUIRED:
       return "Cloudflare Access authentication is required for this host.";
+    case ERROR_CODES.ACCESS_ASSERTION_INVALID:
+      return "Cloudflare Access authentication is invalid for this host.";
     case ERROR_CODES.OPERATION_FORBIDDEN:
       return "This operation is available only through local maintenance access.";
+    case ERROR_CODES.ADMIN_CONFIRMATION_REQUIRED:
+      return "A fresh administrator confirmation is required before applying an update.";
+    case ERROR_CODES.ADMIN_CONFIRMATION_INVALID:
+      return "The administrator confirmation is invalid or already used.";
+    case ERROR_CODES.ADMIN_CONFIRMATION_EXPIRED:
+      return "The administrator confirmation has expired.";
+    case ERROR_CODES.ADMIN_CONFIRMATION_MISMATCH:
+      return "The administrator confirmation does not match the current update plan.";
+    case ERROR_CODES.ADMIN_CONFIRMATION_LIMIT:
+      return "Too many administrator confirmations are pending.";
+    case ERROR_CODES.CSRF_ORIGIN_INVALID:
+      return "The administrator request Origin is not allowed.";
+    case ERROR_CODES.CSRF_INTENT_REQUIRED:
+      return "The administrator request is missing its bridge intent.";
     case ERROR_CODES.ROUTE_NOT_FOUND:
       return "The bridge route was not found.";
     case ERROR_CODES.METHOD_NOT_ALLOWED:

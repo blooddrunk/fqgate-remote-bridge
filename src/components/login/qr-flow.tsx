@@ -36,12 +36,12 @@ export interface QrFlowViewProps {
 
 export function QrFlowView({ state, onStart, onRetry }: QrFlowViewProps) {
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <div className="mx-auto min-w-0 max-w-4xl space-y-7 sm:space-y-8">
       <section className="max-w-2xl">
         <Badge tone="info">
           <QrCode size={13} aria-hidden="true" /> 本机扫码登录
         </Badge>
-        <h1 className="mt-5 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
+        <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">
           恢复行情会话。
         </h1>
         <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
@@ -70,7 +70,7 @@ export function QrFlowView({ state, onStart, onRetry }: QrFlowViewProps) {
 function StartCard({ onStart }: { readonly onStart: () => void }) {
   return (
     <Card>
-      <CardContent className="flex flex-col items-center px-6 py-14 text-center">
+      <CardContent className="flex flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
         <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cyan-50 text-cyan-600 dark:bg-cyan-400/10 dark:text-cyan-300">
           <QrCode size={29} aria-hidden="true" />
         </span>
@@ -89,7 +89,7 @@ function StartCard({ onStart }: { readonly onStart: () => void }) {
 function StartingCard() {
   return (
     <Card>
-      <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
+      <CardContent className="flex min-h-[24rem] flex-col items-center justify-center text-center sm:min-h-[29rem]">
         <Loader2 className="animate-spin text-cyan-400" size={30} aria-label="正在生成 QR 码" />
         <h2 className="mt-5 text-lg font-semibold">正在生成新的 QR 码…</h2>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -112,15 +112,15 @@ function ActiveCard({
   const status = poll?.status ?? begin.status;
   return (
     <Card>
-      <CardContent className="grid gap-8 p-6 md:grid-cols-[minmax(18rem,22rem)_1fr] md:p-8">
-        <div className="flex min-h-[23rem] items-center justify-center rounded-3xl border border-slate-200 bg-white p-5 shadow-inner dark:border-white/[0.08] dark:bg-white">
+      <CardContent className="grid min-w-0 gap-6 p-4 sm:gap-8 sm:p-6 md:grid-cols-[minmax(18rem,22rem)_1fr] md:p-8">
+        <div className="flex aspect-square min-h-0 min-w-0 items-center justify-center rounded-3xl border border-slate-200 bg-white p-4 shadow-inner dark:border-white/[0.08] dark:bg-white sm:min-h-[23rem] sm:p-5">
           <img
-            className="aspect-square w-full max-w-[19rem] object-contain"
+            className="aspect-square h-auto w-full max-w-[19rem] object-contain"
             src={`data:${begin.qr.mediaType};base64,${begin.qr.imageBase64}`}
             alt="FQGate 扫码登录二维码"
           />
         </div>
-        <div className="flex flex-col justify-center">
+        <div className="flex min-w-0 flex-col justify-center">
           <Badge tone={status === "waiting_for_confirmation" ? "warning" : "info"}>
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
             {status === "waiting_for_confirmation" ? "请在手机上确认" : "等待扫码"}
@@ -150,7 +150,7 @@ function ActiveCard({
 function ConnectedCard({ loginMethod }: { readonly loginMethod?: string }) {
   return (
     <Card>
-      <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
+      <CardContent className="flex min-h-[24rem] flex-col items-center justify-center text-center sm:min-h-[29rem]">
         <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300">
           <CheckCircle2 size={31} aria-hidden="true" />
         </span>
@@ -160,7 +160,7 @@ function ConnectedCard({ loginMethod }: { readonly loginMethod?: string }) {
           {loginMethod === undefined ? "" : `（${formatLoginMethod(loginMethod)}）`}
           。桥接已停止轮询，总览状态也已刷新。
         </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
+        <div className="mt-7 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
           <Button
             variant="secondary"
             onClick={() => void navigator.clipboard?.writeText("行情会话已连接")}
@@ -169,7 +169,7 @@ function ConnectedCard({ loginMethod }: { readonly loginMethod?: string }) {
           </Button>
           <a
             href="/"
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-cyan-400 px-4 text-sm font-medium text-slate-950 outline-none hover:bg-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-400 px-4 text-sm font-medium text-slate-950 outline-none hover:bg-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
           >
             返回总览
           </a>
@@ -189,7 +189,7 @@ function TerminalCard({
 }) {
   return (
     <Card>
-      <CardContent className="flex min-h-[29rem] flex-col items-center justify-center text-center">
+      <CardContent className="flex min-h-[24rem] flex-col items-center justify-center text-center sm:min-h-[29rem]">
         <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300">
           <RefreshCw size={28} aria-hidden="true" />
         </span>
@@ -238,12 +238,14 @@ function InfoRow({
   readonly value: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-slate-200/70 pb-3 last:border-b-0 last:pb-0 dark:border-white/[0.08]">
-      <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+    <div className="flex items-start justify-between gap-3 border-b border-slate-200/70 pb-3 last:border-b-0 last:pb-0 dark:border-white/[0.08]">
+      <span className="flex min-w-0 items-center gap-2 text-slate-500 dark:text-slate-400">
         {icon}
         {label}
       </span>
-      <span className="font-medium text-slate-800 dark:text-slate-100">{value}</span>
+      <span className="break-words text-right font-medium text-slate-800 dark:text-slate-100">
+        {value}
+      </span>
     </div>
   );
 }

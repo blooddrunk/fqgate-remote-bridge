@@ -2,7 +2,7 @@
 
 Date: 2026-09-17
 
-Status: **PLANNED / implementation not started**
+Status: **IN PROGRESS / 4.5A, 4.5B, and 4.5C implemented; live acceptance open**
 
 Primary design: `docs/plans/phase-4-5-remote-admin-and-mobile-dashboard.md`
 
@@ -24,6 +24,9 @@ Throughout this phase:
 - secrets/assertions/QR/session/confirmation values are never logged or committed.
 
 ## Work package 4.5A — policy and remote-admin authentication foundation
+
+Status: **IMPLEMENTED**; the four maintenance operations remain remotely
+denied until 4.5C.
 
 Goal: create an explicit `remote_admin` request context and stronger origin-side authentication without granting any new remote maintenance privilege yet.
 
@@ -68,6 +71,8 @@ Tasks:
 
 ## Work package 4.5B — mobile Dashboard optimization
 
+Status: **IMPLEMENTED**.
+
 Goal: make the existing React/TanStack UI usable on narrow screens without adding a second frontend or changing authorization.
 
 Routes in scope:
@@ -101,6 +106,9 @@ Tasks:
 - desktop regression remains acceptable.
 
 ## Work package 4.5C — narrow remote-admin operation surface and second confirmation
+
+Status: **IMPLEMENTED IN CODE**; live Windows x64 + Cloudflare acceptance
+remains open.
 
 Goal: only after 4.5A and 4.5B are stable, allow the strongly authenticated admin context to perform the existing maintenance workflow.
 

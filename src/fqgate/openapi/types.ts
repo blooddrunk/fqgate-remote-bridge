@@ -52,7 +52,8 @@ export interface BridgeCatalogOperation {
   readonly path: string;
   readonly classification: string;
   readonly intent: string;
-  readonly exposure: string;
+  readonly allowedContexts: readonly string[];
+  readonly requiresConfirmation: boolean;
   readonly requiredCompatibility: string;
   readonly documentationVisible: boolean;
   readonly upstream?: {

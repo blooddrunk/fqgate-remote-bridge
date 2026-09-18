@@ -13,6 +13,7 @@ import {
 import { FetchHttpTransport } from "../fqgate/release/http.js";
 import { resolveBridgePort } from "./runtime-config.js";
 import type { RequestContextPolicyOptions } from "./policy/request-context.js";
+import { CloudflareAccessJwtVerifier } from "./auth/cloudflare-access.js";
 
 let handlerPromise: Promise<BridgeHttpHandler> | undefined;
 let requestContextOptionsPromise: Promise<RequestContextPolicyOptions> | undefined;
@@ -36,12 +37,7 @@ export function getBridgeRequestContextOptions(): Promise<RequestContextPolicyOp
     process.env.FQGATE_REMOTE_BRIDGE_CONFIG === ""
       ? undefined
       : process.env.FQGATE_REMOTE_BRIDGE_CONFIG,
-  ).then((config) => ({
-    bridgePort: resolveBridgePort(process.env.BRIDGE_PORT ?? process.env.PORT),
-    ...(config.remoteAccess.remoteHostname === undefined
-      ? {}
-      : { remoteHostname: config.remoteAccess.remoteHostname }),
-  }));
+  ).then(createRequestContextOptions);
   return requestContextOptionsPromise;
 }
 
@@ -49,6 +45,7 @@ async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
   try {
     const configPath = process.env.FQGATE_REMOTE_BRIDGE_CONFIG;
     const config = await loadConfig(configPath === "" ? undefined : configPath);
+    const requestContext = createRequestContextOptions(config);
     const http = new FetchHttpTransport();
     const application = createApplicationServices(config);
     const service = new BridgeService({
@@ -66,14 +63,30 @@ async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
     return createBridgeHttpHandler({
       service,
       logger: new StructuredLogger({ level: config.logLevel }),
-      requestContext: {
-        bridgePort: resolveBridgePort(process.env.BRIDGE_PORT ?? process.env.PORT),
-        ...(config.remoteAccess.remoteHostname === undefined
-          ? {}
-          : { remoteHostname: config.remoteAccess.remoteHostname }),
-      },
+      requestContext,
     });
   } catch (error) {
     return async () => createBridgeErrorResponse(error);
   }
+}
+
+function createRequestContextOptions(
+  config: Awaited<ReturnType<typeof loadConfig>>,
+): RequestContextPolicyOptions {
+  const adminAccess = config.remoteAccess.adminAccess;
+  return {
+    bridgePort: resolveBridgePort(process.env.BRIDGE_PORT ?? process.env.PORT),
+    ...(config.remoteAccess.remoteHostname === undefined
+      ? {}
+      : { remoteHostname: config.remoteAccess.remoteHostname }),
+    ...(config.remoteAccess.adminHostname === undefined || adminAccess === undefined
+      ? {}
+      : {
+          adminHostname: config.remoteAccess.adminHostname,
+          adminVerifier: new CloudflareAccessJwtVerifier({
+            teamDomain: adminAccess.teamDomain,
+            audience: adminAccess.audience,
+          }),
+        }),
+  };
 }

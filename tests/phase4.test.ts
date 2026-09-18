@@ -128,10 +128,14 @@ describe("Phase 4 request context and operation exposure", () => {
 
   it("keeps the complete Phase 4 operation matrix explicit", async () => {
     const remoteAllowed = listBridgeOperations()
-      .filter((operation) => operation.exposure === "local_and_remote_human")
+      .filter((operation) => operation.allowedContexts.includes("remote_human"))
       .map((operation) => operation.id);
     const localOnly = listBridgeOperations()
-      .filter((operation) => operation.exposure === "local_only")
+      .filter(
+        (operation) =>
+          operation.allowedContexts.includes("local") &&
+          !operation.allowedContexts.includes("remote_human"),
+      )
       .map((operation) => operation.id);
     expect(remoteAllowed).toEqual([
       "bridge.version",

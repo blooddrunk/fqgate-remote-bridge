@@ -54,12 +54,24 @@ Phase 4 remote-human operations remain:
 - `updates.status`
 - `openapi.catalog`
 
-The following remain local-only until the separately reviewed Phase 4.5C remote-admin boundary is implemented and accepted:
+Phase 4.5A policy/authentication foundation and Phase 4.5B mobile work are
+implemented. Phase 4.5C's narrow remote-admin maintenance and one-time apply
+confirmation are implemented in code; live Windows x64 + Cloudflare
+acceptance remains open.
+
+For `local` and ordinary `remote_human` callers, the following remain
+local-only. The implemented `remote_admin` context may invoke exactly these
+four operations only after its independent JWT, Origin/intent, and (for
+`updates.apply`) one-time confirmation checks pass:
 
 - `updates.check`
 - `updates.plan`
 - `updates.apply`
 - `openapi.refresh`
+
+The 4.5A policy intentionally recognizes a verified `remote_admin` caller for
+the same safe Phase 4 surface only. It does not grant any of the four
+maintenance operations remotely.
 
 ## Active Phase 4.5 contract
 
@@ -74,6 +86,15 @@ The primary design note is:
 The Codex handoff is:
 
 `docs/prompts/phase-4-5-codex-goal.md`
+
+The repeatable Windows/Cloudflare operator procedure is:
+
+`docs/operations/windows-phase-4-5-remote-admin-setup.md`
+
+The future multi-account/profile design is deliberately separate and
+unimplemented:
+
+`docs/plans/future-multi-profile-account-isolation.md`
 
 Phase 4.5 has two goals that must remain separable:
 
@@ -138,6 +159,9 @@ Ordinary remote-human `/updates` remains read-only.
 
 ### Phase 4.5C — minimal remote-admin surface and second confirmation
 
+Status: implemented in code; live Windows x64 + Cloudflare acceptance remains
+open.
+
 Only after 4.5A and 4.5B are stable may `remote_admin` be granted these existing operations:
 
 - `updates.check`
@@ -158,7 +182,7 @@ The grant must be memory-only, bounded, cryptographically random, atomically sin
 
 The existing stale-plan, release-source, version, size, SHA-256, compatibility, health, rollback, and concurrency protections remain mandatory and additive.
 
-Remote-admin browser control POSTs must also receive explicit CSRF/origin protection with exact expected HTTPS admin Origin, no wildcard CORS, and a Bridge-owned custom intent/confirmation mechanism that cross-site forms cannot generate. Do not break local loopback CLI/browser maintenance semantics.
+Remote-admin browser control POSTs, including the existing QR session POSTs, must also receive explicit CSRF/origin protection with exact expected HTTPS admin Origin, no wildcard CORS, and a Bridge-owned custom intent/confirmation mechanism that cross-site forms cannot generate. Do not break local loopback CLI/browser maintenance semantics.
 
 ### What stays local even for remote admin
 
@@ -194,7 +218,7 @@ Preserve existing Phase 4 rules:
 - unknown Host fails closed;
 - `X-Forwarded-Host`, `Forwarded`, source IP, and similar metadata do not grant context;
 - ordinary remote-human requests continue to require the expected Access assertion after Tunnel Protect with Access validation;
-- remote-admin requests additionally require Bridge-side cryptographic validation;
+- remote-admin requests additionally require Bridge-side RS256 validation against the exact issuer and audience, using only the bounded cache derived from the configured Cloudflare team-domain cert endpoint;
 - assertion/JWT values are never logged.
 
 Apply the same boundary at the Bridge API handler and top-level TanStack/Nitro request entry so page/static routes cannot bypass the context gate.
@@ -272,9 +296,9 @@ Follow `docs/roadmap.md`.
 - Phase 2: CLOSED
 - Phase 3: CLOSED
 - Phase 4: CLOSED
-- Phase 4.5A: next implementation checkpoint
-- Phase 4.5B: after 4.5A
-- Phase 4.5C: after 4.5A/4.5B
+- Phase 4.5A: implemented
+- Phase 4.5B: implemented
+- Phase 4.5C: implemented in code; live acceptance open
 - Phase 5+: do not opportunistically implement
 
 If Phase 5 becomes urgent, it may start only after the 4.5A policy foundation is stable, and must remain a separate change with separate machine Host/AUD/context/tests. Do not combine remote-admin and remote-machine privilege expansion.

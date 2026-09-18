@@ -10,6 +10,14 @@ export type BridgeVersionResponse = BuildInfo;
 export type BridgeUpdateStatusResponse = UpdateStatusView;
 export type BridgeOpenApiCatalogResponse = OpenApiCatalog;
 
+export interface UpdateApplyConfirmationResponse {
+  readonly operationId: "updates.apply";
+  readonly planId: string;
+  readonly candidateId: string;
+  readonly confirmationGrant: string;
+  readonly expiresAt: string;
+}
+
 export interface CompatibilityResponse {
   readonly version: string | null;
   readonly status: CompatibilityEvaluation["status"] | "unknown";

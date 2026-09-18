@@ -2,7 +2,12 @@
   "manifestUrl": "https://raw.githubusercontent.com/zhuyifang/fqgate-releases/main/releases/stable.json",
   "fqgateBaseUrl": "http://127.0.0.1:17281",
   "remoteAccess": {
-    "remoteHostname": "dashboard.example.com"
+    "remoteHostname": "dashboard.example.com",
+    "adminHostname": "fqgate-admin.example.com",
+    "adminAccess": {
+      "teamDomain": "your-team.cloudflareaccess.com",
+      "audience": "replace-with-admin-application-audience"
+    }
   },
   "cloudflared": {
     "releaseVersion": "2026.9.0",

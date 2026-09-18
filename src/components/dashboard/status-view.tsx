@@ -50,10 +50,10 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
   const sessionConnected = managedHealth?.session === "connected";
   const compatibilityTone = fqgate.compatibility.validated ? "success" : "warning";
   return (
-    <div className="space-y-10">
-      <section className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="min-w-0 space-y-8 sm:space-y-10">
+      <section className="flex min-w-0 flex-col justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl dark:text-white">
+          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl dark:text-white">
             本机行情连接，一眼看清。
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300">
@@ -61,7 +61,7 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
             进程、网络健康和行情会话状态，遇到问题时可以直接知道下一步该处理什么。
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <Activity size={15} aria-hidden="true" /> 最后更新于{" "}
           {formatTimestamp(status.lastCheckedAt)}
           {isLoading ? (
@@ -73,7 +73,7 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="桥接状态概览">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="桥接状态概览">
         <StatusCard
           icon={<Server size={18} />}
           label="桥接运行"
@@ -109,9 +109,9 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
 
       {fqgate.lifecycle === "not_installed" ? <FqgateInstallNotice /> : null}
 
-      <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+      <section className="grid min-w-0 gap-4 lg:grid-cols-[1.3fr_0.7fr]">
         <Card>
-          <CardHeader className="flex-row items-start justify-between">
+          <CardHeader className="flex-col items-start justify-between gap-3 sm:flex-row">
             <div>
               <CardTitle>FQGate 状态</CardTitle>
               <CardDescription className="mt-1">
@@ -123,7 +123,7 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
             </Badge>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-5 sm:grid-cols-3">
+            <div className="grid min-w-0 gap-5 sm:grid-cols-3">
               <Metric label="生命周期" value={lifecycleLabel(fqgate.lifecycle)} />
               <Metric
                 label="已安装版本"
@@ -135,13 +135,13 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
               />
             </div>
             <div className="mt-6 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-sm dark:border-white/[0.08] dark:bg-white/[0.035]">
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 {sessionConnected ? (
                   <CheckCircle2 className="mt-0.5 text-emerald-500" size={18} aria-hidden="true" />
                 ) : (
                   <CircleAlert className="mt-0.5 text-amber-500" size={18} aria-hidden="true" />
                 )}
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium">
                     {sessionConnected ? "行情会话已连接" : "行情会话需要处理"}
                   </p>
@@ -178,7 +178,7 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
               </div>
             )}
             <p className="mt-3 text-center text-xs leading-5 text-slate-400">
-              Phase 2 仅提供本机访问，未启用 Cloudflare 或公网访问。
+              QR 登录仍由 Bridge operation policy 控制；二维码状态只保存在本次内存会话中。
             </p>
           </CardContent>
         </Card>
@@ -189,14 +189,14 @@ export function DashboardStatusView({ status, isLoading, error, onRetry }: Statu
 
 function FqgateInstallNotice() {
   return (
-    <Alert tone="warning" className="flex items-start gap-3">
+    <Alert tone="warning" className="flex min-w-0 items-start gap-3">
       <Download className="mt-0.5 shrink-0" size={18} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">尚未检测到 FQGate</p>
         <p className="mt-1">
           当前版本不会在后台自动安装。先预览官方安装计划，确认来源、版本和校验信息后再执行安装。
         </p>
-        <code className="mt-3 block overflow-x-auto rounded-xl bg-black/5 px-3 py-2 text-xs text-slate-800 dark:bg-black/20 dark:text-slate-100">
+        <code className="mt-3 block max-w-full overflow-x-auto rounded-xl bg-black/5 px-3 py-2 text-xs text-slate-800 dark:bg-black/20 dark:text-slate-100">
           node .\dist\cli\main.js fqgate install --dry-run
         </code>
         <p className="mt-2 text-xs opacity-80">
@@ -224,19 +224,19 @@ function StatusCard({
 }) {
   return (
     <Card className="min-h-40">
-      <CardContent className="flex h-full flex-col justify-between p-5">
+      <CardContent className="flex h-full min-w-0 flex-col justify-between p-4 sm:p-5">
         <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
           <span className="flex items-center gap-2 text-xs font-medium tracking-[0.08em]">
             {icon}
-            {label}
+            <span className="truncate">{label}</span>
           </span>
           <span
             className={`h-2 w-2 rounded-full ${tone === "success" ? "bg-emerald-400" : "bg-amber-400"}`}
           />
         </div>
         <div className="mt-7">
-          <p className="text-xl font-semibold tracking-tight">{value}</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{detail}</p>
+          <p className="break-words text-xl font-semibold tracking-tight">{value}</p>
+          <p className="mt-1 break-words text-xs text-slate-500 dark:text-slate-400">{detail}</p>
         </div>
       </CardContent>
     </Card>
@@ -245,9 +245,11 @@ function StatusCard({
 
 function Metric({ label, value }: { readonly label: string; readonly value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="text-xs tracking-[0.08em] text-slate-400">{label}</p>
-      <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-100">{value}</p>
+      <p className="mt-2 break-words text-sm font-medium text-slate-800 dark:text-slate-100">
+        {value}
+      </p>
     </div>
   );
 }

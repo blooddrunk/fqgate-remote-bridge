@@ -25,6 +25,7 @@ export interface ApiReferenceViewProps {
   readonly isRefreshing: boolean;
   readonly refreshError: Error | null;
   readonly isRemoteHuman?: boolean;
+  readonly isRemoteAdmin?: boolean;
 }
 
 export function ApiReferenceView({
@@ -35,6 +36,7 @@ export function ApiReferenceView({
   isRefreshing,
   refreshError,
   isRemoteHuman = false,
+  isRemoteAdmin = false,
 }: ApiReferenceViewProps) {
   const [tab, setTab] = useState<ReferenceTab>("upstream");
   const [search, setSearch] = useState("");
@@ -73,13 +75,13 @@ export function ApiReferenceView({
   );
 
   return (
-    <div className="space-y-8">
-      <section className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+    <div className="min-w-0 space-y-7 sm:space-y-8">
+      <section className="flex min-w-0 flex-col justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">
             Runtime contract
           </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl dark:text-white">
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl dark:text-white">
             API Reference
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300">
@@ -88,14 +90,22 @@ export function ApiReferenceView({
           </p>
         </div>
         {isRemoteHuman ? (
-          <span className="rounded-xl border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+          <span className="rounded-xl border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs font-medium leading-5 text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
             远程仅查看 API Catalog；OpenAPI 刷新仅限本机维护
           </span>
         ) : (
-          <Button variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
-            <RefreshCw size={16} aria-hidden="true" />
-            {isRefreshing ? "刷新中…" : "刷新 Runtime OpenAPI"}
-          </Button>
+          <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+            {isRemoteAdmin ? <Badge tone="warning">远程管理员上下文</Badge> : null}
+            <Button
+              variant="secondary"
+              className="w-full sm:w-auto"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw size={16} aria-hidden="true" />
+              {isRefreshing ? "刷新中…" : "刷新 Runtime OpenAPI"}
+            </Button>
+          </div>
         )}
       </section>
 
@@ -109,7 +119,7 @@ export function ApiReferenceView({
         </Alert>
       ) : null}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="OpenAPI 观察摘要">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="OpenAPI 观察摘要">
         <Summary
           label="OpenAPI"
           value={catalog.snapshot.openapiVersion}
@@ -134,16 +144,18 @@ export function ApiReferenceView({
 
       <Card>
         <CardContent className="p-2">
-          <div className="flex flex-wrap gap-1" role="tablist" aria-label="API Reference 视图">
-            <TabButton active={tab === "upstream"} onClick={() => setTab("upstream")}>
-              <BookOpen size={15} aria-hidden="true" /> Upstream FQGate Reference
-            </TabButton>
-            <TabButton active={tab === "bridge"} onClick={() => setTab("bridge")}>
-              <Shield size={15} aria-hidden="true" /> Bridge API
-            </TabButton>
-            <TabButton active={tab === "compatibility"} onClick={() => setTab("compatibility")}>
-              <GitCompareArrows size={15} aria-hidden="true" /> Compatibility / Changes
-            </TabButton>
+          <div className="overflow-x-auto" role="tablist" aria-label="API Reference 视图">
+            <div className="flex min-w-max gap-1">
+              <TabButton active={tab === "upstream"} onClick={() => setTab("upstream")}>
+                <BookOpen size={15} aria-hidden="true" /> Upstream FQGate Reference
+              </TabButton>
+              <TabButton active={tab === "bridge"} onClick={() => setTab("bridge")}>
+                <Shield size={15} aria-hidden="true" /> Bridge API
+              </TabButton>
+              <TabButton active={tab === "compatibility"} onClick={() => setTab("compatibility")}>
+                <GitCompareArrows size={15} aria-hidden="true" /> Compatibility / Changes
+              </TabButton>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -212,7 +224,7 @@ export function ApiReferenceView({
                         <p className="font-mono text-xs font-semibold text-cyan-700 dark:text-cyan-300">
                           {operation.id}
                         </p>
-                        <p className="mt-2 font-mono text-sm font-medium">
+                        <p className="mt-2 break-all font-mono text-sm font-medium">
                           {operation.method} {operation.path}
                         </p>
                       </div>
@@ -224,9 +236,11 @@ export function ApiReferenceView({
                         : `映射上游：${operation.upstream.method} ${operation.upstream.path}`}
                     </p>
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {operation.exposure === "local_and_remote_human"
-                        ? "暴露：本地 + 已通过 Access 的远程人工"
-                        : "暴露：仅本机维护"}
+                      {operation.allowedContexts.includes("remote_admin")
+                        ? "上下文：本机 + 远程人工 + 远程管理员（均由服务端策略决定）"
+                        : operation.allowedContexts.includes("remote_human")
+                          ? "上下文：本机 + 已通过 Access 的远程人工"
+                          : "上下文：仅本机维护"}
                     </p>
                   </div>
                 ))}
@@ -287,7 +301,7 @@ export function ApiReferenceView({
           <Card>
             <CardHeader>
               <CardTitle>Schema changes</CardTitle>
-              <CardDescription className="mt-1">
+              <CardDescription className="mt-1 break-all">
                 当前 fingerprint：{catalog.snapshot.fingerprint}
               </CardDescription>
             </CardHeader>
@@ -358,7 +372,7 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 ${active ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950" : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/[0.08]"}`}
+      className={`inline-flex min-h-11 touch-manipulation items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 ${active ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950" : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/[0.08]"}`}
     >
       {children}
     </button>
@@ -412,7 +426,9 @@ function ChangeGroup({
       {operations.length > 0 ? (
         <div className="mt-2 max-h-32 space-y-1 overflow-y-auto rounded-xl bg-slate-50/80 p-2 font-mono text-xs dark:bg-white/[0.035]">
           {operations.map((operation) => (
-            <p key={operation.key}>{operation.key}</p>
+            <p className="break-all" key={operation.key}>
+              {operation.key}
+            </p>
           ))}
         </div>
       ) : (

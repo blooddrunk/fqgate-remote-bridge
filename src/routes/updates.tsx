@@ -23,11 +23,22 @@ function UpdatesPage() {
       onPreview={() => update.preview.mutate()}
       isPreviewing={update.preview.isPending}
       previewError={update.preview.error}
-      onApply={(planId) => update.apply.mutate(planId)}
+      onPrepareApply={(planId) => update.prepareApply.mutate(planId)}
+      isPreparingApply={update.prepareApply.isPending}
+      prepareError={update.prepareApply.error}
+      confirmation={update.prepareApply.data}
+      onApply={(planId, confirmationGrant) =>
+        update.apply.mutate({
+          planId,
+          ...(confirmationGrant === undefined ? {} : { confirmationGrant }),
+        })
+      }
       isApplying={update.apply.isPending}
       applyError={update.apply.error}
       isRemoteHuman={context.data?.requestContext === "remote_human"}
-      contextReady={context.data !== undefined || context.error !== null}
+      isRemoteAdmin={context.data?.requestContext === "remote_admin"}
+      requestContext={context.data?.requestContext}
+      contextReady={context.data !== undefined && context.error === null}
     />
   );
 }

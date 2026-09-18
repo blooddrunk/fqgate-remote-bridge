@@ -33,6 +33,11 @@ export interface ActivationConfig {
 
 export interface RemoteAccessConfig {
   readonly remoteHostname?: string;
+  readonly adminHostname?: string;
+  readonly adminAccess?: {
+    readonly teamDomain: string;
+    readonly audience: string;
+  };
   readonly accessAssertionHeader: typeof CLOUDFLARED_ACCESS_ASSERTION_HEADER;
 }
 
@@ -198,6 +203,50 @@ function validateRemoteHostname(value: string): string {
   return normalized;
 }
 
+function validateCloudflareTeamDomain(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized !== value ||
+    normalized.length <= ".cloudflareaccess.com".length ||
+    normalized.length > 253 ||
+    !normalized.endsWith(".cloudflareaccess.com")
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.adminAccess.teamDomain must be a Cloudflare Access team hostname",
+    );
+  }
+  const labels = normalized.split(".");
+  if (
+    labels.length < 3 ||
+    labels.some(
+      (label) =>
+        label.length === 0 || label.length > 63 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label),
+    )
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.adminAccess.teamDomain must be a Cloudflare Access team hostname",
+    );
+  }
+  return normalized;
+}
+
+function validateAdminAudience(value: string): string {
+  if (
+    value.length === 0 ||
+    value.trim() !== value ||
+    value.length > 256 ||
+    hasInvalidAudienceCharacter(value)
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.adminAccess.audience must be a bounded opaque audience value",
+    );
+  }
+  return value;
+}
+
 function validateCloudflaredVersion(value: string): string {
   if (!/^\d{4}\.\d+\.\d+$/.test(value)) {
     throw new BridgeError(
@@ -206,6 +255,13 @@ function validateCloudflaredVersion(value: string): string {
     );
   }
   return value;
+}
+
+function hasInvalidAudienceCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f || /\s/u.test(character);
+  });
 }
 
 function normalizeConfiguredPath(value: string, platform: NodeJS.Platform, scope: string): string {
@@ -460,17 +516,63 @@ export function parseConfig(
     throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "remoteAccess must be a JSON object");
   }
   const remoteAccessRecord = remoteAccessInput ?? {};
-  rejectUnknownKeys(remoteAccessRecord, new Set(["remoteHostname"]), "remoteAccess");
+  rejectUnknownKeys(
+    remoteAccessRecord,
+    new Set(["remoteHostname", "adminHostname", "adminAccess"]),
+    "remoteAccess",
+  );
   const remoteHostnameInput = readOptionalString(
     remoteAccessRecord,
     "remoteHostname",
     "remoteAccess",
   );
+  const adminHostnameInput = readOptionalString(
+    remoteAccessRecord,
+    "adminHostname",
+    "remoteAccess",
+  );
+  const remoteHostname =
+    remoteHostnameInput === undefined ? undefined : validateRemoteHostname(remoteHostnameInput);
+  const adminHostname =
+    adminHostnameInput === undefined ? undefined : validateRemoteHostname(adminHostnameInput);
+  if (remoteHostname !== undefined && remoteHostname === adminHostname) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.remoteHostname and remoteAccess.adminHostname must be distinct",
+    );
+  }
+
+  const adminAccessInput = remoteAccessRecord.adminAccess;
+  if (adminAccessInput !== undefined && !isRecord(adminAccessInput)) {
+    throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "remoteAccess.adminAccess must be an object");
+  }
+  if ((adminHostname === undefined) !== (adminAccessInput === undefined)) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "remoteAccess.adminHostname and remoteAccess.adminAccess must be configured together",
+    );
+  }
+  let adminAccess: RemoteAccessConfig["adminAccess"];
+  if (adminAccessInput !== undefined) {
+    rejectUnknownKeys(adminAccessInput, new Set(["teamDomain", "audience"]), "adminAccess");
+    const teamDomain = readOptionalString(adminAccessInput, "teamDomain", "adminAccess");
+    const audience = readOptionalString(adminAccessInput, "audience", "adminAccess");
+    if (teamDomain === undefined || audience === undefined) {
+      throw new BridgeError(
+        ERROR_CODES.CONFIG_INVALID,
+        "remoteAccess.adminAccess requires teamDomain and audience",
+      );
+    }
+    adminAccess = {
+      teamDomain: validateCloudflareTeamDomain(teamDomain),
+      audience: validateAdminAudience(audience),
+    };
+  }
   const remoteAccess: RemoteAccessConfig = {
     accessAssertionHeader: CLOUDFLARED_ACCESS_ASSERTION_HEADER,
-    ...(remoteHostnameInput === undefined
-      ? {}
-      : { remoteHostname: validateRemoteHostname(remoteHostnameInput) }),
+    ...(remoteHostname === undefined ? {} : { remoteHostname }),
+    ...(adminHostname === undefined ? {} : { adminHostname }),
+    ...(adminAccess === undefined ? {} : { adminAccess }),
   };
 
   const cloudflaredInput = input.cloudflared;

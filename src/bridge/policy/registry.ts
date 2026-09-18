@@ -1,5 +1,6 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
 import type { OpenApiHttpMethod, RequiredOpenApiContract } from "../../fqgate/openapi/types.js";
+import type { BridgeRequestContext } from "./request-context.js";
 
 export type BridgeOperationId =
   | "bridge.version"
@@ -17,15 +18,14 @@ export type BridgeOperationId =
 export type BridgeOperationClassification = "diagnostic" | "session_maintenance" | "local_admin";
 export type BridgeSensitivity = "none" | "qr_payload";
 export type BridgeOperationIntent = "read_only" | "session_maintenance" | "local_admin";
-export type BridgeExposure = "local_only" | "local_and_remote_human";
-
 export interface BridgeOperationPolicy {
   readonly id: BridgeOperationId;
   readonly method: "GET" | "POST";
   readonly path: string;
   readonly classification: BridgeOperationClassification;
   readonly intent: BridgeOperationIntent;
-  readonly exposure: BridgeExposure;
+  readonly allowedContexts: readonly BridgeRequestContext[];
+  readonly requiresConfirmation: boolean;
   readonly timeoutMs: number;
   readonly maxBodyBytes: number;
   readonly sensitivity: BridgeSensitivity;
@@ -44,7 +44,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/version",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 1_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -57,7 +58,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/capabilities",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 1_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -70,7 +72,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/status",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -83,7 +86,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/session/qr/begin",
     classification: "session_maintenance",
     intent: "session_maintenance",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "qr_payload",
@@ -97,7 +101,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/session/qr/poll",
     classification: "session_maintenance",
     intent: "session_maintenance",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "none",
@@ -111,7 +116,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/updates/status",
     classification: "local_admin",
     intent: "read_only",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -124,7 +130,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/updates/check",
     classification: "local_admin",
     intent: "local_admin",
-    exposure: "local_only",
+    allowedContexts: ["local", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 30_000,
     maxBodyBytes: 1_024,
     sensitivity: "none",
@@ -137,7 +144,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/updates/plan",
     classification: "local_admin",
     intent: "local_admin",
-    exposure: "local_only",
+    allowedContexts: ["local", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 30_000,
     maxBodyBytes: 1_024,
     sensitivity: "none",
@@ -150,7 +158,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/updates/apply",
     classification: "local_admin",
     intent: "local_admin",
-    exposure: "local_only",
+    allowedContexts: ["local", "remote_admin"],
+    requiresConfirmation: true,
     timeoutMs: 10 * 60_000,
     maxBodyBytes: 2_048,
     sensitivity: "none",
@@ -163,7 +172,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/openapi/catalog",
     classification: "diagnostic",
     intent: "read_only",
-    exposure: "local_and_remote_human",
+    allowedContexts: ["local", "remote_human", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 5_000,
     maxBodyBytes: 0,
     sensitivity: "none",
@@ -176,7 +186,8 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     path: "/api/v1/openapi/refresh",
     classification: "diagnostic",
     intent: "local_admin",
-    exposure: "local_only",
+    allowedContexts: ["local", "remote_admin"],
+    requiresConfirmation: false,
     timeoutMs: 5_000,
     maxBodyBytes: 1_024,
     sensitivity: "none",
@@ -207,6 +218,12 @@ const REQUIRED_FQGATE_CONTRACTS: readonly RequiredOpenApiContract[] = [
 ];
 
 const BY_ID = new Map(OPERATION_POLICIES.map((operation) => [operation.id, operation]));
+const REMOTE_ADMIN_MAINTENANCE_IDS = new Set<BridgeOperationId>([
+  "updates.check",
+  "updates.plan",
+  "updates.apply",
+  "openapi.refresh",
+]);
 
 export function listBridgeOperations(): readonly BridgeOperationPolicy[] {
   return OPERATION_POLICIES;
@@ -267,6 +284,41 @@ export function assertOperationRegistryInvariants(): void {
     }
     if (!Number.isSafeInteger(operation.maxBodyBytes) || operation.maxBodyBytes < 0) {
       throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, `Invalid body-size policy: ${key}`);
+    }
+    if (
+      operation.allowedContexts.length === 0 ||
+      operation.allowedContexts.some(
+        (context, index, contexts) =>
+          !["local", "remote_human", "remote_admin"].includes(context) ||
+          contexts.indexOf(context) !== index,
+      )
+    ) {
+      throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, `Invalid context policy: ${key}`);
+    }
+    if (operation.requiresConfirmation && operation.id !== "updates.apply") {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Confirmation is not supported for this operation: ${key}`,
+      );
+    }
+    if (
+      operation.intent === "local_admin" &&
+      operation.allowedContexts.includes("remote_admin") &&
+      !REMOTE_ADMIN_MAINTENANCE_IDS.has(operation.id)
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Unexpected remote administrator maintenance operation: ${key}`,
+      );
+    }
+    if (
+      REMOTE_ADMIN_MAINTENANCE_IDS.has(operation.id) &&
+      !operation.allowedContexts.includes("remote_admin")
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Remote administrator maintenance operation is not registered: ${key}`,
+      );
     }
   }
 }

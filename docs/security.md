@@ -58,7 +58,8 @@ Each intended operation should include policy metadata such as:
 - public HTTP method/path
 - optional upstream method/path mapping
 - classification
-- local/remote exposure class
+- allowed caller contexts as an independent policy dimension
+- confirmation requirement for high-impact remote-admin operations
 - timeout
 - maximum body size
 - logging/sensitivity policy
@@ -260,7 +261,8 @@ Phase 2 established explicit same-origin loopback routes for status and QR login
 
 ## API authentication and authorization (remote phases)
 
-The bridge will rely on Cloudflare Access at the edge and may add defense-in-depth verification where practical.
+The bridge will rely on Cloudflare Access at the edge and adds defense-in-depth
+verification for the separate administrator application.
 
 At minimum:
 
@@ -286,12 +288,47 @@ Cloudflare `Protect with Access` at the published application is the primary
 JWT validation layer. The assertion value is never placed in structured log
 context, diagnostics, responses, browser state, or test fixtures.
 
-The operation registry has a complete Phase 4 matrix. The seven
-`local_and_remote_human` operations are the Dashboard/status, QR,
-read-only update status, and reference catalog surfaces. The four
-`local_only` operations are update check/plan/apply and OpenAPI refresh. The
-handler enforces the matrix before dispatch, so hiding a button is not an
-authorization control.
+The operation registry has a complete Phase 4.5 matrix. Its authorization
+model stores allowed caller contexts independently from operation intent and
+confirmation requirements. The seven safe Dashboard/status, QR, read-only
+update status, and reference catalog operations allow `local`,
+`remote_human`, and a successfully verified `remote_admin` context. The
+implemented 4.5C policy adds remote-admin permission to exactly
+`updates.check`, `updates.plan`, `updates.apply`, and `openapi.refresh`; all
+other operations remain outside that context. The handler enforces the matrix
+before dispatch, so hiding a button is not an authorization control.
+
+### Phase 4.5A remote-admin authentication boundary
+
+The optional admin hostname is distinct from the ordinary human hostname and
+is paired with a separate Cloudflare Access application audience. The Bridge
+derives the only accepted cert endpoint as:
+
+```text
+https://<configured-team>.cloudflareaccess.com/cdn-cgi/access/certs
+```
+
+The configured team hostname and audience are non-secret metadata. No arbitrary
+JWKS URL is accepted. The bounded in-memory JWK cache is limited by size,
+key-count, timeout, and TTL; an unknown `kid` causes at most one fixed-endpoint
+refresh. Admin assertions must pass maintained-library RS256 verification,
+exact derived issuer, exact audience, required `sub`/`iat`/`exp`, and temporal
+claim checks. Only `{ kind, subject, audience }` is propagated as the principal;
+the assertion is never logged, persisted, echoed, or placed in browser state.
+
+The intended admin Access application is human-only and independently requires
+the operator identity, MFA, enforceable device posture, a short session,
+Protect with Access, and no Bypass or Service Auth policy. Edge policy remains
+the primary Access validation layer; Bridge-side cryptographic validation is a
+fail-closed drift/authentication check.
+
+Remote-admin control POSTs enabled by 4.5C, including the existing QR session
+POSTs, use the exact HTTPS admin Origin and a Bridge-owned non-simple intent
+header. Wildcard CORS remains forbidden.
+Remote `updates.apply` additionally consumes a short-lived, one-time,
+memory-only confirmation grant bound to the verified principal, admin
+audience, exact operation, and exact update plan/candidate identity. The phase
+remains OPEN until real Windows x64 + Cloudflare evidence is recorded.
 
 Unknown/raw `/v1/...` routes are still rejected before any FQGate request is
 made. The top-level application transport applies the same Host/assertion
