@@ -56,9 +56,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
    Access JWT、cookie 或完整重定向地址发给代理。登录完成后只需说“已登录”。
 3. 管理员地址登录前，Cloudflare One Client 必须已经注册，且
    `warp-cli settings` 能确认 service mode 为 **PostureOnly**（不要是
-   `WarpWithDnsOverHttps`），Windows 设备姿态也必须合规。首次访问可能需要在
-   浏览器中允许使用 Cloudflare 客户端证书；未注册或姿态不合规会被拒绝，这是
-   预期行为。
+   `WarpWithDnsOverHttps`），Windows 设备姿态也必须合规。首次访问时浏览器可能
+   弹出客户端证书选择框，请选择 Cloudflare 的 `ZT-Client` 证书。管理员拒绝页中
+   `MTLS Status: SUCCESS` 才表示证书已经到达 Cloudflare；`WARP: off` 和
+   `Gateway: off` 在 Posture-only 模式下是正常值。未注册、未选择证书或姿态不合规
+   会被拒绝，这是预期行为。
+
+如果看到 `403` 且 `MTLS Status: NONE`：关闭旧的 403 标签页，打开 Edge InPrivate
+窗口（`Ctrl+Shift+N`）重新访问管理员地址，按提示选择证书；不要先把 WARP 改成
+全流量模式。若 `MTLS Status: SUCCESS` 仍为 403，再检查邮箱身份、MFA、管理员
+Access policy 和 Windows posture。
 
 登录完成后，代理可以在不读取秘密的情况下继续操作浏览器，验证 Dashboard、
 更新页面、API Reference、直接 API 调用、CSRF、移动尺寸和管理员 JWT 的真实
@@ -100,7 +107,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 | 本机监听、Tunnel 路由、未认证拒绝、原始路径拒绝 | 是                       | 否                                             |
 | 本地 check/plan/OpenAPI refresh                 | 是                       | 否                                             |
 | 普通用户页面和直接 API 拒绝                     | 登录后由代理执行         | 提供一次普通用户登录                           |
-| 管理员 JWT、MFA、设备姿态                       | 登录后由代理验证请求结果 | 你输入验证码/MFA，并确认 Client 为 PostureOnly |
+| 管理员 JWT、MFA、客户端证书、Windows 姿态       | 登录后由代理验证请求结果 | 你输入验证码/MFA，并确认 Client 为 PostureOnly |
 | apply 过期/重放/竞态/计划不匹配                 | 是，代理执行，不安装更新 | 否                                             |
 | 真实安全更新 apply                              | 可以执行流程             | 你只做最后一次明确批准                         |
 | 没有安全候选时的处理                            | 记录 `NOT AVAILABLE`     | 不要批准未验证候选                             |

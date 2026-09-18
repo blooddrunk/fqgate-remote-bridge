@@ -110,6 +110,18 @@ and no `17281` route. The existing cloudflared service uses `tunnel run` with
 the service to `Running`, and the ordinary public route returned its expected
 unauthenticated Access challenge (`302`) after reconnect.
 
+The 2026-09-18 network-compatible admin reconfiguration now uses Cloudflare One
+Client `PostureOnly`, zone client-certificate provisioning, and a
+Cloudflare-managed CA hostname association for the admin hostname. The admin
+Access policy requires the intended email, a valid client certificate, Windows
+OS posture, independent MFA, and a 15-minute session; it does not require the
+`WARP` or `Gateway` traffic-tunnel selector. A TLS probe confirmed that the
+admin hostname requests a client certificate. A bounded Windows request using
+the installed WARP client certificate reached the unauthenticated Access
+challenge with `MTLS Status: SUCCESS`; a request without that certificate was
+denied with `403`. The browser must still complete the visible certificate
+selection/login/MFA flow before T8 can be recorded.
+
 The admin Access application, independent audience, MFA/device-posture policy,
 and second Tunnel route are provisioned. A separate WARP enrollment application
 and identity-only enrollment policy has also been provisioned with independent
@@ -122,7 +134,8 @@ enrollment flow. The service-scoped first-level admin hostname is now
 updated to that hostname. A bounded public probe negotiates TLS successfully
 and receives the expected unauthenticated Access challenge (`302`), while the
 ordinary hostname continues to return its own `302`. The real admin Access
-session has now been reported successful by the operator. The public admin
+session had been reported successful before the PostureOnly reconfiguration;
+the post-reconfiguration browser session is not yet recorded. The public admin
 request matrix, remote maintenance, confirmation negative cases, mobile
 browser smoke, and a safe real update candidate therefore remain unavailable
 for full acceptance. The executable helper

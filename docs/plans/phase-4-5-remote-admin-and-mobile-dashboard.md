@@ -172,7 +172,10 @@ Required policy intent:
 
 - explicit intended human identity allowlist/group;
 - independent MFA or an equivalent Access-enforced MFA requirement;
-- a device posture requirement, at minimum Cloudflare One Client/WARP or Gateway posture, with additional managed-device/OS checks where practical;
+- an enforceable device requirement, preferably a Cloudflare-managed client
+  certificate/mTLS association plus Windows OS posture for Posture-only
+  deployments; full WARP or Gateway posture may be used when the operator
+  intentionally accepts traffic tunneling;
 - short policy/application session duration appropriate for administration;
 - `Protect with Access` enabled for the Tunnel published application;
 - no `Bypass` rule that reaches the admin hostname;
@@ -185,6 +188,8 @@ Cloudflare currently documents the relevant building blocks here:
 - independent MFA: <https://developers.cloudflare.com/cloudflare-one/access-controls/policies/mfa-requirements/>
 - session management: <https://developers.cloudflare.com/cloudflare-one/access-controls/access-settings/session-management/>
 - WARP posture check: <https://developers.cloudflare.com/cloudflare-one/reusable-components/posture-checks/client-checks/require-warp/>
+- Posture-only mode and client certificate: <https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/cloudflare-one-client/configure/modes/device-information-only/>
+- Hostname mTLS association: <https://developers.cloudflare.com/ssl/client-certificates/enable-mtls/>
 
 The exact device-posture profile is operator-configurable because this is a personal Windows-first deployment, but the admin application must have at least one enforceable device restriction before Phase 4.5C can close.
 

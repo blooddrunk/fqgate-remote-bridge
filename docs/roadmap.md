@@ -213,10 +213,11 @@ client and affect network connectivity; it is not silently performed by the
 Bridge.
 
 A future setup doctor/wizard may validate the selected service-scoped
-hostnames, certificate coverage, DNS, Access application/AUD, Tunnel ingress,
-loopback listeners, token-file shape, WARP service mode, and device posture
-with plan/dry-run behavior. A future browser launcher may open the bookmarked
-admin hostname after those checks. Neither may silently create broad
+hostnames, certificate coverage and hostname mTLS association, DNS, Access
+application/AUD, Tunnel ingress, loopback listeners, token-file shape, WARP
+service mode, and device posture with plan/dry-run behavior. A future browser
+launcher may open the bookmarked admin hostname after those checks. Neither may
+silently create broad
 Cloudflare permissions, disable MFA/device posture, or bypass the one-time
 apply confirmation; Cloudflare provisioning remains Phase 6 scope.
 
