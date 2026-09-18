@@ -336,8 +336,8 @@ describe("Phase 4 cloudflared release and secret boundaries", () => {
     const token = ["generated", "test", "value"].join("-");
     try {
       const store = new ProtectedTokenFileStore({
-        platform: "linux",
-        acl: new PosixTokenFileAcl(),
+        platform: process.platform,
+        acl: new RecordingTokenFileAcl(),
       });
       await expect(store.write(tokenPath, token, "test-service")).resolves.toMatchObject({
         state: "secure",
@@ -345,6 +345,25 @@ describe("Phase 4 cloudflared release and secret boundaries", () => {
       });
       await expect(store.assertUsable(tokenPath, "test-service")).resolves.toBeUndefined();
       expect(JSON.stringify(await store.inspect(tokenPath, "test-service"))).not.toContain(token);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("enforces POSIX token-file mode with the real POSIX ACL on POSIX hosts", async () => {
+    if (process.platform === "win32") return;
+
+    const directory = await mkdtemp(join(tmpdir(), "fqgate-phase4-posix-token-"));
+    const tokenPath = join(directory, "tunnel-token");
+    try {
+      const store = new ProtectedTokenFileStore({
+        platform: "linux",
+        acl: new PosixTokenFileAcl(),
+      });
+      await expect(store.write(tokenPath, "generated-posix-test-value", "test-service")).resolves.toMatchObject({
+        state: "secure",
+        path: tokenPath,
+      });
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
@@ -358,8 +377,8 @@ describe("Phase 4 cloudflared release and secret boundaries", () => {
     const token = ["generated", "tunnel", "token"].join("-");
     try {
       const tokenFiles = new ProtectedTokenFileStore({
-        platform: "linux",
-        acl: new PosixTokenFileAcl(),
+        platform: process.platform,
+        acl: new RecordingTokenFileAcl(),
       });
       await tokenFiles.write(tokenPath, token, "LocalSystem");
       const controller = new WindowsCloudflaredServiceController({
@@ -393,6 +412,18 @@ function officialReleaseMetadata(sha256: string): Record<string, unknown> {
       },
     ],
   };
+}
+
+class RecordingTokenFileAcl {
+  private readonly securePaths = new Set<string>();
+
+  async secure(path: string): Promise<void> {
+    this.securePaths.add(path);
+  }
+
+  async isSecure(path: string): Promise<boolean> {
+    return this.securePaths.has(path);
+  }
 }
 
 class RecordingRunner implements ProcessRunner {
