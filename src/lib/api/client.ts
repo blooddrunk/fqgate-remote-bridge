@@ -214,7 +214,8 @@ function localizedMessage(code: string, fallback: string): string {
     CHECKSUM_MISMATCH: "FQGate 下载校验和与清单不一致。",
     CANDIDATE_INVALID: "FQGate 候选程序未通过版本校验。",
     VERSION_INCOMPATIBLE: "候选 FQGate 版本未通过兼容性策略。",
-    HEALTH_TIMEOUT: "候选 FQGate 健康检查超时，已拒绝激活。",
+    HEALTH_TIMEOUT:
+      "候选 FQGate 在规定时间内没有开放有效健康接口，已安全回滚；如果这是新版本首次启动，请先在 Windows 本机完成 FQGate 自己的风险/首次启动确认，再重试。",
     ROLLBACK_FAILED: "FQGate 激活失败且回滚未完成，请使用 CLI 诊断。",
     INTERNAL_ERROR: "桥接暂时无法完成请求，请稍后重试。",
   };

@@ -111,7 +111,7 @@ the service to `Running`, and the ordinary public route returned its expected
 unauthenticated Access challenge (`302`) after reconnect.
 
 The 2026-09-18 operator-approved admin reconfiguration now uses the low-friction
-profile: exact operator email, Access MFA, and a 15-minute session. The policy
+profile: exact operator email, Access MFA, and a 30-minute session. The policy
 has an empty `require` list, so Cloudflare One Client, WARP, client certificates,
 hostname mTLS, and device posture are not prerequisites. The independent admin
 application/AUD, Protect with Access, no Bypass/Service Auth, Bridge-side JWT
@@ -127,7 +127,8 @@ first-level admin hostname is now
 updated to that hostname. A bounded public probe negotiates TLS successfully
 and receives the expected unauthenticated Access challenge (`302`), while the
 ordinary hostname continues to return its own `302`. The post-reconfiguration
-browser session is not yet recorded. The public admin request matrix, remote
+the operator has confirmed successful admin login after the policy change; no
+certificate selection or Cloudflare One Client is required. The public admin request matrix, remote
 maintenance, confirmation negative cases, mobile browser smoke, and final apply
 evidence therefore remain unavailable for full acceptance. The executable helper
 `scripts/windows/phase45-acceptance.ps1` now records the machine-verifiable
@@ -138,8 +139,13 @@ verification of the official 1.0.1 candidate matched its size and SHA-256,
 passed `--verify-installation`/`--version`, and passed isolated OpenAPI, health,
 and required health/QR contract checks on `17283`. The live config now marks
 1.0.1 validated. Two real local apply attempts reached candidate activation but
-ended in `HEALTH_TIMEOUT`; the existing rollback restored managed 1.0.0 and
-`ready` health. Remote-admin apply evidence is therefore still open, and the
+ended in `HEALTH_TIMEOUT` while waiting for FQGate's own first-run desktop/risk
+acknowledgement; the existing rollback restored managed 1.0.0 and `ready` health.
+After the temporary and managed installation fingerprints were acknowledged,
+the third managed Windows apply succeeded at 2026-09-18T13:32:56Z with 1.0.1,
+health HTTP 200, and outcome `updated`, without rollback. The live activation
+deadline was restored to 120 seconds afterward. Remote-admin apply evidence is
+therefore still open, and the
 repeatable setup and
 reconfiguration procedure is
 documented in `docs/operations/windows-phase-4-5-remote-admin-setup.md`; the

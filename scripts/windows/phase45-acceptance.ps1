@@ -342,7 +342,7 @@ if ($RunLocalMaintenance) {
 Write-Host ""
 Write-Host "Manual browser evidence still required:" -ForegroundColor Yellow
 Write-Host "  T4: ordinary-human Dashboard/status/QR/reference; direct maintenance calls must be 403."
-Write-Host "  T7/T8: compare a non-compliant device with the same device after WARP + MFA + posture pass."
+Write-Host "  T7/T8: verify the low-friction admin policy (exact operator identity + MFA, require=[]; no WARP/certificate/posture) and complete the real browser login."
 Write-Host "  T9/T10: real admin session must reach Bridge and run check/plan/OpenAPI refresh."
 Write-Host "  T11/T12: use the admin UI/test harness for confirmation expiry, replay, mismatch, and race."
 Write-Host "  T13: only an explicitly approved known-safe candidate may be applied; otherwise record NOT AVAILABLE."
@@ -353,5 +353,5 @@ if ($script:failureCount -gt 0) {
     exit 1
 }
 
-Write-Host "Automated checks passed. The remaining manual items are the real Access identity/device/browser gates listed above." -ForegroundColor Green
+Write-Host "Automated checks passed. The remaining manual items are the real Access identity/browser gates listed above." -ForegroundColor Green
 exit 0

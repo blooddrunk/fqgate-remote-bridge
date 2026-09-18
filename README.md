@@ -13,7 +13,7 @@ FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQ
 - Tunnel **不会自动把全部本地操作暴露到远程**。Bridge 会显式区分 local 与 remote-human operation。
 - Phase 4 远程允许 Dashboard/status、QR 登录、只读更新状态和 reference-only API Catalog；对 ordinary `remote_human`，更新检查/预览/执行、OpenAPI refresh 仍保持 local-only。
 - Phase 4.5C 代码仅向独立、强认证的 `remote_admin` 开放 `updates.check`、`updates.plan`、`updates.apply` 和 `openapi.refresh`；远程 `updates.apply` 还要求 exact admin Origin/Bridge intent 及绑定当前管理员、计划和候选的一次性内存确认。
-- 当前 live 管理员采用已批准的低摩擦 Access profile：指定管理员邮箱、MFA、15 分钟会话；不要求 WARP、客户端证书或设备姿态。Bridge 侧 JWT、Origin/intent、操作白名单、一次性确认、完整性、健康和回滚保护仍然有效。
+- 当前 live 管理员采用已批准的低摩擦 Access profile：指定管理员邮箱、MFA、30 分钟会话；不要求 WARP、客户端证书或设备姿态。Bridge 侧 JWT、Origin/intent、操作白名单、一次性确认、完整性、健康和回滚保护仍然有效。
 - 远程 human Host 必须是配置的唯一 `remoteAccess.remoteHostname`，并带有 Cloudflare Protect with Access 注入的 `Cf-Access-Jwt-Assertion`；可选的 admin Host 必须是独立的 `remoteAccess.adminHostname`，并使用独立的 Access team domain/AUD 与 Bridge 侧 RS256 验证；unknown Host、缺 assertion 和转发头 spoofing 都 fail closed。
 - `cloudflared` 只接受固定 Cloudflare 官方 GitHub release metadata/Windows x64 asset，手工、显式安装；Windows service 使用 repo 外 ACL 保护的 token file 和 `tunnel run --token-file`。
 - OpenAPI 只负责描述 FQGate 当前“有什么”，不负责授权；新上游路径默认不可调用。

@@ -17,6 +17,7 @@ describe("configuration", () => {
     expect(config.fqgateBaseUrl).toBe(DEFAULT_FQGATE_BASE_URL);
     expect(config.installDirectory).toBe("C:\\Users\\tester\\AppData\\Local\\FQGateRemoteBridge");
     expect(config.manifestUrl).toContain("raw.githubusercontent.com/zhuyifang/fqgate-releases");
+    expect(config.activation.healthTimeoutMs).toBe(120_000);
   });
 
   it.each([

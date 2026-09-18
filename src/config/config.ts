@@ -73,7 +73,10 @@ const DEFAULT_DOWNLOAD: DownloadConfig = {
 };
 
 const DEFAULT_ACTIVATION: ActivationConfig = {
-  healthTimeoutMs: 30_000,
+  // FQGate may perform first-run desktop/network initialization before it
+  // opens the loopback health endpoint. Keep the deadline bounded, but long
+  // enough for a real Windows activation after an approved acknowledgement.
+  healthTimeoutMs: 120_000,
   healthPollIntervalMs: 500,
   processTimeoutMs: 10_000,
 };

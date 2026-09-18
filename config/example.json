@@ -25,7 +25,7 @@
     "retryDelayMs": 500
   },
   "activation": {
-    "healthTimeoutMs": 30000,
+    "healthTimeoutMs": 120000,
     "healthPollIntervalMs": 500,
     "processTimeoutMs": 10000
   },

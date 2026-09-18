@@ -11,7 +11,7 @@ Cloudflare Access 策略和排查远程管理员网络问题的操作者。READM
 ## 先看结论：当前实例的最简单用法
 
 2026-09-18，操作者明确批准将当前管理员策略简化为：指定管理员邮箱 + Access
-MFA + 15 分钟会话。当前管理员应用的 `require` 为空，不再要求 WARP、客户端
+MFA + 30 分钟会话。当前管理员应用的 `require` 为空，不再要求 WARP、客户端
 证书或设备姿态。后文标记为“历史”的 Posture-only/mTLS 步骤不适用于当前实例。
 
 远程管理员每天只需要：
@@ -154,7 +154,7 @@ Cloudflare 控制台名称可能略有变化，但安全意图不能变化。
 3. 开启 **Protect with Access**；
 4. Allow 只写预期的管理员身份/组；
 5. 要求独立 MFA（例如 TOTP 或安全密钥）；
-6. 使用短管理员会话，目前按 15 分钟配置；
+6. 使用短管理员会话，目前按 30 分钟配置；
 7. 不添加 `certificate`、`device_posture`、`warp` 或 `gateway` Require 条件；
 8. 确认整个应用没有 Bypass policy，也没有 Service Auth policy。
 
@@ -241,7 +241,7 @@ PUT /zones/$ZONE_ID/certificate_authorities/hostname_associations
 
 - **Valid certificate**（有效客户端证书）；
 - **Windows OS posture**；
-- 独立 MFA，当前会话时长为 15 分钟。
+- 独立 MFA，当前会话时长为 30 分钟。
 
 不要在本方案中同时 Require `WARP`/`Gateway`。它们会把“是否通过 WARP
 流量隧道”当作条件，导致 Posture-only 浏览器即使已经带有有效客户端证书仍然得到
@@ -362,17 +362,16 @@ curl.exe -sS -o NUL -w "admin=%{http_code}`n" https://fqgate-admin.example.com/
 `validatedVersions`，因此不再是“兼容性策略阻止”。
 
 随后又通过本机 loopback 的真实更新流程实际尝试了两次安装。两次都在候选切换后
-触发 `HEALTH_TIMEOUT`，Bridge 自动恢复了已知良好的 1.0.0；当前 FQGate 仍是
-1.0.0，状态为 `ready`。这说明当前 blocker 是 1.0.1 在受管的 17281 切换流程中
-没有在 30 秒内提供有效健康响应，不是哈希、版本或兼容性拒绝。Windows FQGate
-日志同时记录了桌面风险声明和 MCP Apps 初始化警告；不要删除现有 WebView 或登录
-目录来“修复”它。
+触发 `HEALTH_TIMEOUT`，Bridge 自动恢复了已知良好的 1.0.0。原因是 1.0.1 使用
+新的安装指纹，首次启动会等待 FQGate 自己的桌面风险声明/初始化确认，不是哈希、
+版本或兼容性拒绝；不要删除现有 WebView 或登录目录来“修复”它，也不要用修改状态
+文件的方式伪造确认。
 
-下一次重试前，操作者需要观察 Windows 上是否出现 FQGate 自己的首次启动/风险声明
-确认窗口；若出现，请由操作者在本机完成该软件自己的确认，然后只重新执行同一份
-计划。不要把这类第三方确认替换成 Bypass，也不要输入或复制账号、验证码、JWT。
-如果没有确认窗口，保留当前 1.0.0，不要反复重试；记录窗口标题和 FQGate 日志的
-错误摘要，Phase 4.5 继续保持 OPEN。
+完成临时目录和受管目录各自的 FQGate 首次确认后，第三次真实本机受管 apply 已于
+`2026-09-18T13:32:56Z` 成功：版本 1.0.1、健康 HTTP 200、事务结果 `updated`、
+没有回滚。现场临时使用的 10 分钟等待窗口随后恢复为正式的 120 秒。以后遇到新的
+安装指纹时，仍需由操作者在 Windows 本机完成 FQGate 自己的确认；不要把这类第三方
+确认替换成 Bypass，也不要输入或复制账号、验证码、JWT。
 
 完整验收清单见 [Windows Phase 4.5 验收](windows-phase-4-5-acceptance.md)，
 易读操作版见 [一页验收单](windows-phase-4-5-acceptance-simple.md)。缺少真实
