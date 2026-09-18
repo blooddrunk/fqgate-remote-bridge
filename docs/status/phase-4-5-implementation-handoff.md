@@ -125,7 +125,14 @@ ordinary hostname continues to return its own `302`. The real admin Access
 session has now been reported successful by the operator. The public admin
 request matrix, remote maintenance, confirmation negative cases, mobile
 browser smoke, and a safe real update candidate therefore remain unavailable
-for full acceptance. The repeatable setup and reconfiguration procedure is
+for full acceptance. The executable helper
+`scripts/windows/phase45-acceptance.ps1` now records the machine-verifiable
+part: loopback listeners, token-file service shape, unknown-host/forwarded-host
+denial, unauthenticated public Access challenges, raw-route denial, and local
+check/plan/OpenAPI refresh all passed on 2026-09-18. The real update plan also
+found only an unsigned, unvalidated `1.0.1`; it is correctly blocked and is
+recorded as `T13 NOT AVAILABLE`, not applied. The repeatable setup and
+reconfiguration procedure is
 documented in `docs/operations/windows-phase-4-5-remote-admin-setup.md`; the
 plain-language one-command acceptance procedure is documented in
 `docs/operations/windows-phase-4-5-acceptance-simple.md`; the
