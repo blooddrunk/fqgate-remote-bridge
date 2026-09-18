@@ -91,6 +91,10 @@ The repeatable Windows/Cloudflare operator procedure is:
 
 `docs/operations/windows-phase-4-5-remote-admin-setup.md`
 
+The plain-language acceptance procedure is:
+
+`docs/operations/windows-phase-4-5-acceptance-simple.md`
+
 The future multi-account/profile design is deliberately separate and
 unimplemented:
 

@@ -72,6 +72,22 @@ describe("Windows entry points", () => {
     );
   });
 
+  it("provides a bounded Phase 4.5 live acceptance helper without applying updates", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/phase45-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("[switch]$RunLocalMaintenance");
+    expect(script).toContain("never runs updates.apply");
+    expect(script).toContain("AllowAutoRedirect = $false");
+    expect(script).toContain("127.0.0.1:17282");
+    expect(script).toContain("HOST_NOT_ALLOWED");
+    expect(script).toContain("ACCESS_ASSERTION_REQUIRED");
+    expect(script).toContain("--token-file");
+    expect(script).toContain("never runs updates.apply");
+  });
+
   it("provides an explicit one-command dashboard launcher without silent FQGate installation", () => {
     const script = readFileSync(
       new URL("../scripts/windows/start-dashboard.ps1", import.meta.url),

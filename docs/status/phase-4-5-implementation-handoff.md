@@ -127,6 +127,8 @@ request matrix, remote maintenance, confirmation negative cases, mobile
 browser smoke, and a safe real update candidate therefore remain unavailable
 for full acceptance. The repeatable setup and reconfiguration procedure is
 documented in `docs/operations/windows-phase-4-5-remote-admin-setup.md`; the
+plain-language one-command acceptance procedure is documented in
+`docs/operations/windows-phase-4-5-acceptance-simple.md`; the
 future multi-profile design is recorded in
 `docs/plans/future-multi-profile-account-isolation.md`.
 Phase 4.5 remains **OPEN** and must not be described as CLOSED until the

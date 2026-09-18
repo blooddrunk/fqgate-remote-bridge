@@ -5,6 +5,10 @@ Last evidence update: 2026-09-18
 
 Status: **OPEN — implementation is complete in code, but live acceptance is not recorded**.
 
+如果只需要执行验收，不需要先读完整技术说明，请从
+[`Phase 4.5 一页验收单`](./windows-phase-4-5-acceptance-simple.md)开始。它会
+明确哪些由脚本完成、哪些只需要管理员输入一次验证码，以及每个输出如何判断。
+
 This runbook is the non-secret evidence record for the Phase 4.5 remote-admin
 boundary and mobile Dashboard. Phase 4.5 must not be marked CLOSED until every
 required item below has evidence from the target Windows x64 host and the real
@@ -43,6 +47,23 @@ any log.
   no arbitrary JWKS URL is configured.
 - An explicitly approved, known-safe update candidate exists before attempting
   the apply case. If none exists, leave the apply item and the phase OPEN.
+
+## Automated first pass
+
+Run the bounded Windows helper before any browser work:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\windows\phase45-acceptance.ps1 `
+  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -RunLocalMaintenance
+```
+
+The helper never runs `updates.apply`, never prints redirect locations, and never
+prints Access assertions, cookies, QR payloads, Tunnel tokens, or confirmation
+grants. `PASS` is machine evidence; `FAIL` is a blocking local defect; `MANUAL`
+means that the command needs an elevated shell or a real authenticated browser;
+`SKIP` means the helper intentionally did not run an optional check.
 
 ## Required live evidence
 

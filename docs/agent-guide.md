@@ -16,6 +16,9 @@
 Phase 4.5 的重复配置、新环境和多实例操作步骤见
 `docs/operations/windows-phase-4-5-remote-admin-setup.md`；未来多账号
 Profile 隔离设计见 `docs/plans/future-multi-profile-account-isolation.md`。
+不熟悉技术验收时先执行
+`docs/operations/windows-phase-4-5-acceptance-simple.md` 中的一条 PowerShell
+命令；它会把机器可判定的项目自动输出为 PASS/FAIL。
 
 当前 Phase 4 仍要求：Bridge 固定 `127.0.0.1:17282`，FQGate 固定 `127.0.0.1:17281`。Cloudflare 只能通过 `cloudflared` 连接 Bridge，不能直连 FQGate。
 
