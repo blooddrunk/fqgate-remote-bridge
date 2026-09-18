@@ -9,8 +9,9 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 2: **CLOSED**
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
-- Phase 4.5: **IN PROGRESS (4.5A/4.5B/4.5C implemented; live acceptance open)**
-- Phase 5+: planned only
+- Phase 4.5: **IN PROGRESS (implementation complete; closure/acceptance sprint active)**
+- Phase 5: **PLANNED; implementation must wait for Phase 4.5 closure**
+- Phase 6+: planned only
 
 Current deployed topology remains:
 
@@ -224,6 +225,14 @@ upstream path, and it must not be conflated with the later `remote_machine`
 context of Phase 5.
 
 ---
+
+### Entry gate before Phase 5 implementation
+
+Before any Phase 5 implementation, complete the active closure package:
+
+`docs/tasks/phase-4-5-closure-and-phase-5-foundation.md`
+
+The gate is strict: GitHub Actions must be green on Ubuntu and Windows, and Phase 4.5 T1-T17 must be evidenced, including the real authenticated remote-admin apply. Machine-verifiable checks must be automated wherever safe; genuine human-only checks must have exact steps, expected results, and documented automation boundaries.
 
 ## Phase 5 — Remote read-only HTTP API and filtered API docs
 
