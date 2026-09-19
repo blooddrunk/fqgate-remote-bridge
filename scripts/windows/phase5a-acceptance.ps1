@@ -281,7 +281,7 @@ if ($RunAuthenticatedServiceTokenMatrix -and -not $machineMetadataReady) {
 }
 
 if ($VerifyLocal) {
-    $cliResult = Invoke-BridgeCli "version", "--json"
+    $cliResult = Invoke-BridgeCli @("version", "--json")
     if ($cliResult.ExitCode -eq 0) {
         Write-Result "P5A-W1" "permanent Windows CLI smoke" "PASS" "version command exited 0"
     } else {
