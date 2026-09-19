@@ -152,7 +152,7 @@ requires the separate explicit approval procedure below.
 | T9  | Bridge accepts a real admin JWT only for the exact configured issuer and AUD, with no JWT logging; wrong-app/ordinary-human assertions are denied.                                                                              | NOT EVIDENCED | Redacted request/log review required                                                                                                                                                                                                                  |
 | T10 | Remote admin can perform `updates.check`, `updates.plan`, and `openapi.refresh`.                                                                                                                                                | NOT EVIDENCED | Real admin request trace required                                                                                                                                                                                                                     |
 | T11 | Remote `updates.apply` without a grant, with an expired grant, replayed grant, wrong-principal grant, operation mismatch, and plan/candidate mismatch is denied.                                                                | NOT EVIDENCED | Real admin negative cases required                                                                                                                                                                                                                    |
-| T12 | Concurrent/double redemption of one grant has exactly one successful consumer.                                                                                                                                                  | NOT EVIDENCED | Real or controlled acceptance race required                                                                                                                                                                                                           |
+| T12 | Concurrent/double redemption of one grant has exactly one successful consumer.                                                                                                                                                  | PASS          | Credential-free `tests/phase45.test.ts` controlled race uses two concurrent `consume` calls and proves exactly one fulfilled result and one rejection; no update is executed                                                                          |
 | T13 | One explicitly approved known-safe remote-admin apply succeeds through the existing source/version/size/SHA-256/compatibility/health/concurrency/rollback protections.                                                          | NOT EVIDENCED | The managed Windows loopback apply succeeded at 2026-09-18T13:32:56Z after the FQGate first-run acknowledgement: target 1.0.1, health HTTP 200, outcome `updated`, no rollback. A real authenticated remote-admin browser apply is still not recorded |
 | T14 | cloudflared install/update/service control, Tunnel-token operations, Cloudflare provisioning, arbitrary process/service control, Bridge self-update, market-data APIs, and financial state changes remain unavailable remotely. | NOT EVIDENCED | Negative-path request review required                                                                                                                                                                                                                 |
 | T15 | Raw/unregistered FQGate paths remain unreachable through both public hostnames.                                                                                                                                                 | NOT EVIDENCED | Negative-path request review required                                                                                                                                                                                                                 |
@@ -170,7 +170,7 @@ transaction outcome and whether rollback was needed.
 
 ## Closure decision
 
-Current decision: **KEEP OPEN**. T1–T3, T6–T8, and T16 are evidenced on the
+Current decision: **KEEP OPEN**. T1–T3, T6–T8, T12, and T16 are evidenced on the
 Windows 11 x64 host. The
 `phase45-acceptance.ps1` helper passed the local loopback and deny-by-default
 smoke checks; local version/update-status/catalog, check, plan, and OpenAPI
@@ -183,8 +183,9 @@ The live administrator policy now uses the exact operator email, MFA, and a
 device posture, and App Launcher are not prerequisites. The independent admin
 application/AUD, second Tunnel route, admin DNS record, Bridge JWT validation,
 Origin/intent checks, and one-time apply grant remain in place. The browser-side
-admin login, ordinary-human denial matrix, confirmation negative cases,
-mobile-browser smoke, and final apply evidence are still required.
+admin login request matrix, confirmation negative cases other than the
+controlled T12 race, mobile-browser smoke, and final apply evidence are still
+required.
 
 FQGate 1.0.1 was downloaded in an isolated Windows x64 verification directory.
 Its official size and SHA-256 matched, `--verify-installation` and `--version`
@@ -199,7 +200,7 @@ third managed apply succeeded at 2026-09-18T13:32:56Z with 1.0.1, health HTTP
 the local activation blocker, but T13 remains open until a real authenticated
 remote-admin apply is explicitly accepted and recorded.
 
-Once T4, T5, T8–T12, T14, T15, T17, and the remote-admin form of T13 are
+Once T4, T5, T9–T11, T14, T15, T17, and the remote-admin form of T13 are
 recorded with non-secret evidence, review whether the phase can be closed. The
 successful local apply is evidence for T16 and the Windows lifecycle, not a
 substitute for the remote-admin request path.
