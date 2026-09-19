@@ -33,8 +33,7 @@ hostname 和管理员 hostname 的 Access 登录/MFA，然后在 PowerShell 提�
 `updates.apply`。如果目标机没有 Edge，可安装/使用 Playwright Chromium 并追加
 `-BrowserChannel chromium`。
 
-如果项目在 `D:\code\research\fqgate-remote-bridge-phase4-5-live`，先进入该目录；
-如果使用其他目录，只替换脚本路径和配置路径。这个命令不会安装更新、不会
+请始终从永久项目目录 `D:\code\research\fqgate-remote-bridge` 执行。这个命令不会安装更新、不会
 运行 `updates.apply`、不会读取或打印 Tunnel token/JWT/二维码。
 
 输出含义很简单：

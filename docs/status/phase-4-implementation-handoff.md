@@ -6,7 +6,7 @@ Status: **CLOSED / live Windows + Cloudflare acceptance completed**
 
 This handoff describes the code, deterministic verification, and bounded live
 Windows + Cloudflare evidence completed for the deployment copy under
-`D:\code\research\fqgate-remote-bridge-phase4-acceptance`. The operator
+`D:\code\research\fqgate-remote-bridge`. The operator
 completed the authenticated UI, QR, remote-denial, local-maintenance, and
 restart/reconnect checks; Phase 4 is CLOSED.
 
@@ -122,7 +122,7 @@ The following bounded live evidence was obtained on the supported Windows x64
 host; no secret, assertion, cookie, QR payload, or full session identifier was
 recorded:
 
-- Deployment copy: `D:\code\research\fqgate-remote-bridge-phase4-acceptance`.
+- Deployment copy: `D:\code\research\fqgate-remote-bridge`.
 - Windows Node.js: `v24.15.0`; FQGate listener exactly
   `127.0.0.1:17281`; Bridge listener exactly `127.0.0.1:17282`.
 - Dedicated remotely managed Tunnel: `fqgate-remote-bridge`, UUID
