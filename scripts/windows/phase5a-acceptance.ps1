@@ -95,6 +95,7 @@ if ([string]::IsNullOrWhiteSpace($AdminUrl) -and $null -ne $config.remoteAccess.
 $script:failureCount = 0
 $script:manualCount = 0
 $script:nodePath = $null
+$script:lastCliArgumentCount = 0
 
 function Write-Result {
     param(
@@ -177,6 +178,7 @@ function Invoke-ChildProcess {
 function Invoke-BridgeCli {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
     $arguments = @($script:repositoryRoot + "\dist\cli\main.js") + $Arguments + @("--config", $resolvedConfigPath)
+    $script:lastCliArgumentCount = $arguments.Count
     return Invoke-ChildProcess -Arguments $arguments
 }
 
@@ -283,7 +285,7 @@ if ($VerifyLocal) {
     if ($cliResult.ExitCode -eq 0) {
         Write-Result "P5A-W1" "permanent Windows CLI smoke" "PASS" "version command exited 0"
     } else {
-        Write-Result "P5A-W1" "permanent Windows CLI smoke" "FAIL" ("version command failed with exit code {0}" -f $cliResult.ExitCode)
+        Write-Result "P5A-W1" "permanent Windows CLI smoke" "FAIL" ("version command failed with exit code {0}; bounded argument count {1}" -f $cliResult.ExitCode, $script:lastCliArgumentCount)
     }
 
     $configHostnames = @(
