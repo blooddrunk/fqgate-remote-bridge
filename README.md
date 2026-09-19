@@ -218,7 +218,7 @@ Windows 目标机完成两个人工 Access 登录后，可在同一个非持久�
   -RunAuthenticatedBrowserMatrix
 ```
 
-该 companion harness 会验证 ordinary/admin 页面和安全 API、ordinary maintenance denial、admin check/plan/OpenAPI refresh、无确认/过期/安全 stale-plan/replay negative path、raw/unregistered route denial 以及认证后的模拟 viewport；绑定错人/错 operation、成功 redemption 后的 replay、竞态 double-redemption 和真实 apply 仍分别由 deterministic tests 或 T13 的人工边界证明。
+该 companion harness 会验证 ordinary/admin 页面和安全 API、ordinary maintenance denial、admin check/plan/OpenAPI refresh、无确认/过期/安全 stale-plan/replay negative path、两个已认证 hostname 上的 raw/unregistered route denial，以及 ordinary/admin 两个上下文的认证模拟 viewport；绑定错人/错 operation、成功 redemption 后的 replay、竞态 double-redemption 和真实 apply 仍分别由 deterministic tests 或 T13 的人工边界证明。
 
 ## Phase 4.5：远程管理员基础与移动 Dashboard
 

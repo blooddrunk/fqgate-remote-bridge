@@ -103,6 +103,10 @@ describe("Windows entry points", () => {
     expect(harness).not.toContain("storageState");
     expect(harness).not.toContain("screenshot");
     expect(harness).not.toContain("confirmationGrant}");
+    expect(harness).toContain('checkForbiddenRoutes(page, ordinaryOrigin, "ordinary")');
+    expect(harness).toContain('checkForbiddenRoutes(page, adminOrigin, "admin")');
+    expect(harness).toContain('checkAuthenticatedViewportSmoke(page, ordinaryOrigin, "ordinary")');
+    expect(harness).toContain('checkAuthenticatedViewportSmoke(page, adminOrigin, "admin")');
   });
 
   it("provides an explicit one-command dashboard launcher without silent FQGate installation", () => {

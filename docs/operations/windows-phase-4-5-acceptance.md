@@ -123,8 +123,9 @@ The companion automatically checks:
 - T11 no-grant, stale-plan, expiry, and replay-after-expiry negatives when the
   current plan is activatable, without sending a valid execute request;
 - T14/T15 representative cloudflared/control-plane/market/financial/raw route
-  denials;
-- T17 authenticated emulated 360/390/430/768 CSS-pixel viewport overflow.
+  denials through both authenticated host contexts;
+- T17 authenticated emulated 360/390/430/768 CSS-pixel viewport overflow for
+  both ordinary and admin host contexts.
 
 The following are intentionally not fabricated as live browser evidence by this
 helper. Wrong-principal and operation-mismatch grants have no browser protocol

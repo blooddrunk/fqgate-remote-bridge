@@ -139,7 +139,9 @@ MFA、独立 AUD 和 Bridge 配置；不要安装 WARP、选择证书或添加 B
 | 没有安全候选时的处理                            | 记录 `NOT AVAILABLE`     | 不要批准未验证候选                               |
 
 错 principal、错 operation、成功 redemption 后的 replay、并发 double redemption 由
-deterministic suite 使用 fake update service 证明；把这些用例放进真实 apply 请求会
+deterministic suite 使用 fake update service 证明；两个已认证 hostname 的
+raw/unregistered route denial 和 ordinary/admin 两个 viewport 上下文由 companion
+harness 自动检查。把这些用例放进真实 apply 请求会
 产生真实状态变更，因而不属于无副作用的浏览器矩阵。T17 的真实手机/平板视觉和触控仍
 需人在真实设备上确认，CSS viewport 自动化不能替代它。
 

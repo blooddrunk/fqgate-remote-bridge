@@ -537,7 +537,7 @@ async function checkAdmin(page) {
   );
 }
 
-async function checkForbiddenRoutes(page) {
+async function checkForbiddenRoutes(page, origin, contextLabel) {
   const rawPaths = [
     "/v1/market/health",
     "/v1/market/session/qr/begin",
@@ -549,13 +549,31 @@ async function checkForbiddenRoutes(page) {
     "/api/v1/market/quotes",
     "/api/v1/trading/orders",
   ];
+  let opened;
+  try {
+    opened = await page.goto(`${origin}/`, {
+      timeout: REQUEST_TIMEOUT_MS,
+      waitUntil: "domcontentloaded",
+    });
+  } catch {
+    opened = null;
+  }
+  if (opened === null || opened.status() >= 400) {
+    writeResult(
+      "T14/T15",
+      `${contextLabel} authenticated raw-route context`,
+      "FAIL",
+      `HTTP ${opened?.status() ?? 0} code=AUTHENTICATED_CONTEXT_LOAD`,
+    );
+    return;
+  }
   for (const path of rawPaths) {
     const result = await requestJson(page, path);
-    assertResponse("T14/T15", `unregistered route ${path}`, result, 404);
+    assertResponse("T14/T15", `${contextLabel} unregistered route ${path}`, result, 404);
   }
 }
 
-async function checkAuthenticatedViewportSmoke(page) {
+async function checkAuthenticatedViewportSmoke(page, origin, contextLabel) {
   const viewports = [
     [360, 800],
     [390, 844],
@@ -565,7 +583,7 @@ async function checkAuthenticatedViewportSmoke(page) {
   let allPassed = true;
   for (const [width, height] of viewports) {
     await page.setViewportSize({ width, height });
-    const route = await gotoPage(page, adminOrigin, "/updates", "FQGate 更新中心");
+    const route = await gotoPage(page, origin, "/updates", "FQGate 更新中心");
     const dimensions = route.ok
       ? await page.evaluate(() => ({
           clientWidth: document.documentElement.clientWidth,
@@ -581,7 +599,7 @@ async function checkAuthenticatedViewportSmoke(page) {
     allPassed = allPassed && passed;
     writeResult(
       "T17",
-      `authenticated viewport ${width}x${height}`,
+      `${contextLabel} authenticated viewport ${width}x${height}`,
       passed ? "PASS" : "FAIL",
       passed ? "no document overflow" : `HTTP ${route.status} code=VIEWPORT_OVERFLOW_OR_PAGE_LOAD`,
     );
@@ -622,8 +640,10 @@ async function main() {
     );
     if (!(await waitForOperator("admin host"))) return;
     await checkAdmin(page);
-    await checkForbiddenRoutes(page);
-    await checkAuthenticatedViewportSmoke(page);
+    await checkForbiddenRoutes(page, ordinaryOrigin, "ordinary");
+    await checkForbiddenRoutes(page, adminOrigin, "admin");
+    await checkAuthenticatedViewportSmoke(page, ordinaryOrigin, "ordinary");
+    await checkAuthenticatedViewportSmoke(page, adminOrigin, "admin");
   } finally {
     await context.close();
     await browser.close();
