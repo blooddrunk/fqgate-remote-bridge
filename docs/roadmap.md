@@ -9,7 +9,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 2: **CLOSED**
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
-- Phase 4.5: **IN PROGRESS (implementation complete; closure/acceptance sprint active)**
+- Phase 4.5: **CLOSED**
 - Phase 5: **PLANNED; implementation must wait for Phase 4.5 closure**
 - Phase 6+: planned only
 
@@ -115,8 +115,8 @@ Phase 4 remains closed; future work must not retroactively expand its contract.
 
 ## Phase 4.5 — Remote administrator hardening + mobile Dashboard
 
-Status: **IN PROGRESS**; 4.5A, 4.5B, and 4.5C are implemented in code, with
-live Windows x64 + Cloudflare acceptance still open.
+Status: **CLOSED**; 4.5A, 4.5B, and 4.5C are implemented and the live Windows
+x64 + Cloudflare acceptance completed on 2026-09-19.
 
 Goal: introduce a separately authenticated and separately authorized remote-administrator context for a very small existing maintenance surface, and optimize the existing React/TanStack Dashboard for phone use, without weakening Phase 4 or implementing Phase 5 market-data APIs.
 
@@ -166,8 +166,8 @@ Responsive UI must never become an authorization mechanism. Ordinary remote-huma
 
 ### 4.5C — Minimal remote-admin maintenance + second confirmation
 
-Status: **IMPLEMENTED IN CODE**; live Windows x64 + Cloudflare acceptance is
-still required before Phase 4.5 can close.
+Status: **CLOSED**; live Windows x64 + Cloudflare acceptance is recorded in the
+Phase 4.5 acceptance runbook.
 
 Only after 4.5A/4.5B are stable, permit strongly authenticated remote admin to call exactly:
 
@@ -184,19 +184,19 @@ Remote-admin control POSTs also require explicit browser-origin/CSRF protections
 
 ### Phase 4.5 exit criteria
 
-Phase 4.5 may close only when:
+Phase 4.5 closed on 2026-09-19 after:
 
-1. Phase 4 remote-human behavior is preserved;
-2. admin hostname/AUD/context is independently authenticated and authorized;
-3. The approved short-session admin Access policy with MFA is live, with any optional device-posture choice documented explicitly;
-4. Bridge validates real admin Access JWTs without logging them;
-5. mobile Dashboard requirements and viewport tests pass;
-6. only the four listed maintenance operations gain remote-admin permission;
-7. remote `updates.apply` requires one-time principal/action/plan-bound confirmation and rejects expiry/replay/mismatch;
-8. CSRF/origin defenses are tested;
-9. all deterministic quality gates pass;
-10. real Windows x64 + Cloudflare acceptance re-proves loopback-only listeners, ordinary-human denial, the approved admin edge policy, admin flow, confirmation flow, raw-path denial, local maintenance, and mobile-browser smoke behavior;
-11. one known-safe real remote-admin update apply is proven, or the phase remains open if no safe candidate is available.
+1. Phase 4 remote-human behavior was preserved;
+2. admin hostname/AUD/context was independently authenticated and authorized;
+3. the approved short-session admin Access policy with MFA was live and its low-friction posture choice was documented;
+4. Bridge validated real admin Access JWTs without logging them;
+5. mobile Dashboard requirements and viewport tests passed;
+6. only the four listed maintenance operations gained remote-admin permission;
+7. remote `updates.apply` required one-time principal/action/plan-bound confirmation and rejected expiry/replay/mismatch;
+8. CSRF/origin defenses passed;
+9. all deterministic quality gates passed;
+10. real Windows x64 + Cloudflare acceptance re-proved loopback-only listeners, ordinary-human denial, the approved admin edge policy, admin flow, confirmation flow, raw-path denial, local maintenance, and mobile-browser smoke behavior;
+11. one known-safe real remote-admin update apply completed successfully.
 
 The Windows acceptance helper now has an explicit
 `-RunAuthenticatedBrowserMatrix` mode backed by
@@ -311,8 +311,7 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 4 is closed. Phase 4.5 is implemented in code and remains open pending
-the live acceptance evidence:
+Phase 4 is closed. Phase 4.5 is now closed after the live acceptance evidence:
 
 `docs/tasks/phase-4-5-remote-admin-and-mobile-dashboard.md`
 

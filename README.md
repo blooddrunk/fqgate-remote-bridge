@@ -2,7 +2,7 @@
 
 FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQGate 始终保持本机回环运行，由 Bridge 提供明确、受控的接口和 Dashboard，再逐阶段通过 Cloudflare Tunnel + Access 将需要的能力安全带到远程环境。
 
-当前 **Phase 0–4 已关闭，Phase 4.5 已完成代码实现但仍 OPEN 等待完整真实验收**。Phase 4 实现并验收了“受 Cloudflare Access 保护的远程人工访问”；不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
+当前 **Phase 0–4.5 已关闭**。Phase 4.5 已完成代码实现、跨平台 CI、真实 Windows x64 + Cloudflare 验收和移动浏览器 smoke；不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
 
 ## 当前结论
 
@@ -194,9 +194,9 @@ node .\dist\cli\main.js cloudflared service restart --json
 Phase 4 实现、deterministic tests 以及真实 Windows x64 + Cloudflare 验收均已完成，状态为
 **CLOSED**。边界、运行步骤和不含敏感值的验收证据见 [Windows Phase 4 验收](docs/operations/windows-phase-4-acceptance.md)；实现与 live handoff 见 [Phase 4 implementation handoff](docs/status/phase-4-implementation-handoff.md)。
 
-## Phase 4.5 closure 当前活动任务
+## Phase 4.5 closure 已完成
 
-Phase 4.5 的代码实现已经完成，但在开始 Phase 5 前，当前活动工作是先恢复完整绿色的跨平台 CI，并把剩余 T1-T17 真实验收尽可能自动化。活动任务包：
+Phase 4.5 的代码实现、跨平台 CI 和 T1-T17 真实验收已完成。非敏感验收记录见：
 
 ```text
 docs/tasks/phase-4-5-closure-and-phase-5-foundation.md
@@ -208,7 +208,7 @@ Codex goal：
 docs/prompts/phase-4-5-closure-and-phase-5-foundation-codex-goal.md
 ```
 
-只有 GitHub Actions 的 Ubuntu/Windows 都通过，且 T1-T17（包括真实 authenticated remote-admin apply）都有非敏感证据后，Phase 4.5 才能 CLOSED，随后才进入 Phase 5 remote-machine read-only API。
+GitHub Actions 的 Ubuntu/Windows 都通过，且 T1-T17（包括真实 authenticated remote-admin apply）已有非敏感证据。Phase 5 remote-machine read-only API 仍未实现，必须作为独立任务启动。
 
 Windows 目标机完成两个人工 Access 登录后，可在同一个非持久化 headed 浏览器上下文中运行有界的已认证请求矩阵；它只输出 PASS/FAIL、HTTP/error code、脱敏标签和时间戳，不保存或打印 cookie、JWT、QR、confirmation grant，也不会调用 `updates.apply`：
 
@@ -218,7 +218,7 @@ Windows 目标机完成两个人工 Access 登录后，可在同一个非持久�
   -RunAuthenticatedBrowserMatrix
 ```
 
-该 companion harness 会验证 ordinary/admin 页面和安全 API、ordinary maintenance denial、admin check/plan/OpenAPI refresh、无确认/过期/安全 stale-plan/replay negative path、两个已认证 hostname 上的 raw/unregistered route denial，以及 ordinary/admin 两个上下文的认证模拟 viewport；绑定错人/错 operation、成功 redemption 后的 replay、竞态 double-redemption 和真实 apply 仍分别由 deterministic tests 或 T13 的人工边界证明。
+该 companion harness 验证了 ordinary/admin 页面和安全 API、ordinary maintenance denial、admin check/plan/OpenAPI refresh、无确认/过期/stale-plan/replay negative path、两个已认证 hostname 上的 raw/unregistered route denial，以及 ordinary/admin 两个上下文的 viewport；绑定错人/错 operation、成功 redemption 后的 replay 和竞态 double-redemption 由 deterministic tests 证明，真实 apply 由 T13 的人工边界完成。完整 T1-T17 记录见 [Windows Phase 4.5 验收](docs/operations/windows-phase-4-5-acceptance.md)。
 
 ## Phase 4.5：远程管理员基础与移动 Dashboard
 
@@ -231,10 +231,10 @@ Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`�
 4.5B 已在同一 React/TanStack 前端中完成移动端响应式优化，覆盖现有四个
 页面和目标 viewport。4.5C 的远程 check/plan/apply/OpenAPI refresh、CSRF
 和一次性 apply confirmation 已实现；ordinary remote human 仍由服务器拒绝
-这些操作。真实 Windows x64 + Cloudflare 管理员验收完成前，Phase 4.5 保持
-OPEN，验收记录见 [Windows Phase 4.5 验收](docs/operations/windows-phase-4-5-acceptance.md)，
+这些操作。真实 Windows x64 + Cloudflare 管理员验收已于 2026-09-19 完成，
+验收记录见 [Windows Phase 4.5 验收](docs/operations/windows-phase-4-5-acceptance.md)，
 不熟悉实现细节时先看[一页验收单](docs/operations/windows-phase-4-5-acceptance-simple.md)，
-实现交接见 [Phase 4.5 implementation handoff](docs/status/phase-4-5-implementation-handoff.md)。
+实现交接见 [Phase 4.5 implementation handoff](docs/status/phase-4-5-implementation-handoff.md)。Phase 4.5 现为 **CLOSED**。
 重新配置、新环境、多实例部署，以及 OpenWrt + daed/passwall2 网络兼容步骤，长期
 统一维护在中文参考文档
 [Phase 4.5 远程管理员配置与重配置（中文长期参考）](docs/operations/windows-phase-4-5-remote-admin-setup.md)。

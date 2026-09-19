@@ -2,7 +2,7 @@
 
 Date: 2026-09-17
 
-Status: **IN PROGRESS / 4.5A, 4.5B, and 4.5C implemented; live acceptance open**
+Status: **CLOSED / 4.5A, 4.5B, and 4.5C implemented and live accepted 2026-09-19**
 
 Primary design: `docs/plans/phase-4-5-remote-admin-and-mobile-dashboard.md`
 
@@ -265,4 +265,4 @@ Do not opportunistically implement:
 
 ## Closure rule
 
-Phase 4.5 status remains OPEN until 4.5A, 4.5B, and 4.5C are implemented, deterministic quality gates pass, and real Windows + Cloudflare admin/MFA/confirmation/mobile acceptance for the approved edge profile is recorded. Implementation alone is not sufficient to close the phase.
+Phase 4.5 was closed on 2026-09-19 after 4.5A, 4.5B, and 4.5C were implemented, deterministic quality gates passed, and real Windows + Cloudflare admin/MFA/confirmation/mobile acceptance for the approved edge profile was recorded. Implementation alone was not used as closure evidence.

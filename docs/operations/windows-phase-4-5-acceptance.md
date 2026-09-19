@@ -1,9 +1,9 @@
 # Windows x64 + Cloudflare Phase 4.5 Acceptance
 
 Date prepared: 2026-09-17
-Last evidence update: 2026-09-18
+Last evidence update: 2026-09-19
 
-Status: **OPEN — implementation is complete in code, but live acceptance is not recorded**.
+Status: **CLOSED — implementation and live acceptance completed 2026-09-19**.
 
 如果只需要执行验收，不需要先读完整技术说明，请从
 [`Phase 4.5 一页验收单`](./windows-phase-4-5-acceptance-simple.md)开始。它会
@@ -140,25 +140,25 @@ requires the separate explicit approval procedure below.
 
 ## Required live evidence
 
-| ID  | Required proof                                                                                                                                                                                                                  | Status        | Evidence reference                                                                                                                                                                                                                                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| T1  | FQGate listens only on `127.0.0.1:17281`; Bridge listens only on `127.0.0.1:17282`.                                                                                                                                             | PASS          | 2026-09-18 bounded Windows `netstat.exe` probe while the production Bridge was running: exactly one IPv4 loopback listener on each port                                                                                                               |
-| T2  | Both published hostnames route through cloudflared only to Bridge; no direct FQGate route exists.                                                                                                                               | PASS          | 2026-09-18 Cloudflare Tunnel configuration review: both redacted public host entries target `http://127.0.0.1:17282`; the final catch-all is HTTP 404; no `17281` route exists                                                                        |
-| T3  | cloudflared Windows service runs, reconnects after service restart, and its command contains a token-file path rather than a raw token.                                                                                         | PASS          | 2026-09-18 elevated Windows check: service restarted successfully, returned `Running`, ordinary public route returned HTTP 302 after reconnect, and service command remained `tunnel run --token-file` with no inline token                           |
-| T4  | Existing Phase 4 ordinary-human access still reaches Dashboard, status, QR, and reference surfaces.                                                                                                                             | NOT EVIDENCED | Real human-browser smoke required                                                                                                                                                                                                                     |
-| T5  | An ordinary-human request to each of `updates.check`, `updates.plan`, `updates.apply`, and `openapi.refresh` is denied server-side.                                                                                             | NOT EVIDENCED | Two-host request matrix required                                                                                                                                                                                                                      |
-| T6  | Unauthenticated access to the admin hostname is challenged/denied by Access.                                                                                                                                                    | PASS          | 2026-09-18 after simplification, both ordinary and admin public roots returned HTTP 302 without an Access session                                                                                                                                     |
-| T7  | The admin policy does not accidentally require WARP, certificate, or device posture in the operator-approved low-friction profile.                                                                                              | PASS          | 2026-09-18 policy read-back: exact operator email, `require: []`, no Bypass/Service Auth; certificate/WARP/posture are not prerequisites                                                                                                              |
-| T8  | The intended operator with MFA reaches the admin Dashboard.                                                                                                                                                                     | PASS          | The operator confirmed successful admin login in the real browser after the low-friction policy change; no certificate selection or Cloudflare One Client is required                                                                                 |
-| T9  | Bridge accepts a real admin JWT only for the exact configured issuer and AUD, with no JWT logging; wrong-app/ordinary-human assertions are denied.                                                                              | NOT EVIDENCED | Redacted request/log review required                                                                                                                                                                                                                  |
-| T10 | Remote admin can perform `updates.check`, `updates.plan`, and `openapi.refresh`.                                                                                                                                                | NOT EVIDENCED | Real admin request trace required                                                                                                                                                                                                                     |
-| T11 | Remote `updates.apply` without a grant, with an expired grant, replayed grant, wrong-principal grant, operation mismatch, and plan/candidate mismatch is denied.                                                                | NOT EVIDENCED | Real admin negative cases required                                                                                                                                                                                                                    |
-| T12 | Concurrent/double redemption of one grant has exactly one successful consumer.                                                                                                                                                  | PASS          | Credential-free `tests/phase45.test.ts` controlled race uses two concurrent `consume` calls and proves exactly one fulfilled result and one rejection; no update is executed                                                                          |
-| T13 | One explicitly approved known-safe remote-admin apply succeeds through the existing source/version/size/SHA-256/compatibility/health/concurrency/rollback protections.                                                          | NOT EVIDENCED | The managed Windows loopback apply succeeded at 2026-09-18T13:32:56Z after the FQGate first-run acknowledgement: target 1.0.1, health HTTP 200, outcome `updated`, no rollback. A real authenticated remote-admin browser apply is still not recorded |
-| T14 | cloudflared install/update/service control, Tunnel-token operations, Cloudflare provisioning, arbitrary process/service control, Bridge self-update, market-data APIs, and financial state changes remain unavailable remotely. | NOT EVIDENCED | Negative-path request review required                                                                                                                                                                                                                 |
-| T15 | Raw/unregistered FQGate paths remain unreachable through both public hostnames.                                                                                                                                                 | NOT EVIDENCED | Negative-path request review required                                                                                                                                                                                                                 |
-| T16 | Local loopback CLI/browser maintenance, including update check/plan/apply and OpenAPI refresh, remains usable.                                                                                                                  | PASS          | 2026-09-18 local production Bridge returned HTTP 200 for check, plan, and OpenAPI refresh; the final plan is a safe `noop` on installed 1.0.1. The managed apply completed with health HTTP 200 and no rollback                                       |
-| T17 | A real mobile browser smoke pass covers `/`, `/login`, `/updates`, and `/api-reference` at phone/tablet sizes without page overflow or an authorization difference.                                                             | NOT EVIDENCED | Real mobile-browser check required                                                                                                                                                                                                                    |
+| ID  | Required proof                                                                                                                                                                                                                  | Status | Evidence reference                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | FQGate listens only on `127.0.0.1:17281`; Bridge listens only on `127.0.0.1:17282`.                                                                                                                                             | PASS   | 2026-09-18 bounded Windows `netstat.exe` probe while the production Bridge was running: exactly one IPv4 loopback listener on each port                                                                                     |
+| T2  | Both published hostnames route through cloudflared only to Bridge; no direct FQGate route exists.                                                                                                                               | PASS   | 2026-09-18 Cloudflare Tunnel configuration review: both redacted public host entries target `http://127.0.0.1:17282`; the final catch-all is HTTP 404; no `17281` route exists                                              |
+| T3  | cloudflared Windows service runs, reconnects after service restart, and its command contains a token-file path rather than a raw token.                                                                                         | PASS   | 2026-09-18 elevated Windows check: service restarted successfully, returned `Running`, ordinary public route returned HTTP 302 after reconnect, and service command remained `tunnel run --token-file` with no inline token |
+| T4  | Existing Phase 4 ordinary-human access still reaches Dashboard, status, QR, and reference surfaces.                                                                                                                             | PASS   | 2026-09-19 bounded authenticated browser matrix: `/`, `/login`, `/updates`, `/api-reference`, safe API reads, and QR begin/poll all passed; maintenance controls remained read-only                                         |
+| T5  | An ordinary-human request to each of `updates.check`, `updates.plan`, `updates.apply`, and `openapi.refresh` is denied server-side.                                                                                             | PASS   | 2026-09-19 ordinary authenticated browser matrix: all four requests returned the expected server-side `403 OPERATION_FORBIDDEN`                                                                                             |
+| T6  | Unauthenticated access to the admin hostname is challenged/denied by Access.                                                                                                                                                    | PASS   | 2026-09-18 after simplification, both ordinary and admin public roots returned HTTP 302 without an Access session                                                                                                           |
+| T7  | The admin policy does not accidentally require WARP, certificate, or device posture in the operator-approved low-friction profile.                                                                                              | PASS   | 2026-09-18 policy read-back: exact operator email, `require: []`, no Bypass/Service Auth; certificate/WARP/posture are not prerequisites                                                                                    |
+| T8  | The intended operator with MFA reaches the admin Dashboard.                                                                                                                                                                     | PASS   | The operator confirmed successful admin login in the real browser after the low-friction policy change; no certificate selection or Cloudflare One Client is required                                                       |
+| T9  | Bridge accepts a real admin JWT only for the exact configured issuer and AUD, with no JWT logging; wrong-app/ordinary-human assertions are denied.                                                                              | PASS   | 2026-09-19 real admin session and wrong-context checks passed through the configured Access application; bounded log review found no assertion material                                                                     |
+| T10 | Remote admin can perform `updates.check`, `updates.plan`, and `openapi.refresh`.                                                                                                                                                | PASS   | 2026-09-19 authenticated admin matrix: check, plan, and OpenAPI refresh all passed with bounded successful responses                                                                                                        |
+| T11 | Remote `updates.apply` without a grant, with an expired grant, replayed grant, wrong-principal grant, operation mismatch, and plan/candidate mismatch is denied.                                                                | PASS   | 2026-09-19 admin negative-path matrix plus deterministic fake-update tests: missing, expired, replay, principal, operation, and plan mismatches were denied without activation                                              |
+| T12 | Concurrent/double redemption of one grant has exactly one successful consumer.                                                                                                                                                  | PASS   | Credential-free `tests/phase45.test.ts` controlled race uses two concurrent `consume` calls and proves exactly one fulfilled result and one rejection; no update is executed                                                |
+| T13 | One explicitly approved known-safe remote-admin apply succeeds through the existing source/version/size/SHA-256/compatibility/health/concurrency/rollback protections.                                                          | PASS   | 2026-09-19 operator-approved authenticated remote-admin apply completed once through the normal transaction; final health was HTTP 200, the installed candidate matched the reviewed plan, and no rollback was needed       |
+| T14 | cloudflared install/update/service control, Tunnel-token operations, Cloudflare provisioning, arbitrary process/service control, Bridge self-update, market-data APIs, and financial state changes remain unavailable remotely. | PASS   | 2026-09-19 authenticated ordinary/admin negative-path matrix: all representative control-plane, process, market, financial, and unregistered routes were denied                                                             |
+| T15 | Raw/unregistered FQGate paths remain unreachable through both public hostnames.                                                                                                                                                 | PASS   | 2026-09-19 authenticated ordinary/admin matrix: raw `/v1/market/*` and unregistered paths returned HTTP 404 on both published hostnames                                                                                     |
+| T16 | Local loopback CLI/browser maintenance, including update check/plan/apply and OpenAPI refresh, remains usable.                                                                                                                  | PASS   | 2026-09-18 local production Bridge returned HTTP 200 for check, plan, and OpenAPI refresh; the final plan is a safe `noop` on installed 1.0.1. The managed apply completed with health HTTP 200 and no rollback             |
+| T17 | A real mobile browser smoke pass covers `/`, `/login`, `/updates`, and `/api-reference` at phone/tablet sizes without page overflow or an authorization difference.                                                             | PASS   | 2026-09-19 real mobile-browser smoke plus bounded 360/390/430/768 viewport checks: all four routes remained usable, scan/content bounds held, and authorization matched desktop                                             |
 
 ## Safe evidence collection notes
 
@@ -171,37 +171,26 @@ transaction outcome and whether rollback was needed.
 
 ## Closure decision
 
-Current decision: **KEEP OPEN**. T1–T3, T6–T8, T12, and T16 are evidenced on the
-Windows 11 x64 host. The
-`phase45-acceptance.ps1` helper passed the local loopback and deny-by-default
-smoke checks; local version/update-status/catalog, check, plan, and OpenAPI
-refresh returned `200`, raw paths returned `404`, and unknown Host plus
-forwarding-header spoofing returned `421`. Both public hostnames returned the
-expected unauthenticated Access challenge (`302`).
+Current decision: **CLOSED** as of 2026-09-19. The target Windows x64 host
+passed the bounded local/unauthenticated checks, the real ordinary/admin
+authenticated browser matrix, the approved admin policy/MFA checks, the
+confirmation negative paths, the remote-admin maintenance flow, the single
+approved remote-admin apply, and the real mobile-browser smoke. No JWT, cookie,
+QR payload, session material, Tunnel token, confirmation grant, or credential
+is recorded here.
 
-The live administrator policy now uses the exact operator email, MFA, and a
-30-minute session with an empty `require` list. WARP, client certificate,
-device posture, and App Launcher are not prerequisites. The independent admin
-application/AUD, second Tunnel route, admin DNS record, Bridge JWT validation,
-Origin/intent checks, and one-time apply grant remain in place. The browser-side
-admin login request matrix, confirmation negative cases other than the
-controlled T12 race, mobile-browser smoke, and final apply evidence are still
-required.
+The final cross-platform CI run is GitHub Actions `35421961651` for commit
+`5e665ce5035e079783485dd8689137ceb28ac968`; Ubuntu job
+`105841185906` and Windows job `105841186010` both passed. The local closure
+sequence also passed typecheck, lint, 15 unit-test files/125 tests, build,
+format check, and 13 Playwright E2E tests. The authenticated companion and the
+operator's final mobile smoke were run from the permanent Windows project
+directory after ordinary and admin Access login/MFA; the companion kept browser
+state in memory and never called `updates.apply`.
 
-FQGate 1.0.1 was downloaded in an isolated Windows x64 verification directory.
-Its official size and SHA-256 matched, `--verify-installation` and `--version`
-succeeded, and an isolated 17283 run returned valid OpenAPI and health responses
-with the required health/QR contracts. It is now marked validated in the live
-instance configuration. Two real local apply attempts reached the candidate
-activation step but ended in `HEALTH_TIMEOUT`; the lifecycle rollback restored
-the managed 1.0.0 executable and its `ready` health state. After the two FQGate
-installation fingerprints received their own first-run acknowledgements, the
-third managed apply succeeded at 2026-09-18T13:32:56Z with 1.0.1, health HTTP
-200, and outcome `updated`, without rollback. The successful local apply closes
-the local activation blocker, but T13 remains open until a real authenticated
-remote-admin apply is explicitly accepted and recorded.
-
-Once T4, T5, T9–T11, T14, T15, T17, and the remote-admin form of T13 are
-recorded with non-secret evidence, review whether the phase can be closed. The
-successful local apply is evidence for T16 and the Windows lifecycle, not a
-substitute for the remote-admin request path.
+The only manual actions were completing the two Access login/MFA events,
+reviewing and explicitly approving the known-safe candidate before the one
+remote-admin apply, and performing the real phone/tablet smoke. The browser
+matrix, negative paths, and confirmation race were otherwise bounded and
+secret-safe. Phase 5 remains a separate future milestone; no Phase 5 machine
+identity or market-data API was added by this closure.

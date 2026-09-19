@@ -360,8 +360,8 @@ adds an optional admin hostname/AUD and Bridge-side verifier; 4.5B keeps the
 existing responsive application and server-side authorization model. The
 implemented Phase 4.5C policy adds only the four explicitly named maintenance
 operations to `remote_admin`, with a one-time confirmation for apply and
-exact-origin/intent CSRF checks. Live Windows/Cloudflare acceptance is still
-required before Phase 4.5 can close.
+exact-origin/intent CSRF checks. Live Windows/Cloudflare acceptance completed
+on 2026-09-19 and is recorded in the Phase 4.5 acceptance runbook.
 
 The live request-matrix companion is deliberately outside this runtime
 boundary. It launches a non-persistent headed browser context after the

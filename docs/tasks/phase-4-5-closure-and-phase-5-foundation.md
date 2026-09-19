@@ -2,7 +2,7 @@
 
 Date: 2026-09-18
 
-Status: **ACTIVE**
+Status: **CLOSED — Phase 4.5 closure completed 2026-09-19**
 
 Baseline: main at or after `82fefffc92269f4a68cbf7689caacf417b6cb936`.
 
@@ -18,7 +18,8 @@ The next executable milestone is:
 4. close Phase 4.5 only when its documented T1-T17 evidence is actually satisfied;
 5. then prepare, but do not opportunistically over-expand, the Phase 5 remote-machine read-only API foundation.
 
-Phase 4 remains CLOSED. Phase 4.5 implementation is complete in code but closure evidence is still incomplete.
+Phase 4 remains CLOSED. Phase 4.5 implementation and closure evidence are
+complete; Phase 5 foundation work remains a separate future task.
 
 ## Non-negotiable security boundary
 
@@ -308,5 +309,21 @@ At the end of the work package, report:
 6. any remaining blocker stated concretely with why it cannot be automated;
 7. whether Phase 4.5 is CLOSED or still OPEN;
 8. only if CLOSED, the exact Phase 5-A next task and files changed.
+
+## Closure result — 2026-09-19
+
+Phase 4.5 is **CLOSED**. The full T1–T17 evidence matrix is recorded in
+`docs/operations/windows-phase-4-5-acceptance.md`. GitHub Actions run
+`35421961651` passed both Ubuntu job `105841185906` and Windows job
+`105841186010` for commit `5e665ce5035e079783485dd8689137ceb28ac968`.
+Local verification passed typecheck, lint, 15 unit-test files/125 tests, build,
+format check, and 13 Playwright E2E tests.
+
+The exact manual boundaries were ordinary and admin Access login/MFA, explicit
+approval of one known-safe remote-admin apply, and real phone/tablet smoke.
+No secret-bearing evidence was committed. The next task is a separate Phase
+5-A identity/context foundation: add `remote_machine` recognition with a
+separate hostname/AUD/service identity and zero market-data privileges. No
+Phase 5-A files were changed by this closure.
 
 Never use vague statements such as “manual evidence incomplete” or “requires operator verification” without the exact procedure, expected result, and automation boundary.

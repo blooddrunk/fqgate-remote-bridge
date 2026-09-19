@@ -1,5 +1,9 @@
 # Phase 4.5 一页验收单：谁来做、怎么判断
 
+状态：**CLOSED（2026-09-19）**。以下命令和步骤保留为后续实例复核、重配置
+和回归验收流程；本次 T1–T17 完整结果见
+[`windows-phase-4-5-acceptance.md`](./windows-phase-4-5-acceptance.md)。
+
 这页是给不想读实现细节的部署者看的。当前管理员采用已批准的简化策略：指定
 邮箱 + MFA + 30 分钟会话，不需要 WARP、客户端证书或设备姿态。Bridge 仍然
 执行 JWT、Origin、竞态、registry、候选完整性和回滚检查。脚本和浏览器会执行

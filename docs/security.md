@@ -331,8 +331,9 @@ POSTs, use the exact HTTPS admin Origin and a Bridge-owned non-simple intent
 header. Wildcard CORS remains forbidden.
 Remote `updates.apply` additionally consumes a short-lived, one-time,
 memory-only confirmation grant bound to the verified principal, admin
-audience, exact operation, and exact update plan/candidate identity. The phase
-remains OPEN until real Windows x64 + Cloudflare evidence is recorded.
+audience, exact operation, and exact update plan/candidate identity. The real
+Windows x64 + Cloudflare evidence was completed on 2026-09-19 and is recorded
+in the Phase 4.5 acceptance runbook; the phase is CLOSED.
 
 Unknown/raw `/v1/...` routes are still rejected before any FQGate request is
 made. The top-level application transport applies the same Host/assertion

@@ -54,10 +54,10 @@ Phase 4 remote-human operations remain:
 - `updates.status`
 - `openapi.catalog`
 
-Phase 4.5A policy/authentication foundation and Phase 4.5B mobile work are
-implemented. Phase 4.5C's narrow remote-admin maintenance and one-time apply
-confirmation are implemented in code; live Windows x64 + Cloudflare
-acceptance remains open.
+Phase 4.5A policy/authentication foundation, Phase 4.5B mobile work, and
+Phase 4.5C's narrow remote-admin maintenance and one-time apply confirmation
+are implemented and passed live Windows x64 + Cloudflare acceptance on
+2026-09-19. Phase 4.5 is closed; Phase 5 remains separate and unimplemented.
 
 For `local` and ordinary `remote_human` callers, the following remain
 local-only. The implemented `remote_admin` context may invoke exactly these
@@ -187,8 +187,7 @@ Ordinary remote-human `/updates` remains read-only.
 
 ### Phase 4.5C — minimal remote-admin surface and second confirmation
 
-Status: implemented in code; live Windows x64 + Cloudflare acceptance remains
-open.
+Status: implemented and live-accepted; Phase 4.5 is CLOSED.
 
 Only after 4.5A and 4.5B are stable may `remote_admin` be granted these existing operations:
 
@@ -326,7 +325,7 @@ Follow `docs/roadmap.md`.
 - Phase 4: CLOSED
 - Phase 4.5A: implemented
 - Phase 4.5B: implemented
-- Phase 4.5C: implemented in code; live acceptance open
+- Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
 - Phase 5+: do not opportunistically implement
 
 If Phase 5 becomes urgent, it may start only after the 4.5A policy foundation is stable, and must remain a separate change with separate machine Host/AUD/context/tests. Do not combine remote-admin and remote-machine privilege expansion.

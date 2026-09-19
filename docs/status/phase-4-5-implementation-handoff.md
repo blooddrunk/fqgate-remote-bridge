@@ -1,15 +1,15 @@
 # Phase 4.5 Implementation Handoff
 
 Date: 2026-09-17
-Last evidence update: 2026-09-18
+Last evidence update: 2026-09-19
 
-Status: **IMPLEMENTED IN CODE / OPEN pending real Windows x64 + Cloudflare acceptance**
+Status: **CLOSED / implementation and real Windows x64 + Cloudflare acceptance complete**
 
 Phase 4 remains CLOSED and its ordinary `remote_human` behavior is preserved.
 Phase 4.5 was implemented strictly in order: **4.5A → 4.5B → 4.5C**. The
 repository contains the policy, authentication, responsive UI, remote-admin
-maintenance, confirmation, CSRF, and deterministic test changes, but this
-handoff does not claim phase closure without live evidence.
+maintenance, confirmation, CSRF, deterministic tests, and completed live
+Windows x64 + Cloudflare acceptance.
 
 ## 4.5A — policy and authentication foundation
 
@@ -109,7 +109,7 @@ confirmation negatives; deterministic tests remain the evidence for wrong
 principal/operation binding and concurrent/double redemption because a
 successful live consumer would be a real update.
 
-## Outstanding live evidence
+## Live closure evidence
 
 See [Windows Phase 4.5 acceptance](../operations/windows-phase-4-5-acceptance.md).
 The current WSL workspace can observe a Windows 11 x64 host. A bounded probe
@@ -142,34 +142,32 @@ first-level admin hostname is now
 `fqgate-admin.haoqi90.top`; the Access application and Tunnel route have been
 updated to that hostname. A bounded public probe negotiates TLS successfully
 and receives the expected unauthenticated Access challenge (`302`), while the
-ordinary hostname continues to return its own `302`. The post-reconfiguration
-the operator has confirmed successful admin login after the policy change; no
-certificate selection or Cloudflare One Client is required. The public admin request matrix, remote
-maintenance, confirmation negative cases, mobile browser smoke, and final apply
-evidence therefore remain unavailable for full acceptance. The executable helper
-`scripts/windows/phase45-acceptance.ps1` now records the machine-verifiable
-part: loopback listeners, token-file service shape, unknown-host/forwarded-host
-denial, unauthenticated public Access challenges, raw-route denial, and local
-check/plan/OpenAPI refresh all passed on 2026-09-18. A separate Windows x64
-verification of the official 1.0.1 candidate matched its size and SHA-256,
-passed `--verify-installation`/`--version`, and passed isolated OpenAPI, health,
-and required health/QR contract checks on `17283`. The live config now marks
-1.0.1 validated. Two real local apply attempts reached candidate activation but
-ended in `HEALTH_TIMEOUT` while waiting for FQGate's own first-run desktop/risk
-acknowledgement; the existing rollback restored managed 1.0.0 and `ready` health.
-After the temporary and managed installation fingerprints were acknowledged,
-the third managed Windows apply succeeded at 2026-09-18T13:32:56Z with 1.0.1,
-health HTTP 200, and outcome `updated`, without rollback. The live activation
-deadline was restored to 120 seconds afterward. Remote-admin apply evidence is
-therefore still open, and the
-repeatable setup and
-reconfiguration procedure is
-documented in `docs/operations/windows-phase-4-5-remote-admin-setup.md`; the
-plain-language one-command acceptance procedure is documented in
-`docs/operations/windows-phase-4-5-acceptance-simple.md`; the
-future multi-profile design is recorded in
+ordinary hostname continues to return its own `302`. The operator then
+completed the real ordinary/admin Access login and MFA boundaries and the
+authenticated browser matrix. The matrix passed ordinary safe-surface access,
+ordinary maintenance denial, real admin JWT/context validation, admin
+check/plan/OpenAPI refresh, confirmation negative paths, raw/unregistered route
+denial, and authenticated viewport checks without emitting browser secrets.
+
+The operator also completed the explicitly approved known-safe remote-admin
+apply once through the normal update transaction. The final candidate health
+was HTTP 200, the reviewed plan identity matched, and no rollback was needed.
+The real phone/tablet smoke covered `/`, `/login`, `/updates`, and
+`/api-reference` without overflow or an authorization difference. The
+repeatable setup and reconfiguration procedure remains documented in
+`docs/operations/windows-phase-4-5-remote-admin-setup.md`; the plain-language
+acceptance procedure remains in `docs/operations/windows-phase-4-5-acceptance-simple.md`;
+the future multi-profile design remains in
 `docs/plans/future-multi-profile-account-isolation.md`.
-Phase 4.5 remains **OPEN** and must not be described as CLOSED until the
-non-secret T1–T17 evidence in the acceptance runbook is completed.
+
+The final CI run is GitHub Actions `35421961651` for commit
+`5e665ce5035e079783485dd8689137ceb28ac968`; Ubuntu job `105841185906` and
+Windows job `105841186010` passed. Local verification passed typecheck, lint,
+15 unit-test files/125 tests, build, format check, and 13 Playwright E2E tests.
+No secret-bearing acceptance material is stored in the repository.
+
+Phase 4.5 is **CLOSED**. Phase 5 remains unimplemented and requires a separate
+task with a separate `remote_machine` hostname, audience, identity, and
+zero-privilege checkpoint before any market-data operation is added.
 
 Do not use this handoff to authorize Phase 5 or any deferred Phase 6–10 work.

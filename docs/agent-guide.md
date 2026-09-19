@@ -11,7 +11,7 @@
 - Phase 4：**已 CLOSED**，已通过真实 Windows x64 + Cloudflare 验收；后续任务仍不得顺手实现 Phase 5+。
 - Phase 4.5A：已实现正交 caller-context/operation policy、可选独立 admin Host/AUD 和 Bridge 侧 RS256/JWK 验证。
 - Phase 4.5B：已在同一前端完成移动端响应式改造和目标 viewport 覆盖。
-- Phase 4.5C：四个明确的远程管理员维护操作、CSRF/Origin 防护和一次性 apply 确认已实现；真实 Windows x64 + Cloudflare 验收仍 OPEN。
+- Phase 4.5C：四个明确的远程管理员维护操作、CSRF/Origin 防护和一次性 apply 确认已实现，并已完成真实 Windows x64 + Cloudflare 验收；Phase 4.5 已 CLOSED。
 
 Phase 4.5 的重复配置、新环境和多实例操作步骤见
 `docs/operations/windows-phase-4-5-remote-admin-setup.md`；未来多账号
@@ -64,9 +64,9 @@ principal/AUD/计划/候选的一次性内存确认。UI 隐藏按钮不构成�
 
 4.5A 的 admin hostname 必须使用独立 Access application/AUD；Bridge 仅从配置
 的 Cloudflare team-domain cert endpoint 获取有界 JWK，并校验 RS256、精确
-issuer/AUD、`sub`/`iat`/`exp` 和时间条件。管理员 Access policy 还必须是
-human-only、MFA、可执行的 device posture、短 session、Protect with Access，
-且没有 Bypass 或 Service Auth。
+issuer/AUD、`sub`/`iat`/`exp` 和时间条件。当前已验收的管理员 Access policy
+是 human-only、MFA、短 session、Protect with Access，且没有 Bypass 或
+Service Auth；WARP、客户端证书和 device posture 对该低摩擦 profile 不是前置条件。
 
 ## cloudflared / Tunnel 约定
 
@@ -134,7 +134,7 @@ Phase 4 当前代码入口：
 - `src/cloudflared/`：固定 Cloudflare release source/integrity、候选激活、token-file 和 Windows service 适配；
 - `src/cli/main.ts`：显式 `cloudflared release/install/status` 与 `cloudflared service ...` 命令；
 - `scripts/windows/acceptance.ps1 -VerifyPhase4`：安全 loopback/service/Access 验收工具，不自动创建 Cloudflare 资源。
-- `scripts/windows/phase45-acceptance.ps1 -RunAuthenticatedBrowserMatrix`：操作者完成两次真实 Access 登录/MFA 后，调用非持久化 headed browser companion，输出有界认证请求结果，不执行 `updates.apply`。
+- `scripts/windows/phase45-acceptance.ps1 -RunAuthenticatedBrowserMatrix`：操作者完成两次真实 Access 登录/MFA 后，调用非持久化 headed browser companion，输出有界认证请求结果，不执行 `updates.apply`；该矩阵已在 2026-09-19 通过。
 
 配置使用 `remoteAccess.remoteHostname` 和 `cloudflared.tokenFile`。token-file
 必须是 repo 外绝对路径；运行时只报告安全状态，不返回文件内容。默认/强制
@@ -175,7 +175,7 @@ Phase 4 的 normal CI 不得依赖真实 Cloudflare credentials。
 本次 Phase 4 的 deterministic 和质量门禁结果、真实环境证据与 closure 记录仍在
 `docs/status/phase-4-implementation-handoff.md` 和
 `docs/operations/windows-phase-4-acceptance.md`。Phase 4 已 CLOSED；Phase 4.5
-的实现交接和待完成真实证据分别记录在
+的实现交接和真实闭环证据分别记录在
 `docs/status/phase-4-5-implementation-handoff.md` 与
 `docs/operations/windows-phase-4-5-acceptance.md`。若未来修改远程管理员边界，
 必须作为独立规划/任务重新评审，不得隐式扩大现有策略。

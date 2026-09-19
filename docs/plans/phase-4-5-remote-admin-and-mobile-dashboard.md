@@ -2,7 +2,7 @@
 
 Date: 2026-09-17
 
-Status: **IN PROGRESS / 4.5A, 4.5B, and 4.5C implemented; live acceptance open**
+Status: **CLOSED / 4.5A, 4.5B, and 4.5C implemented; live acceptance completed 2026-09-19**
 
 This phase is a new post-Phase-4 phase. It does **not** reopen Phase 4 and it does not authorize Phase 5 market-data APIs. Phase 4 remains CLOSED with its existing `remote_human` surface unchanged.
 
@@ -320,8 +320,8 @@ The UI should consume server-provided capabilities/context and handle authorizat
 
 ## 5. Phase 4.5C — remote-admin minimal surface and second confirmation
 
-Implementation status: **implemented in code; live Windows x64 + Cloudflare
-acceptance remains open**.
+Implementation status: **implemented and live accepted on Windows x64 + Cloudflare
+on 2026-09-19**.
 
 ### 5.1 Goal
 
@@ -698,7 +698,7 @@ No test may require a real Tunnel token or commit real Access assertions.
 
 ## 9. Live Windows + Cloudflare acceptance for Phase 4.5C
 
-Phase 4.5 cannot be marked CLOSED on deterministic tests alone because it expands remote administrative authority.
+Phase 4.5 was not marked CLOSED on deterministic tests alone because it expands remote administrative authority; the required live evidence is now recorded in the acceptance runbook.
 
 On the target Windows x64 host, record bounded/non-secret evidence proving:
 

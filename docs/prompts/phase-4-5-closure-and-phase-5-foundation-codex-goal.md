@@ -1,3 +1,5 @@
+Status: **COMPLETED — Phase 4.5 CLOSED 2026-09-19**
+
 Work in https://github.com/blooddrunk/fqgate-remote-bridge on the latest main. Read and obey AGENTS.md and all source-of-truth docs first, especially docs/tasks/phase-4-5-closure-and-phase-5-foundation.md and docs/operations/windows-phase-4-5-acceptance.md.
 
 Your goal is NOT to rush into Phase 5. First establish a trustworthy green baseline and close Phase 4.5 correctly.
