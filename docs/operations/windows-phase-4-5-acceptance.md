@@ -179,9 +179,9 @@ approved remote-admin apply, and the real mobile-browser smoke. No JWT, cookie,
 QR payload, session material, Tunnel token, confirmation grant, or credential
 is recorded here.
 
-The final cross-platform CI run is GitHub Actions `35421961651` for commit
-`5e665ce5035e079783485dd8689137ceb28ac968`; Ubuntu job
-`105841185906` and Windows job `105841186010` both passed. The local closure
+The final cross-platform CI run is GitHub Actions `35423218542` for commit
+`23443b011541a0e00661b955640d5b5c236a2af0`; Ubuntu job
+`105844557702` and Windows job `105844557770` both passed. The local closure
 sequence also passed typecheck, lint, 15 unit-test files/125 tests, build,
 format check, and 13 Playwright E2E tests. The authenticated companion and the
 operator's final mobile smoke were run from the permanent Windows project

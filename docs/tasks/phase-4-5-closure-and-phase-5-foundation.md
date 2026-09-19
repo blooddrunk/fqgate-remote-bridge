@@ -314,8 +314,8 @@ At the end of the work package, report:
 
 Phase 4.5 is **CLOSED**. The full T1–T17 evidence matrix is recorded in
 `docs/operations/windows-phase-4-5-acceptance.md`. GitHub Actions run
-`35421961651` passed both Ubuntu job `105841185906` and Windows job
-`105841186010` for commit `5e665ce5035e079783485dd8689137ceb28ac968`.
+`35423218542` passed both Ubuntu job `105844557702` and Windows job
+`105844557770` for commit `23443b011541a0e00661b955640d5b5c236a2af0`.
 Local verification passed typecheck, lint, 15 unit-test files/125 tests, build,
 format check, and 13 Playwright E2E tests.
 

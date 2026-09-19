@@ -160,9 +160,9 @@ acceptance procedure remains in `docs/operations/windows-phase-4-5-acceptance-si
 the future multi-profile design remains in
 `docs/plans/future-multi-profile-account-isolation.md`.
 
-The final CI run is GitHub Actions `35421961651` for commit
-`5e665ce5035e079783485dd8689137ceb28ac968`; Ubuntu job `105841185906` and
-Windows job `105841186010` passed. Local verification passed typecheck, lint,
+The final CI run is GitHub Actions `35423218542` for commit
+`23443b011541a0e00661b955640d5b5c236a2af0`; Ubuntu job `105844557702` and
+Windows job `105844557770` passed. Local verification passed typecheck, lint,
 15 unit-test files/125 tests, build, format check, and 13 Playwright E2E tests.
 No secret-bearing acceptance material is stored in the repository.
 
