@@ -148,9 +148,10 @@ describe("Windows entry points", () => {
     expect(script).toContain("Get-Service");
     expect(script).toContain("Start-Service");
     expect(script).toContain("start-dashboard.ps1");
-    expect(script).toContain("-SkipInstall");
-    expect(script).toContain("-SkipBuild");
-    expect(script).toContain("-NoBrowser");
+    expect(script).toContain("ConfigPath = $ConfigPath");
+    expect(script).toContain("SkipInstall = $true");
+    expect(script).toContain("SkipBuild = $true");
+    expect(script).toContain("$launcherArguments.NoBrowser = $true");
     expect(wrapper).toContain("start-phase4.ps1");
     expect(wrapper).toContain("%*");
   });

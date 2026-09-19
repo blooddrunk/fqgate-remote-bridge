@@ -36,14 +36,13 @@ if ($service.Status -ne "Running") {
 }
 
 Write-Host "cloudflared service is Running. Starting FQGate and the loopback Bridge..."
-$launcherArguments = @(
-    "-ConfigPath",
-    $ConfigPath,
-    "-SkipInstall",
-    "-SkipBuild"
-)
+$launcherArguments = @{
+    ConfigPath = $ConfigPath
+    SkipInstall = $true
+    SkipBuild = $true
+}
 if ($NoBrowser) {
-    $launcherArguments += "-NoBrowser"
+    $launcherArguments.NoBrowser = $true
 }
 
 & $launcherPath @launcherArguments
