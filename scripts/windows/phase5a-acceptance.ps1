@@ -53,12 +53,10 @@ if ($configRaw -match '"(clientId|clientSecret|serviceToken|tunnelToken|accessTo
 }
 $config = $configRaw | ConvertFrom-Json
 
-if ([string]::IsNullOrWhiteSpace($config.remoteAccess.machineHostname) -or
-    $null -eq $config.remoteAccess.machineAccess -or
-    [string]::IsNullOrWhiteSpace($config.remoteAccess.machineAccess.teamDomain) -or
-    [string]::IsNullOrWhiteSpace($config.remoteAccess.machineAccess.audience)) {
-    throw "Phase 5-A acceptance requires machineHostname, machineAccess.teamDomain, and machineAccess.audience in repo-external config."
-}
+$machineMetadataReady = -not [string]::IsNullOrWhiteSpace($config.remoteAccess.machineHostname) -and
+    $null -ne $config.remoteAccess.machineAccess -and
+    -not [string]::IsNullOrWhiteSpace($config.remoteAccess.machineAccess.teamDomain) -and
+    -not [string]::IsNullOrWhiteSpace($config.remoteAccess.machineAccess.audience)
 
 if ([string]::IsNullOrWhiteSpace($MachineUrl)) { $MachineUrl = "https://$($config.remoteAccess.machineHostname)" }
 if ([string]::IsNullOrWhiteSpace($HumanUrl) -and $null -ne $config.remoteAccess.remoteHostname) {
@@ -250,6 +248,10 @@ function ConvertFrom-SecureStringInMemory {
 
 if (-not $VerifyLocal -and -not $RunAuthenticatedServiceTokenMatrix) { $VerifyLocal = $true }
 
+if ($RunAuthenticatedServiceTokenMatrix -and -not $machineMetadataReady) {
+    throw "Phase 5-A authenticated acceptance requires machineHostname, machineAccess.teamDomain, and machineAccess.audience in repo-external config; no credential prompt was opened."
+}
+
 if ($VerifyLocal) {
     $cliResult = Invoke-BridgeCli "version", "--json"
     if ($cliResult.ExitCode -eq 0) {
@@ -263,17 +265,15 @@ if ($VerifyLocal) {
         [string]$config.remoteAccess.adminHostname,
         [string]$config.remoteAccess.machineHostname
     ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-    if (($configHostnames | Select-Object -Unique).Count -eq $configHostnames.Count) {
-        Write-Result "P5A-W2" "human/admin/machine hostnames are distinct" "PASS" "three-way hostname collision check"
-    } else {
+    if (($configHostnames | Select-Object -Unique).Count -ne $configHostnames.Count) {
         Write-Result "P5A-W2" "human/admin/machine hostnames are distinct" "FAIL" "duplicate hostname in acceptance config"
+    } elseif (-not $machineMetadataReady) {
+        Write-Result "P5A-W2" "human/admin/machine hostnames are distinct" "MANUAL" "machineHostname, machineAccess.teamDomain, and machineAccess.audience are missing from repo-external config"
+    } else {
+        Write-Result "P5A-W2" "human/admin/machine hostnames are distinct" "PASS" "three-way hostname collision check"
     }
 
-    if ([string]$config.cloudflared.origin -eq "http://127.0.0.1:17282") {
-        Write-Result "P5A-W3" "configured Tunnel origin is Bridge loopback" "PASS" "http://127.0.0.1:17282"
-    } else {
-        Write-Result "P5A-W3" "configured Tunnel origin is Bridge loopback" "FAIL" "origin is not the fixed Bridge loopback origin"
-    }
+    Write-Result "P5A-W3" "Tunnel origin evidence is reserved for authenticated acceptance" "SKIP" "the external Tunnel ingress is checked by P5A-W11; repo config stores no origin or token"
 
     $bridgeProcess = $null
     try {
