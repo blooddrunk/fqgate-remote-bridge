@@ -283,7 +283,7 @@ if ($VerifyLocal) {
     if ($cliResult.ExitCode -eq 0) {
         Write-Result "P5A-W1" "permanent Windows CLI smoke" "PASS" "version command exited 0"
     } else {
-        Write-Result "P5A-W1" "permanent Windows CLI smoke" "FAIL" "version command failed"
+        Write-Result "P5A-W1" "permanent Windows CLI smoke" "FAIL" ("version command failed with exit code {0}" -f $cliResult.ExitCode)
     }
 
     $configHostnames = @(
