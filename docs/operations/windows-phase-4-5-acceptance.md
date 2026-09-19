@@ -79,6 +79,17 @@ grants. `PASS` is machine evidence; `FAIL` is a blocking local defect; `MANUAL`
 means that the command needs an elevated shell or a real authenticated browser;
 `SKIP` means the helper intentionally did not run an optional check.
 
+## Cross-platform quality-gate evidence
+
+At commit `9a0623a26827517b4cc22e024e3132b8728a7401`, the required local
+sequence passed: `pnpm install --frozen-lockfile`, typecheck, lint, 15 unit
+test files/125 tests, build, format check, and 13 Playwright E2E tests
+(including the five responsive viewport suites). GitHub Actions run
+`35417801749` also passed both matrix jobs: Ubuntu job
+`105829696634` and Windows job `105829696607`. The Windows format step,
+Windows script CLI smoke, and Windows production loopback smoke all ran and
+passed; the Linux-only Playwright steps were skipped on Windows by design.
+
 ### Authenticated request-matrix companion
 
 After the operator has completed the two real Access login/MFA boundaries in a
