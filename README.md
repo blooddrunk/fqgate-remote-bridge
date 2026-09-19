@@ -208,7 +208,7 @@ Codex goal：
 docs/prompts/phase-4-5-closure-and-phase-5-foundation-codex-goal.md
 ```
 
-GitHub Actions 的 Ubuntu/Windows 都通过，且 T1-T17（包括真实 authenticated remote-admin apply）已有非敏感证据。Phase 5 remote-machine read-only API 仍未实现，必须作为独立任务启动。
+GitHub Actions 的 Ubuntu/Windows 都通过，且 T1-T17（包括真实 authenticated remote-admin apply）已有非敏感证据。Phase 5-A 的 machine 身份/context 零权限实现正在本任务中落地；Phase 5-B remote-machine 行情 API 仍未实现，必须继续作为独立任务。
 
 Windows 目标机完成两个人工 Access 登录后，可在同一个非持久化 headed 浏览器上下文中运行有界的已认证请求矩阵；它只输出 PASS/FAIL、HTTP/error code、脱敏标签和时间戳，不保存或打印 cookie、JWT、QR、confirmation grant，也不会调用 `updates.apply`：
 
@@ -267,6 +267,16 @@ Phase 5-A 的关键约束：
 - 所有能自动判断的验证优先在永久 Windows 环境 `D:\code\research` 与 CI
   完成；只有 Cloudflare 资源创建和服务凭据的安全输入保留为明确人工边界。
 
+当前实现交接与验收证据见：
+
+```text
+docs/status/phase-5-a-implementation-handoff.md
+docs/operations/windows-phase-5-a-acceptance.md
+```
+
+在真实 machine Access service-token acceptance 完成前，Phase 5-A 保持 **OPEN**；
+不得把 deterministic 或本地 loopback 结果表述成真实 Cloudflare 关闭证据。
+
 Phase 5-B 才会基于目标 Windows 机器运行中的 FQGate
 `/openapi.json` + 语义探针挑选第一批只读行情接口；公开 SDK/示例只作为候选
 线索，不直接变成授权清单。
@@ -307,6 +317,8 @@ Phase 4 历史 Codex goal 入口（不是新的活动任务）：
 - [Phase 5 总体设计](docs/plans/phase-5-remote-machine-read-only-api.md)
 - [Phase 5-A 活动任务](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)
 - [Phase 5-A Codex Goal](docs/prompts/phase-5-a-codex-goal.md)
+- [Phase 5-A 实现交接](docs/status/phase-5-a-implementation-handoff.md)
+- [Windows Phase 5-A 验收](docs/operations/windows-phase-5-a-acceptance.md)
 - [Phase 4 设计](docs/plans/phase-4-secure-remote-human-access.md)
 - [Phase 4 任务包](docs/tasks/phase-4-cloudflare-tunnel-access.md)
 - [Phase 4 Codex Goal](docs/prompts/phase-4-codex-goal.md)

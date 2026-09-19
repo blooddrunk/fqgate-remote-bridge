@@ -110,6 +110,13 @@ Agent 必须先定位这里现有的 Git working tree，并尽量在该永久环
 - Phase 5-A Windows acceptance；
 - 最终 GitHub Actions Ubuntu + Windows matrix。
 
+Phase 5-A 的 Windows 脚本入口为
+`scripts/windows/phase5a-acceptance.ps1`，真实 credential matrix companion 为
+`scripts/windows/phase5a-authenticated-acceptance.mjs`。它们先解析已有的
+`D:\\code\\research` Git root，不创建第二份 checkout；credential matrix 只
+通过两个 `Read-Host -AsSecureString` 隐藏提示接收 Client ID/Secret，随后以
+child-process environment 传递并在 `finally` 清理。
+
 普通 CI 不得依赖真实 Cloudflare credentials。
 
 ## 允许的人工边界

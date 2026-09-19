@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
-import type { BridgePrincipal } from "../policy/request-context.js";
+import type { HumanBridgePrincipal } from "../policy/request-context.js";
 
 export const ADMIN_CONFIRMATION_OPERATION = "updates.apply" as const;
 export const DEFAULT_ADMIN_CONFIRMATION_TTL_MS = 60_000;
@@ -144,7 +144,7 @@ export class AdminConfirmationService {
 }
 
 export function bindingForAdminPlan(
-  principal: BridgePrincipal,
+  principal: HumanBridgePrincipal,
   plan: {
     readonly planId: string;
     readonly candidateId: string;

@@ -25,7 +25,7 @@ import {
   listRequiredFqgateContracts,
   type BridgeOperationPolicy,
 } from "./policy/registry.js";
-import type { BridgePrincipal, BridgeRequestContext } from "./policy/request-context.js";
+import type { BridgeRequestContext, HumanBridgePrincipal } from "./policy/request-context.js";
 
 export interface LifecycleStatusReader {
   status(): Promise<FqgateStatus>;
@@ -152,7 +152,7 @@ export class BridgeService {
 
   async prepareAdminUpdateApply(
     planId: string,
-    principal: BridgePrincipal,
+    principal: HumanBridgePrincipal,
   ): Promise<UpdateApplyConfirmationResponse> {
     const status = await this.requireUpdateService().getStatus();
     const plan = requireActivatablePlan(status.plan, planId);
@@ -162,7 +162,7 @@ export class BridgeService {
   async applyAdminUpdate(
     planId: string,
     confirmationGrant: string,
-    principal: BridgePrincipal,
+    principal: HumanBridgePrincipal,
   ): Promise<BridgeUpdateStatusResponse> {
     const updateService = this.requireUpdateService();
     const status = await updateService.getStatus();

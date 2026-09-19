@@ -90,6 +90,42 @@ describe("Windows entry points", () => {
     expect(script).toContain("phase45-authenticated-acceptance.mjs");
   });
 
+  it("provides a bounded Phase 5-A service-token acceptance boundary", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/phase5a-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    const harness = readFileSync(
+      new URL("../scripts/windows/phase5a-authenticated-acceptance.mjs", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("D:\\code\\research");
+    expect(script).toContain("rev-parse --show-toplevel");
+    expect(script).toContain(
+      'Read-Host "Cloudflare service-token Client ID (hidden)" -AsSecureString',
+    );
+    expect(script).toContain(
+      'Read-Host "Cloudflare service-token Client Secret (hidden)" -AsSecureString',
+    );
+    expect(script).toContain("CF_ACCESS_CLIENT_ID");
+    expect(script).toContain("CF_ACCESS_CLIENT_SECRET");
+    expect(script).toContain("EnvironmentVariables.Remove");
+    expect(script).toContain("will not create a checkout");
+    expect(script).toContain("17281");
+    expect(script).toContain("http://127.0.0.1:17282");
+    expect(script).not.toContain("--client-id");
+    expect(script).not.toContain("--client-secret");
+
+    expect(harness).toContain("CF_ACCESS_CLIENT_ID");
+    expect(harness).toContain("CF_ACCESS_CLIENT_SECRET");
+    expect(harness).toContain("MAX_RESPONSE_BYTES");
+    expect(harness).toContain("OPERATION_FORBIDDEN");
+    expect(harness).toContain("/v1/market/health");
+    expect(harness).not.toContain("console.log(clientId");
+    expect(harness).not.toContain("console.log(clientSecret");
+  });
+
   it("keeps the authenticated Phase 4.5 companion harness bounded and secret-safe", () => {
     const harness = readFileSync(
       new URL("../scripts/windows/phase45-authenticated-acceptance.mjs", import.meta.url),

@@ -57,7 +57,9 @@ Phase 4 remote-human operations remain:
 Phase 4.5A policy/authentication foundation, Phase 4.5B mobile work, and
 Phase 4.5C's narrow remote-admin maintenance and one-time apply confirmation
 are implemented and passed live Windows x64 + Cloudflare acceptance on
-2026-09-19. Phase 4.5 is closed; Phase 5 remains separate and unimplemented.
+2026-09-19. Phase 4.5 is closed; Phase 5-A is the active zero-privilege
+identity/context milestone, while Phase 5-B market-data APIs remain
+unimplemented.
 
 For `local` and ordinary `remote_human` callers, the following remain
 local-only. The implemented `remote_admin` context may invoke exactly these
@@ -97,6 +99,10 @@ Phase 5-A must not add a market-data operation. A valid machine identity must
 still be denied by every currently registered Bridge operation. Phase 5-B may
 start only after Phase 5-A deterministic, Windows, CI, and real service-token
 acceptance evidence is complete.
+
+The implementation handoff is
+`docs/status/phase-5-a-implementation-handoff.md`; the permanent Windows
+procedure/evidence is `docs/operations/windows-phase-5-a-acceptance.md`.
 
 The Cloudflare machine token claim profile is intentionally distinct from the
 Phase 4.5 human-admin profile. Service-token application JWTs use `type=app`,

@@ -1,30 +1,46 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
 import { BRIDGE_BIND_HOST, DEFAULT_BRIDGE_PORT } from "../runtime-config.js";
+import { findBridgeOperation } from "./registry.js";
 import type { BridgeOperationPolicy } from "./registry.js";
 
 export const CLOUDFLARE_ACCESS_ASSERTION_HEADER = "cf-access-jwt-assertion" as const;
 export const BRIDGE_ADMIN_INTENT_HEADER = "x-bridge-admin-intent" as const;
 export const BRIDGE_ADMIN_INTENT_VALUE = "fqgate-remote-bridge-admin-v1" as const;
 
-export type BridgeRequestContext = "local" | "remote_human" | "remote_admin";
+export type BridgeRequestContext = "local" | "remote_human" | "remote_admin" | "remote_machine";
 export type HostClassification = BridgeRequestContext | "unknown";
 
-export interface BridgePrincipal {
+export interface HumanBridgePrincipal {
   readonly kind: "human";
   readonly subject: string;
   readonly audience: string;
 }
 
+export interface MachineBridgePrincipal {
+  readonly kind: "machine";
+  readonly subject: string;
+  readonly audience: string;
+}
+
+export type BridgePrincipal = HumanBridgePrincipal | MachineBridgePrincipal;
+
 export interface AdminAccessVerifier {
   readonly audience: string;
-  verify(assertion: string): Promise<BridgePrincipal>;
+  verify(assertion: string): Promise<HumanBridgePrincipal>;
+}
+
+export interface MachineAccessVerifier {
+  readonly audience: string;
+  verify(assertion: string): Promise<MachineBridgePrincipal>;
 }
 
 export interface RequestContextPolicyOptions {
   readonly bridgePort?: number;
   readonly remoteHostname?: string;
   readonly adminHostname?: string;
+  readonly machineHostname?: string;
   readonly adminVerifier?: AdminAccessVerifier;
+  readonly machineVerifier?: MachineAccessVerifier;
 }
 
 export interface AuthenticatedRequestContext {
@@ -47,7 +63,11 @@ export function classifyHost(
 
   const remoteHostname = options.remoteHostname?.trim().toLowerCase();
   const adminHostname = options.adminHostname?.trim().toLowerCase();
-  if (remoteHostname !== undefined && remoteHostname === adminHostname) {
+  const machineHostname = options.machineHostname?.trim().toLowerCase();
+  const configuredRemoteHostnames = [remoteHostname, adminHostname, machineHostname].filter(
+    (hostname): hostname is string => hostname !== undefined,
+  );
+  if (new Set(configuredRemoteHostnames).size !== configuredRemoteHostnames.length) {
     return "unknown";
   }
   if (
@@ -63,6 +83,13 @@ export function classifyHost(
     parsed.port === undefined
   ) {
     return "remote_admin";
+  }
+  if (
+    machineHostname !== undefined &&
+    parsed.hostname === machineHostname &&
+    parsed.port === undefined
+  ) {
+    return "remote_machine";
   }
   return "unknown";
 }
@@ -100,7 +127,7 @@ export async function authenticateRequestContext(
         "Remote administrator authentication is not configured",
       );
     }
-    let principal: BridgePrincipal;
+    let principal: HumanBridgePrincipal;
     try {
       principal = await options.adminVerifier.verify(assertion);
     } catch {
@@ -111,10 +138,35 @@ export async function authenticateRequestContext(
         "The remote administrator assertion could not be validated",
       );
     }
-    if (!isValidAdminPrincipal(principal, options.adminVerifier.audience)) {
+    if (!isValidHumanPrincipal(principal, options.adminVerifier.audience)) {
       throw new BridgeError(
         ERROR_CODES.ACCESS_ASSERTION_INVALID,
         "The remote administrator principal is invalid",
+      );
+    }
+    return { context: classification, principal };
+  }
+  if (classification === "remote_machine") {
+    assertAssertionPresence(assertion);
+    if (options.machineVerifier === undefined) {
+      throw new BridgeError(
+        ERROR_CODES.ACCESS_ASSERTION_INVALID,
+        "Remote machine authentication is not configured",
+      );
+    }
+    let principal: MachineBridgePrincipal;
+    try {
+      principal = await options.machineVerifier.verify(assertion);
+    } catch {
+      throw new BridgeError(
+        ERROR_CODES.ACCESS_ASSERTION_INVALID,
+        "The remote machine assertion could not be validated",
+      );
+    }
+    if (!isValidMachinePrincipal(principal, options.machineVerifier.audience)) {
+      throw new BridgeError(
+        ERROR_CODES.ACCESS_ASSERTION_INVALID,
+        "The remote machine principal is invalid",
       );
     }
     return { context: classification, principal };
@@ -132,6 +184,11 @@ export function assertOperationAllowedForContext(
       "This bridge operation is not allowed for the current request context",
     );
   }
+}
+
+export function isRegisteredBridgeOperation(request: Request): boolean {
+  const url = new URL(request.url);
+  return findBridgeOperation(request.method, url.pathname) !== undefined;
 }
 
 export function assertRemoteAdminControlRequest(
@@ -169,7 +226,10 @@ function assertAssertionPresence(assertion: string | null): asserts assertion is
   }
 }
 
-function isValidAdminPrincipal(value: unknown, expectedAudience: string): value is BridgePrincipal {
+function isValidHumanPrincipal(
+  value: unknown,
+  expectedAudience: string,
+): value is HumanBridgePrincipal {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const principal = value as Record<string, unknown>;
   return (
@@ -178,6 +238,21 @@ function isValidAdminPrincipal(value: unknown, expectedAudience: string): value 
     typeof principal.subject === "string" &&
     principal.subject.length > 0 &&
     principal.subject.length <= 512
+  );
+}
+
+function isValidMachinePrincipal(
+  value: unknown,
+  expectedAudience: string,
+): value is MachineBridgePrincipal {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const principal = value as Record<string, unknown>;
+  return (
+    principal.kind === "machine" &&
+    principal.audience === expectedAudience &&
+    typeof principal.subject === "string" &&
+    principal.subject.length > 0 &&
+    principal.subject.length <= 256
   );
 }
 

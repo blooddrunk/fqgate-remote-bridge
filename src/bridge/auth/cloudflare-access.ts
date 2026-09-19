@@ -3,11 +3,16 @@ import {
   decodeProtectedHeader,
   jwtVerify,
   type JSONWebKeySet,
-  type JWTPayload,
   type JWK,
+  type JWTPayload,
 } from "jose";
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
-import type { AdminAccessVerifier, BridgePrincipal } from "../policy/request-context.js";
+import type {
+  AdminAccessVerifier,
+  HumanBridgePrincipal,
+  MachineBridgePrincipal,
+  MachineAccessVerifier,
+} from "../policy/request-context.js";
 
 const CLOUDFLARE_TEAM_DOMAIN_SUFFIX = ".cloudflareaccess.com";
 const CLOUDFLARE_ACCESS_CERTS_PATH = "/cdn-cgi/access/certs";
@@ -19,6 +24,8 @@ const DEFAULT_MAX_BYTES = 64 * 1024;
 const MAX_JWK_BYTES = 64 * 1024;
 const MAX_JWK_KEYS = 16;
 const MAX_ASSERTION_LENGTH = 32 * 1024;
+const MAX_HUMAN_SUBJECT_LENGTH = 512;
+const MAX_MACHINE_COMMON_NAME_LENGTH = 256;
 
 export const CLOUDFLARE_ACCESS_CERTS_ENDPOINT_PATH = CLOUDFLARE_ACCESS_CERTS_PATH;
 
@@ -34,6 +41,8 @@ export interface CloudflareAccessJwtVerifierOptions {
   readonly maxBytes?: number;
 }
 
+export type CloudflareAccessMachineJwtVerifierOptions = CloudflareAccessJwtVerifierOptions;
+
 interface CachedKeySet {
   readonly keySet: ReturnType<typeof createLocalJWKSet>;
   readonly kids: ReadonlySet<string>;
@@ -41,14 +50,12 @@ interface CachedKeySet {
 }
 
 /**
- * Verifies only the admin Access application. The ordinary Phase 4 human
- * application intentionally continues to use its edge validation plus the
- * assertion-presence drift check.
+ * Shared cryptographic transport only. Human and machine claim validation is
+ * deliberately kept in separate verifier classes below.
  */
-export class CloudflareAccessJwtVerifier implements AdminAccessVerifier {
+class CloudflareAccessJwkVerifier {
   readonly teamDomain: string;
   readonly issuer: string;
-  readonly audience: string;
   readonly certsEndpoint: string;
 
   private readonly fetcher: FetchLike;
@@ -62,7 +69,6 @@ export class CloudflareAccessJwtVerifier implements AdminAccessVerifier {
   constructor(options: CloudflareAccessJwtVerifierOptions) {
     this.teamDomain = validateTeamDomain(options.teamDomain);
     this.issuer = `https://${this.teamDomain}`;
-    this.audience = validateAudience(options.audience);
     this.certsEndpoint = `${this.issuer}${CLOUDFLARE_ACCESS_CERTS_PATH}`;
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init));
     this.nowMs = options.nowMs ?? Date.now;
@@ -75,7 +81,7 @@ export class CloudflareAccessJwtVerifier implements AdminAccessVerifier {
     this.maxBytes = boundedOption(options.maxBytes ?? DEFAULT_MAX_BYTES, 1, MAX_JWK_BYTES);
   }
 
-  async verify(assertion: string): Promise<BridgePrincipal> {
+  async verifySignature(assertion: string): Promise<JWTPayload> {
     if (
       assertion.length === 0 ||
       assertion.length > MAX_ASSERTION_LENGTH ||
@@ -126,30 +132,12 @@ export class CloudflareAccessJwtVerifier implements AdminAccessVerifier {
   private async verifyWithKeySet(
     assertion: string,
     keySet: ReturnType<typeof createLocalJWKSet>,
-  ): Promise<BridgePrincipal> {
-    const currentDate = new Date(this.nowMs());
+  ): Promise<JWTPayload> {
     const result = await jwtVerify<JWTPayload>(assertion, keySet, {
       algorithms: ["RS256"],
-      issuer: this.issuer,
-      audience: this.audience,
-      currentDate,
-      requiredClaims: ["sub", "exp", "iat"],
+      currentDate: new Date(this.nowMs()),
     });
-    const payload = result.payload;
-    if (
-      typeof payload.sub !== "string" ||
-      payload.sub.length === 0 ||
-      payload.sub.length > 512 ||
-      !isExactAudience(payload.aud, this.audience) ||
-      !isValidTemporalPayload(payload, currentDate.getTime() / 1_000)
-    ) {
-      throw invalidAssertion();
-    }
-    return {
-      kind: "human",
-      subject: payload.sub,
-      audience: this.audience,
-    };
+    return result.payload;
   }
 
   private async getKeySet(forceRefresh: boolean): Promise<CachedKeySet> {
@@ -205,6 +193,87 @@ export class CloudflareAccessJwtVerifier implements AdminAccessVerifier {
   }
 }
 
+/**
+ * Verifies only the human administrator Access application. This validator
+ * intentionally requires the human non-empty `sub` semantics.
+ */
+export class CloudflareAccessJwtVerifier implements AdminAccessVerifier {
+  readonly teamDomain: string;
+  readonly issuer: string;
+  readonly audience: string;
+  readonly certsEndpoint: string;
+
+  private readonly signatureVerifier: CloudflareAccessJwkVerifier;
+  private readonly nowMs: () => number;
+
+  constructor(options: CloudflareAccessJwtVerifierOptions) {
+    this.signatureVerifier = new CloudflareAccessJwkVerifier(options);
+    this.teamDomain = this.signatureVerifier.teamDomain;
+    this.issuer = this.signatureVerifier.issuer;
+    this.audience = validateAudience(options.audience);
+    this.certsEndpoint = this.signatureVerifier.certsEndpoint;
+    this.nowMs = options.nowMs ?? Date.now;
+  }
+
+  async verify(assertion: string): Promise<HumanBridgePrincipal> {
+    const payload = await this.signatureVerifier.verifySignature(assertion);
+    const nowSeconds = this.nowMs() / 1_000;
+    if (!isValidHumanPayload(payload, this.issuer, this.audience, nowSeconds)) {
+      throw invalidAssertion();
+    }
+    return {
+      kind: "human",
+      subject: payload.sub as string,
+      audience: this.audience,
+    };
+  }
+
+  invalidateCache(): void {
+    this.signatureVerifier.invalidateCache();
+  }
+}
+
+/**
+ * Verifies only the separate Cloudflare Access service-token application.
+ * Service-token JWTs have machine semantics: `type=app`, a bounded
+ * non-empty `common_name`, and an explicitly empty `sub`.
+ */
+export class CloudflareAccessMachineJwtVerifier implements MachineAccessVerifier {
+  readonly teamDomain: string;
+  readonly issuer: string;
+  readonly audience: string;
+  readonly certsEndpoint: string;
+
+  private readonly signatureVerifier: CloudflareAccessJwkVerifier;
+  private readonly nowMs: () => number;
+
+  constructor(options: CloudflareAccessMachineJwtVerifierOptions) {
+    this.signatureVerifier = new CloudflareAccessJwkVerifier(options);
+    this.teamDomain = this.signatureVerifier.teamDomain;
+    this.issuer = this.signatureVerifier.issuer;
+    this.audience = validateAudience(options.audience);
+    this.certsEndpoint = this.signatureVerifier.certsEndpoint;
+    this.nowMs = options.nowMs ?? Date.now;
+  }
+
+  async verify(assertion: string): Promise<MachineBridgePrincipal> {
+    const payload = await this.signatureVerifier.verifySignature(assertion);
+    const nowSeconds = this.nowMs() / 1_000;
+    if (!isValidMachinePayload(payload, this.issuer, this.audience, nowSeconds)) {
+      throw invalidAssertion();
+    }
+    return {
+      kind: "machine",
+      subject: payload.common_name as string,
+      audience: this.audience,
+    };
+  }
+
+  invalidateCache(): void {
+    this.signatureVerifier.invalidateCache();
+  }
+}
+
 export function validateTeamDomain(value: string): string {
   const normalized = value.trim().toLowerCase();
   if (
@@ -216,7 +285,7 @@ export function validateTeamDomain(value: string): string {
   ) {
     throw new BridgeError(
       ERROR_CODES.CONFIG_INVALID,
-      "remoteAccess.adminAccess.teamDomain must be a Cloudflare Access team hostname",
+      "remoteAccess Cloudflare teamDomain must be a Cloudflare Access team hostname",
     );
   }
   return normalized;
@@ -231,10 +300,49 @@ export function validateAudience(value: string): string {
   ) {
     throw new BridgeError(
       ERROR_CODES.CONFIG_INVALID,
-      "remoteAccess.adminAccess.audience must be a bounded opaque audience value",
+      "remoteAccess Access audience must be a bounded opaque audience value",
     );
   }
   return value;
+}
+
+function isValidHumanPayload(
+  payload: JWTPayload,
+  expectedIssuer: string,
+  expectedAudience: string,
+  nowSeconds: number,
+): boolean {
+  return (
+    payload.iss === expectedIssuer &&
+    typeof payload.sub === "string" &&
+    payload.sub.length > 0 &&
+    payload.sub.length <= MAX_HUMAN_SUBJECT_LENGTH &&
+    isExactAudience(payload.aud, expectedAudience) &&
+    isValidTemporalPayload(payload, nowSeconds)
+  );
+}
+
+function isValidMachinePayload(
+  payload: JWTPayload,
+  expectedIssuer: string,
+  expectedAudience: string,
+  nowSeconds: number,
+): payload is JWTPayload & { common_name: string } {
+  const claims = payload as JWTPayload & Record<string, unknown>;
+  const commonName = claims.common_name;
+  return (
+    payload.iss === expectedIssuer &&
+    claims.type === "app" &&
+    typeof payload.sub === "string" &&
+    payload.sub.length === 0 &&
+    typeof commonName === "string" &&
+    commonName.length > 0 &&
+    commonName.length <= MAX_MACHINE_COMMON_NAME_LENGTH &&
+    commonName.trim().length > 0 &&
+    !hasControlCharacter(commonName) &&
+    isExactAudience(payload.aud, expectedAudience) &&
+    isValidTemporalPayload(payload, nowSeconds)
+  );
 }
 
 function normalizeJwkSet(value: unknown): JSONWebKeySet {
@@ -321,14 +429,15 @@ function isValidTemporalPayload(payload: JWTPayload, nowSeconds: number): boolea
     return false;
   }
   if (
-    payload.nbf !== undefined &&
-    (typeof payload.nbf !== "number" || !Number.isFinite(payload.nbf) || payload.nbf > nowSeconds)
+    typeof payload.iat !== "number" ||
+    !Number.isFinite(payload.iat) ||
+    payload.iat > nowSeconds
   ) {
     return false;
   }
   if (
-    payload.iat !== undefined &&
-    (typeof payload.iat !== "number" || !Number.isFinite(payload.iat) || payload.iat > nowSeconds)
+    payload.nbf !== undefined &&
+    (typeof payload.nbf !== "number" || !Number.isFinite(payload.nbf) || payload.nbf > nowSeconds)
   ) {
     return false;
   }
@@ -356,6 +465,13 @@ function hasInvalidAudienceCharacter(value: string): boolean {
   return Array.from(value).some((character) => {
     const codePoint = character.codePointAt(0) ?? 0;
     return codePoint <= 0x1f || codePoint === 0x7f || /\s/u.test(character);
+  });
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
   });
 }
 

@@ -353,9 +353,9 @@ arbitrary origin is accepted.
 
 Phase 4 secures human Dashboard access with Access as part of the same remote milestone as Tunnel. Phase 5 adds machine authentication for the read-only API.
 
-Human, admin, and future machine policies are separate. Cloudflare
-authentication does not authorize arbitrary FQGate operations; the bridge
-registry remains the authorization boundary after Access succeeds. Phase 4.5A
+Human, admin, and machine policies are separate. Cloudflare authentication
+does not authorize arbitrary FQGate operations; the bridge registry remains the
+authorization boundary after Access succeeds. Phase 4.5A
 adds an optional admin hostname/AUD and Bridge-side verifier; 4.5B keeps the
 existing responsive application and server-side authorization model. The
 implemented Phase 4.5C policy adds only the four explicitly named maintenance
@@ -372,9 +372,14 @@ and timestamps.
 
 Phase 4 assumes a manually created self-hosted Access application with a
 human Allow policy and Protect with Access enabled on the published
-application. No Cloudflare API provisioning or service-token machine auth is
-implemented. The real Windows/Cloudflare acceptance is recorded in the Phase 4
-runbook and handoff; Phase 4 is closed.
+application. Phase 5-A adds only the independent machine hostname, Access
+application/AUD metadata, service-token JWT verifier, and
+`remote_machine` request context. Its operation allowlist is intentionally
+empty: a valid machine principal is denied by every existing operation and
+machine-host page/static/raw paths cannot reach the TanStack application. No
+Cloudflare API provisioning or market-data operation is implemented. The real
+Windows/Cloudflare human acceptance is recorded in the Phase 4 runbook and
+handoff; Phase 4 remains closed.
 
 ### 12. Cloudflare provisioner — Phase 6
 

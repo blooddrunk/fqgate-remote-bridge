@@ -13,7 +13,10 @@ import {
 import { FetchHttpTransport } from "../fqgate/release/http.js";
 import { resolveBridgePort } from "./runtime-config.js";
 import type { RequestContextPolicyOptions } from "./policy/request-context.js";
-import { CloudflareAccessJwtVerifier } from "./auth/cloudflare-access.js";
+import {
+  CloudflareAccessJwtVerifier,
+  CloudflareAccessMachineJwtVerifier,
+} from "./auth/cloudflare-access.js";
 
 let handlerPromise: Promise<BridgeHttpHandler> | undefined;
 let requestContextOptionsPromise: Promise<RequestContextPolicyOptions> | undefined;
@@ -74,6 +77,7 @@ function createRequestContextOptions(
   config: Awaited<ReturnType<typeof loadConfig>>,
 ): RequestContextPolicyOptions {
   const adminAccess = config.remoteAccess.adminAccess;
+  const machineAccess = config.remoteAccess.machineAccess;
   return {
     bridgePort: resolveBridgePort(process.env.BRIDGE_PORT ?? process.env.PORT),
     ...(config.remoteAccess.remoteHostname === undefined
@@ -86,6 +90,15 @@ function createRequestContextOptions(
           adminVerifier: new CloudflareAccessJwtVerifier({
             teamDomain: adminAccess.teamDomain,
             audience: adminAccess.audience,
+          }),
+        }),
+    ...(config.remoteAccess.machineHostname === undefined || machineAccess === undefined
+      ? {}
+      : {
+          machineHostname: config.remoteAccess.machineHostname,
+          machineVerifier: new CloudflareAccessMachineJwtVerifier({
+            teamDomain: machineAccess.teamDomain,
+            audience: machineAccess.audience,
           }),
         }),
   };

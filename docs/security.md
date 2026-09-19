@@ -348,6 +348,28 @@ runtime authorization path; deterministic tests remain the evidence for
 principal/operation binding and concurrent redemption cases whose successful
 consumer would otherwise activate a real update.
 
+### Phase 5-A remote-machine boundary — zero operation privilege
+
+The machine/API hostname is exact and distinct from both human hostnames. It is
+paired with separate non-secret team-domain/AUD metadata; service-token Client
+ID/Secret are never Bridge configuration. The Bridge derives the same fixed
+`https://<team>.cloudflareaccess.com/cdn-cgi/access/certs` endpoint and bounded
+in-memory JWK cache used by the cryptographic transport, but the machine claim
+validator is separate from the human-admin validator. It requires RS256,
+exact issuer and exact single machine AUD, valid `iat`/`exp`/optional `nbf`,
+`type=app`, bounded non-empty `common_name`, and the service-token empty-string
+`sub` semantics. It returns only `{ kind: "machine", subject, audience }`.
+Human-admin tokens continue to require non-empty `sub`; neither principal kind
+can impersonate the other.
+
+Phase 5-A recognizes `remote_machine` as a request context but adds it to no
+registered operation's `allowedContexts`. A valid machine assertion therefore
+receives normalized `OPERATION_FORBIDDEN` for every current operation. The
+top-level Start/Nitro request gate also rejects machine-host page, static, and
+unregistered/raw routes before they can render the human Dashboard or form a
+proxy side channel. Cloudflare service-token acceptance is separate evidence;
+deterministic tests remain the complete dangerous-operation deny matrix.
+
 ## Network constraints
 
 Desired posture:

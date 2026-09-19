@@ -125,7 +125,7 @@ describe("Phase 4.5A request contexts and orthogonal operation policy", () => {
     ).toHaveLength(7);
   });
 
-  it("covers the complete context by operation authorization matrix without a future machine context", () => {
+  it("preserves the complete Phase 4.5 local/human/admin authorization matrix", () => {
     const expected: Record<string, Set<string>> = {
       local: new Set(listBridgeOperations().map((operation) => operation.id)),
       remote_human: new Set([

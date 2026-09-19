@@ -15,6 +15,7 @@ import {
   authenticateRequestContext,
   type BridgeRequestContext,
   type BridgePrincipal,
+  type HumanBridgePrincipal,
   type RequestContextPolicyOptions,
 } from "../policy/request-context.js";
 
@@ -186,19 +187,14 @@ async function dispatchRequest(
       const body = await readJsonBody(request, operation.maxBodyBytes, "update apply");
       const applyRequest = readUpdateApplyRequest(body, requestContext);
       if (applyRequest.kind === "local") return service.applyUpdate(applyRequest.planId);
-      if (principal === undefined) {
-        throw new BridgeError(
-          ERROR_CODES.ACCESS_ASSERTION_INVALID,
-          "A verified administrator principal is required for this operation",
-        );
-      }
+      const humanPrincipal = requireHumanAdminPrincipal(principal);
       if (applyRequest.kind === "prepare") {
-        return service.prepareAdminUpdateApply(applyRequest.planId, principal);
+        return service.prepareAdminUpdateApply(applyRequest.planId, humanPrincipal);
       }
       return service.applyAdminUpdate(
         applyRequest.planId,
         applyRequest.confirmationGrant,
-        principal,
+        humanPrincipal,
       );
     }
     case "openapi.catalog":
@@ -208,6 +204,16 @@ async function dispatchRequest(
       rejectEmptyBody(await readJsonBody(request, operation.maxBodyBytes, "OpenAPI refresh"));
       return service.openApiCatalog(true);
   }
+}
+
+function requireHumanAdminPrincipal(principal: BridgePrincipal | undefined): HumanBridgePrincipal {
+  if (principal?.kind !== "human") {
+    throw new BridgeError(
+      ERROR_CODES.ACCESS_ASSERTION_INVALID,
+      "A verified human administrator principal is required for this operation",
+    );
+  }
+  return principal;
 }
 
 function rejectBeginBody(body: Record<string, unknown>): void {

@@ -264,6 +264,12 @@ Active Codex handoff:
 
 ### 5-A — remote-machine identity/context foundation, zero privilege
 
+Implementation status: **IN PROGRESS / OPEN**. The deterministic identity,
+hostname, verifier, zero-operation policy, and secret-safe Windows harness are
+implemented. Closure still requires the real service-token matrix through the
+separate machine Access application and the exact Bridge-only Tunnel ingress;
+until then Phase 5-B remains blocked.
+
 Add a fourth request context:
 
 ```text
@@ -290,6 +296,9 @@ machine token reaches the Bridge as `remote_machine` but is still denied by
 the operation policy. Cloudflare resource provisioning remains manual until
 Phase 6; the task package gives the exact operator steps and secret-handling
 boundary.
+
+Implementation handoff: `docs/status/phase-5-a-implementation-handoff.md`.
+Windows procedure/evidence: `docs/operations/windows-phase-5-a-acceptance.md`.
 
 ### 5-B — runtime contract census and first read-only market slice
 

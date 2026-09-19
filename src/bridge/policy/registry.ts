@@ -289,11 +289,17 @@ export function assertOperationRegistryInvariants(): void {
       operation.allowedContexts.length === 0 ||
       operation.allowedContexts.some(
         (context, index, contexts) =>
-          !["local", "remote_human", "remote_admin"].includes(context) ||
+          !["local", "remote_human", "remote_admin", "remote_machine"].includes(context) ||
           contexts.indexOf(context) !== index,
       )
     ) {
       throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, `Invalid context policy: ${key}`);
+    }
+    if (operation.allowedContexts.includes("remote_machine")) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Remote machine operation privilege is not enabled in Phase 5-A: ${key}`,
+      );
     }
     if (operation.requiresConfirmation && operation.id !== "updates.apply") {
       throw new BridgeError(
