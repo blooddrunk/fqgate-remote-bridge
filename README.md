@@ -93,7 +93,7 @@ Windows 重启后，在已登录的用户会话中执行下面的命令；它会
 
 ```powershell
 .\scripts\windows\start-phase4.cmd `
-  -ConfigPath D:\code\research\fqgate-phase4-acceptance-config.json
+  -ConfigPath D:\code\research\fqgate-acceptance-config.json
 ```
 
 如果不需要自动打开浏览器，可追加 `-NoBrowser`。首次安装、服务安装或 token-file
@@ -214,7 +214,7 @@ Windows 目标机完成两个人工 Access 登录后，可在同一个非持久�
 
 ```powershell
 .\scripts\windows\phase45-acceptance.ps1 `
-  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -ConfigPath D:\code\research\fqgate-acceptance-config.json `
   -RunAuthenticatedBrowserMatrix
 ```
 

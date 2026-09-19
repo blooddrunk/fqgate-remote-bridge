@@ -68,7 +68,7 @@ keep the launcher process running in the interactive session:
 
 ```powershell
 .\scripts\windows\start-dashboard.cmd `
-  -ConfigPath D:\code\research\fqgate-phase4-acceptance-config.json `
+  -ConfigPath D:\code\research\fqgate-acceptance-config.json `
   -SkipInstall -SkipBuild
 ```
 

@@ -319,7 +319,7 @@ https://<admin-hostname>/
 
 ```powershell
 .\scripts\windows\start-phase4.cmd `
-  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -ConfigPath D:\code\research\fqgate-acceptance-config.json `
   -NoBrowser
 ```
 

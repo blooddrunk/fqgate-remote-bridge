@@ -69,7 +69,7 @@ Run the bounded Windows helper before any browser work:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\phase45-acceptance.ps1 `
-  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -ConfigPath D:\code\research\fqgate-acceptance-config.json `
   -RunLocalMaintenance
 ```
 
@@ -99,7 +99,7 @@ session:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\phase45-acceptance.ps1 `
-  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -ConfigPath D:\code\research\fqgate-acceptance-config.json `
   -RunAuthenticatedBrowserMatrix
 ```
 
