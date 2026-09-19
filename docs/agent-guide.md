@@ -134,6 +134,7 @@ Phase 4 当前代码入口：
 - `src/cloudflared/`：固定 Cloudflare release source/integrity、候选激活、token-file 和 Windows service 适配；
 - `src/cli/main.ts`：显式 `cloudflared release/install/status` 与 `cloudflared service ...` 命令；
 - `scripts/windows/acceptance.ps1 -VerifyPhase4`：安全 loopback/service/Access 验收工具，不自动创建 Cloudflare 资源。
+- `scripts/windows/phase45-acceptance.ps1 -RunAuthenticatedBrowserMatrix`：操作者完成两次真实 Access 登录/MFA 后，调用非持久化 headed browser companion，输出有界认证请求结果，不执行 `updates.apply`。
 
 配置使用 `remoteAccess.remoteHostname` 和 `cloudflared.tokenFile`。token-file
 必须是 repo 外绝对路径；运行时只报告安全状态，不返回文件内容。默认/强制

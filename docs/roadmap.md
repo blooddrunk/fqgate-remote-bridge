@@ -198,6 +198,13 @@ Phase 4.5 may close only when:
 10. real Windows x64 + Cloudflare acceptance re-proves loopback-only listeners, ordinary-human denial, the approved admin edge policy, admin flow, confirmation flow, raw-path denial, local maintenance, and mobile-browser smoke behavior;
 11. one known-safe real remote-admin update apply is proven, or the phase remains open if no safe candidate is available.
 
+The Windows acceptance helper now has an explicit
+`-RunAuthenticatedBrowserMatrix` mode backed by
+`scripts/windows/phase45-authenticated-acceptance.mjs`. It reduces the live
+request work to an operator's two Access login/MFA boundaries and uses a
+non-persistent browser context; it does not change the exit criteria or run a
+real apply.
+
 Phase 4.5 non-goals include Phase 5 machine APIs/service tokens, Phase 6 provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, final packaging, generic remote shell/process control, and any financial state-changing capability.
 
 ## Future planning item — operator setup simplification and multi-profile isolation

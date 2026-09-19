@@ -360,7 +360,9 @@ describe("Phase 4 cloudflared release and secret boundaries", () => {
         platform: "linux",
         acl: new PosixTokenFileAcl(),
       });
-      await expect(store.write(tokenPath, "generated-posix-test-value", "test-service")).resolves.toMatchObject({
+      await expect(
+        store.write(tokenPath, "generated-posix-test-value", "test-service"),
+      ).resolves.toMatchObject({
         state: "secure",
         path: tokenPath,
       });

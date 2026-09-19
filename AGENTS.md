@@ -105,6 +105,15 @@ The plain-language acceptance procedure is:
 
 `docs/operations/windows-phase-4-5-acceptance-simple.md`
 
+The bounded in-memory authenticated request companion is:
+
+`scripts/windows/phase45-authenticated-acceptance.mjs`
+
+It is invoked explicitly by
+`scripts/windows/phase45-acceptance.ps1 -RunAuthenticatedBrowserMatrix`; it never persists or prints browser
+credentials/assertions, QR/session material, confirmation grants, or calls
+`updates.apply`.
+
 The future multi-account/profile design is deliberately separate and
 unimplemented:
 

@@ -79,6 +79,53 @@ grants. `PASS` is machine evidence; `FAIL` is a blocking local defect; `MANUAL`
 means that the command needs an elevated shell or a real authenticated browser;
 `SKIP` means the helper intentionally did not run an optional check.
 
+### Authenticated request-matrix companion
+
+After the operator has completed the two real Access login/MFA boundaries in a
+headed browser, run the bounded companion from the same Windows PowerShell
+session:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\windows\phase45-acceptance.ps1 `
+  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -RunAuthenticatedBrowserMatrix
+```
+
+The default Windows channel is Edge. On a machine where the bundled Playwright
+Chromium is installed instead, append `-BrowserChannel chromium`. The
+companion launches one non-persistent, headed browser context, asks the
+operator to complete ordinary and admin Access login/MFA in that window, and
+closes the context at the end. It does not export storage state, read or print
+cookies/JWTs, save screenshots/traces, or print QR/session/confirmation
+values. Browser responses are read only up to 128 KiB and output is limited to
+PASS/FAIL/SKIP, bounded HTTP/error codes, redacted labels, and timestamps.
+
+The companion automatically checks:
+
+- T4 ordinary Dashboard, QR route, updates/reference pages, safe Phase 4 API
+  operations, and QR begin/poll while retaining QR/session data only in browser
+  memory;
+- T5 all four ordinary-human maintenance denials;
+- T8/T9 admin pages and positive authenticated safe/admin requests;
+- T10 admin check/plan/OpenAPI refresh;
+- T11 no-grant, stale-plan, expiry, and replay-after-expiry negatives when the
+  current plan is activatable, without sending a valid execute request;
+- T14/T15 representative cloudflared/control-plane/market/financial/raw route
+  denials;
+- T17 authenticated emulated 360/390/430/768 CSS-pixel viewport overflow.
+
+The following are intentionally not fabricated as live browser evidence by this
+helper. Wrong-principal and operation-mismatch grants have no browser protocol
+input that can safely create those bindings; a valid post-redemption replay or
+concurrent double redemption would require at least one successful execute and
+could activate the real update. The deterministic `pnpm test` suite proves
+those cases against the same Bridge handler/confirmation service with a fake
+non-mutating update service. A real physical phone/tablet smoke remains a
+human-presence check because CSS emulation cannot prove browser/device
+behavior. T13 is the only path allowed to call a real `updates.apply`, and
+requires the separate explicit approval procedure below.
+
 ## Required live evidence
 
 | ID  | Required proof                                                                                                                                                                                                                  | Status        | Evidence reference                                                                                                                                                                                                                                    |

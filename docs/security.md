@@ -339,6 +339,14 @@ made. The top-level application transport applies the same Host/assertion
 gate to page and static requests, so an untrusted Host cannot use a UI route
 as a side channel.
 
+The live acceptance companion uses a headed, non-persistent Playwright browser
+context. It keeps the Access browser session and any short-lived confirmation
+grant in memory only, bounds response reads, emits only bounded status/error
+codes, and never calls `updates.apply`. This is an acceptance tool, not a
+runtime authorization path; deterministic tests remain the evidence for
+principal/operation binding and concurrent redemption cases whose successful
+consumer would otherwise activate a real update.
+
 ## Network constraints
 
 Desired posture:

@@ -363,6 +363,13 @@ operations to `remote_admin`, with a one-time confirmation for apply and
 exact-origin/intent CSRF checks. Live Windows/Cloudflare acceptance is still
 required before Phase 4.5 can close.
 
+The live request-matrix companion is deliberately outside this runtime
+boundary. It launches a non-persistent headed browser context after the
+operator completes Access login/MFA, keeps cookies/assertions/grants in
+process memory, bounds response bodies, and never performs `updates.apply`.
+Its output is limited to PASS/FAIL, bounded HTTP/error codes, redacted labels,
+and timestamps.
+
 Phase 4 assumes a manually created self-hosted Access application with a
 human Allow policy and Protect with Access enabled on the published
 application. No Cloudflare API provisioning or service-token machine auth is

@@ -210,6 +210,16 @@ docs/prompts/phase-4-5-closure-and-phase-5-foundation-codex-goal.md
 
 只有 GitHub Actions 的 Ubuntu/Windows 都通过，且 T1-T17（包括真实 authenticated remote-admin apply）都有非敏感证据后，Phase 4.5 才能 CLOSED，随后才进入 Phase 5 remote-machine read-only API。
 
+Windows 目标机完成两个人工 Access 登录后，可在同一个非持久化 headed 浏览器上下文中运行有界的已认证请求矩阵；它只输出 PASS/FAIL、HTTP/error code、脱敏标签和时间戳，不保存或打印 cookie、JWT、QR、confirmation grant，也不会调用 `updates.apply`：
+
+```powershell
+.\scripts\windows\phase45-acceptance.ps1 `
+  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -RunAuthenticatedBrowserMatrix
+```
+
+该 companion harness 会验证 ordinary/admin 页面和安全 API、ordinary maintenance denial、admin check/plan/OpenAPI refresh、无确认/过期/安全 stale-plan/replay negative path、raw/unregistered route denial 以及认证后的模拟 viewport；绑定错人/错 operation、成功 redemption 后的 replay、竞态 double-redemption 和真实 apply 仍分别由 deterministic tests 或 T13 的人工边界证明。
+
 ## Phase 4.5：远程管理员基础与移动 Dashboard
 
 Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`、

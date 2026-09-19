@@ -82,16 +82,25 @@ calls.
 The final command results should be recorded here after running:
 
 ```text
-pnpm typecheck   PASS
-pnpm lint        PASS
-pnpm test        PASS — 15 files / 122 tests
-pnpm build       PASS
+pnpm typecheck    PASS
+pnpm lint         PASS
+pnpm test         PASS — 15 files / 125 tests
+pnpm build        PASS
 pnpm format:check PASS
-pnpm test:e2e    PASS — 13 tests, including 5 viewport suites
+pnpm test:e2e     PASS — 13 tests, including 5 viewport suites
 ```
 
 The cold-start e2e run also passed after the Playwright startup wait was
 increased; no pre-warmed server was required for that final pass.
+
+The live acceptance helper now has an explicit
+`-RunAuthenticatedBrowserMatrix` mode. It opens a non-persistent headed
+browser context, leaves Access login/MFA to the operator, bounds response
+reads, prints no browser/session/confirmation material, and never calls
+`updates.apply`. It covers the safe authenticated request matrix and safe
+confirmation negatives; deterministic tests remain the evidence for wrong
+principal/operation binding and concurrent/double redemption because a
+successful live consumer would be a real update.
 
 ## Outstanding live evidence
 

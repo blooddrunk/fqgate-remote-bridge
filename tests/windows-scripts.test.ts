@@ -86,6 +86,23 @@ describe("Windows entry points", () => {
     expect(script).toContain("ACCESS_ASSERTION_REQUIRED");
     expect(script).toContain("--token-file");
     expect(script).toContain("never runs updates.apply");
+    expect(script).toContain("[switch]$RunAuthenticatedBrowserMatrix");
+    expect(script).toContain("phase45-authenticated-acceptance.mjs");
+  });
+
+  it("keeps the authenticated Phase 4.5 companion harness bounded and secret-safe", () => {
+    const harness = readFileSync(
+      new URL("../scripts/windows/phase45-authenticated-acceptance.mjs", import.meta.url),
+      "utf8",
+    );
+
+    expect(harness).toContain("headless: false");
+    expect(harness).toContain('credentials: "include"');
+    expect(harness).toContain("MAX_RESPONSE_BYTES");
+    expect(harness).toContain("never runs updates.apply");
+    expect(harness).not.toContain("storageState");
+    expect(harness).not.toContain("screenshot");
+    expect(harness).not.toContain("confirmationGrant}");
   });
 
   it("provides an explicit one-command dashboard launcher without silent FQGate installation", () => {

@@ -5,7 +5,10 @@ param(
     [string]$OrdinaryUrl,
     [string]$AdminUrl,
     [switch]$RestartCloudflared,
-    [switch]$RunLocalMaintenance
+    [switch]$RunLocalMaintenance,
+    [switch]$RunAuthenticatedBrowserMatrix,
+    [ValidateSet("msedge", "chromium")]
+    [string]$BrowserChannel = "msedge"
 )
 
 $ErrorActionPreference = "Stop"
@@ -339,6 +342,29 @@ if ($RunLocalMaintenance) {
     Write-Result "T16-maintenance" "local check/plan/OpenAPI refresh" "SKIP" "re-run with -RunLocalMaintenance; this mode never runs updates.apply"
 }
 
+if ($RunAuthenticatedBrowserMatrix) {
+    $harnessPath = Join-Path $PSScriptRoot "phase45-authenticated-acceptance.mjs"
+    if (-not (Test-Path -LiteralPath $harnessPath -PathType Leaf)) {
+        Write-Result "AUTH" "authenticated browser harness" "FAIL" "companion harness is missing"
+    } else {
+        try {
+            & node.exe $harnessPath `
+                --ordinary-url $OrdinaryUrl `
+                --admin-url $AdminUrl `
+                --browser-channel $BrowserChannel
+            if ($LASTEXITCODE -eq 0) {
+                Write-Result "AUTH" "authenticated browser matrix" "PASS" "companion harness completed"
+            } else {
+                Write-Result "AUTH" "authenticated browser matrix" "FAIL" "companion harness returned a bounded failure"
+            }
+        } catch {
+            Write-Result "AUTH" "authenticated browser matrix" "FAIL" "node or browser harness could not start"
+        }
+    }
+} else {
+    Write-Result "AUTH" "authenticated browser matrix" "MANUAL" "re-run with -RunAuthenticatedBrowserMatrix after human Access login"
+}
+
 Write-Host ""
 Write-Host "Manual browser evidence still required:" -ForegroundColor Yellow
 Write-Host "  T4: ordinary-human Dashboard/status/QR/reference; direct maintenance calls must be 403."
@@ -347,6 +373,7 @@ Write-Host "  T9/T10: real admin session must reach Bridge and run check/plan/Op
 Write-Host "  T11/T12: use the admin UI/test harness for confirmation expiry, replay, mismatch, and race."
 Write-Host "  T13: only an explicitly approved known-safe candidate may be applied; otherwise record NOT AVAILABLE."
 Write-Host "  T14/T17: authenticated negative-path and real mobile-browser smoke."
+Write-Host "  Authenticated companion harness keeps browser cookies/assertions/grants in one in-memory context; it never writes storage state or runs updates.apply."
 
 if ($script:failureCount -gt 0) {
     Write-Host ("BLOCKED: {0} automated checks failed. Fix these before browser acceptance." -f $script:failureCount) -ForegroundColor Red

@@ -17,6 +17,22 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -RunLocalMaintenance
 ```
 
+本机检查通过后，如需自动完成已认证请求矩阵，在同一个交互式 PowerShell 里重新运行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\windows\phase45-acceptance.ps1 `
+  -ConfigPath D:\code\research\fqgate-phase4-5-acceptance-config.json `
+  -RunAuthenticatedBrowserMatrix
+```
+
+这个模式会打开一个不保存 storage state 的 headed 浏览器。你只在浏览器中完成普通
+hostname 和管理员 hostname 的 Access 登录/MFA，然后在 PowerShell 提示处按 Enter；
+不要复制验证码、JWT、cookie、二维码、完整 session ID 或 confirmation grant。脚本只
+输出脱敏标签、PASS/FAIL/SKIP、HTTP/error code 和时间戳，并且不会调用
+`updates.apply`。如果目标机没有 Edge，可安装/使用 Playwright Chromium 并追加
+`-BrowserChannel chromium`。
+
 如果项目在 `D:\code\research\fqgate-remote-bridge-phase4-5-live`，先进入该目录；
 如果使用其他目录，只替换脚本路径和配置路径。这个命令不会安装更新、不会
 运行 `updates.apply`、不会读取或打印 Tunnel token/JWT/二维码。
@@ -44,6 +60,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 - `/v1/market/health` 等未注册原始 FQGate 路径是否返回 404；
 - 两个公网地址在未登录时是否只返回 Cloudflare Access challenge/denial，
   而不是直接返回 Dashboard。
+- 登录后普通用户的四个维护拒绝、管理员 check/plan/OpenAPI refresh、raw/未注册
+  路由拒绝，以及安全的无确认/过期/stale-plan/replay-after-expiry negative path。
 
 这些结果就是 T1、T3、T5、T6、T15、T16 的机器证据；不需要你手工复制
 响应头，也不应该复制重定向 URL。
@@ -119,6 +137,11 @@ MFA、独立 AUD 和 Bridge 配置；不要安装 WARP、选择证书或添加 B
 | apply 过期/重放/竞态/计划不匹配                 | 是，代理执行，不安装更新 | 否                                               |
 | 真实安全更新 apply                              | 可以执行流程和回滚验证   | 你完成 FQGate 自身首次确认，并做最后一次明确批准 |
 | 没有安全候选时的处理                            | 记录 `NOT AVAILABLE`     | 不要批准未验证候选                               |
+
+错 principal、错 operation、成功 redemption 后的 replay、并发 double redemption 由
+deterministic suite 使用 fake update service 证明；把这些用例放进真实 apply 请求会
+产生真实状态变更，因而不属于无副作用的浏览器矩阵。T17 的真实手机/平板视觉和触控仍
+需人在真实设备上确认，CSS viewport 自动化不能替代它。
 
 完整证据表仍在
 [`windows-phase-4-5-acceptance.md`](./windows-phase-4-5-acceptance.md)；本页只是
