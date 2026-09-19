@@ -96,7 +96,7 @@ increased; no pre-warmed server was required for that final pass.
 The first post-fix GitHub Actions run is
 `35417801749` for commit
 `9a0623a26827517b4cc22e024e3132b8728a7401`: Ubuntu job
-`105629696634` and Windows job `105829696607` both passed. The Windows
+`105829696634` and Windows job `105829696607` both passed. The Windows
 format, CLI smoke, and production loopback smoke steps all ran; no Windows
 step was skipped because of the earlier formatting failure.
 
