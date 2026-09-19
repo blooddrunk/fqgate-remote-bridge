@@ -38,9 +38,6 @@ function Resolve-GitPath {
 }
 
 $script:gitPath = Resolve-GitPath
-if ([string]::IsNullOrWhiteSpace($script:gitPath)) {
-    throw "Git is required to verify the existing permanent Windows working tree. The acceptance script will not create a checkout."
-}
 
 function Resolve-PermanentGitRoot {
     $base = "D:\code\research"
@@ -50,13 +47,22 @@ function Resolve-PermanentGitRoot {
     )
     foreach ($candidate in $candidates) {
         if (-not (Test-Path -LiteralPath $candidate -PathType Container)) { continue }
-        try {
+        if (-not [string]::IsNullOrWhiteSpace($script:gitPath)) {
+            try {
             $root = (& $script:gitPath -C $candidate rev-parse --show-toplevel 2>$null).Trim()
             if (-not [string]::IsNullOrWhiteSpace($root)) {
                 return $root
             }
-        } catch {
-            # Try the next existing candidate.
+            } catch {
+                # Fall back to the repository marker below.
+            }
+        }
+        $gitMarker = Join-Path $candidate ".git"
+        if (Test-Path -LiteralPath $gitMarker) {
+            if ((Test-Path -LiteralPath (Join-Path $gitMarker "HEAD")) -or
+                -not (Test-Path -LiteralPath $gitMarker -PathType Container)) {
+                return $candidate
+            }
         }
     }
     throw "No existing Git working tree was found under D:\code\research. The acceptance script will not create a checkout."
