@@ -22,6 +22,26 @@ $ErrorActionPreference = "Stop"
     Output is limited to bounded PASS/FAIL/MANUAL/SKIP records.
 #>
 
+function Resolve-GitPath {
+    $command = Get-Command git.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -ne $command) { return $command.Source }
+    $candidates = @()
+    if ($env:ProgramFiles) {
+        $candidates += Join-Path $env:ProgramFiles "Git\cmd\git.exe"
+        $candidates += Join-Path $env:ProgramFiles "Git\bin\git.exe"
+    }
+    if (${env:ProgramFiles(x86)}) {
+        $candidates += Join-Path ${env:ProgramFiles(x86)} "Git\cmd\git.exe"
+        $candidates += Join-Path ${env:ProgramFiles(x86)} "Git\bin\git.exe"
+    }
+    return $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
+}
+
+$script:gitPath = Resolve-GitPath
+if ([string]::IsNullOrWhiteSpace($script:gitPath)) {
+    throw "Git is required to verify the existing permanent Windows working tree. The acceptance script will not create a checkout."
+}
+
 function Resolve-PermanentGitRoot {
     $base = "D:\code\research"
     $candidates = @(
@@ -31,7 +51,7 @@ function Resolve-PermanentGitRoot {
     foreach ($candidate in $candidates) {
         if (-not (Test-Path -LiteralPath $candidate -PathType Container)) { continue }
         try {
-            $root = (& git -C $candidate rev-parse --show-toplevel 2>$null).Trim()
+            $root = (& $script:gitPath -C $candidate rev-parse --show-toplevel 2>$null).Trim()
             if (-not [string]::IsNullOrWhiteSpace($root)) {
                 return $root
             }
