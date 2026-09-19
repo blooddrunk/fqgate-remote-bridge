@@ -176,7 +176,7 @@ function Invoke-ChildProcess {
 }
 
 function Invoke-BridgeCli {
-    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    param([string[]]$Arguments)
     $arguments = @($script:repositoryRoot + "\dist\cli\main.js") + $Arguments + @("--config", $resolvedConfigPath)
     $script:lastCliArgumentCount = $arguments.Count
     return Invoke-ChildProcess -Arguments $arguments
@@ -281,7 +281,7 @@ if ($RunAuthenticatedServiceTokenMatrix -and -not $machineMetadataReady) {
 }
 
 if ($VerifyLocal) {
-    $cliResult = Invoke-BridgeCli @("version", "--json")
+    $cliResult = Invoke-BridgeCli -Arguments @("version", "--json")
     if ($cliResult.ExitCode -eq 0) {
         Write-Result "P5A-W1" "permanent Windows CLI smoke" "PASS" "version command exited 0"
     } else {
