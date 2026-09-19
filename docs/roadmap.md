@@ -10,7 +10,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
-- Phase 5: **PLANNED; implementation must wait for Phase 4.5 closure**
+- Phase 5: **ACTIVE — Phase 5-A remote-machine zero-privilege identity/context foundation**
 - Phase 6+: planned only
 
 Current deployed topology remains:
@@ -243,27 +243,88 @@ The gate is strict: GitHub Actions must be green on Ubuntu and Windows, and Phas
 
 ## Phase 5 — Remote read-only HTTP API and filtered API docs
 
-Status: planned after the Phase 4.5 policy foundation.
+Status: **ACTIVE — Phase 5-A only**.
 
-Goal: make selected market-data capabilities safely consumable by remote software.
+Goal: make selected market-data capabilities safely consumable by remote
+software without turning the Bridge into a generic FQGate proxy and without
+allowing a machine identity to inherit any human/admin/session/update
+privilege.
 
-Deliverables:
+Detailed design:
 
-- a distinct `remote_machine` caller context;
-- a separate machine/API hostname and separate Cloudflare Access application/policy/audience;
-- Cloudflare Access service-token or equivalent machine identity separate from human/admin policies;
-- explicit read-only market-data operations in the Bridge registry;
-- stable Bridge-owned request/response contracts;
-- machine API smoke tests through Access + Tunnel;
-- generated remote OpenAPI containing only approved public operations;
-- interactive docs targeting only approved Bridge operations;
-- compatibility gates tied to validated FQGate versions/contracts.
+`docs/plans/phase-5-remote-machine-read-only-api.md`
 
-A Phase 5 machine identity must never inherit QR/session maintenance, update/admin operations, OpenAPI refresh, or browser confirmation grants. Runtime upstream OpenAPI still cannot authorize a route.
+Active task:
 
-Phase 5 may reuse generic JWT/JWK/context infrastructure from Phase 4.5A only when hostname, Access app/audience, identity type, operation allowlist, configuration, and tests remain independent.
+`docs/tasks/phase-5-a-remote-machine-zero-privilege.md`
 
-Exit criteria include authenticated machine access to approved read-only operations, deny-by-default treatment of new upstream paths, and no financial state-changing capabilities.
+Active Codex handoff:
+
+`docs/prompts/phase-5-a-codex-goal.md`
+
+### 5-A — remote-machine identity/context foundation, zero privilege
+
+Add a fourth request context:
+
+```text
+remote_machine
+```
+
+It must use its own API hostname and Cloudflare Access application/AUD with a
+service-token identity. The Bridge must validate the signed Access application
+JWT at the origin with the same bounded fixed-team-domain JWK discipline used by
+the administrator verifier, but with a machine-specific claim profile:
+`type=app`, exact issuer/AUD/time/signature, bounded non-empty
+`common_name`, and the service-token empty-`sub` semantics documented by
+Cloudflare. The resulting principal is machine-kind and must never be treated as
+a human/admin principal.
+
+The first checkpoint grants `remote_machine` **no existing Bridge operation**.
+This deliberately proves authentication and isolation before market data is
+added.
+
+Phase 5-A closure requires deterministic coverage, Windows verification in the
+permanent `D:\\code\\research` environment, green Ubuntu+Windows GitHub
+Actions, and a real Cloudflare service-token acceptance proving that a valid
+machine token reaches the Bridge as `remote_machine` but is still denied by
+the operation policy. Cloudflare resource provisioning remains manual until
+Phase 6; the task package gives the exact operator steps and secret-handling
+boundary.
+
+### 5-B — runtime contract census and first read-only market slice
+
+Only after 5-A closes, inspect the **running target FQGate**
+`http://127.0.0.1:17281/openapi.json` and execute bounded semantic probes from
+the permanent Windows environment. Select the smallest useful read-only set
+from real observed contracts and consumer needs.
+
+Public upstream code currently suggests candidates such as symbol search,
+realtime quote, and historical bars, but those names are evidence inputs, not
+authorization or a frozen contract. Each chosen operation must get a
+Bridge-owned operation ID, public path/method, typed request/response
+normalization, timeout/body/result bounds, compatibility gate, redaction policy,
+and explicit proof that it cannot mutate brokerage/financial state.
+
+No raw upstream path parameter, wildcard proxy, or automatic exposure from
+runtime OpenAPI is allowed.
+
+### 5-C — filtered machine OpenAPI and live remote closure
+
+Generate machine-facing OpenAPI only from explicit Bridge registry entries that
+allow `remote_machine`. Upstream discovery remains descriptive only.
+
+Close Phase 5 only after a real machine client through the separate Access
+application + Tunnel can call the approved read-only operations, forbidden
+human/admin/session/update/raw routes remain denied, compatibility drift fails
+closed, and the live Windows topology is still loopback-only.
+
+A Phase 5 machine identity must never inherit QR/session maintenance,
+update/admin operations, OpenAPI refresh, browser confirmation grants, or any
+financial state-changing capability.
+
+Phase 5 may share generic cryptographic/JWK plumbing with Phase 4.5 only when
+hostname, Access application/audience, identity claim profile, principal kind,
+operation allowlist, configuration, and tests remain independent.
 
 ---
 

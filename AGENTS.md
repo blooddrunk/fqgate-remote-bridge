@@ -34,7 +34,7 @@ It is an independent infrastructure/adapter project. It must not make `turtle-va
 - Do not expose trading, order, cancellation, fund-transfer, brokerage-control, or other state-changing financial endpoints.
 - Do not request a Cloudflare Global API Key. Automated Tunnel/DNS/Access provisioning belongs to Phase 6.
 - Do not commit Tunnel tokens, Access assertions/secrets, QR payloads, login/session material, remote-admin confirmation grants, or other credentials.
-- Preserve all closed Phase 0/1/2/3/4 behavior while adding Phase 4.5.
+- Preserve all closed Phase 0/1/2/3/4/4.5 behavior while implementing Phase 5-A.
 
 ## Completed baseline
 
@@ -73,7 +73,40 @@ The 4.5A policy intentionally recognizes a verified `remote_admin` caller for
 the same safe Phase 4 surface only. It does not grant any of the four
 maintenance operations remotely.
 
-## Active Phase 4.5 contract
+## Active Phase 5-A contract
+
+Phase 5-A is the active implementation milestone. It adds a distinct
+`remote_machine` authentication/context foundation and deliberately grants it
+**zero Bridge operation privileges** at the first checkpoint.
+
+Read these active artifacts before changing code:
+
+- `docs/plans/phase-5-remote-machine-read-only-api.md`
+- `docs/tasks/phase-5-a-remote-machine-zero-privilege.md`
+- `docs/prompts/phase-5-a-codex-goal.md`
+
+The permanent Windows verification environment is under `D:\\code\\research`.
+Agents must resolve and use the existing repository working tree there for
+Windows/live acceptance rather than inventing a temporary checkout. Automate
+every machine-verifiable check. If real Cloudflare resource creation or service
+credential entry is required, follow the exact manual boundary in the Phase
+5-A task package and never ask the operator to paste credentials into chat,
+logs, Git, command arguments, or documentation.
+
+Phase 5-A must not add a market-data operation. A valid machine identity must
+still be denied by every currently registered Bridge operation. Phase 5-B may
+start only after Phase 5-A deterministic, Windows, CI, and real service-token
+acceptance evidence is complete.
+
+The Cloudflare machine token claim profile is intentionally distinct from the
+Phase 4.5 human-admin profile. Service-token application JWTs use `type=app`,
+a bounded non-empty `common_name` as machine identity, and an empty `sub`.
+Do not reuse the human verifier's non-empty-`sub` rule for machines. Shared
+RS256/JWK transport code is acceptable only when human and machine claim
+validation, hostname, audience, principal kind, configuration, and tests remain
+separate.
+
+## Closed Phase 4.5 contract
 
 The active closure task package is:
 
@@ -326,7 +359,8 @@ Follow `docs/roadmap.md`.
 - Phase 4.5A: implemented
 - Phase 4.5B: implemented
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
-- Phase 5+: do not opportunistically implement
+- Phase 5-A: ACTIVE — remote-machine identity/context with zero operation privileges
+- Phase 5-B+: do not opportunistically implement
 
 If Phase 5 becomes urgent, it may start only after the 4.5A policy foundation is stable, and must remain a separate change with separate machine Host/AUD/context/tests. Do not combine remote-admin and remote-machine privilege expansion.
 

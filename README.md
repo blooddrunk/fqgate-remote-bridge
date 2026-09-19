@@ -2,7 +2,7 @@
 
 FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQGate 始终保持本机回环运行，由 Bridge 提供明确、受控的接口和 Dashboard，再逐阶段通过 Cloudflare Tunnel + Access 将需要的能力安全带到远程环境。
 
-当前 **Phase 0–4.5 已关闭**。Phase 4.5 已完成代码实现、跨平台 CI、真实 Windows x64 + Cloudflare 验收和移动浏览器 smoke；不会提前开放远程机器行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
+当前 **Phase 0–4.5 已关闭，Phase 5-A 已进入活动规划/实施阶段**。Phase 5-A 只建立独立 `remote_machine` 身份与请求上下文，并以“零 operation 权限”作为第一道 checkpoint；不会在身份边界尚未真实验证前提前开放行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
 
 ## 当前结论
 
@@ -239,6 +239,38 @@ Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`�
 统一维护在中文参考文档
 [Phase 4.5 远程管理员配置与重配置（中文长期参考）](docs/operations/windows-phase-4-5-remote-admin-setup.md)。
 
+## Phase 5-A：远程机器身份基础，先零权限
+
+当前活动任务不是“把 FQGate API 整体搬到公网”，而是先证明一个独立的机器身份
+能够被 Cloudflare Access 和 Bridge 正确识别，同时仍然拿不到任何既有 Bridge
+operation 权限。
+
+活动文件：
+
+```text
+docs/plans/phase-5-remote-machine-read-only-api.md
+docs/tasks/phase-5-a-remote-machine-zero-privilege.md
+docs/prompts/phase-5-a-codex-goal.md
+```
+
+Phase 5-A 的关键约束：
+
+- 单独的 machine/API hostname、Access application 和 AUD；
+- 使用 Cloudflare Access service token，而不是复用管理员 MFA 会话；
+- Bridge 仍在 origin 侧验证 Access JWT；
+- service-token JWT 的 claim profile 与 human JWT 不同，机器身份使用
+  `type=app` + `common_name`，不能套用管理员“非空 sub”规则；
+- service-token Client ID/Secret 不进入 Bridge 普通 JSON 配置、Git、日志或
+  文档；Bridge 运行时只需要 hostname/team-domain/AUD 等非秘密元数据；
+- 第一 checkpoint 中 `remote_machine` 对当前全部 Bridge operations 都是
+  server-side deny；
+- 所有能自动判断的验证优先在永久 Windows 环境 `D:\code\research` 与 CI
+  完成；只有 Cloudflare 资源创建和服务凭据的安全输入保留为明确人工边界。
+
+Phase 5-B 才会基于目标 Windows 机器运行中的 FQGate
+`/openapi.json` + 语义探针挑选第一批只读行情接口；公开 SDK/示例只作为候选
+线索，不直接变成授权清单。
+
 ## 已完成的 Phase 4 任务包
 
 Phase 4 已关闭；以下文件保留为实现、设计和历史执行指令的完整记录：
@@ -272,6 +304,9 @@ Phase 4 历史 Codex goal 入口（不是新的活动任务）：
 - [安全模型](docs/security.md)
 - [上游契约](docs/upstream-contracts.md)
 - [开发路线图](docs/roadmap.md)
+- [Phase 5 总体设计](docs/plans/phase-5-remote-machine-read-only-api.md)
+- [Phase 5-A 活动任务](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)
+- [Phase 5-A Codex Goal](docs/prompts/phase-5-a-codex-goal.md)
 - [Phase 4 设计](docs/plans/phase-4-secure-remote-human-access.md)
 - [Phase 4 任务包](docs/tasks/phase-4-cloudflare-tunnel-access.md)
 - [Phase 4 Codex Goal](docs/prompts/phase-4-codex-goal.md)
