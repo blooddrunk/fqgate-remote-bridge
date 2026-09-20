@@ -13,7 +13,7 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发，Phase 0–5-B 已完成；Phase 5-B 已完成首个受限证券目录查询及 Windows、远程与 CI 验收。
+当前项目仍在持续开发，Phase 0–5-B 已完成；Phase 5-C 已进入 ACTIVE，目标是生成受策略约束的 machine OpenAPI 并完成 Phase 5 最终远程闭包。
 
 | 能力                   | 当前状态           | 说明                                                      |
 | ---------------------- | ------------------ | --------------------------------------------------------- |
@@ -118,8 +118,10 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | Agent 的强制工作合同         | [AGENTS.md](AGENTS.md)                                                                                                                                                                                  |
 | 当前架构和安全边界           | [docs/architecture.md](docs/architecture.md)、[docs/security.md](docs/security.md)                                                                                                                      |
 | 当前阶段总设计               | [phase-5-remote-machine-read-only-api.md](docs/plans/phase-5-remote-machine-read-only-api.md)                                                                                                           |
-| **Phase 5-B 已关闭任务**     | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
-| **Phase 5-B Codex Goal**     | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
+| **Phase 5-C 当前任务**       | [phase-5-c-filtered-machine-openapi-and-remote-closure.md](docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md)                                                                          |
+| **Phase 5-C Codex Goal**     | [phase-5-c-codex-goal.md](docs/prompts/phase-5-c-codex-goal.md)                                                                                                                                         |
+| Phase 5-B 已关闭任务         | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
+| Phase 5-B 已完成 Codex Goal  | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
 | Phase 5-A 已关闭任务         | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
 | Phase 5-A 实现和关闭证据     | [phase-5-a-implementation-handoff.md](docs/status/phase-5-a-implementation-handoff.md)                                                                                                                  |
 | 永久 Windows 验收步骤        | [windows-phase-5-a-acceptance.md](docs/operations/windows-phase-5-a-acceptance.md)                                                                                                                      |
@@ -737,7 +739,7 @@ CLI 不会在页面加载、Bridge 启动或后台定时器中下载/更新 clou
 ## 11. 当前阶段和后续边界
 
 Phase 5-B 已经完成真实 FQGate census、首个受限目录查询和独立机器权限验收。
-整个 Phase 5 尚未完成：Phase 5-C 的 generated machine OpenAPI 仍需单独任务。
+整个 Phase 5 尚未完成：Phase 5-C 已激活，当前只允许实现 registry-derived machine OpenAPI 和最终远程闭包。
 机器身份只能调用显式注册的目录查询，不能继承其他任何旧 operation 权限。
 
 尚未授权或未实现的工作包括：
