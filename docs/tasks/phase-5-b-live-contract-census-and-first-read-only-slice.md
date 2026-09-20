@@ -2,7 +2,7 @@
 
 Date: 2026-09-20
 
-Status: **ACTIVE**
+Status: **CLOSED — 2026-09-20; see implementation handoff and Windows evidence**
 
 Planning baseline: main@ce421b5e26ec496f56e1f2d3cd256420b521cfec.
 

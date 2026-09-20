@@ -13,7 +13,7 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发，Phase 0–5-A 已完成；Phase 5-B 已实现首个受限证券目录查询，验收仍为 OPEN。
+当前项目仍在持续开发，Phase 0–5-B 已完成；Phase 5-B 已完成首个受限证券目录查询及 Windows、远程与 CI 验收。
 
 | 能力                   | 当前状态           | 说明                                                      |
 | ---------------------- | ------------------ | --------------------------------------------------------- |
@@ -23,7 +23,7 @@ Tunnel 把流量安全地送到 Bridge。
 | remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog          |
 | remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制       |
 | remote-machine         | 独立认证、受限查询 | 仅允许 market.instruments.lookup；所有旧 operation 仍拒绝 |
-| Phase 5-B 行情 API     | OPEN / 验收中      | 已从永久 Windows 实时证据选择一个六位代码查询             |
+| Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询             |
 | 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                    |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
@@ -118,7 +118,7 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | Agent 的强制工作合同         | [AGENTS.md](AGENTS.md)                                                                                                                                                                                  |
 | 当前架构和安全边界           | [docs/architecture.md](docs/architecture.md)、[docs/security.md](docs/security.md)                                                                                                                      |
 | 当前阶段总设计               | [phase-5-remote-machine-read-only-api.md](docs/plans/phase-5-remote-machine-read-only-api.md)                                                                                                           |
-| **Phase 5-B 当前任务**       | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
+| **Phase 5-B 已关闭任务**     | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
 | **Phase 5-B Codex Goal**     | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
 | Phase 5-A 已关闭任务         | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
 | Phase 5-A 实现和关闭证据     | [phase-5-a-implementation-handoff.md](docs/status/phase-5-a-implementation-handoff.md)                                                                                                                  |
@@ -736,10 +736,9 @@ CLI 不会在页面加载、Bridge 启动或后台定时器中下载/更新 clou
 
 ## 11. 当前阶段和后续边界
 
-Phase 5-A 已经关闭，但整个项目没有完成。Phase 5-B 需要另行完成真实的 FQGate
-contract census、只读行情 adapter、独立 operation registry、machine-facing API
-设计和新的验收证据；它不能因为 Phase 5-A 已识别 machine principal 就自动继承任何
-权限。
+Phase 5-B 已经完成真实 FQGate census、首个受限目录查询和独立机器权限验收。
+整个 Phase 5 尚未完成：Phase 5-C 的 generated machine OpenAPI 仍需单独任务。
+机器身份只能调用显式注册的目录查询，不能继承其他任何旧 operation 权限。
 
 尚未授权或未实现的工作包括：
 
@@ -765,7 +764,7 @@ token 行为、operation registry、远程权限或验收流程，必须在同�
 这样 README 才是新 operator 的入口，task package 才是验收合同，status 文档才是事实
 证据，三者不会再次脱节。
 
-## Phase 5-B 当前只读 API（OPEN）
+## Phase 5-B 当前只读 API（CLOSED）
 
 永久 Windows live census 已选择 `market.instruments.lookup`：
 `POST /api/v1/instruments/lookup`，JSON body 只能是六位代码对象，例如
@@ -780,5 +779,5 @@ token 行为、operation registry、远程权限或验收流程，必须在同�
 
 重复执行与隐藏 service-token 输入步骤见
 [Phase 5-B Windows 验收](docs/operations/windows-phase-5-b-acceptance.md)，
-实际证据与未完成项见 [实现交接](docs/status/phase-5-b-implementation-handoff.md)。
+实际证据与后续边界见 [实现交接](docs/status/phase-5-b-implementation-handoff.md)。
 既有 Phase 5-A 命令用于旧权限回归；新行情成功验收使用 Phase 5-B 命令。

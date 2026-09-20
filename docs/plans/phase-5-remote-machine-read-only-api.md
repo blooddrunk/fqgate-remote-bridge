@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **ACTIVE DESIGN — Phase 5-A CLOSED; Phase 5-B ACTIVE**
+Status: **ACTIVE DESIGN — Phase 5-A/B CLOSED; Phase 5-C separate**
 
 Planning baseline: `main@fe544b3a8fa25227521c68dcb08ff110ce8c6b67`.
 Its GitHub Actions run `35423337596` passed after the Phase 4.5 closure
@@ -136,7 +136,7 @@ operations yet.
 
 ## 5. Phase 5-B — real contract census and first read-only slice
 
-Status: **ACTIVE**. Executable contract: docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md. Codex handoff: docs/prompts/phase-5-b-codex-goal.md.
+Status: **CLOSED**. Executable contract: docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md. Codex handoff: docs/prompts/phase-5-b-codex-goal.md.
 
 Phase 5-A is closed, so Phase 5-B may start.
 
@@ -217,7 +217,7 @@ another internal shorthand.
 ## 8. Phase boundaries
 
 - Completed: Phase 5-A identity/context foundation and zero-privilege closure.
-- Active: Phase 5-B contract census + first read-only slice.
+- Completed: Phase 5-B contract census + one bounded instrument lookup.
 - Next after 5-B closure: Phase 5-C generated machine docs + remote closure.
 - Phase 6 remains Cloudflare provisioning/drift automation.
 - Phase 7+ remain deferred according to the roadmap.
@@ -230,5 +230,5 @@ The permanent Windows census justified fixed POST catalog/search-symbols;
 quote remains a descriptive candidate. The explicit contract is bounded to 16
 items, 64 KiB upstream, 256-byte request, exact 1.0.1 plus transitive scoped
 schema fingerprint and endpoint parsing. Activation policy is unchanged.
-Phase 5-B remains OPEN pending all final Windows/remote/CI closure evidence;
+Phase 5-B closed after all final Windows/remote/CI closure criteria passed;
 see its implementation handoff and Windows acceptance runbook.

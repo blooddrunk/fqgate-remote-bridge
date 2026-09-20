@@ -2,7 +2,7 @@
 
 Date: 2026-09-20
 
-Status: **OPEN — final automated and remote acceptance pending**
+Status: **CLOSED — permanent Windows and real service-token acceptance passed**
 
 Use only `D:\code\research\fqgate-remote-bridge`. Reuse the existing external
 `D:\code\research\fqgate-acceptance-config.json` and existing machine
@@ -91,6 +91,26 @@ CLI/loopback and P5A-W1/W2/W4–W9 passed; W3 is deliberately reserved for
 remote ingress evidence. Live contract details and the selection gate are in
 `docs/status/phase-5-b-implementation-handoff.md`.
 
-Final Windows gates, local normalized matrix, real remote matrix, final commit
-and Ubuntu/Windows CI results remain to be recorded. Phase 5-B stays OPEN until
-every task-package closure criterion passes.
+Final runtime implementation: `f22279e1af5cdf4c4c16d53c8e71d87598ef54fd`.
+Final harness implementation: `cce0f6ac36dd2fa720d1cb096f5852c397354e6a`.
+Frozen install/typecheck/lint/17 files and 189 tests/build/format and 13 browser
+E2E all passed in the permanent Windows checkout. The CLI/loopback smoke and
+Phase 5-A local regression passed again with the new runtime.
+
+At 09:01 UTC, P5B-C1–C6, P5B-W2 and P5B-L2–L6 passed. Exact-code lookup
+returned one item; missing-code lookup returned zero. Invalid/oversized requests
+were 400/413, raw paths 404, explicit spoofed Host 421. Both origins remained
+loopback-only. Quote was a census-only read and remains unexposed.
+
+At 09:02 UTC the operator entered the existing credentials into the hidden
+prompts. All 21 P5B-R checks passed automatically: approved lookup 200, old
+operations/raw/pages/static 403, no-credential 401, wrong human/admin hostnames 302. Reused W10/W11 and the Phase 5-B exact ingress check passed. The metadata
+file `D:\code\research\fqgate-phase5b-remote-evidence.json` records
+failed=0/pending=0/matrixExitCode=0 without any credentials or market values.
+No QR login or Cloudflare change was needed.
+
+CI run [35501156122](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35501156122)
+passed Ubuntu job 106053038401 and Windows job 106053038537 on the final
+acceptance implementation. Detailed IDs, fingerprints and closure audit are
+in the Phase 5-B implementation handoff. The documentation closure commit is
+identified by the commit containing these final records.
