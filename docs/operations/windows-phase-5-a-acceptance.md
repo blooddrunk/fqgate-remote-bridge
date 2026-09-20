@@ -113,12 +113,12 @@ task.
 
 The actual 2026-09-20 runs on the existing permanent checkout were:
 
-| Check | Result | Exact evidence |
-| --- | --- | --- |
-| Existing `acceptance.ps1 -VerifyCli -VerifyBridge` | PASS, exit 0 | CLI version printed; production Bridge loopback and deny-by-default smoke passed. |
-| Phase 5-A `-VerifyLocal` | OPEN, exit 1 | `P5A-W1` PASS; `P5A-W2` MANUAL because machine metadata is absent; `P5A-W3` SKIP; `P5A-W4`, `P5A-W5`, and `P5A-W9` PASS. The installed FQGate was not listening, so `P5A-W6` failed with observed `none`, `P5A-W7` returned HTTP `0`, and `P5A-W8` returned HTTP `0`. |
-| FQGate start probe | FAIL, exit 1 | `fqgate start --json` reported `lifecycle: unhealthy`, process running, health unavailable, and no `127.0.0.1:17281` listener. The follow-up `fqgate stop --json` exited 0 and left it stopped. |
-| Authenticated Phase 5-A wrapper | NOT STARTED, exit 1 | Exact error: `Phase 5-A authenticated acceptance requires machineHostname, machineAccess.teamDomain, and machineAccess.audience in repo-external config; no credential prompt was opened.` |
+| Check                                              | Result              | Exact evidence                                                                                                                                                                                                                                                        |
+| -------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Existing `acceptance.ps1 -VerifyCli -VerifyBridge` | PASS, exit 0        | CLI version printed; production Bridge loopback and deny-by-default smoke passed.                                                                                                                                                                                     |
+| Phase 5-A `-VerifyLocal`                           | OPEN, exit 1        | `P5A-W1` PASS; `P5A-W2` MANUAL because machine metadata is absent; `P5A-W3` SKIP; `P5A-W4`, `P5A-W5`, and `P5A-W9` PASS. The installed FQGate was not listening, so `P5A-W6` failed with observed `none`, `P5A-W7` returned HTTP `0`, and `P5A-W8` returned HTTP `0`. |
+| FQGate start probe                                 | FAIL, exit 1        | `fqgate start --json` reported `lifecycle: unhealthy`, process running, health unavailable, and no `127.0.0.1:17281` listener. The follow-up `fqgate stop --json` exited 0 and left it stopped.                                                                       |
+| Authenticated Phase 5-A wrapper                    | NOT STARTED, exit 1 | Exact error: `Phase 5-A authenticated acceptance requires machineHostname, machineAccess.teamDomain, and machineAccess.audience in repo-external config; no credential prompt was opened.`                                                                            |
 
 Because the authenticated wrapper stopped at its non-secret config precondition,
 `P5A-R1` through `P5A-R6` and `P5A-W11` have no HTTP result: **HTTP N/A; no
