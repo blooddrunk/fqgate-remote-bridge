@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **ACTIVE DESIGN — Phase 5-A is the only active implementation slice**
+Status: **ACTIVE DESIGN — Phase 5-A CLOSED; Phase 5-B is the next gated slice**
 
 Planning baseline: `main@fe544b3a8fa25227521c68dcb08ff110ce8c6b67`.
 Its GitHub Actions run `35423337596` passed after the Phase 4.5 closure
@@ -111,7 +111,7 @@ Do not make the human/admin verifier accept empty `sub`, and do not make the
 machine verifier accept a human principal. Generic signature/JWK retrieval code
 may be factored out, but claim-profile validation stays separate and explicit.
 
-## 4. Phase 5-A — identity/context foundation with zero privilege
+## 4. Phase 5-A — identity/context foundation with zero privilege (CLOSED)
 
 Phase 5-A exists to isolate authentication correctness from API-surface design.
 
@@ -214,8 +214,8 @@ another internal shorthand.
 
 ## 8. Phase boundaries
 
-- Active now: Phase 5-A only.
-- Next after 5-A closure: Phase 5-B contract census + first read-only slice.
+- Completed: Phase 5-A identity/context foundation and zero-privilege closure.
+- Next: Phase 5-B contract census + first read-only slice.
 - Phase 5-C after 5-B: generated machine docs + remote closure.
 - Phase 6 remains Cloudflare provisioning/drift automation.
 - Phase 7+ remain deferred according to the roadmap.

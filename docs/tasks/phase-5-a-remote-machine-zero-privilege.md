@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **ACTIVE**
+Status: **CLOSED — 2026-09-20**
 
 Planning baseline: `main@fe544b3a8fa25227521c68dcb08ff110ce8c6b67`.
 
@@ -13,6 +13,12 @@ Implement and close the smallest safe Phase 5 checkpoint:
 > A real Cloudflare Access service-token identity can be recognized by the
 > Bridge as `remote_machine`, but `remote_machine` is authorized for **zero
 > existing Bridge operations**.
+
+Closure evidence is recorded in
+`docs/status/phase-5-a-implementation-handoff.md` and
+`docs/operations/windows-phase-5-a-acceptance.md`. The final live matrix
+returned PASS for P5A-R1 through P5A-R6, P5A-W10, and P5A-W11; Phase 5-B
+market-data operations remain unimplemented.
 
 Do not add any market-data operation in this task.
 

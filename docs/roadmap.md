@@ -10,7 +10,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
-- Phase 5: **ACTIVE — Phase 5-A remote-machine zero-privilege identity/context foundation**
+- Phase 5: **ACTIVE — Phase 5-A CLOSED; Phase 5-B not started**
 - Phase 6+: planned only
 
 Current deployed topology remains:
@@ -243,7 +243,7 @@ The gate is strict: GitHub Actions must be green on Ubuntu and Windows, and Phas
 
 ## Phase 5 — Remote read-only HTTP API and filtered API docs
 
-Status: **ACTIVE — Phase 5-A only**.
+Status: **ACTIVE — Phase 5-A CLOSED; Phase 5-B is the next separate task**.
 
 Goal: make selected market-data capabilities safely consumable by remote
 software without turning the Bridge into a generic FQGate proxy and without
@@ -264,11 +264,10 @@ Active Codex handoff:
 
 ### 5-A — remote-machine identity/context foundation, zero privilege
 
-Implementation status: **IN PROGRESS / OPEN**. The deterministic identity,
-hostname, verifier, zero-operation policy, and secret-safe Windows harness are
-implemented. Closure still requires the real service-token matrix through the
-separate machine Access application and the exact Bridge-only Tunnel ingress;
-until then Phase 5-B remains blocked.
+Implementation status: **CLOSED**. Deterministic identity, hostname, verifier,
+zero-operation policy, secret-safe Windows harness, permanent Windows evidence,
+Ubuntu/Windows CI, and real service-token acceptance are complete. Phase 5-B
+remains a separate task and has not been implemented.
 
 Add a fourth request context:
 
@@ -289,13 +288,9 @@ The first checkpoint grants `remote_machine` **no existing Bridge operation**.
 This deliberately proves authentication and isolation before market data is
 added.
 
-Phase 5-A closure requires deterministic coverage, Windows verification in the
-permanent `D:\\code\\research` environment, green Ubuntu+Windows GitHub
-Actions, and a real Cloudflare service-token acceptance proving that a valid
-machine token reaches the Bridge as `remote_machine` but is still denied by
-the operation policy. Cloudflare resource provisioning remains manual until
-Phase 6; the task package gives the exact operator steps and secret-handling
-boundary.
+Phase 5-A closure evidence is recorded in the implementation handoff and
+Windows acceptance document. Cloudflare provisioning automation remains Phase 6;
+the one-time operator-authorized resource setup did not add provisioning code.
 
 Implementation handoff: `docs/status/phase-5-a-implementation-handoff.md`.
 Windows procedure/evidence: `docs/operations/windows-phase-5-a-acceptance.md`.

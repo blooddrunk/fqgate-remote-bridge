@@ -2,7 +2,10 @@
 
 FQGate Remote Bridge 是运行在 Windows 本机的安全桥接与操作台：FQGate 始终保持本机回环运行，由 Bridge 提供明确、受控的接口和 Dashboard，再逐阶段通过 Cloudflare Tunnel + Access 将需要的能力安全带到远程环境。
 
-当前 **Phase 0–4.5 已关闭，Phase 5-A 已进入活动规划/实施阶段**。Phase 5-A 只建立独立 `remote_machine` 身份与请求上下文，并以“零 operation 权限”作为第一道 checkpoint；不会在身份边界尚未真实验证前提前开放行情 API，也不会让 FQGate 或 Bridge 改成 LAN/WAN 监听。
+当前 **Phase 0–5-A 已关闭，Phase 5-B 尚未开始**。Phase 5-A 已完成独立
+`remote_machine` 身份与请求上下文、零 operation 权限、永久 Windows、CI 和真实
+Cloudflare service-token 验收；不会因为身份基础完成就提前开放行情 API，也不会让
+FQGate 或 Bridge 改成 LAN/WAN 监听。
 
 ## 当前结论
 
@@ -239,11 +242,10 @@ Phase 4.5A 的正交 caller-context/operation-policy 基础已实现：`local`�
 统一维护在中文参考文档
 [Phase 4.5 远程管理员配置与重配置（中文长期参考）](docs/operations/windows-phase-4-5-remote-admin-setup.md)。
 
-## Phase 5-A：远程机器身份基础，先零权限
+## Phase 5-A：远程机器身份基础，零权限 checkpoint（已关闭）
 
-当前活动任务不是“把 FQGate API 整体搬到公网”，而是先证明一个独立的机器身份
-能够被 Cloudflare Access 和 Bridge 正确识别，同时仍然拿不到任何既有 Bridge
-operation 权限。
+本阶段证明了一个独立的机器身份能够被 Cloudflare Access 和 Bridge 正确识别，同时
+仍然拿不到任何既有 Bridge operation 权限。真实 service-token acceptance 已完成。
 
 活动文件：
 
@@ -274,8 +276,8 @@ docs/status/phase-5-a-implementation-handoff.md
 docs/operations/windows-phase-5-a-acceptance.md
 ```
 
-在真实 machine Access service-token acceptance 完成前，Phase 5-A 保持 **OPEN**；
-不得把 deterministic 或本地 loopback 结果表述成真实 Cloudflare 关闭证据。
+Phase 5-A 现为 **CLOSED**。完整 deterministic、Windows、CI、Cloudflare matrix 和
+operator action 记录见实现交接与 Windows 验收文档。
 
 Phase 5-B 才会基于目标 Windows 机器运行中的 FQGate
 `/openapi.json` + 语义探针挑选第一批只读行情接口；公开 SDK/示例只作为候选

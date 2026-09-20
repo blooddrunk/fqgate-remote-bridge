@@ -57,9 +57,8 @@ Phase 4 remote-human operations remain:
 Phase 4.5A policy/authentication foundation, Phase 4.5B mobile work, and
 Phase 4.5C's narrow remote-admin maintenance and one-time apply confirmation
 are implemented and passed live Windows x64 + Cloudflare acceptance on
-2026-09-19. Phase 4.5 is closed; Phase 5-A is the active zero-privilege
-identity/context milestone, while Phase 5-B market-data APIs remain
-unimplemented.
+2026-09-19. Phase 4.5 is closed; Phase 5-A is closed at the zero-privilege
+checkpoint, while Phase 5-B market-data APIs remain unimplemented.
 
 For `local` and ordinary `remote_human` callers, the following remain
 local-only. The implemented `remote_admin` context may invoke exactly these
@@ -75,9 +74,9 @@ The 4.5A policy intentionally recognizes a verified `remote_admin` caller for
 the same safe Phase 4 surface only. It does not grant any of the four
 maintenance operations remotely.
 
-## Active Phase 5-A contract
+## Closed Phase 5-A contract / next-phase boundary
 
-Phase 5-A is the active implementation milestone. It adds a distinct
+Phase 5-A was the implementation milestone. It adds a distinct
 `remote_machine` authentication/context foundation and deliberately grants it
 **zero Bridge operation privileges** at the first checkpoint.
 
@@ -95,10 +94,10 @@ credential entry is required, follow the exact manual boundary in the Phase
 5-A task package and never ask the operator to paste credentials into chat,
 logs, Git, command arguments, or documentation.
 
-Phase 5-A must not add a market-data operation. A valid machine identity must
-still be denied by every currently registered Bridge operation. Phase 5-B may
-start only after Phase 5-A deterministic, Windows, CI, and real service-token
-acceptance evidence is complete.
+Phase 5-A added no market-data operation. A valid machine identity is denied by
+every currently registered Bridge operation. Phase 5-B may start now that the
+deterministic, Windows, CI, and real service-token acceptance evidence is
+complete, but it remains a separate task and is not part of the closed change.
 
 The implementation handoff is
 `docs/status/phase-5-a-implementation-handoff.md`; the permanent Windows
@@ -365,7 +364,7 @@ Follow `docs/roadmap.md`.
 - Phase 4.5A: implemented
 - Phase 4.5B: implemented
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
-- Phase 5-A: ACTIVE — remote-machine identity/context with zero operation privileges
+- Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
 - Phase 5-B+: do not opportunistically implement
 
 If Phase 5 becomes urgent, it may start only after the 4.5A policy foundation is stable, and must remain a separate change with separate machine Host/AUD/context/tests. Do not combine remote-admin and remote-machine privilege expansion.
