@@ -246,8 +246,19 @@ export class FqgateLifecycleManager {
     await this.processController.start(this.layout.currentExecutable, this.layout.processFile, {
       timeoutMs: this.processTimeoutMs,
     });
+    await this.healthProbe.waitUntilReady(
+      this.activationHealthTimeoutMs,
+      this.activationHealthPollIntervalMs,
+    );
+    const status = await this.status();
+    if (status.process.state !== "running") {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_START_FAILED,
+        "FQGate did not remain running after becoming healthy",
+      );
+    }
     this.logger.info("FQGate start requested", { version: installed.version });
-    return this.status();
+    return status;
   }
 
   async stop(): Promise<FqgateStatus> {

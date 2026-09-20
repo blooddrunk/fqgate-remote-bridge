@@ -197,6 +197,8 @@ async function createManager(options: {
   readonly healthResponses: Array<HttpResponse | Error>;
   readonly validatedVersions?: readonly string[];
   readonly runtimeOpenApiProbe?: FqgateActivationOpenApiProbe;
+  readonly activationHealthTimeoutMs?: number;
+  readonly activationHealthPollIntervalMs?: number;
 }): Promise<FqgateLifecycleManager> {
   const downloadHttp = new ArtifactHttp(options.bodies);
   const policy = new CompatibilityPolicy({
@@ -226,8 +228,8 @@ async function createManager(options: {
     healthProbe,
     policy,
     downloadOptions: { timeoutMs: 100, maxRetries: 0, retryDelayMs: 0 },
-    activationHealthTimeoutMs: 0,
-    activationHealthPollIntervalMs: 1,
+    activationHealthTimeoutMs: options.activationHealthTimeoutMs ?? 0,
+    activationHealthPollIntervalMs: options.activationHealthPollIntervalMs ?? 1,
     processTimeoutMs: 100,
     ...(options.runtimeOpenApiProbe === undefined
       ? {}
@@ -292,6 +294,31 @@ describe("FQGate lifecycle transaction", () => {
     const second = await manager.install();
     expect(second.action).toBe("noop");
     expect(process.starts).toBe(startsBeforeNoop);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("waits for health before reporting a successful manual start", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-lifecycle-"));
+    const body = Buffer.from("1.0.0", "utf8");
+    const pkg = packageFor("1.0.0", "1.0.0");
+    const source = new MutableReleaseSource(releaseFor(pkg, "1.0.0"));
+    const process = new FakeManagedProcess();
+    const manager = await createManager({
+      root,
+      source,
+      bodies: new Map([[pkg.sha256, body as Uint8Array]]),
+      process,
+      healthResponses: [readyHealth(), readyHealth(), unavailableHealth(), readyHealth()],
+      activationHealthTimeoutMs: 100,
+    });
+
+    await manager.install();
+    process.running = false;
+
+    const status = await manager.start();
+    expect(status.lifecycle).toBe("ready");
+    expect(status.process.state).toBe("running");
+    expect(process.starts).toBe(2);
     await rm(root, { recursive: true, force: true });
   });
 
