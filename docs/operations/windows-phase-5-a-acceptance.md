@@ -1,6 +1,6 @@
 # Windows Phase 5-A Acceptance and Evidence
 
-Date: 2026-09-19
+Date: 2026-09-20
 
 Status: **OPEN** until the real Cloudflare service-token matrix completes.
 
@@ -44,8 +44,10 @@ The script automatically resolves `D:\code\research\fqgate-remote-bridge`
 (or the actual Git root when the repository is mounted directly at the base),
 checks the CLI, starts the built Bridge with the external config, verifies
 `127.0.0.1:17282` and `127.0.0.1:17281`, checks raw/unregistered and
-unknown/forwarded-host denial, and checks the fixed Bridge origin. It reports
-only bounded result records.
+unknown/forwarded-host denial, and reports only bounded result records. The
+external Tunnel-origin check is deliberately not claimed by `-VerifyLocal`; it
+is P5A-W11 in the authenticated run so the repo config never stores an origin
+or token.
 
 ## Exact manual Cloudflare boundary
 
@@ -109,7 +111,30 @@ Cloudflare setup steps above are completed and the non-secret machine metadata
 is added. No Client ID/Secret was requested, copied, logged, or stored by this
 task.
 
-Current status is **OPEN**. The next operator action is specifically:
+The actual 2026-09-20 runs on the existing permanent checkout were:
+
+| Check | Result | Exact evidence |
+| --- | --- | --- |
+| Existing `acceptance.ps1 -VerifyCli -VerifyBridge` | PASS, exit 0 | CLI version printed; production Bridge loopback and deny-by-default smoke passed. |
+| Phase 5-A `-VerifyLocal` | OPEN, exit 1 | `P5A-W1` PASS; `P5A-W2` MANUAL because machine metadata is absent; `P5A-W3` SKIP; `P5A-W4`, `P5A-W5`, and `P5A-W9` PASS. The installed FQGate was not listening, so `P5A-W6` failed with observed `none`, `P5A-W7` returned HTTP `0`, and `P5A-W8` returned HTTP `0`. |
+| FQGate start probe | FAIL, exit 1 | `fqgate start --json` reported `lifecycle: unhealthy`, process running, health unavailable, and no `127.0.0.1:17281` listener. The follow-up `fqgate stop --json` exited 0 and left it stopped. |
+| Authenticated Phase 5-A wrapper | NOT STARTED, exit 1 | Exact error: `Phase 5-A authenticated acceptance requires machineHostname, machineAccess.teamDomain, and machineAccess.audience in repo-external config; no credential prompt was opened.` |
+
+Because the authenticated wrapper stopped at its non-secret config precondition,
+`P5A-R1` through `P5A-R6` and `P5A-W11` have no HTTP result: **HTTP N/A; no
+request or credential prompt was attempted**. This is the concrete failed
+setup test, not unspecified missing evidence.
+
+No manual operator action occurred during these runs: no Cloudflare resource
+was created or changed, and no Client ID/Secret was entered. The next exact
+operator actions are the six numbered Cloudflare setup steps above, followed
+by adding only machine hostname/team domain/AUD to the external config. Before
+the local loopback check can turn `P5A-W6`/`W7`/`W8` green, the installed
+FQGate instance must also be made healthy and listening on
+`127.0.0.1:17281`; the recorded `fqgate start` result above is the current
+concrete local prerequisite failure.
+
+Current status is **OPEN**. The next Cloudflare operator action is specifically:
 
 > Create the separate machine Access application/service token and Service Auth
 > policy, add its hostname to the existing Tunnel with origin
