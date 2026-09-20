@@ -58,7 +58,7 @@ Phase 4.5A policy/authentication foundation, Phase 4.5B mobile work, and
 Phase 4.5C's narrow remote-admin maintenance and one-time apply confirmation
 are implemented and passed live Windows x64 + Cloudflare acceptance on
 2026-09-19. Phase 4.5 is closed; Phase 5-A is closed at the zero-privilege
-checkpoint, while Phase 5-B has one implemented instrument lookup and remains OPEN pending acceptance.
+checkpoint, while Phase 5-B has one implemented instrument lookup and has passed all Phase 5-B acceptance criteria.
 
 For `local` and ordinary `remote_human` callers, the following remain
 local-only. The implemented `remote_admin` context may invoke exactly these
@@ -74,16 +74,17 @@ The 4.5A policy intentionally recognizes a verified `remote_admin` caller for
 the same safe Phase 4 surface only. It does not grant any of the four
 maintenance operations remotely.
 
-## Active Phase 5-B contract / Phase 5-A closed baseline
+## Closed Phase 5-B contract / next-phase boundary
 
 Phase 5-A is closed. It established a distinct remote_machine identity/context
 and proved real service-token authentication while granting zero existing
 Bridge operations.
 
-The active implementation task is now Phase 5-B: live FQGate contract census
-plus the first minimal read-only market-data slice.
+Phase 5-B is closed: live FQGate contract census plus one bounded instrument
+lookup passed deterministic, permanent Windows, real remote and CI acceptance.
+Phase 5-C remains separate and is not authorized by this closure.
 
-Read these active artifacts before changing code:
+Read these contract and evidence artifacts before changing code:
 
 - docs/plans/phase-5-remote-machine-read-only-api.md
 - docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md
@@ -373,7 +374,7 @@ Follow `docs/roadmap.md`.
 - Phase 4.5B: implemented
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
 - Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
-- Phase 5-B: ACTIVE — live contract census + first minimal read-only market slice
+- Phase 5-B: CLOSED — authoritative live census + one bounded instrument lookup
 - Phase 5-C+: do not opportunistically implement
 
 Phase 5-B is a separate privilege-expansion change. It must use the live permanent-Windows FQGate runtime as contract authority, add at most two evidence-backed read-only operations, and keep machine Host/AUD/context/tests independent from human/admin policy. Do not combine remote-admin and remote-machine privilege expansion.
@@ -384,7 +385,7 @@ When implementation changes the security boundary, request-context model, Cloudf
 
 Phase 4 historical docs remain historical; do not rewrite them to imply remote administration existed in Phase 4.
 
-## Phase 5-B implemented slice (OPEN)
+## Phase 5-B implemented slice (CLOSED)
 
 The sole new operation is `market.instruments.lookup`, POST
 `/api/v1/instruments/lookup`, allowed exactly for local + remote_machine.

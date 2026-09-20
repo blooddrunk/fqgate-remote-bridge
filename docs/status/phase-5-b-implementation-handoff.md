@@ -2,7 +2,7 @@
 
 Date: 2026-09-20
 
-Status: **OPEN — implementation and acceptance in progress**
+Status: **CLOSED — deterministic, permanent-Windows, real remote and CI acceptance passed**
 
 ## Evidence before privilege expansion
 
@@ -47,7 +47,7 @@ intentionally deferred: decoding its generic fields and documenting price/unit/
 freshness semantics would enlarge this first contract. Historical APIs are not
 needed. No new route or permission existed when these observations were recorded.
 
-Planned Bridge contract: `market.instruments.lookup`,
+Implemented Bridge contract: `market.instruments.lookup`,
 `POST /api/v1/instruments/lookup`, body `{ "code": "600000" }`, no other fields;
 contexts exactly local + remote_machine. Upstream method/path remain fixed.
 Maximum 16 upstream items, 65536 response bytes, 128-character names,
@@ -63,5 +63,99 @@ Baseline format check failed on three pre-existing main documentation files;
 format-only correction is included in this change. Existing CLI/loopback smoke
 and P5A-W1/W2/W4–W9 passed; W3 intentionally defers ingress evidence.
 
-Remaining: final implementation, deterministic checks, Windows final gates,
-local normalized probes, hidden-token remote matrix, final Ubuntu/Windows CI.
+## Final implementation and verification identity
+
+Runtime implementation SHA: `f22279e1af5cdf4c4c16d53c8e71d87598ef54fd`.
+Final acceptance implementation SHA: `cce0f6ac36dd2fa720d1cb096f5852c397354e6a`.
+The latter changes only the live harness and its procedure; runtime code is
+identical. The documentation closure commit is the commit containing this update.
+Draft review: <https://github.com/blooddrunk/fqgate-remote-bridge/pull/4>.
+
+Final implementation CI run:
+<https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35501156122>
+
+- Ubuntu job 106053038401: success.
+- Windows job 106053038537: success.
+- All 17 deterministic files / 189 tests passed, including 40 new Phase 5-B
+  tests and the old human/admin/machine regression matrix.
+- Ubuntu CI E2E: 13 passed. Windows CI skips browser E2E by its established
+  condition; permanent Windows browser E2E was run separately and passed 13/13.
+
+Linux and permanent Windows both passed typecheck, lint, tests, build, format
+check and E2E; Windows also passed the required frozen-lockfile install. The Windows final full-gate command
+exited 0. Existing CLI/production loopback smoke and Phase 5-A local acceptance
+were rerun on the implementation: P5A-W1/W2/W4–W9 PASS, W3 reserved SKIP.
+No closed-phase privilege or JWT validation rule was relaxed.
+
+## Final live evidence
+
+The existing Bridge process was identified by exact permanent-checkout launcher
+path, restarted with the final build, unchanged external configuration and
+runtime commit metadata. FQGate and cloudflared were left running. Both listeners
+remained exactly IPv4 loopback. No Cloudflare resource was created or changed.
+
+2026-09-20 09:01 UTC, permanent Windows census/local matrix:
+
+| IDs          | Observed result                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| P5B-W2       | PASS: 127.0.0.1:17281 and 127.0.0.1:17282 only                                             |
+| P5B-C1/C2/C5 | PASS: 1.0.1 validated/running, same 89-operation OpenAPI and scoped hash                   |
+| P5B-C3       | PASS: known exact-code lookup, HTTP 200, one normalized item                               |
+| P5B-C6       | PASS: missing-code lookup, HTTP 200, zero items                                            |
+| P5B-C4       | PASS: census-only quote, HTTP 200/code 0, 533 bytes; unexposed                             |
+| P5B-L2       | PASS: public local lookup, HTTP 200, one normalized item                                   |
+| P5B-L3/L4    | PASS: unknown field HTTP 400 / REQUEST_INVALID; 257-byte body HTTP 413 / REQUEST_TOO_LARGE |
+| P5B-L5       | PASS: raw upstream path HTTP 404 (framework response)                                      |
+| P5B-L6       | PASS: explicit native Host plus forwarded-host spoof HTTP 421                              |
+
+The first harness attempt incorrectly required a Bridge JSON error on framework
+404 and used Node fetch to override Host. The harness was corrected to check
+raw-path HTTP denial and native Windows HttpWebRequest.Host respectively; the
+second complete local run exited 0. This did not change runtime authorization.
+
+At 09:02:40–09:02:50 UTC the operator entered the existing Client ID/Secret into
+the two hidden secure-string prompts. The entire real matrix then ran without
+further operator actions. All **21** remote checks passed:
+
+| IDs                                                                  | Observed result                                                                          |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| P5B-R1                                                               | PASS: no credentials, HTTP 401                                                           |
+| P5B-R2                                                               | PASS: approved lookup through Access/Tunnel, HTTP 200, one normalized item               |
+| P5B-R3/R4                                                            | PASS: malformed HTTP 400 / REQUEST_INVALID; oversized HTTP 413 / REQUEST_TOO_LARGE       |
+| P5B-R5                                                               | PASS: raw upstream path HTTP 403 / OPERATION_FORBIDDEN                                   |
+| P5B-R-deny-bridge.version/capabilities/status                        | PASS: all HTTP 403 / OPERATION_FORBIDDEN                                                 |
+| P5B-R-deny-session.qr.begin/poll                                     | PASS: both HTTP 403 / OPERATION_FORBIDDEN                                                |
+| P5B-R-deny-updates.status/check/plan                                 | PASS: all HTTP 403 / OPERATION_FORBIDDEN                                                 |
+| P5B-R-deny-openapi.catalog/refresh                                   | PASS: both HTTP 403 / OPERATION_FORBIDDEN                                                |
+| P5B-R-page-/ and page-/assets/probe.js and page-/api/v1/unregistered | PASS: all HTTP 403 / OPERATION_FORBIDDEN                                                 |
+| P5B-R-human/admin                                                    | PASS: both HTTP 302 Access challenge                                                     |
+| P5B-W3 and reused P5A-W10/W11                                        | PASS: existing exact machine ingress targets Bridge, companion exit 0, no FQGate ingress |
+
+`updates.apply` was never live-called; its denial remains part of the complete
+deterministic matrix. Invalid bodies protected old POST denial probes against
+side effects if authorization regressed. No QR login was required: successful
+initial reads were accepted despite health `unknown`; final health was connected.
+
+The non-secret result file is outside Git at
+`D:\code\research\fqgate-phase5b-remote-evidence.json`, timestamp
+`2026-09-20T09:02:50.2350317Z`, acceptance SHA cce0f6a, failed=0, pending=0,
+matrixExitCode=0. It contains bounded metadata only. No credentials, assertions,
+cookies, QR/session material, raw OpenAPI or raw market payload entered Git or
+acceptance evidence.
+
+## Closure audit and next boundary
+
+All task-package L1–L12 criteria are met: regression, authoritative census,
+one evidence-backed fixed/typed/bounded operation, exact contexts, old denial,
+quality gates, permanent Windows local acceptance, real remote smoke,
+Ubuntu/Windows CI, no secret/raw payload commits, and synchronized documentation.
+There is no remaining Phase 5-B blocker. The final documentation commit must
+also receive green CI before the goal is reported complete.
+
+Phase 5-C remains a separate unimplemented milestone. No quote/history API,
+generated machine OpenAPI, Cloudflare provisioning, WebSocket/MCP, financial
+mutation, supervisor, notifications, automatic updates, packaging or consumer
+integration was added. The default validated-version list and update activation
+requirements are unchanged; the existing permanent config explicitly validates
+1.0.1. Other runtimes cannot bypass the exact 1.0.1 lookup gate by broadening
+configuration alone.

@@ -8,8 +8,7 @@ task package 和安全文档为准。
 - Phase 0–4.5：CLOSED。
 - Phase 5-A：CLOSED；remote_machine 身份、独立 JWT claim profile、零权限矩阵、
   永久 Windows / CI / 真实 service-token 验收均已完成。
-- Phase 5-B：**ACTIVE**；先做 live contract census，再实现最多两个最小只读行情
-  operation。
+- Phase 5-B：**CLOSED**；live census、一个受限目录查询及 Windows/remote/CI 验收完成。
 - Phase 5-C+：尚未授权实施。
 
 稳定拓扑不变：
@@ -20,7 +19,7 @@ Bridge  -> 127.0.0.1:17282 only
 Tunnel  -> Bridge only
 ```
 
-## 当前活动入口
+## 最近完成任务与维护入口
 
 按顺序阅读：
 
@@ -159,6 +158,6 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 ## 本次实现交接
 
 首个 operation 为 `market.instruments.lookup`（六位代码查询），仅 local +
-remote_machine。Phase 5-B 仍 OPEN，继续执行验收，不追加报价或其他 API。
-实际实时证据、指纹、剩余工作见 `docs/status/phase-5-b-implementation-handoff.md`；
+remote_machine。Phase 5-B 已 CLOSED；不追加报价或其他 API，Phase 5-C 需要单独任务。
+实际实时证据、指纹、后续边界见 `docs/status/phase-5-b-implementation-handoff.md`；
 Windows/远程自动矩阵与隐藏输入步骤见 `docs/operations/windows-phase-5-b-acceptance.md`。

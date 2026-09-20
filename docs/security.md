@@ -455,7 +455,7 @@ A release is not remotely deployable until all are true:
 - no trading/state-changing financial endpoints are registered;
 - remote approved API tests pass through Access.
 
-## Phase 5-B instrument lookup — OPEN
+## Phase 5-B instrument lookup — CLOSED
 
 `market.instruments.lookup` is the sole new market operation, POST
 `/api/v1/instruments/lookup`, with contexts exactly local + remote_machine.

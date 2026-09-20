@@ -452,7 +452,7 @@ The bridge should combine four signals rather than trust any one mechanism:
 
 Unknown or incompatible behavior should degrade/fail closed. A new upstream endpoint is information to review, not permission to expose it.
 
-## Phase 5-B instrument lookup — OPEN
+## Phase 5-B instrument lookup — CLOSED
 
 `market.instruments.lookup` is the sole new market operation, POST
 `/api/v1/instruments/lookup`, with contexts exactly local + remote_machine.
