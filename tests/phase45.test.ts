@@ -137,7 +137,11 @@ describe("Phase 4.5A request contexts and orthogonal operation policy", () => {
         "updates.status",
         "openapi.catalog",
       ]),
-      remote_admin: new Set(listBridgeOperations().map((operation) => operation.id)),
+      remote_admin: new Set(
+        listBridgeOperations()
+          .filter((operation) => operation.id !== "market.instruments.lookup")
+          .map((operation) => operation.id),
+      ),
     };
     for (const context of ["local", "remote_human", "remote_admin"] as const) {
       for (const operation of listBridgeOperations()) {

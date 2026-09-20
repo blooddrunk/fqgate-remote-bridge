@@ -346,7 +346,7 @@ describe("Phase 5-A machine service-token JWT profile", () => {
 });
 
 describe("Phase 5-A zero-privilege server policy", () => {
-  it("denies every registered operation to a valid machine context", () => {
+  it("preserves the old zero-privilege matrix alongside the sole Phase 5-B grant", () => {
     const expected: Record<string, Set<string>> = {
       local: new Set(listBridgeOperations().map((operation) => operation.id)),
       remote_human: new Set([
@@ -358,8 +358,12 @@ describe("Phase 5-A zero-privilege server policy", () => {
         "updates.status",
         "openapi.catalog",
       ]),
-      remote_admin: new Set(listBridgeOperations().map((operation) => operation.id)),
-      remote_machine: new Set(),
+      remote_admin: new Set(
+        listBridgeOperations()
+          .filter((operation) => operation.id !== "market.instruments.lookup")
+          .map((operation) => operation.id),
+      ),
+      remote_machine: new Set(["market.instruments.lookup"]),
     };
 
     for (const context of ["local", "remote_human", "remote_admin", "remote_machine"] as const) {
@@ -374,9 +378,9 @@ describe("Phase 5-A zero-privilege server policy", () => {
       }
     }
     expect(
-      listBridgeOperations().every(
-        (operation) => !operation.allowedContexts.includes("remote_machine"),
-      ),
+      listBridgeOperations()
+        .filter((operation) => operation.id !== "market.instruments.lookup")
+        .every((operation) => !operation.allowedContexts.includes("remote_machine")),
     ).toBe(true);
   });
 
@@ -423,7 +427,7 @@ describe("Phase 5-A zero-privilege server policy", () => {
     ).toBe(false);
   });
 
-  it("denies a valid machine identity for every registered operation at the HTTP policy boundary", async () => {
+  it("denies a valid machine identity for every Phase 5-A operation at the HTTP policy boundary", async () => {
     const handler = createBridgeHttpHandler({
       service: createService(),
       requestContext: {
@@ -432,7 +436,9 @@ describe("Phase 5-A zero-privilege server policy", () => {
       },
     });
 
-    for (const operation of listBridgeOperations()) {
+    for (const operation of listBridgeOperations().filter(
+      (operation) => operation.id !== "market.instruments.lookup",
+    )) {
       const response = await handler(
         new Request(`https://api.example.com${operation.path}`, {
           method: operation.method,

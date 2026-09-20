@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ConfigPath,
     [switch]$VerifyLocal,
+    [switch]$Phase5BReadOnly,
     [switch]$RunAuthenticatedServiceTokenMatrix,
     [string]$MachineUrl,
     [string]$HumanUrl,
@@ -367,6 +368,9 @@ if ($VerifyLocal) {
 
 if ($RunAuthenticatedServiceTokenMatrix) {
     $harnessPath = Join-Path $script:repositoryRoot "scripts\windows\phase5a-authenticated-acceptance.mjs"
+    if ($Phase5BReadOnly) {
+        $harnessPath = Join-Path $script:repositoryRoot "scripts\windows\phase5b-matrix.mjs"
+    }
     $clientIdSecure = Read-Host "Cloudflare service-token Client ID (hidden)" -AsSecureString
     $clientSecretSecure = Read-Host "Cloudflare service-token Client Secret (hidden)" -AsSecureString
     $clientId = $null
@@ -412,6 +416,20 @@ if ($RunAuthenticatedServiceTokenMatrix) {
             Write-Result "P5A-W11" "machine Tunnel ingress contains only the Bridge origin" "PASS" "bounded ingress evidence contains Bridge origin and no 17281"
         }
     }
+}
+
+if ($Phase5BReadOnly -and $RunAuthenticatedServiceTokenMatrix) {
+    # Only the companion's bounded metadata is persisted, never process environment,
+    # secure strings, exceptions, response bodies, or credential prompts.
+    $evidence = @{
+        timestamp = [DateTime]::UtcNow.ToString("o")
+        commit = (& $script:gitPath -C $repositoryRoot rev-parse HEAD).Trim()
+        failed = $script:failureCount
+        pending = $script:manualCount
+        matrixExitCode = $child.ExitCode
+        records = $child.Stdout
+    }
+    $evidence | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath "D:\code\research\fqgate-phase5b-remote-evidence.json" -Encoding UTF8
 }
 
 if ($script:failureCount -gt 0) {

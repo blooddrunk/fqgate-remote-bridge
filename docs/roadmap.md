@@ -273,7 +273,7 @@ Phase 5-A closed task/evidence remain historical baseline:
 Implementation status: **CLOSED**. Deterministic identity, hostname, verifier,
 zero-operation policy, secret-safe Windows harness, permanent Windows evidence,
 Ubuntu/Windows CI, and real service-token acceptance are complete. Phase 5-B
-remains a separate task and has not been implemented.
+remains a separate task with one instrument lookup implemented and closure pending.
 
 Add a fourth request context:
 
@@ -303,7 +303,7 @@ Windows procedure/evidence: `docs/operations/windows-phase-5-a-acceptance.md`.
 
 ### 5-B — runtime contract census and first read-only market slice
 
-Status: **ACTIVE**. Executable contract: `docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`.
+Status: **OPEN — one instrument lookup implemented; final acceptance pending**. Executable contract: `docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`.
 
 Phase 5-A is closed, so inspect the **running target FQGate**
 `http://127.0.0.1:17281/openapi.json` and execute bounded semantic probes from

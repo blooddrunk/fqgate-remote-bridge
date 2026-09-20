@@ -16,6 +16,7 @@ import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as ApiV1CapabilitiesRouteImport } from './routes/api/v1/capabilities'
 import { Route as ApiV1StatusRouteImport } from './routes/api/v1/status'
 import { Route as ApiV1VersionRouteImport } from './routes/api/v1/version'
+import { Route as ApiV1InstrumentsLookupRouteImport } from './routes/api/v1/instruments/lookup'
 import { Route as ApiV1OpenapiCatalogRouteImport } from './routes/api/v1/openapi/catalog'
 import { Route as ApiV1OpenapiRefreshRouteImport } from './routes/api/v1/openapi/refresh'
 import { Route as ApiV1UpdatesApplyRouteImport } from './routes/api/v1/updates/apply'
@@ -58,6 +59,11 @@ const ApiV1StatusRoute = ApiV1StatusRouteImport.update({
 const ApiV1VersionRoute = ApiV1VersionRouteImport.update({
   id: '/api/v1/version',
   path: '/api/v1/version',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1InstrumentsLookupRoute = ApiV1InstrumentsLookupRouteImport.update({
+  id: '/api/v1/instruments/lookup',
+  path: '/api/v1/instruments/lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiV1OpenapiCatalogRoute = ApiV1OpenapiCatalogRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/capabilities': typeof ApiV1CapabilitiesRoute
   '/api/v1/status': typeof ApiV1StatusRoute
   '/api/v1/version': typeof ApiV1VersionRoute
+  '/api/v1/instruments/lookup': typeof ApiV1InstrumentsLookupRoute
   '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
   '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/api/v1/capabilities': typeof ApiV1CapabilitiesRoute
   '/api/v1/status': typeof ApiV1StatusRoute
   '/api/v1/version': typeof ApiV1VersionRoute
+  '/api/v1/instruments/lookup': typeof ApiV1InstrumentsLookupRoute
   '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
   '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/api/v1/capabilities': typeof ApiV1CapabilitiesRoute
   '/api/v1/status': typeof ApiV1StatusRoute
   '/api/v1/version': typeof ApiV1VersionRoute
+  '/api/v1/instruments/lookup': typeof ApiV1InstrumentsLookupRoute
   '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
   '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/api/v1/capabilities'
     | '/api/v1/status'
     | '/api/v1/version'
+    | '/api/v1/instruments/lookup'
     | '/api/v1/openapi/catalog'
     | '/api/v1/openapi/refresh'
     | '/api/v1/updates/apply'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/api/v1/capabilities'
     | '/api/v1/status'
     | '/api/v1/version'
+    | '/api/v1/instruments/lookup'
     | '/api/v1/openapi/catalog'
     | '/api/v1/openapi/refresh'
     | '/api/v1/updates/apply'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/api/v1/capabilities'
     | '/api/v1/status'
     | '/api/v1/version'
+    | '/api/v1/instruments/lookup'
     | '/api/v1/openapi/catalog'
     | '/api/v1/openapi/refresh'
     | '/api/v1/updates/apply'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   ApiV1CapabilitiesRoute: typeof ApiV1CapabilitiesRoute
   ApiV1StatusRoute: typeof ApiV1StatusRoute
   ApiV1VersionRoute: typeof ApiV1VersionRoute
+  ApiV1InstrumentsLookupRoute: typeof ApiV1InstrumentsLookupRoute
   ApiV1OpenapiCatalogRoute: typeof ApiV1OpenapiCatalogRoute
   ApiV1OpenapiRefreshRoute: typeof ApiV1OpenapiRefreshRoute
   ApiV1UpdatesApplyRoute: typeof ApiV1UpdatesApplyRoute
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/version'
       fullPath: '/api/v1/version'
       preLoaderRoute: typeof ApiV1VersionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/instruments/lookup': {
+      id: '/api/v1/instruments/lookup'
+      path: '/api/v1/instruments/lookup'
+      fullPath: '/api/v1/instruments/lookup'
+      preLoaderRoute: typeof ApiV1InstrumentsLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v1/openapi/catalog': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1CapabilitiesRoute: ApiV1CapabilitiesRoute,
   ApiV1StatusRoute: ApiV1StatusRoute,
   ApiV1VersionRoute: ApiV1VersionRoute,
+  ApiV1InstrumentsLookupRoute: ApiV1InstrumentsLookupRoute,
   ApiV1OpenapiCatalogRoute: ApiV1OpenapiCatalogRoute,
   ApiV1OpenapiRefreshRoute: ApiV1OpenapiRefreshRoute,
   ApiV1UpdatesApplyRoute: ApiV1UpdatesApplyRoute,

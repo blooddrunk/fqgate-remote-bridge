@@ -14,11 +14,11 @@ task package 和安全文档为准。
 
 稳定拓扑不变：
 
-~~~text
+```text
 FQGate  -> 127.0.0.1:17281 only
 Bridge  -> 127.0.0.1:17282 only
 Tunnel  -> Bridge only
-~~~
+```
 
 ## 当前活动入口
 
@@ -56,10 +56,10 @@ Bridge 中显式 adapter + registry + tests 后才可调用。
 
 Phase 5-B 新增的行情 operation 的 allowedContexts 必须恰好是：
 
-~~~text
+```text
 local
 remote_machine
-~~~
+```
 
 不要顺手给 remote_human 或 remote_admin。
 
@@ -155,3 +155,10 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 
 失败时写清具体 test ID、HTTP/error、观察到的 contract 差异以及下一项动作。
 不要只写“证据未完整记录”。
+
+## 本次实现交接
+
+首个 operation 为 `market.instruments.lookup`（六位代码查询），仅 local +
+remote_machine。Phase 5-B 仍 OPEN，继续执行验收，不追加报价或其他 API。
+实际实时证据、指纹、剩余工作见 `docs/status/phase-5-b-implementation-handoff.md`；
+Windows/远程自动矩阵与隐藏输入步骤见 `docs/operations/windows-phase-5-b-acceptance.md`。

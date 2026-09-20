@@ -364,3 +364,29 @@ registered trusted manifest
   -> verify
   -> local install
 ```
+
+## Phase 5-B live census — 2026-09-20
+
+The permanent Windows runtime, not example endpoint names, established FQGate
+1.0.1 / OpenAPI 3.1.0, 265990 bytes / 89 operations. Full canonical fingerprint:
+`8abc1d0ece7c2129152aa7d65ee48d05454fc0dcd037d797225ec0b46b757e6d`.
+Selected fixed POST `/v1/market/catalog/search-symbols` takes a `pattern` string
+and optional `need_market`; successful envelope data contains `item_count` and
+`items` with string `code`, `market`, `name`, `ths_code`. Live exact six-digit
+probe returned HTTP 200 / code 0 / one item / 322 bytes. Bridge narrows the input
+to a six-digit code and filters exact matches; it never exposes arbitrary search
+patterns. The upstream has no declared result limit, so Bridge enforces both
+64-KiB transport and 16-item parse limits, rejecting overflow.
+
+Selected operation and transitive local schema-reference fingerprint:
+`a0b2bb5b2cdf5ec6e4f22e5a15ef9217bc20b2d4f1cb589fe680fb87d0b39ed5`.
+Each call rechecks this fingerprint and exact validated running version 1.0.1.
+No updater activation gate was added; unknown later versions fail lookup closed.
+
+Quote POST `/v1/market/realtime/quote` was observed/probed read-only (one instrument,
+fixed nine fields, HTTP 200/code 0/531 bytes). Its generic nested field records
+remain unexposed; no quote or bars permission is granted. Public SDK and UI
+adapter commit `b949c542bc722ebe601662ba0c06c80eed9c8da8` independently corroborate
+lookup/snapshot read semantics. Full evidence and bounded commands are in the
+Phase 5-B handoff/Windows acceptance documents. No raw schema or market sample
+is retained.

@@ -158,6 +158,10 @@ async function dispatchRequest(
   principal: BridgePrincipal | undefined,
 ): Promise<unknown> {
   switch (operation.id) {
+    case "market.instruments.lookup":
+      return service.lookupInstruments(
+        await readJsonBody(request, operation.maxBodyBytes, "instrument lookup"),
+      );
     case "bridge.version":
       rejectUnexpectedGetBody(request);
       return service.version();
@@ -241,7 +245,14 @@ function rejectUnexpectedGetBody(request: Request): void {
 async function readJsonBody(
   request: Request,
   maxBytes: number,
-  operation: "begin" | "poll" | "update check" | "update plan" | "update apply" | "OpenAPI refresh",
+  operation:
+    | "begin"
+    | "poll"
+    | "update check"
+    | "update plan"
+    | "update apply"
+    | "OpenAPI refresh"
+    | "instrument lookup",
 ): Promise<Record<string, unknown>> {
   const contentLengthHeader = request.headers.get("content-length");
   if (contentLengthHeader !== null && parseContentLength(contentLengthHeader) > maxBytes) {
@@ -455,6 +466,8 @@ function httpStatusFor(code: string): number {
     case ERROR_CODES.QR_FLOW_EXPIRED:
     case ERROR_CODES.QR_FLOW_REPLACED:
       return 409;
+    case ERROR_CODES.LOGIN_REQUIRED:
+    case ERROR_CODES.MARKET_PERMISSION_REQUIRED:
     case ERROR_CODES.FQGATE_NOT_INSTALLED:
     case ERROR_CODES.FQGATE_NOT_RUNNING:
     case ERROR_CODES.FQGATE_INCOMPATIBLE:
@@ -490,6 +503,10 @@ function httpStatusFor(code: string): number {
 
 function publicMessageFor(code: string): string {
   switch (code) {
+    case ERROR_CODES.LOGIN_REQUIRED:
+      return "Complete the existing local FQGate QR login, then retry.";
+    case ERROR_CODES.MARKET_PERMISSION_REQUIRED:
+      return "The upstream market permission is unavailable.";
     case ERROR_CODES.REQUEST_INVALID:
       return "The request is invalid.";
     case ERROR_CODES.REQUEST_TOO_LARGE:

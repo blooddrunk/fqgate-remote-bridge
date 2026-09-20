@@ -34,7 +34,7 @@ It is an independent infrastructure/adapter project. It must not make `turtle-va
 - Do not expose trading, order, cancellation, fund-transfer, brokerage-control, or other state-changing financial endpoints.
 - Do not request a Cloudflare Global API Key. Automated Tunnel/DNS/Access provisioning belongs to Phase 6.
 - Do not commit Tunnel tokens, Access assertions/secrets, QR payloads, login/session material, remote-admin confirmation grants, or other credentials.
-- Preserve all closed Phase 0/1/2/3/4/4.5 behavior while implementing Phase 5-A.
+- Preserve all closed Phase 0/1/2/3/4/4.5 behavior while implementing Phase 5-B.
 
 ## Completed baseline
 
@@ -58,7 +58,7 @@ Phase 4.5A policy/authentication foundation, Phase 4.5B mobile work, and
 Phase 4.5C's narrow remote-admin maintenance and one-time apply confirmation
 are implemented and passed live Windows x64 + Cloudflare acceptance on
 2026-09-19. Phase 4.5 is closed; Phase 5-A is closed at the zero-privilege
-checkpoint, while Phase 5-B market-data APIs remain unimplemented.
+checkpoint, while Phase 5-B has one implemented instrument lookup and remains OPEN pending acceptance.
 
 For `local` and ordinary `remote_human` callers, the following remain
 local-only. The implemented `remote_admin` context may invoke exactly these
@@ -383,3 +383,17 @@ Phase 5-B is a separate privilege-expansion change. It must use the live permane
 When implementation changes the security boundary, request-context model, Cloudflare assumptions, admin JWT validation, confirmation model, mobile operator workflow, runtime topology, Windows/token behavior, or phase completion state, update the corresponding source-of-truth documentation in the same change.
 
 Phase 4 historical docs remain historical; do not rewrite them to imply remote administration existed in Phase 4.
+
+## Phase 5-B implemented slice (OPEN)
+
+The sole new operation is `market.instruments.lookup`, POST
+`/api/v1/instruments/lookup`, allowed exactly for local + remote_machine.
+It accepts only a six-digit `code`; fixed upstream POST
+`/v1/market/catalog/search-symbols` is supported by recorded permanent-Windows
+1.0.1 census and semantic probes. Maximum 16 result items / 64 KiB upstream /
+256-byte Bridge body. A scoped operation-plus-reference fingerprint and exact
+observed version fail this operation closed on drift; activation rules are not
+expanded. All Phase 5-A operations remain denied to machines. Quote, generated
+machine OpenAPI, and Cloudflare provisioning remain unimplemented.
+See `docs/status/phase-5-b-implementation-handoff.md` and
+`docs/operations/windows-phase-5-b-acceptance.md` for the current evidence.

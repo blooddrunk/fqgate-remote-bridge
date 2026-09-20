@@ -3,6 +3,7 @@ import type { OpenApiHttpMethod, RequiredOpenApiContract } from "../../fqgate/op
 import type { BridgeRequestContext } from "./request-context.js";
 
 export type BridgeOperationId =
+  | "market.instruments.lookup"
   | "bridge.version"
   | "bridge.capabilities"
   | "bridge.status"
@@ -15,7 +16,8 @@ export type BridgeOperationId =
   | "openapi.catalog"
   | "openapi.refresh";
 
-export type BridgeOperationClassification = "diagnostic" | "session_maintenance" | "local_admin";
+export type BridgeOperationClassification =
+  "diagnostic" | "session_maintenance" | "local_admin" | "market_read";
 export type BridgeSensitivity = "none" | "qr_payload";
 export type BridgeOperationIntent = "read_only" | "session_maintenance" | "local_admin";
 export interface BridgeOperationPolicy {
@@ -38,6 +40,21 @@ export interface BridgeOperationPolicy {
 }
 
 const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
+  {
+    id: "market.instruments.lookup",
+    method: "POST",
+    path: "/api/v1/instruments/lookup",
+    classification: "market_read",
+    intent: "read_only",
+    allowedContexts: ["local", "remote_machine"],
+    requiresConfirmation: false,
+    timeoutMs: 20_000,
+    maxBodyBytes: 256,
+    sensitivity: "none",
+    requiredCompatibility: "validated",
+    documentationVisible: true,
+    upstream: { method: "POST", path: "/v1/market/catalog/search-symbols" },
+  },
   {
     id: "bridge.version",
     method: "GET",
@@ -295,10 +312,17 @@ export function assertOperationRegistryInvariants(): void {
     ) {
       throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, `Invalid context policy: ${key}`);
     }
-    if (operation.allowedContexts.includes("remote_machine")) {
+    if (
+      (operation.allowedContexts.includes("remote_machine") &&
+        operation.id !== "market.instruments.lookup") ||
+      (operation.id === "market.instruments.lookup" &&
+        (operation.allowedContexts.join(",") !== "local,remote_machine" ||
+          operation.intent !== "read_only" ||
+          operation.classification !== "market_read"))
+    ) {
       throw new BridgeError(
         ERROR_CODES.BRIDGE_NOT_READY,
-        `Remote machine operation privilege is not enabled in Phase 5-A: ${key}`,
+        `Unexpected remote machine operation privilege: ${key}`,
       );
     }
     if (operation.requiresConfirmation && operation.id !== "updates.apply") {

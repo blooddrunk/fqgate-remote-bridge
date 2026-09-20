@@ -13,18 +13,18 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发，Phase 0–5-A 已完成；Phase 5-B 已进入活动开发，但当前 main 尚未实现新的行情 operation。
+当前项目仍在持续开发，Phase 0–5-A 已完成；Phase 5-B 已实现首个受限证券目录查询，验收仍为 OPEN。
 
-| 能力                   | 当前状态         | 说明                                                    |
-| ---------------------- | ---------------- | ------------------------------------------------------- |
-| FQGate 本机运行        | 可用             | 仅 127.0.0.1:17281                                      |
-| Bridge Dashboard/API   | 可用             | 仅 127.0.0.1:17282                                      |
-| 本地维护               | 可用             | 生命周期、更新和 OpenAPI refresh 保持本地边界           |
-| remote-human           | 可用             | Dashboard、status、QR、只读更新状态、API catalog        |
-| remote-admin           | 可用             | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制     |
-| remote-machine         | 已认证、零权限   | 可识别 machine 身份，但当前所有 Bridge operation 都拒绝 |
-| Phase 5-B 行情 API     | ACTIVE / 未实现  | 先做真实 contract census，再最多加入 1–2 个只读 operation |
-| 交易、下单、撤单、转账 | 永不由本项目提供 | 这是不可突破的安全边界                                  |
+| 能力                   | 当前状态           | 说明                                                      |
+| ---------------------- | ------------------ | --------------------------------------------------------- |
+| FQGate 本机运行        | 可用               | 仅 127.0.0.1:17281                                        |
+| Bridge Dashboard/API   | 可用               | 仅 127.0.0.1:17282                                        |
+| 本地维护               | 可用               | 生命周期、更新和 OpenAPI refresh 保持本地边界             |
+| remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog          |
+| remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制       |
+| remote-machine         | 独立认证、受限查询 | 仅允许 market.instruments.lookup；所有旧 operation 仍拒绝 |
+| Phase 5-B 行情 API     | OPEN / 验收中      | 已从永久 Windows 实时证据选择一个六位代码查询             |
+| 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                    |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
 再继续完成“Cloudflare 人工配置”和“远程验收”。
@@ -73,12 +73,12 @@ Cloudflare Access 是第一道门，Bridge 是第二道门。即使 Tunnel 配�
 
 ### 1.2 四种请求上下文
 
-| 上下文         | 如何产生                                                | 当前权限                              |
-| -------------- | ------------------------------------------------------- | ------------------------------------- |
-| local          | loopback Host，例如 127.0.0.1:17282                     | 本地策略允许的本地操作                |
-| remote_human   | 精确匹配普通远程 hostname，并通过 human Access          | Phase 4 远程人工只读面                |
-| remote_admin   | 精确匹配独立管理员 hostname，并通过独立 human JWT/AUD   | Phase 4.5 的有限维护面                |
-| remote_machine | 精确匹配独立 machine hostname，并通过 service-token JWT | Phase 5-A 中对全部当前 operation 拒绝 |
+| 上下文         | 如何产生                                                | 当前权限                                          |
+| -------------- | ------------------------------------------------------- | ------------------------------------------------- |
+| local          | loopback Host，例如 127.0.0.1:17282                     | 本地策略允许的本地操作                            |
+| remote_human   | 精确匹配普通远程 hostname，并通过 human Access          | Phase 4 远程人工只读面                            |
+| remote_admin   | 精确匹配独立管理员 hostname，并通过独立 human JWT/AUD   | Phase 4.5 的有限维护面                            |
+| remote_machine | 精确匹配独立 machine hostname，并通过 service-token JWT | 仅 market.instruments.lookup；旧 operation 仍拒绝 |
 
 remote_machine 不是“管理员的另一种登录方式”。它有独立的 hostname、Access
 application、AUD、JWT claim validator 和 principal kind。Phase 5-A 的成功标准就是：
@@ -93,7 +93,7 @@ Cloudflare hostname 单独决定。当前远程面是：
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | remote_human   | bridge.version、bridge.capabilities、bridge.status、session.qr.begin、session.qr.poll、updates.status、openapi.catalog                                         |
 | remote_admin   | 上述七个 operation，外加 updates.check、updates.plan、updates.apply、openapi.refresh；维护操作还要通过独立 admin JWT、Origin/intent 和 apply confirmation 约束 |
-| remote_machine | 无。当前完整 operation registry 全部 server-side deny，包括 bridge.version                                                                                     |
+| remote_machine | 仅 market.instruments.lookup；全部旧 operation 继续拒绝，包括 bridge.version                                                                                   |
 
 任何未列出的 FQGate path 都不是 Bridge API。不要因为某个路径出现在 FQGate 的
 Runtime OpenAPI 中，就认为它可以远程调用。
@@ -118,9 +118,9 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | Agent 的强制工作合同         | [AGENTS.md](AGENTS.md)                                                                                                                                                                                  |
 | 当前架构和安全边界           | [docs/architecture.md](docs/architecture.md)、[docs/security.md](docs/security.md)                                                                                                                      |
 | 当前阶段总设计               | [phase-5-remote-machine-read-only-api.md](docs/plans/phase-5-remote-machine-read-only-api.md)                                                                                                           |
-| **Phase 5-B 当前任务**        | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                     |
-| **Phase 5-B Codex Goal**      | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
-| Phase 5-A 已关闭任务          | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
+| **Phase 5-B 当前任务**       | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
+| **Phase 5-B Codex Goal**     | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
+| Phase 5-A 已关闭任务         | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
 | Phase 5-A 实现和关闭证据     | [phase-5-a-implementation-handoff.md](docs/status/phase-5-a-implementation-handoff.md)                                                                                                                  |
 | 永久 Windows 验收步骤        | [windows-phase-5-a-acceptance.md](docs/operations/windows-phase-5-a-acceptance.md)                                                                                                                      |
 | 给 Agent 的快速交接          | [docs/agent-guide.md](docs/agent-guide.md)                                                                                                                                                              |
@@ -374,7 +374,7 @@ loopback、raw path、Host spoofing、配置碰撞检查必须通过。
   operation registry。
 
 因此 machine Access application 的作用是：给无浏览器、无人工 MFA 的程序提供一扇
-独立的受控入口。它不等于给程序管理员权限；在当前 Phase 5-A 中，合法 machine
+独立的受控入口。它不等于给程序管理员权限；在已关闭的 Phase 5-A 检查点，合法 machine
 service token 只能证明“这是被登记的机器”，随后仍会被 Bridge 的零权限 policy 拒绝。
 
 ### 4.2 三个公网 hostname 必须各自隔离
@@ -743,7 +743,7 @@ contract census、只读行情 adapter、独立 operation registry、machine-fac
 
 尚未授权或未实现的工作包括：
 
-- Phase 5-B 行情 API 和 machine-facing generated OpenAPI；
+- Phase 5-C machine-facing generated OpenAPI，以及首批以外的行情 API；
 - Phase 6 Cloudflare provisioning automation；
 - supervisor、notifications、automatic updates；
 - MCP、WebSocket、最终 packaging；
@@ -764,3 +764,21 @@ token 行为、operation registry、远程权限或验收流程，必须在同�
 
 这样 README 才是新 operator 的入口，task package 才是验收合同，status 文档才是事实
 证据，三者不会再次脱节。
+
+## Phase 5-B 当前只读 API（OPEN）
+
+永久 Windows live census 已选择 `market.instruments.lookup`：
+`POST /api/v1/instruments/lookup`，JSON body 只能是六位代码对象，例如
+`{ "code": "600000" }`。仅 `local` 与 `remote_machine` 可用，human/admin 不允许。
+返回 `{ "items": [...] }`，每项只有 `code`、`market`、`name`、`instrumentId`；
+按完整代码过滤，零匹配返回空数组。最多 16 项、上游 64 KiB、请求 256 bytes，
+不接收任意 pattern、URL、path、method 或 limit。报价仍未开放。
+
+仅实际验证的 FQGate 1.0.1 和该操作及引用 schema 指纹可用；未来版本或结构漂移
+关闭此操作，本地诊断/维护保留。不会修改更新激活基线或默认兼容版本列表。
+`LOGIN_REQUIRED` 必须使用现有本地 `/login` 物理 QR 登录后重试。
+
+重复执行与隐藏 service-token 输入步骤见
+[Phase 5-B Windows 验收](docs/operations/windows-phase-5-b-acceptance.md)，
+实际证据与未完成项见 [实现交接](docs/status/phase-5-b-implementation-handoff.md)。
+既有 Phase 5-A 命令用于旧权限回归；新行情成功验收使用 Phase 5-B 命令。
