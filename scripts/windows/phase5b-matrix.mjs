@@ -97,7 +97,8 @@ async function check(id, origin, path, method, body, expected, customHeaders = h
       pass = status === 200 && validShape(value);
       if (pass) count = value.items.length;
     } else if (expected === "challenge") pass = challenges.has(status);
-    else pass = status === expected.status && code === expected.code;
+    else
+      pass = status === expected.status && (expected.code === undefined || code === expected.code);
   } catch {
     /* output never contains an exception/body/header */
   }
@@ -151,19 +152,11 @@ try {
   });
   await check(`${prefix}5`, origin, "/v1/market/health", "GET", undefined, {
     status: local ? 404 : 403,
-    code: local ? "ROUTE_NOT_FOUND" : "OPERATION_FORBIDDEN",
+    ...(local ? {} : { code: "OPERATION_FORBIDDEN" }),
   });
-  if (local)
-    await check(
-      `${prefix}6`,
-      origin,
-      "/api/v1/version",
-      "GET",
-      undefined,
-      { status: 421, code: "HOST_NOT_ALLOWED" },
-      { host: "unknown.example.com", "x-forwarded-host": "127.0.0.1:17282" },
-    );
-  else {
+  // Explicit Host spoofing uses Windows HttpWebRequest in the wrapper: native
+  // fetch can normalize away a supplied Host header.
+  if (!local) {
     // Invalid bodies additionally prevent side effects if authorization regresses.
     // Never live-call updates.apply; its complete denial is deterministic evidence.
     for (const operation of listBridgeOperations().filter(

@@ -38,7 +38,9 @@ before querying. C3 uses a known six-digit instrument, C6 checks an empty/missin
 code response, and C4 reports only the unselected quote candidate's shape.
 
 P5B-L2 verifies normalized lookup output; L3/L4 verify malformed/oversized input;
-L5/L6 verify raw-path and unknown/forwarded-Host denial. Deterministic tests
+L5 verifies the framework raw-path HTTP 404 (no Bridge JSON body is required).
+L6 uses native Windows HttpWebRequest with an explicit Host property to verify
+unknown/forwarded-Host HTTP 421; Node fetch can normalize that header. Deterministic tests
 prove the entire context/operation matrix, including dangerous-operation denial
 without live execution.
 
