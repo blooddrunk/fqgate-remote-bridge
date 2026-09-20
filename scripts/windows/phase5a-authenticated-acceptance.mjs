@@ -3,7 +3,10 @@
 import process from "node:process";
 
 const MAX_RESPONSE_BYTES = 64 * 1024;
+const MAX_TRANSIENT_ATTEMPTS = 3;
+const TRANSIENT_RETRY_DELAY_MS = 750;
 const ACCESS_CHALLENGE_STATUSES = new Set([302, 303, 307, 308, 401, 403]);
+const TRANSIENT_STATUSES = new Set([502, 503, 504]);
 const clientId = process.env.CF_ACCESS_CLIENT_ID;
 const clientSecret = process.env.CF_ACCESS_CLIENT_SECRET;
 
@@ -185,20 +188,31 @@ function result(id, name, state, status, code, host) {
 }
 
 async function request(method, url, headers = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
-  try {
-    const response = await fetch(url, {
-      method,
-      headers,
-      redirect: "manual",
-      signal: controller.signal,
-    });
-    const body = await readBoundedText(response);
-    return { status: response.status, code: readErrorCode(body) };
-  } finally {
-    clearTimeout(timeout);
+  let lastError;
+  for (let attempt = 0; attempt < MAX_TRANSIENT_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        redirect: "manual",
+        signal: controller.signal,
+      });
+      const body = await readBoundedText(response);
+      const result = { status: response.status, code: readErrorCode(body) };
+      if (!TRANSIENT_STATUSES.has(result.status) || attempt + 1 === MAX_TRANSIENT_ATTEMPTS) {
+        return result;
+      }
+    } catch (error) {
+      lastError = error;
+      if (attempt + 1 === MAX_TRANSIENT_ATTEMPTS) throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+    await new Promise((resolve) => setTimeout(resolve, TRANSIENT_RETRY_DELAY_MS));
   }
+  throw lastError ?? new Error("bounded request retry exhausted");
 }
 
 async function readBoundedText(response) {
