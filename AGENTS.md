@@ -82,7 +82,7 @@ Bridge operations.
 
 Phase 5-B is closed: live FQGate contract census plus one bounded instrument
 lookup passed deterministic, permanent Windows, real remote and CI acceptance.
-Phase 5-C remains separate and is not authorized by this closure.
+Phase 5-C is now the active separately reviewed task. Its authorization is limited to the explicit Phase 5-C task package; Phase 5-B closure alone did not authorize it.
 
 Read these contract and evidence artifacts before changing code:
 
@@ -375,9 +375,10 @@ Follow `docs/roadmap.md`.
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
 - Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
 - Phase 5-B: CLOSED — authoritative live census + one bounded instrument lookup
-- Phase 5-C+: do not opportunistically implement
+- Phase 5-C: ACTIVE — filtered machine OpenAPI and final remote closure only
+- Phase 5-D+: do not opportunistically implement
 
-Phase 5-B is a separate privilege-expansion change. It must use the live permanent-Windows FQGate runtime as contract authority, add at most two evidence-backed read-only operations, and keep machine Host/AUD/context/tests independent from human/admin policy. Do not combine remote-admin and remote-machine privilege expansion.
+Phase 5-C is the active task. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md` and `docs/prompts/phase-5-c-codex-goal.md` before changing code. It must not add any new market operation; it may add only the registry-derived machine OpenAPI/docs operation needed to close Phase 5. Keep machine Host/AUD/context/tests independent from human/admin policy.
 
 ## Documentation rule
 
