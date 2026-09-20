@@ -74,42 +74,50 @@ The 4.5A policy intentionally recognizes a verified `remote_admin` caller for
 the same safe Phase 4 surface only. It does not grant any of the four
 maintenance operations remotely.
 
-## Closed Phase 5-A contract / next-phase boundary
+## Active Phase 5-B contract / Phase 5-A closed baseline
 
-Phase 5-A was the implementation milestone. It adds a distinct
-`remote_machine` authentication/context foundation and deliberately grants it
-**zero Bridge operation privileges** at the first checkpoint.
+Phase 5-A is closed. It established a distinct remote_machine identity/context
+and proved real service-token authentication while granting zero existing
+Bridge operations.
+
+The active implementation task is now Phase 5-B: live FQGate contract census
+plus the first minimal read-only market-data slice.
 
 Read these active artifacts before changing code:
 
-- `docs/plans/phase-5-remote-machine-read-only-api.md`
-- `docs/tasks/phase-5-a-remote-machine-zero-privilege.md`
-- `docs/prompts/phase-5-a-codex-goal.md`
+- docs/plans/phase-5-remote-machine-read-only-api.md
+- docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md
+- docs/prompts/phase-5-b-codex-goal.md
+- docs/status/phase-5-a-implementation-handoff.md
+- docs/operations/windows-phase-5-a-acceptance.md
 
-The permanent Windows verification environment is under `D:\\code\\research`.
+The permanent Windows verification environment is under D:\\code\\research.
 Agents must resolve and use the existing repository working tree there for
-Windows/live acceptance rather than inventing a temporary checkout. Automate
-every machine-verifiable check. If real Cloudflare resource creation or service
-credential entry is required, follow the exact manual boundary in the Phase
-5-A task package and never ask the operator to paste credentials into chat,
-logs, Git, command arguments, or documentation.
+Windows/live census and acceptance rather than inventing a temporary checkout.
+Automate every machine-verifiable check.
 
-Phase 5-A added no market-data operation. A valid machine identity is denied by
-every currently registered Bridge operation. Phase 5-B may start now that the
-deterministic, Windows, CI, and real service-token acceptance evidence is
-complete, but it remains a separate task and is not part of the closed change.
+Phase 5-B must inspect the running target FQGate before selecting any market
+operation. Runtime OpenAPI is evidence only; it never authorizes a route. The
+task may implement at most two evidence-backed, explicitly read-only operations.
+Their allowed contexts must be exactly local and remote_machine. Existing
+remote_human/remote_admin permissions remain unchanged and remote_machine must
+continue to be denied every old QR/session/update/admin/openapi-refresh
+operation.
 
-The implementation handoff is
-`docs/status/phase-5-a-implementation-handoff.md`; the permanent Windows
-procedure/evidence is `docs/operations/windows-phase-5-a-acceptance.md`.
+The Phase 5-A machine claim profile remains unchanged: service-token
+application JWTs use type=app, a bounded non-empty common_name, empty sub, exact
+machine AUD/issuer/time checks, and kind=machine. Human/admin claim validation
+must not be relaxed.
 
-The Cloudflare machine token claim profile is intentionally distinct from the
-Phase 4.5 human-admin profile. Service-token application JWTs use `type=app`,
-a bounded non-empty `common_name` as machine identity, and an empty `sub`.
-Do not reuse the human verifier's non-empty-`sub` rule for machines. Shared
-RS256/JWK transport code is acceptable only when human and machine claim
-validation, hostname, audience, principal kind, configuration, and tests remain
-separate.
+The Phase 5-A closure evidence remains authoritative historical baseline. Do
+not rewrite it to imply that market-data privileges existed in Phase 5-A.
+
+For Phase 5-B, the existing machine Access application and Tunnel are reused;
+Cloudflare provisioning remains Phase 6. The only expected human boundaries are
+hidden service-token entry for real remote smoke and, only when required by the
+live FQGate market contract, physical QR login approval. Both boundaries must
+follow the exact steps in the Phase 5-B task package and automation must resume
+immediately afterwards.
 
 ## Closed Phase 4.5 contract
 
@@ -365,9 +373,10 @@ Follow `docs/roadmap.md`.
 - Phase 4.5B: implemented
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
 - Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
-- Phase 5-B+: do not opportunistically implement
+- Phase 5-B: ACTIVE — live contract census + first minimal read-only market slice
+- Phase 5-C+: do not opportunistically implement
 
-If Phase 5 becomes urgent, it may start only after the 4.5A policy foundation is stable, and must remain a separate change with separate machine Host/AUD/context/tests. Do not combine remote-admin and remote-machine privilege expansion.
+Phase 5-B is a separate privilege-expansion change. It must use the live permanent-Windows FQGate runtime as contract authority, add at most two evidence-backed read-only operations, and keep machine Host/AUD/context/tests independent from human/admin policy. Do not combine remote-admin and remote-machine privilege expansion.
 
 ## Documentation rule
 

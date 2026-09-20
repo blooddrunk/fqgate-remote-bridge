@@ -13,7 +13,7 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发，但已经完成 Phase 0–5-A。下一阶段 Phase 5-B 尚未开始。
+当前项目仍在持续开发，Phase 0–5-A 已完成；Phase 5-B 已进入活动开发，但当前 main 尚未实现新的行情 operation。
 
 | 能力                   | 当前状态         | 说明                                                    |
 | ---------------------- | ---------------- | ------------------------------------------------------- |
@@ -23,7 +23,7 @@ Tunnel 把流量安全地送到 Bridge。
 | remote-human           | 可用             | Dashboard、status、QR、只读更新状态、API catalog        |
 | remote-admin           | 可用             | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制     |
 | remote-machine         | 已认证、零权限   | 可识别 machine 身份，但当前所有 Bridge operation 都拒绝 |
-| Phase 5-B 行情 API     | 未实现           | 不要把 FQGate /openapi.json 中的路径直接当成授权 API    |
+| Phase 5-B 行情 API     | ACTIVE / 未实现  | 先做真实 contract census，再最多加入 1–2 个只读 operation |
 | 交易、下单、撤单、转账 | 永不由本项目提供 | 这是不可突破的安全边界                                  |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
@@ -118,7 +118,9 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | Agent 的强制工作合同         | [AGENTS.md](AGENTS.md)                                                                                                                                                                                  |
 | 当前架构和安全边界           | [docs/architecture.md](docs/architecture.md)、[docs/security.md](docs/security.md)                                                                                                                      |
 | 当前阶段总设计               | [phase-5-remote-machine-read-only-api.md](docs/plans/phase-5-remote-machine-read-only-api.md)                                                                                                           |
-| Phase 5-A 可执行验收合同     | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
+| **Phase 5-B 当前任务**        | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                     |
+| **Phase 5-B Codex Goal**      | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
+| Phase 5-A 已关闭任务          | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
 | Phase 5-A 实现和关闭证据     | [phase-5-a-implementation-handoff.md](docs/status/phase-5-a-implementation-handoff.md)                                                                                                                  |
 | 永久 Windows 验收步骤        | [windows-phase-5-a-acceptance.md](docs/operations/windows-phase-5-a-acceptance.md)                                                                                                                      |
 | 给 Agent 的快速交接          | [docs/agent-guide.md](docs/agent-guide.md)                                                                                                                                                              |

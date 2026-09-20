@@ -10,7 +10,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
-- Phase 5: **ACTIVE — Phase 5-A CLOSED; Phase 5-B not started**
+- Phase 5: **ACTIVE — Phase 5-B contract census + first read-only slice**
 - Phase 6+: planned only
 
 Current deployed topology remains:
@@ -243,7 +243,7 @@ The gate is strict: GitHub Actions must be green on Ubuntu and Windows, and Phas
 
 ## Phase 5 — Remote read-only HTTP API and filtered API docs
 
-Status: **ACTIVE — Phase 5-A CLOSED; Phase 5-B is the next separate task**.
+Status: **ACTIVE — Phase 5-A CLOSED; Phase 5-B is the current gated task**.
 
 Goal: make selected market-data capabilities safely consumable by remote
 software without turning the Bridge into a generic FQGate proxy and without
@@ -256,11 +256,17 @@ Detailed design:
 
 Active task:
 
-`docs/tasks/phase-5-a-remote-machine-zero-privilege.md`
+`docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`
 
 Active Codex handoff:
 
-`docs/prompts/phase-5-a-codex-goal.md`
+`docs/prompts/phase-5-b-codex-goal.md`
+
+Phase 5-A closed task/evidence remain historical baseline:
+
+- `docs/tasks/phase-5-a-remote-machine-zero-privilege.md`
+- `docs/status/phase-5-a-implementation-handoff.md`
+- `docs/operations/windows-phase-5-a-acceptance.md`
 
 ### 5-A — remote-machine identity/context foundation, zero privilege
 
@@ -297,7 +303,9 @@ Windows procedure/evidence: `docs/operations/windows-phase-5-a-acceptance.md`.
 
 ### 5-B — runtime contract census and first read-only market slice
 
-Only after 5-A closes, inspect the **running target FQGate**
+Status: **ACTIVE**. Executable contract: `docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`.
+
+Phase 5-A is closed, so inspect the **running target FQGate**
 `http://127.0.0.1:17281/openapi.json` and execute bounded semantic probes from
 the permanent Windows environment. Select the smallest useful read-only set
 from real observed contracts and consumer needs.
@@ -376,24 +384,27 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 4 is closed. Phase 4.5 is now closed after the live acceptance evidence:
+Phase 5-A is closed at the zero-privilege remote-machine checkpoint.
 
-`docs/tasks/phase-4-5-remote-admin-and-mobile-dashboard.md`
+Current executable task:
 
-The design source is:
+`docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`
 
-`docs/plans/phase-4-5-remote-admin-and-mobile-dashboard.md`
+Current Codex goal:
 
-The implementation handoff is:
+`docs/prompts/phase-5-b-codex-goal.md`
 
-`docs/prompts/phase-4-5-codex-goal.md`
+Phase 5 design source:
 
-The acceptance runbook is:
+`docs/plans/phase-5-remote-machine-read-only-api.md`
 
-`docs/operations/windows-phase-4-5-acceptance.md`
+Phase 5-A closure evidence:
 
-The final implementation handoff is:
+- `docs/status/phase-5-a-implementation-handoff.md`
+- `docs/operations/windows-phase-5-a-acceptance.md`
 
-`docs/status/phase-4-5-implementation-handoff.md`
-
-Do not implement Phase 5 machine market-data APIs, service-token auth, automated Cloudflare provisioning, supervisor/notifications, automatic updates, MCP/WebSocket, or packaging inside the Phase 4.5 goal.
+Phase 5-B must obtain its market contract from the running permanent-Windows
+FQGate instance before adding any allowlisted operation. It may add at most two
+explicitly read-only machine operations and must keep the existing
+remote-machine deny boundary for every other operation. Generated machine
+OpenAPI belongs to Phase 5-C; Cloudflare provisioning remains Phase 6.

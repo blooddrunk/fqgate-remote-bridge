@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **ACTIVE DESIGN — Phase 5-A CLOSED; Phase 5-B is the next gated slice**
+Status: **ACTIVE DESIGN — Phase 5-A CLOSED; Phase 5-B ACTIVE**
 
 Planning baseline: `main@fe544b3a8fa25227521c68dcb08ff110ce8c6b67`.
 Its GitHub Actions run `35423337596` passed after the Phase 4.5 closure
@@ -136,7 +136,9 @@ operations yet.
 
 ## 5. Phase 5-B — real contract census and first read-only slice
 
-Phase 5-B may start only after 5-A closes.
+Status: **ACTIVE**. Executable contract: docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md. Codex handoff: docs/prompts/phase-5-b-codex-goal.md.
+
+Phase 5-A is closed, so Phase 5-B may start.
 
 The target Windows machine under the permanent `D:\code\research`
 environment is the contract authority for the running FQGate version. Before
@@ -215,7 +217,7 @@ another internal shorthand.
 ## 8. Phase boundaries
 
 - Completed: Phase 5-A identity/context foundation and zero-privilege closure.
-- Next: Phase 5-B contract census + first read-only slice.
-- Phase 5-C after 5-B: generated machine docs + remote closure.
+- Active: Phase 5-B contract census + first read-only slice.
+- Next after 5-B closure: Phase 5-C generated machine docs + remote closure.
 - Phase 6 remains Cloudflare provisioning/drift automation.
 - Phase 7+ remain deferred according to the roadmap.
