@@ -120,27 +120,43 @@ The actual 2026-09-20 runs on the existing permanent checkout were:
 | FQGate start probe                                 | FAIL, exit 1        | `fqgate start --json` reported `lifecycle: unhealthy`, process running, health unavailable, and no `127.0.0.1:17281` listener. The follow-up `fqgate stop --json` exited 0 and left it stopped.                                                                       |
 | Authenticated Phase 5-A wrapper                    | NOT STARTED, exit 1 | Exact error: `Phase 5-A authenticated acceptance requires machineHostname, machineAccess.teamDomain, and machineAccess.audience in repo-external config; no credential prompt was opened.`                                                                            |
 
-Because the authenticated wrapper stopped at its non-secret config precondition,
-`P5A-R1` through `P5A-R6` and `P5A-W11` have no HTTP result: **HTTP N/A; no
-request or credential prompt was attempted**. This is the concrete failed
-setup test, not unspecified missing evidence.
+The initial wrapper stopped at its non-secret config precondition, but that
+precondition has since been completed through an operator-authorized API
+operation. The current Cloudflare state is:
 
-No manual operator action occurred during these runs: no Cloudflare resource
-was created or changed, and no Client ID/Secret was entered. The next exact
-operator actions are the six numbered Cloudflare setup steps above, followed
-by adding only machine hostname/team domain/AUD to the external config. Before
-the local loopback check can turn `P5A-W6`/`W7`/`W8` green, the installed
-FQGate instance must also be made healthy and listening on
-`127.0.0.1:17281`; the recorded `fqgate start` result above is the current
-concrete local prerequisite failure.
+- self-hosted application `fqgate-api.haoqi90.top` exists with its own AUD;
+- its only policy is `non_identity` / Service Auth bound to the existing
+  `fqgate-machine-acceptance` service token;
+- the existing remotely-managed Tunnel routes the hostname only to
+  `http://127.0.0.1:17282`, with Access validation required and no `17281`
+  route;
+- proxied DNS CNAME `fqgate-api.haoqi90.top` points to the existing Tunnel;
+- the external config contains only the non-secret machine hostname, team
+  domain, and AUD. No Client ID/Secret was stored there.
 
-Current status is **OPEN**. The next Cloudflare operator action is specifically:
+The subsequent permanent-Windows `-VerifyLocal` run passed with exit code 0:
+W1, W2, W4, W5, W6, W7, W8, and W9 all PASS; W3 is the designed SKIP. A
+credential-free HTTPS probe to the machine hostname returned HTTP 401, proving
+the new Access edge challenge. The authenticated P5A-R1 through R6 matrix has
+not yet made a request: the existing Windows service
+`FQGateRemoteBridgeCloudflared` is stopped, and the non-elevated attempt to
+start it failed with the exact Windows error
+`Cannot open FQGateRemoteBridgeCloudflared service on computer '.'`. No
+service-token credential prompt was opened, so the live authenticated matrix is
+currently **HTTP N/A — Windows service start permission failed**.
 
-> Create the separate machine Access application/service token and Service Auth
-> policy, add its hostname to the existing Tunnel with origin
-> `http://127.0.0.1:17282` and no `17281` route, then add only its hostname,
-> team domain, and AUD to the repo-external acceptance config and rerun the
-> hidden-credential command above.
+The next exact operator action is to open an elevated PowerShell and run:
+
+```powershell
+Start-Service -Name FQGateRemoteBridgeCloudflared
+Get-Service -Name FQGateRemoteBridgeCloudflared
+```
+
+After it reports `Running`, keep the existing token-file service active, start
+the Bridge with `start-phase4.ps1`, and run the hidden-credential command above.
+Do not paste the service-token Client ID/Secret into chat; only bounded PASS/
+FAIL result lines may be shared. Phase 5-A remains **OPEN** until R1-R6, W10,
+and W11 have concrete passing evidence.
 
 Until that action produces P5A-R1 through P5A-R6 and P5A-W11 with PASS, Phase
 5-A remains OPEN and no Phase 5-B operation may be implemented.

@@ -118,8 +118,25 @@ labels, and no response body/JWT/cookie/credential material.
 This handoff must not be changed to CLOSED until the real matrix proves a valid
 machine credential reaches Bridge and receives `OPERATION_FORBIDDEN`, and the
 machine Tunnel ingress evidence proves exactly `http://127.0.0.1:17282` with no
-`17281` route. The 2026-09-20 Windows results are recorded in the evidence
-file: the existing external config has no machine hostname/team-domain/AUD,
-and the authenticated wrapper exited with process status 1 before opening a
-credential prompt. No live HTTP request was made, so the live matrix is
-explicitly `HTTP N/A — P5A-SETUP precondition failed`, not a pass.
+`17281` route.
+
+Since the initial evidence run, an operator-authorized Cloudflare API operation
+created the independent `fqgate-api.haoqi90.top` self-hosted application and a
+single `non_identity` policy bound to the pre-existing
+`fqgate-machine-acceptance` service token. The existing remotely-managed
+`fqgate-remote-bridge` Tunnel now has that hostname mapped to
+`http://127.0.0.1:17282`, with the machine AUD in its Access validation tag and
+no `17281` ingress; its proxied DNS CNAME also exists. The non-secret machine
+metadata is present in the repo-external acceptance config. No Client ID,
+Client Secret, Access assertion, JWT, cookie, or Tunnel token was read or
+written by the operation.
+
+The current permanent-Windows `-VerifyLocal` run passes with exit code 0,
+including W6 loopback-only FQGate, W7 raw-path denial, and W8 forwarded-host
+spoof denial. An unauthenticated edge probe returns HTTP 401. The authenticated
+matrix remains `HTTP N/A`: the existing Windows cloudflared service is stopped,
+and the current non-elevated session received the exact Windows error
+`Cannot open FQGateRemoteBridgeCloudflared service on computer '.'` when trying
+to start it. No service-token credential prompt was opened. The next operator
+action is to start that existing service from an elevated PowerShell, then run
+the hidden-credential matrix in the Windows evidence procedure.
