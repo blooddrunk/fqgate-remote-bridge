@@ -240,7 +240,7 @@ function validateCloudflareTeamDomain(
   return normalized;
 }
 
-function validateAdminAudience(value: string, scope = "remoteAccess.adminAccess.audience"): string {
+function validateOpaqueAudience(value: string, scope: string): string {
   if (
     value.length === 0 ||
     value.trim() !== value ||
@@ -253,6 +253,14 @@ function validateAdminAudience(value: string, scope = "remoteAccess.adminAccess.
     );
   }
   return value;
+}
+
+function validateAdminAudience(value: string): string {
+  return validateOpaqueAudience(value, "remoteAccess.adminAccess.audience");
+}
+
+function validateMachineAudience(value: string): string {
+  return validateOpaqueAudience(value, "remoteAccess.machineAccess.audience");
 }
 
 function validateCloudflaredVersion(value: string): string {
@@ -589,7 +597,7 @@ export function parseConfig(
     }
     adminAccess = {
       teamDomain: validateCloudflareTeamDomain(teamDomain, "remoteAccess.adminAccess.teamDomain"),
-      audience: validateAdminAudience(audience, "remoteAccess.adminAccess.audience"),
+      audience: validateAdminAudience(audience),
     };
   }
   const machineAccessInput = remoteAccessRecord.machineAccess;
@@ -618,7 +626,7 @@ export function parseConfig(
     }
     machineAccess = {
       teamDomain: validateCloudflareTeamDomain(teamDomain, "remoteAccess.machineAccess.teamDomain"),
-      audience: validateAdminAudience(audience, "remoteAccess.machineAccess.audience"),
+      audience: validateMachineAudience(audience),
     };
   }
   if (

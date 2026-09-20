@@ -423,6 +423,32 @@ describe("Phase 5-A zero-privilege server policy", () => {
     ).toBe(false);
   });
 
+  it("denies a valid machine identity for every registered operation at the HTTP policy boundary", async () => {
+    const handler = createBridgeHttpHandler({
+      service: createService(),
+      requestContext: {
+        machineHostname: "api.example.com",
+        machineVerifier: machineVerifier(),
+      },
+    });
+
+    for (const operation of listBridgeOperations()) {
+      const response = await handler(
+        new Request(`https://api.example.com${operation.path}`, {
+          method: operation.method,
+          headers: {
+            host: "api.example.com",
+            [CLOUDFLARE_ACCESS_ASSERTION_HEADER]: "valid-machine-assertion",
+          },
+        }),
+      );
+      expect(response.status, operation.id).toBe(403);
+      await expect(response.json(), operation.id).resolves.toMatchObject({
+        error: { code: ERROR_CODES.OPERATION_FORBIDDEN },
+      });
+    }
+  });
+
   it("requires a machine assertion before a machine request can reach policy", async () => {
     await expect(
       authenticateRequestContext(
