@@ -28,6 +28,20 @@ if ($Census -or $VerifyLocal) {
 if ($VerifyLocal) {
     & $node (Join-Path $PSScriptRoot "phase5b-matrix.mjs") --local
     if ($LASTEXITCODE -ne 0) { throw "P5B-LOCAL FAIL See bounded P5B-L result" }
+    $request = [System.Net.HttpWebRequest]::Create("http://127.0.0.1:17282/api/v1/version")
+    $request.Method = "GET"
+    $request.Host = "unknown.example.com"
+    $request.Headers["X-Forwarded-Host"] = "127.0.0.1:17282"
+    $request.AllowAutoRedirect = $false
+    $request.Timeout = 5000
+    $response = $null
+    try { $response = $request.GetResponse() }
+    catch [System.Net.WebException] { $response = $_.Exception.Response }
+    if ($null -eq $response) { throw "P5B-L6 FAIL HOST_PROBE_NETWORK_ERROR" }
+    try { $status = [int]$response.StatusCode } finally { $response.Dispose() }
+    if ($status -ne 421) { throw "P5B-L6 FAIL expected=421 status=$status" }
+    Write-Host "P5B-L6 PASS status=421 explicit unknown Host and forwarded-host spoof denied"
+
 }
 if ($RunAuthenticatedServiceTokenMatrix) {
     if (-not $TunnelIngressConfigPath -or -not (Test-Path -LiteralPath $TunnelIngressConfigPath)) {
