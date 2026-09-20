@@ -221,3 +221,14 @@ another internal shorthand.
 - Next after 5-B closure: Phase 5-C generated machine docs + remote closure.
 - Phase 6 remains Cloudflare provisioning/drift automation.
 - Phase 7+ remain deferred according to the roadmap.
+
+## Phase 5-B selected implementation
+
+One operation is implemented: `market.instruments.lookup`, POST
+`/api/v1/instruments/lookup`, exact six-digit `code`, local + remote_machine only.
+The permanent Windows census justified fixed POST catalog/search-symbols;
+quote remains a descriptive candidate. The explicit contract is bounded to 16
+items, 64 KiB upstream, 256-byte request, exact 1.0.1 plus transitive scoped
+schema fingerprint and endpoint parsing. Activation policy is unchanged.
+Phase 5-B remains OPEN pending all final Windows/remote/CI closure evidence;
+see its implementation handoff and Windows acceptance runbook.

@@ -1,3 +1,4 @@
+import type { InstrumentLookupPort, InstrumentLookupResponse } from "../fqgate/market/lookup.js";
 import type { CompatibilityEvaluation } from "../fqgate/compatibility/policy.js";
 import type { FqgateLifecycleManager, FqgateStatus } from "../fqgate/install/lifecycle.js";
 import type { HealthObservation } from "../fqgate/health/types.js";
@@ -32,6 +33,7 @@ export interface LifecycleStatusReader {
 }
 
 export interface BridgeServiceOptions {
+  readonly instrumentLookup?: InstrumentLookupPort;
   readonly buildInfo: BuildInfo;
   readonly lifecycle: LifecycleStatusReader | FqgateLifecycleManager;
   readonly qrAdapter: FqgateQrAdapter;
@@ -43,6 +45,7 @@ export interface BridgeServiceOptions {
 }
 
 export class BridgeService {
+  private readonly instrumentLookup: InstrumentLookupPort | undefined;
   private readonly buildInfo: BuildInfo;
   private readonly lifecycle: LifecycleStatusReader;
   private readonly qrAdapter: FqgateQrAdapter;
@@ -54,6 +57,7 @@ export class BridgeService {
   private readonly redactor = new Redactor();
 
   constructor(options: BridgeServiceOptions) {
+    this.instrumentLookup = options.instrumentLookup;
     this.buildInfo = options.buildInfo;
     this.lifecycle = options.lifecycle;
     this.qrAdapter = options.qrAdapter;
@@ -62,6 +66,12 @@ export class BridgeService {
     this.openApiService = options.openApiService;
     this.adminConfirmations = options.adminConfirmations ?? new AdminConfirmationService();
     this.now = options.now ?? (() => new Date().toISOString());
+  }
+
+  async lookupInstruments(input: unknown): Promise<InstrumentLookupResponse> {
+    if (!this.instrumentLookup)
+      throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, "Instrument lookup is unavailable");
+    return this.instrumentLookup.lookup(input);
   }
 
   version(): BridgeVersionResponse {

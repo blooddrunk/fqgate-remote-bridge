@@ -454,3 +454,33 @@ A release is not remotely deployable until all are true:
 - QR payloads are ephemeral;
 - no trading/state-changing financial endpoints are registered;
 - remote approved API tests pass through Access.
+
+## Phase 5-B instrument lookup — OPEN
+
+`market.instruments.lookup` is the sole new market operation, POST
+`/api/v1/instruments/lookup`, with contexts exactly local + remote_machine.
+The framework-independent `src/fqgate/market` adapter accepts only a six-digit
+code and dispatches fixed POST `/v1/market/catalog/search-symbols`. It filters
+exact codes and returns only validated code/market/name/instrumentId fields.
+No human/admin grant or old machine-operation grant changes.
+
+Bounds: 256-byte public body, 5000 ms / 65536 bytes upstream, 16 upstream items,
+16-character market/code fields, 128-character names, 32-character instrument
+IDs. Unknown request fields fail before any upstream work; oversized or invalid
+results fail instead of truncating. Upstream envelopes/messages never escape.
+Redirects are disabled for market and contract fetches.
+
+Every lookup checks the managed running version (exact live-validated 1.0.1 and
+configured compatibility), then the bounded runtime OpenAPI operation plus its
+transitive schema-reference fingerprint. This conservative gate detects even
+nonbreaking changes to the selected contract and requires renewed evidence;
+unrelated added operations do not affect it. No cache grants stale market
+compatibility. The actual result is parsed again on every call. Version or
+contract failures are distinct from market availability/login/permission errors.
+Health session `unknown` is not itself denial because the live reads succeeded.
+
+This is an operation-local gate: update activation requirements and default
+validated-version policy remain unchanged. Diagnostic/recovery operations remain
+available. The machine top-level page/static/raw gate, separate JWT claim
+profile, host/AUD isolation, and old-operation denial remain unchanged.
+The historical Phase 5-A zero-privilege checkpoint above is not rewritten.

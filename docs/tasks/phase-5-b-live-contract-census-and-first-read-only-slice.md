@@ -74,7 +74,7 @@ D:\code\research\fqgate-remote-bridge when it is the existing Git root.
 
 Record bounded non-secret diagnostics:
 
-~~~text
+```text
 resolved Git root
 git status --short
 git rev-parse HEAD
@@ -82,14 +82,14 @@ node --version
 corepack pnpm --version
 FQGate version
 Bridge version/commit
-~~~
+```
 
 Fast-forward the permanent checkout to origin/main only when safe. Never delete
 operator-owned changes.
 
 Run the normal baseline gates before changing behavior:
 
-~~~powershell
+```powershell
 corepack pnpm install --frozen-lockfile
 corepack pnpm typecheck
 corepack pnpm lint
@@ -97,7 +97,7 @@ corepack pnpm test
 corepack pnpm build
 corepack pnpm format:check
 corepack pnpm test:e2e
-~~~
+```
 
 Also run the existing Windows CLI/loopback smoke and Phase 5-A local acceptance
 so the zero-privilege baseline is re-proven before privilege expansion.
@@ -192,10 +192,10 @@ Each selected capability gets:
 
 For Phase 5-B the allowed contexts for the new market operations must be exactly:
 
-~~~text
+```text
 local
 remote_machine
-~~~
+```
 
 Do not add remote_human or remote_admin unless a later separately reviewed task
 changes that policy.
@@ -262,7 +262,7 @@ Authorization/regression coverage must include:
 
 After implementation, use the permanent D:\code\research checkout and rerun:
 
-~~~powershell
+```powershell
 corepack pnpm install --frozen-lockfile
 corepack pnpm typecheck
 corepack pnpm lint
@@ -270,7 +270,7 @@ corepack pnpm test
 corepack pnpm build
 corepack pnpm format:check
 corepack pnpm test:e2e
-~~~
+```
 
 Run the Windows CLI/loopback smoke plus the new Phase 5-B acceptance mode.
 
