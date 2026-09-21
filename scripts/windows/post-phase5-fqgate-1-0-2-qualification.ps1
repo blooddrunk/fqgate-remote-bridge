@@ -164,6 +164,23 @@ function Invoke-PhaseScript {
     return [pscustomobject]@{ ExitCode = $child.ExitCode; Output = $text }
 }
 
+function Invoke-InteractivePhaseScript {
+    param(
+        [string]$ScriptName,
+        [string[]]$Arguments
+    )
+    $scriptPath = Join-Path $root ("scripts\windows\" + $ScriptName)
+    $output = & $script:powerShellPath -NoProfile -ExecutionPolicy Bypass -File $scriptPath @Arguments 2>&1
+    $exitCode = $LASTEXITCODE
+    $lines = @($output | ForEach-Object { [string]$_ })
+    if ($lines.Count -gt 0) {
+        $text = $lines -join "`r`n"
+        if ($text.Length -gt 64KB) { throw "P5Q-REMOTE_OUTPUT_TOO_LARGE" }
+        foreach ($line in $lines) { Write-Host $line }
+    }
+    return $exitCode
+}
+
 function Get-JsonRecords {
     param([string]$Text)
     $parsed = [System.Collections.Generic.List[object]]::new()
@@ -345,9 +362,8 @@ try {
 
     if ($RunAuthenticatedServiceTokenMatrix) {
         if ([string]::IsNullOrWhiteSpace($TunnelIngressConfigPath)) { throw "P5Q-R3 FAIL TUNNEL_INGRESS_EVIDENCE_REQUIRED" }
-        $remote = Invoke-PhaseScript "phase5c-acceptance.ps1" @("-ConfigPath", $resolvedConfig, "-RunAuthenticatedServiceTokenMatrix", "-TunnelIngressConfigPath", $TunnelIngressConfigPath)
-        $remoteRecords = Get-JsonRecords $remote.Output
-        Add-Record "P5Q-R3" ($remote.ExitCode -eq 0 -and @($remoteRecords | Where-Object { $_.result -eq "FAIL" }).Count -eq 0) @{ child = "phase5c-remote"; childTotal = @($remoteRecords).Count; childFailed = @($remoteRecords | Where-Object { $_.result -eq "FAIL" }).Count }
+        $remoteExitCode = Invoke-InteractivePhaseScript "phase5c-acceptance.ps1" @("-ConfigPath", $resolvedConfig, "-RunAuthenticatedServiceTokenMatrix", "-TunnelIngressConfigPath", $TunnelIngressConfigPath)
+        Add-Record "P5Q-R3" ($remoteExitCode -eq 0) @{ child = "phase5c-remote"; childExitCode = $remoteExitCode }
     } else {
         Write-Host "P5Q-R3 SKIP remote service-token matrix was not requested; run with -RunAuthenticatedServiceTokenMatrix for the hidden credential boundary."
     }
