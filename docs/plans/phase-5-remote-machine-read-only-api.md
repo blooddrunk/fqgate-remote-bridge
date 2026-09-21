@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **ACTIVE DESIGN — Phase 5-A/B CLOSED; Phase 5-C separate**
+Status: **ACTIVE DESIGN — Phase 5-A/B CLOSED; Phase 5-C implemented, closure pending**
 
 Planning baseline: `main@fe544b3a8fa25227521c68dcb08ff110ce8c6b67`.
 Its GitHub Actions run `35423337596` passed after the Phase 4.5 closure
@@ -182,6 +182,12 @@ Start with the smallest useful slice rather than broad coverage.
 Machine-facing OpenAPI is generated from approved Bridge registry entries only.
 It must never be generated as a passthrough of all runtime FQGate operations.
 
+Implemented contract: `openapi.machine`, GET `/api/v1/openapi/machine`, allowed
+exactly for local + remote_machine. The generator filters explicit registry
+authorization, requires explicit public schema metadata, canonicalizes ordering,
+and enforces a 64-KiB limit. The baseline document contains the lookup and docs
+route only and has no runtime FQGate OpenAPI dependency.
+
 Required end-state evidence:
 
 - a real service-token client can call only approved read-only Bridge
@@ -218,7 +224,7 @@ another internal shorthand.
 
 - Completed: Phase 5-A identity/context foundation and zero-privilege closure.
 - Completed: Phase 5-B contract census + one bounded instrument lookup.
-- Next after 5-B closure: Phase 5-C generated machine docs + remote closure.
+- In progress: Phase 5-C generated machine docs are implemented; remote/final CI closure remains.
 - Phase 6 remains Cloudflare provisioning/drift automation.
 - Phase 7+ remain deferred according to the roadmap.
 

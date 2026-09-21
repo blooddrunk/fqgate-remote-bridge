@@ -2,7 +2,7 @@
 
 Date: 2026-09-20
 
-Status: **ACTIVE**
+Status: **ACTIVE — implementation complete; final Windows/remote/exact-commit CI acceptance pending**
 
 Planning baseline: `main@26ba745d4634655223519ad6ad2586a25952f5a2` after Phase 5-B merge.
 

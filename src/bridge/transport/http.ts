@@ -162,6 +162,9 @@ async function dispatchRequest(
       return service.lookupInstruments(
         await readJsonBody(request, operation.maxBodyBytes, "instrument lookup"),
       );
+    case "openapi.machine":
+      rejectUnexpectedGetBody(request);
+      return service.machineOpenApi();
     case "bridge.version":
       rejectUnexpectedGetBody(request);
       return service.version();

@@ -375,7 +375,7 @@ Follow `docs/roadmap.md`.
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
 - Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
 - Phase 5-B: CLOSED — authoritative live census + one bounded instrument lookup
-- Phase 5-C: ACTIVE — filtered machine OpenAPI and final remote closure only
+- Phase 5-C: ACTIVE — filtered machine OpenAPI implemented; final Windows/remote/CI closure pending
 - Phase 5-D+: do not opportunistically implement
 
 Phase 5-C is the active task. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md` and `docs/prompts/phase-5-c-codex-goal.md` before changing code. It must not add any new market operation; it may add only the registry-derived machine OpenAPI/docs operation needed to close Phase 5. Keep machine Host/AUD/context/tests independent from human/admin policy.
@@ -396,6 +396,11 @@ It accepts only a six-digit `code`; fixed upstream POST
 256-byte Bridge body. A scoped operation-plus-reference fingerprint and exact
 observed version fail this operation closed on drift; activation rules are not
 expanded. All Phase 5-A operations remain denied to machines. Quote, generated
-machine OpenAPI, and Cloudflare provisioning remain unimplemented.
+Cloudflare provisioning remains unimplemented. Phase 5-C implements
+`openapi.machine`, GET `/api/v1/openapi/machine`, allowed exactly for local +
+remote_machine. Its deterministic 64-KiB-bounded document is generated only from
+registry entries carrying explicit machine documentation metadata; it currently
+contains exactly the lookup and its own docs route. Phase 5 stays OPEN until the
+permanent-Windows, real service-token, and exact-final-commit CI evidence passes.
 See `docs/status/phase-5-b-implementation-handoff.md` and
 `docs/operations/windows-phase-5-b-acceptance.md` for the current evidence.

@@ -4,6 +4,7 @@ param(
     [string]$ConfigPath,
     [switch]$VerifyLocal,
     [switch]$Phase5BReadOnly,
+    [switch]$Phase5CReadOnly,
     [switch]$RunAuthenticatedServiceTokenMatrix,
     [string]$MachineUrl,
     [string]$HumanUrl,
@@ -371,6 +372,9 @@ if ($RunAuthenticatedServiceTokenMatrix) {
     if ($Phase5BReadOnly) {
         $harnessPath = Join-Path $script:repositoryRoot "scripts\windows\phase5b-matrix.mjs"
     }
+    if ($Phase5CReadOnly) {
+        $harnessPath = Join-Path $script:repositoryRoot "scripts\windows\phase5c-matrix.mjs"
+    }
     $clientIdSecure = Read-Host "Cloudflare service-token Client ID (hidden)" -AsSecureString
     $clientSecretSecure = Read-Host "Cloudflare service-token Client Secret (hidden)" -AsSecureString
     $clientId = $null
@@ -418,7 +422,7 @@ if ($RunAuthenticatedServiceTokenMatrix) {
     }
 }
 
-if ($Phase5BReadOnly -and $RunAuthenticatedServiceTokenMatrix) {
+if (($Phase5BReadOnly -or $Phase5CReadOnly) -and $RunAuthenticatedServiceTokenMatrix) {
     # Only the companion's bounded metadata is persisted, never process environment,
     # secure strings, exceptions, response bodies, or credential prompts.
     $evidence = @{
@@ -429,7 +433,8 @@ if ($Phase5BReadOnly -and $RunAuthenticatedServiceTokenMatrix) {
         matrixExitCode = $child.ExitCode
         records = $child.Stdout
     }
-    $evidence | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath "D:\code\research\fqgate-phase5b-remote-evidence.json" -Encoding UTF8
+    $evidenceName = if ($Phase5CReadOnly) { "fqgate-phase5c-remote-evidence.json" } else { "fqgate-phase5b-remote-evidence.json" }
+    $evidence | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath (Join-Path "D:\code\research" $evidenceName) -Encoding UTF8
 }
 
 if ($script:failureCount -gt 0) {

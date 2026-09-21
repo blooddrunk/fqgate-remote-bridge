@@ -18,6 +18,7 @@ import { Route as ApiV1StatusRouteImport } from './routes/api/v1/status'
 import { Route as ApiV1VersionRouteImport } from './routes/api/v1/version'
 import { Route as ApiV1InstrumentsLookupRouteImport } from './routes/api/v1/instruments/lookup'
 import { Route as ApiV1OpenapiCatalogRouteImport } from './routes/api/v1/openapi/catalog'
+import { Route as ApiV1OpenapiMachineRouteImport } from './routes/api/v1/openapi/machine'
 import { Route as ApiV1OpenapiRefreshRouteImport } from './routes/api/v1/openapi/refresh'
 import { Route as ApiV1UpdatesApplyRouteImport } from './routes/api/v1/updates/apply'
 import { Route as ApiV1UpdatesCheckRouteImport } from './routes/api/v1/updates/check'
@@ -71,6 +72,11 @@ const ApiV1OpenapiCatalogRoute = ApiV1OpenapiCatalogRouteImport.update({
   path: '/api/v1/openapi/catalog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1OpenapiMachineRoute = ApiV1OpenapiMachineRouteImport.update({
+  id: '/api/v1/openapi/machine',
+  path: '/api/v1/openapi/machine',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1OpenapiRefreshRoute = ApiV1OpenapiRefreshRouteImport.update({
   id: '/api/v1/openapi/refresh',
   path: '/api/v1/openapi/refresh',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/version': typeof ApiV1VersionRoute
   '/api/v1/instruments/lookup': typeof ApiV1InstrumentsLookupRoute
   '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
+  '/api/v1/openapi/machine': typeof ApiV1OpenapiMachineRoute
   '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
   '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/api/v1/version': typeof ApiV1VersionRoute
   '/api/v1/instruments/lookup': typeof ApiV1InstrumentsLookupRoute
   '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
+  '/api/v1/openapi/machine': typeof ApiV1OpenapiMachineRoute
   '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
   '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/api/v1/version': typeof ApiV1VersionRoute
   '/api/v1/instruments/lookup': typeof ApiV1InstrumentsLookupRoute
   '/api/v1/openapi/catalog': typeof ApiV1OpenapiCatalogRoute
+  '/api/v1/openapi/machine': typeof ApiV1OpenapiMachineRoute
   '/api/v1/openapi/refresh': typeof ApiV1OpenapiRefreshRoute
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
   '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/api/v1/version'
     | '/api/v1/instruments/lookup'
     | '/api/v1/openapi/catalog'
+    | '/api/v1/openapi/machine'
     | '/api/v1/openapi/refresh'
     | '/api/v1/updates/apply'
     | '/api/v1/updates/check'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/api/v1/version'
     | '/api/v1/instruments/lookup'
     | '/api/v1/openapi/catalog'
+    | '/api/v1/openapi/machine'
     | '/api/v1/openapi/refresh'
     | '/api/v1/updates/apply'
     | '/api/v1/updates/check'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/api/v1/version'
     | '/api/v1/instruments/lookup'
     | '/api/v1/openapi/catalog'
+    | '/api/v1/openapi/machine'
     | '/api/v1/openapi/refresh'
     | '/api/v1/updates/apply'
     | '/api/v1/updates/check'
@@ -229,6 +241,7 @@ export interface RootRouteChildren {
   ApiV1VersionRoute: typeof ApiV1VersionRoute
   ApiV1InstrumentsLookupRoute: typeof ApiV1InstrumentsLookupRoute
   ApiV1OpenapiCatalogRoute: typeof ApiV1OpenapiCatalogRoute
+  ApiV1OpenapiMachineRoute: typeof ApiV1OpenapiMachineRoute
   ApiV1OpenapiRefreshRoute: typeof ApiV1OpenapiRefreshRoute
   ApiV1UpdatesApplyRoute: typeof ApiV1UpdatesApplyRoute
   ApiV1UpdatesCheckRoute: typeof ApiV1UpdatesCheckRoute
@@ -303,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1OpenapiCatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/openapi/machine': {
+      id: '/api/v1/openapi/machine'
+      path: '/api/v1/openapi/machine'
+      fullPath: '/api/v1/openapi/machine'
+      preLoaderRoute: typeof ApiV1OpenapiMachineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/openapi/refresh': {
       id: '/api/v1/openapi/refresh'
       path: '/api/v1/openapi/refresh'
@@ -365,6 +385,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1VersionRoute: ApiV1VersionRoute,
   ApiV1InstrumentsLookupRoute: ApiV1InstrumentsLookupRoute,
   ApiV1OpenapiCatalogRoute: ApiV1OpenapiCatalogRoute,
+  ApiV1OpenapiMachineRoute: ApiV1OpenapiMachineRoute,
   ApiV1OpenapiRefreshRoute: ApiV1OpenapiRefreshRoute,
   ApiV1UpdatesApplyRoute: ApiV1UpdatesApplyRoute,
   ApiV1UpdatesCheckRoute: ApiV1UpdatesCheckRoute,
@@ -376,12 +397,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

@@ -318,10 +318,12 @@ function handlerFixture() {
   };
 }
 describe("Phase 5-B HTTP policy", () => {
-  it("grants exactly one operation and preserves the full independent context matrix", async () => {
+  it("keeps lookup as the sole machine market operation", async () => {
     expect(
       listBridgeOperations()
-        .filter((o) => o.allowedContexts.includes("remote_machine"))
+        .filter(
+          (o) => o.allowedContexts.includes("remote_machine") && o.classification === "market_read",
+        )
         .map((o) => o.id),
     ).toEqual(["market.instruments.lookup"]);
     expect(getBridgeOperation("market.instruments.lookup").allowedContexts).toEqual([

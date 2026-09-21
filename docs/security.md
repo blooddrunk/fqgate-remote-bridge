@@ -362,13 +362,15 @@ exact issuer and exact single machine AUD, valid `iat`/`exp`/optional `nbf`,
 Human-admin tokens continue to require non-empty `sub`; neither principal kind
 can impersonate the other.
 
-Phase 5-A recognizes `remote_machine` as a request context but adds it to no
-registered operation's `allowedContexts`. A valid machine assertion therefore
-receives normalized `OPERATION_FORBIDDEN` for every current operation. The
+At the Phase 5-A checkpoint, `remote_machine` was added to no registered
+operation's `allowedContexts`, so a valid machine assertion received normalized
+`OPERATION_FORBIDDEN` for every then-current operation. The
 top-level Start/Nitro request gate also rejects machine-host page, static, and
 unregistered/raw routes before they can render the human Dashboard or form a
 proxy side channel. Cloudflare service-token acceptance is separate evidence;
 deterministic tests remain the complete dangerous-operation deny matrix.
+Later Phase 5-B and 5-C grants are limited to the bounded lookup and machine
+documentation operations and do not rewrite that historical checkpoint.
 
 ## Network constraints
 
@@ -484,3 +486,20 @@ validated-version policy remain unchanged. Diagnostic/recovery operations remain
 available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
+
+## Phase 5-C machine documentation boundary — implemented, closure pending
+
+`openapi.machine` serves `GET /api/v1/openapi/machine` only to `local` and a
+cryptographically verified `remote_machine`. It is a normal policy-registered
+operation; human and administrator contexts do not receive it. Its output is
+generated only from operation-registry entries explicitly allowed for
+`remote_machine` and carrying explicit public schema metadata. Runtime FQGate
+OpenAPI is never consulted while generating it.
+
+The deterministic document is limited to 64 KiB and currently describes only
+the six-digit instrument lookup and its own documentation route. It excludes
+upstream envelopes/routes/schema names, compatibility fingerprints, local
+paths, Access team/AUD data, credentials, QR/session/update/admin operations,
+and runtime observations. Any later machine operation requires a reviewed
+registry permission plus explicit documentation metadata and tests; upstream
+discovery cannot grant either authority.

@@ -1,9 +1,11 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
+import type { BridgeErrorCode } from "../../shared/errors.js";
 import type { OpenApiHttpMethod, RequiredOpenApiContract } from "../../fqgate/openapi/types.js";
 import type { BridgeRequestContext } from "./request-context.js";
 
 export type BridgeOperationId =
   | "market.instruments.lookup"
+  | "openapi.machine"
   | "bridge.version"
   | "bridge.capabilities"
   | "bridge.status"
@@ -20,6 +22,17 @@ export type BridgeOperationClassification =
   "diagnostic" | "session_maintenance" | "local_admin" | "market_read";
 export type BridgeSensitivity = "none" | "qr_payload";
 export type BridgeOperationIntent = "read_only" | "session_maintenance" | "local_admin";
+export type MachineOpenApiSchemaId =
+  "InstrumentLookupRequest" | "InstrumentLookupResponse" | "MachineOpenApiDocument";
+export interface MachineOpenApiOperationMetadata {
+  readonly summary: string;
+  readonly responseSchema: MachineOpenApiSchemaId;
+  readonly requestSchema?: MachineOpenApiSchemaId;
+  readonly errorStatuses: readonly {
+    readonly status: 400 | 403 | 413 | 502 | 503;
+    readonly code: BridgeErrorCode;
+  }[];
+}
 export interface BridgeOperationPolicy {
   readonly id: BridgeOperationId;
   readonly method: "GET" | "POST";
@@ -33,6 +46,7 @@ export interface BridgeOperationPolicy {
   readonly sensitivity: BridgeSensitivity;
   readonly requiredCompatibility: "none" | "validated";
   readonly documentationVisible: boolean;
+  readonly machineOpenApi?: MachineOpenApiOperationMetadata;
   readonly upstream?: {
     readonly method: OpenApiHttpMethod;
     readonly path: string;
@@ -53,7 +67,38 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     sensitivity: "none",
     requiredCompatibility: "validated",
     documentationVisible: true,
+    machineOpenApi: {
+      summary: "Look up an instrument by its exact six-digit code",
+      requestSchema: "InstrumentLookupRequest",
+      responseSchema: "InstrumentLookupResponse",
+      errorStatuses: [
+        { status: 400, code: ERROR_CODES.REQUEST_INVALID },
+        { status: 403, code: ERROR_CODES.OPERATION_FORBIDDEN },
+        { status: 413, code: ERROR_CODES.REQUEST_TOO_LARGE },
+        { status: 502, code: ERROR_CODES.UPSTREAM_RESPONSE_INVALID },
+        { status: 503, code: ERROR_CODES.UPSTREAM_UNAVAILABLE },
+      ],
+    },
     upstream: { method: "POST", path: "/v1/market/catalog/search-symbols" },
+  },
+  {
+    id: "openapi.machine",
+    method: "GET",
+    path: "/api/v1/openapi/machine",
+    classification: "diagnostic",
+    intent: "read_only",
+    allowedContexts: ["local", "remote_machine"],
+    requiresConfirmation: false,
+    timeoutMs: 1_000,
+    maxBodyBytes: 0,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+    machineOpenApi: {
+      summary: "Read the bounded machine-facing Bridge OpenAPI document",
+      responseSchema: "MachineOpenApiDocument",
+      errorStatuses: [{ status: 403, code: ERROR_CODES.OPERATION_FORBIDDEN }],
+    },
   },
   {
     id: "bridge.version",
@@ -314,15 +359,38 @@ export function assertOperationRegistryInvariants(): void {
     }
     if (
       (operation.allowedContexts.includes("remote_machine") &&
-        operation.id !== "market.instruments.lookup") ||
+        operation.id !== "market.instruments.lookup" &&
+        operation.id !== "openapi.machine") ||
       (operation.id === "market.instruments.lookup" &&
         (operation.allowedContexts.join(",") !== "local,remote_machine" ||
           operation.intent !== "read_only" ||
-          operation.classification !== "market_read"))
+          operation.classification !== "market_read")) ||
+      (operation.id === "openapi.machine" &&
+        (operation.allowedContexts.join(",") !== "local,remote_machine" ||
+          operation.intent !== "read_only" ||
+          operation.classification !== "diagnostic"))
     ) {
       throw new BridgeError(
         ERROR_CODES.BRIDGE_NOT_READY,
         `Unexpected remote machine operation privilege: ${key}`,
+      );
+    }
+    if (
+      operation.allowedContexts.includes("remote_machine") &&
+      operation.machineOpenApi === undefined
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Remote machine operation lacks explicit OpenAPI metadata: ${key}`,
+      );
+    }
+    if (
+      !operation.allowedContexts.includes("remote_machine") &&
+      operation.machineOpenApi !== undefined
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Non-machine operation cannot publish machine OpenAPI metadata: ${key}`,
       );
     }
     if (operation.requiresConfirmation && operation.id !== "updates.apply") {

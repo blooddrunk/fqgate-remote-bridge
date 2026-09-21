@@ -148,6 +148,7 @@ describe("Phase 4 request context and operation exposure", () => {
     ]);
     expect(localOnly).toEqual([
       "market.instruments.lookup",
+      "openapi.machine",
       "updates.check",
       "updates.plan",
       "updates.apply",
