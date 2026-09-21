@@ -388,6 +388,27 @@ Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remot
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
 Phase 6 provisioning and all other later-phase work require a separate task.
 
+## Active post-Phase-5 maintenance task
+
+Before Phase 6, execute:
+
+`docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`
+
+Codex handoff:
+
+`docs/prompts/post-phase-5-fqgate-1-0-2-codex-goal.md`
+
+This task must qualify and upgrade the permanent Windows environment under
+`D:\\code\\research` to official FQGate 1.0.2 and remove literal patch-version
+coupling from the exposed lookup operation without weakening fail-closed
+compatibility. Automate every machine-verifiable step. Human action is limited
+to hidden existing service-token entry and physical QR approval only when an
+exact machine-readable `LOGIN_REQUIRED` condition is observed.
+
+Do not weaken official-source, size/SHA-256, rollback, loopback, request-context,
+operation-registry or remote-machine-denial boundaries to accommodate frequent
+upstream releases.
+
 ## Documentation rule
 
 When implementation changes the security boundary, request-context model, Cloudflare assumptions, admin JWT validation, confirmation model, mobile operator workflow, runtime topology, Windows/token behavior, or phase completion state, update the corresponding source-of-truth documentation in the same change.
