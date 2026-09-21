@@ -2,7 +2,7 @@
 
 Date: 2026-09-21
 
-Status: **ACTIVE — local and real remote acceptance pending on the final implementation commit**
+Status: **CLOSED — permanent-Windows local and real service-token acceptance passed**
 
 Use only the permanent checkout
 `D:\code\research\fqgate-remote-bridge`, the existing repo-external
@@ -66,6 +66,12 @@ listeners. The complete `updates.apply` denial remains deterministic evidence;
 the live harness never calls it. Both request and wrapper summaries calculate
 their totals from emitted records.
 
+The document probe may retry once only when the first response is the exact
+fail-closed HTTP 403 / `ACCESS_ASSERTION_INVALID` result produced by a bounded
+cold JWK fetch failure. Every individual request remains denied until full JWT
+verification succeeds; persistent, wrong-AUD, wrong-signature and other failures
+still fail the matrix. The emitted record includes its actual attempt count.
+
 ## MANUAL_FQGATE_LOGIN — only when observed
 
 If a bounded record first reports an exact check ID with `LOGIN_REQUIRED`:
@@ -77,7 +83,7 @@ If a bounded record first reports an exact check ID with `LOGIN_REQUIRED`:
 No manual JSON inspection or saved login credential is required. If no
 `LOGIN_REQUIRED` record appears, no QR action is needed.
 
-## Evidence status
+## Recorded evidence
 
 The synchronized main baseline was `4f32acc0f99b5ff668668451814941b9980f4bb9`.
 Windows Node v24.15.0 and pnpm 11.23.0 were recorded. Frozen install,
@@ -87,6 +93,34 @@ format-only correction. Windows E2E passed 13/13, the existing CLI/loopback
 smoke and Phase 5-A local checks passed, and the Phase 5-B census/local matrix
 passed against FQGate 1.0.1 with the same bounded contract evidence.
 
-Final Phase 5-C local/remote totals, implementation commit, final commit and
-Ubuntu/Windows workflow IDs remain pending. Phase 5-C and Phase 5 stay OPEN
-until those machine-derived records and exact-final-commit CI are green.
+Final remote-acceptance implementation:
+`06ae7c01b780ba856a4f70bfcd3612ef9258abd0`. Frozen install, typecheck, lint,
+18 files / 196 tests, build, format and 13/13 browser E2E passed in the permanent
+Windows checkout. Existing CLI/loopback smoke, Phase 5-A local regression and
+Phase 5-B census/local regression passed against FQGate 1.0.1 and the unchanged
+89-operation runtime contract.
+
+The Phase 5-C local matrix emitted 6/6 PASS with failed=0; its Windows listener
+wrapper emitted 2/2 PASS. The document was HTTP 200 with exactly two paths and
+five schemas; lookup returned one bounded item; malformed/oversized/raw/spoofed
+requests returned 400/413/404/421 as required.
+
+At 02:09 UTC the operator used only the two hidden service-token prompts. The
+remote matrix emitted 21/21 PASS with failed=0: document and lookup HTTP 200,
+malformed/oversized 400/413, all old operations and raw/page/static routes 403,
+and human/admin hostname isolation 302. The document and lookup each passed on
+one attempt. P5C-W2/W3 and the remote wrapper summary passed 3/3: both listeners
+were loopback-only and the existing ingress targeted only the Bridge. No QR
+login or Cloudflare mutation was needed.
+
+The bounded external evidence file is
+`D:\code\research\fqgate-phase5c-remote-evidence.json`, timestamp
+`2026-09-21T02:09:22.1581867Z`, failed=0, pending=0, matrixExitCode=0. It contains
+no credentials, assertions, cookies, JWTs, QR/session material, raw OpenAPI,
+raw market values or compatibility fingerprints.
+
+CI run [35553157256](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35553157256)
+passed Ubuntu job `106191573144` and Windows job `106191573251` on the final
+acceptance implementation. The documentation closure commit is the commit
+containing these records and must also have green Ubuntu and Windows checks
+before the goal is reported complete.

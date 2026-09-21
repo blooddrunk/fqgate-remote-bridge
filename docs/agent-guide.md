@@ -9,7 +9,7 @@ task package 和安全文档为准。
 - Phase 5-A：CLOSED；remote_machine 身份、独立 JWT claim profile、零权限矩阵、
   永久 Windows / CI / 真实 service-token 验收均已完成。
 - Phase 5-B：**CLOSED**；live census、一个受限目录查询及 Windows/remote/CI 验收完成。
-- Phase 5-C：**ACTIVE**；machine OpenAPI 已实现，最终 Windows/remote/CI 闭包待完成。
+- Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
 - Phase 6+：尚未授权实施。
 
 稳定拓扑不变：
@@ -32,8 +32,8 @@ Tunnel  -> Bridge only
 6. docs/roadmap.md
 7. docs/plans/phase-5-remote-machine-read-only-api.md
 8. docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md
-9. docs/status/phase-5-b-implementation-handoff.md
-10. docs/operations/windows-phase-5-b-acceptance.md
+9. docs/status/phase-5-c-implementation-handoff.md
+10. docs/operations/windows-phase-5-c-acceptance.md
 11. 本文
 
 Codex 执行入口：
@@ -44,8 +44,8 @@ docs/prompts/phase-5-c-codex-goal.md
 
 本阶段不再选择行情接口。`openapi.machine` 只从 Bridge registry 中
 `allowedContexts` 明确包含 `remote_machine` 且带有 public schema metadata 的条目
-生成文档。Runtime `/openapi.json` 仍只是描述证据，不能改变文档或授权。关闭 Phase 5
-必须完成永久 Windows、真实 service-token 和精确最终提交的双平台 CI。
+生成文档。Runtime `/openapi.json` 仍只是描述证据，不能改变文档或授权。Phase 5 已在
+永久 Windows、真实 service-token 和精确提交双平台 CI 通过后关闭。
 
 ## 权限边界
 
@@ -98,6 +98,7 @@ quote；bars 只有在行数、时间范围和返回结构都能确定限界时�
 - Phase 5-B live OpenAPI census；
 - Phase 5-B local semantic probes；
 - Phase 5-B remote-machine smoke；
+- Phase 5-C local/remote machine OpenAPI matrix；
 - 最终 GitHub Actions Ubuntu + Windows。
 
 不要创建第二份临时 Windows checkout 规避永久环境问题。
@@ -107,7 +108,7 @@ quote；bars 只有在行数、时间范围和返回结构都能确定限界时�
 ### 1. Existing machine service-token secret entry
 
 Phase 5-A 已经创建 machine Access application / service token / Tunnel ingress。
-Phase 5-B 不创建新的 Cloudflare 资源。
+Phase 5-B/C 与整个 Phase 5 都没有创建新的 Cloudflare 资源。
 
 远程 smoke 需要凭据时，operator 只在 PowerShell 的 Read-Host -AsSecureString
 隐藏提示中输入既有 Client ID 和 Client Secret。随后全部测试必须自动完成。
@@ -156,7 +157,7 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 ## 本次实现交接
 
 首个 operation 为 `market.instruments.lookup`（六位代码查询），仅 local +
-remote_machine。Phase 5-B 已 CLOSED；Phase 5-C 的 `openapi.machine` 已实现，Phase 5
-仍需永久 Windows、真实 service-token 与精确最终提交 CI 全绿才能关闭。不追加报价或其他 API。
-实际实时证据、指纹、后续边界见 `docs/status/phase-5-b-implementation-handoff.md`；
-Windows/远程自动矩阵与隐藏输入步骤见 `docs/operations/windows-phase-5-b-acceptance.md`。
+remote_machine。Phase 5-B/C 与整个 Phase 5 已 CLOSED；不追加报价或其他 API。
+最终实现、实时证据、机器检查总数和后续边界见
+`docs/status/phase-5-c-implementation-handoff.md`；Windows/远程自动矩阵与隐藏输入
+步骤见 `docs/operations/windows-phase-5-c-acceptance.md`。

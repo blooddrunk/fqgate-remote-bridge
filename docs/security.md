@@ -487,7 +487,7 @@ available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
 
-## Phase 5-C machine documentation boundary — implemented, closure pending
+## Phase 5-C machine documentation boundary — closed
 
 `openapi.machine` serves `GET /api/v1/openapi/machine` only to `local` and a
 cryptographically verified `remote_machine`. It is a normal policy-registered
@@ -503,3 +503,9 @@ paths, Access team/AUD data, credentials, QR/session/update/admin operations,
 and runtime observations. Any later machine operation requires a reviewed
 registry permission plus explicit documentation metadata and tests; upstream
 discovery cannot grant either authority.
+
+Permanent-Windows and real service-token acceptance on 2026-09-21 passed with
+machine-derived local and remote totals. The existing Access application,
+hostname, AUD, service token, Tunnel and Bridge-only ingress were reused without
+Cloudflare mutation. No credential, assertion, cookie, raw OpenAPI, compatibility
+fingerprint, QR/session material or raw market value entered Git or evidence.

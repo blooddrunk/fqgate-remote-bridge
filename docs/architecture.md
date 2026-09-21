@@ -486,7 +486,7 @@ available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
 
-## Phase 5-C machine OpenAPI — implemented, closure pending
+## Phase 5-C machine OpenAPI — closed
 
 The Bridge owns a separate machine document at
 `GET /api/v1/openapi/machine`, operation ID `openapi.machine`, allowed exactly
@@ -503,3 +503,8 @@ paths or schemas, compatibility fingerprints, filesystem/runtime state,
 Access configuration, secrets, or human/admin/session/update operations.
 Runtime FQGate discovery therefore cannot add a machine path or alter machine
 authorization.
+
+Closure acceptance on 2026-09-21 proved the exact two-path/five-schema document,
+the approved lookup, old-operation and page/static/raw denial, human/admin
+isolation, Bridge-only Tunnel ingress, and both loopback listeners through the
+real machine Access application. Phase 5 adds no second market operation.

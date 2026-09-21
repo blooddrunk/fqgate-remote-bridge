@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **ACTIVE DESIGN — Phase 5-A/B CLOSED; Phase 5-C implemented, closure pending**
+Status: **CLOSED — Phase 5-A/B/C implementation and acceptance complete**
 
 Planning baseline: `main@fe544b3a8fa25227521c68dcb08ff110ce8c6b67`.
 Its GitHub Actions run `35423337596` passed after the Phase 4.5 closure
@@ -224,7 +224,8 @@ another internal shorthand.
 
 - Completed: Phase 5-A identity/context foundation and zero-privilege closure.
 - Completed: Phase 5-B contract census + one bounded instrument lookup.
-- In progress: Phase 5-C generated machine docs are implemented; remote/final CI closure remains.
+- Completed: Phase 5-C generated machine docs and permanent-Windows, real remote,
+  and exact-commit CI closure.
 - Phase 6 remains Cloudflare provisioning/drift automation.
 - Phase 7+ remain deferred according to the roadmap.
 

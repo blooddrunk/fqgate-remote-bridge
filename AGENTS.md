@@ -34,7 +34,7 @@ It is an independent infrastructure/adapter project. It must not make `turtle-va
 - Do not expose trading, order, cancellation, fund-transfer, brokerage-control, or other state-changing financial endpoints.
 - Do not request a Cloudflare Global API Key. Automated Tunnel/DNS/Access provisioning belongs to Phase 6.
 - Do not commit Tunnel tokens, Access assertions/secrets, QR payloads, login/session material, remote-admin confirmation grants, or other credentials.
-- Preserve all closed Phase 0/1/2/3/4/4.5 behavior while implementing Phase 5-B.
+- Preserve all closed Phase 0–5 behavior in every later change.
 
 ## Completed baseline
 
@@ -57,8 +57,9 @@ Phase 4 remote-human operations remain:
 Phase 4.5A policy/authentication foundation, Phase 4.5B mobile work, and
 Phase 4.5C's narrow remote-admin maintenance and one-time apply confirmation
 are implemented and passed live Windows x64 + Cloudflare acceptance on
-2026-09-19. Phase 4.5 is closed; Phase 5-A is closed at the zero-privilege
-checkpoint, while Phase 5-B has one implemented instrument lookup and has passed all Phase 5-B acceptance criteria.
+2026-09-19. Phase 4.5 is closed. Phase 5-A closed at the zero-privilege
+checkpoint, Phase 5-B added one accepted instrument lookup, and Phase 5-C closed
+Phase 5 with registry-derived machine documentation and final remote acceptance.
 
 For `local` and ordinary `remote_human` callers, the following remain
 local-only. The implemented `remote_admin` context may invoke exactly these
@@ -74,7 +75,7 @@ The 4.5A policy intentionally recognizes a verified `remote_admin` caller for
 the same safe Phase 4 surface only. It does not grant any of the four
 maintenance operations remotely.
 
-## Closed Phase 5-B contract / next-phase boundary
+## Closed Phase 5 contract / next-phase boundary
 
 Phase 5-A is closed. It established a distinct remote_machine identity/context
 and proved real service-token authentication while granting zero existing
@@ -82,7 +83,9 @@ Bridge operations.
 
 Phase 5-B is closed: live FQGate contract census plus one bounded instrument
 lookup passed deterministic, permanent Windows, real remote and CI acceptance.
-Phase 5-C is now the active separately reviewed task. Its authorization is limited to the explicit Phase 5-C task package; Phase 5-B closure alone did not authorize it.
+Phase 5-C and Phase 5 are closed: the registry-derived machine OpenAPI and final
+permanent-Windows, real service-token and CI closure all passed. No later phase
+is authorized by this closure.
 
 Read these contract and evidence artifacts before changing code:
 
@@ -91,6 +94,8 @@ Read these contract and evidence artifacts before changing code:
 - docs/prompts/phase-5-b-codex-goal.md
 - docs/status/phase-5-a-implementation-handoff.md
 - docs/operations/windows-phase-5-a-acceptance.md
+- docs/status/phase-5-c-implementation-handoff.md
+- docs/operations/windows-phase-5-c-acceptance.md
 
 The permanent Windows verification environment is under D:\\code\\research.
 Agents must resolve and use the existing repository working tree there for
@@ -375,10 +380,13 @@ Follow `docs/roadmap.md`.
 - Phase 4.5C: implemented and live accepted; Phase 4.5 CLOSED
 - Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
 - Phase 5-B: CLOSED — authoritative live census + one bounded instrument lookup
-- Phase 5-C: ACTIVE — filtered machine OpenAPI implemented; final Windows/remote/CI closure pending
+- Phase 5-C: CLOSED — filtered machine OpenAPI + final Windows/remote/CI closure
 - Phase 5-D+: do not opportunistically implement
 
-Phase 5-C is the active task. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md` and `docs/prompts/phase-5-c-codex-goal.md` before changing code. It must not add any new market operation; it may add only the registry-derived machine OpenAPI/docs operation needed to close Phase 5. Keep machine Host/AUD/context/tests independent from human/admin policy.
+Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
+`docs/status/phase-5-c-implementation-handoff.md`, and
+`docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
+Phase 6 provisioning and all other later-phase work require a separate task.
 
 ## Documentation rule
 
@@ -395,12 +403,12 @@ It accepts only a six-digit `code`; fixed upstream POST
 1.0.1 census and semantic probes. Maximum 16 result items / 64 KiB upstream /
 256-byte Bridge body. A scoped operation-plus-reference fingerprint and exact
 observed version fail this operation closed on drift; activation rules are not
-expanded. All Phase 5-A operations remain denied to machines. Quote, generated
-Cloudflare provisioning remains unimplemented. Phase 5-C implements
+expanded. All Phase 5-A operations remain denied to machines. Quote, history,
+bars, and Cloudflare provisioning remain unimplemented. Phase 5-C implements
 `openapi.machine`, GET `/api/v1/openapi/machine`, allowed exactly for local +
 remote_machine. Its deterministic 64-KiB-bounded document is generated only from
 registry entries carrying explicit machine documentation metadata; it currently
-contains exactly the lookup and its own docs route. Phase 5 stays OPEN until the
-permanent-Windows, real service-token, and exact-final-commit CI evidence passes.
-See `docs/status/phase-5-b-implementation-handoff.md` and
-`docs/operations/windows-phase-5-b-acceptance.md` for the current evidence.
+contains exactly the lookup and its own docs route. The final permanent-Windows,
+real service-token, and exact-commit CI evidence passed on 2026-09-21.
+See `docs/status/phase-5-c-implementation-handoff.md` and
+`docs/operations/windows-phase-5-c-acceptance.md` for the closure evidence.
