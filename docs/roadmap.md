@@ -349,6 +349,35 @@ operation allowlist, configuration, and tests remain independent.
 
 ---
 
+## Active maintenance track — FQGate release compatibility and 1.0.2 refresh
+
+Status: **ACTIVE before Phase 6**.
+
+The official FQGate stable channel moved to 1.0.2 on 2026-09-20. Before starting
+Phase 6, the permanent Windows environment under `D:\\code\\research` must be
+qualified and upgraded to 1.0.2, and the first market operation's compatibility
+gate must be changed from literal 1.0.1 coupling to operation-scoped evidence.
+
+The security posture does not become looser: official-source pinning, exact
+size/SHA-256 verification, explicit plan/apply, health/OpenAPI checks, rollback,
+loopback-only listeners and deny-by-default operation policy remain mandatory.
+The maintenance goal is to automate re-certification for frequent patch releases
+when the exact exposed-operation contract remains structurally identical and its
+bounded semantic probe passes.
+
+Executable task:
+
+`docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`
+
+Codex handoff:
+
+`docs/prompts/post-phase-5-fqgate-1-0-2-codex-goal.md`
+
+This maintenance track does not authorize Phase 6 or any additional market
+operation.
+
+---
+
 ## Phase 6 — Automated Cloudflare provisioning and drift management
 
 Goal: automate the manually proven Phase 4/4.5/5 setup safely.
