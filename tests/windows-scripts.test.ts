@@ -160,7 +160,8 @@ describe("Windows entry points", () => {
     expect(secureWrapper).toContain("[switch]$Phase5CReadOnly");
     expect(secureWrapper).toContain("fqgate-phase5c-remote-evidence.json");
     expect(secureWrapper).toContain("commit = Get-CurrentCommit");
-    expect(secureWrapper).toContain("$commit -notmatch '^[0-9a-f]{40}$'");
+    expect(secureWrapper).toContain("RedirectStandardOutput = $true");
+    expect(secureWrapper).toContain("$process.ExitCode -ne 0");
     expect(secureWrapper).not.toContain("--client-id");
     expect(secureWrapper).not.toContain("--client-secret");
   });

@@ -74,12 +74,29 @@ function Get-CurrentCommit {
     if ([string]::IsNullOrWhiteSpace($script:gitPath)) {
         throw "Git is required to record the exact acceptance commit."
     }
-    $output = @(& $script:gitPath -C $repositoryRoot rev-parse HEAD 2>$null)
-    $commit = ($output -join "").Trim()
-    if ($LASTEXITCODE -ne 0 -or $commit -notmatch '^[0-9a-f]{40}$') {
-        throw "The exact acceptance commit could not be resolved."
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $script:gitPath
+    $startInfo.Arguments = '-C "' + $repositoryRoot.Replace('"', '\"') + '" rev-parse HEAD'
+    $startInfo.WorkingDirectory = $repositoryRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) { throw "Git could not be started." }
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $null = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        $commit = $stdout.Trim()
+        if ($process.ExitCode -ne 0 -or $commit -notmatch '^[0-9a-f]{40}$') {
+            throw "The exact acceptance commit could not be resolved."
+        }
+        return $commit
+    } finally {
+        $process.Dispose()
     }
-    return $commit
 }
 
 $repositoryRoot = Resolve-PermanentGitRoot
