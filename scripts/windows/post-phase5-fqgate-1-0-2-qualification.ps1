@@ -148,6 +148,12 @@ function Read-JsonOutput {
         foreach ($line in ($Text -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Last 8)) {
             try { return $line.Trim() | ConvertFrom-Json } catch { }
         }
+        if ($Text -match '"error"\s*:\s*\{\s*"code"\s*:\s*"([A-Z0-9_]+)"') {
+            return [pscustomobject]@{ error = [pscustomobject]@{ code = $matches[1] } }
+        }
+        if ($Text -match '"code"\s*:\s*"([A-Z0-9_]+)"') {
+            return [pscustomobject]@{ error = [pscustomobject]@{ code = $matches[1] } }
+        }
         return $null
     }
 }
