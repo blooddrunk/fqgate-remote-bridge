@@ -144,7 +144,12 @@ function Invoke-NodeCli {
 function Read-JsonOutput {
     param([string]$Text)
     if ([string]::IsNullOrWhiteSpace($Text) -or $Text.Length -gt 64KB) { return $null }
-    try { return $Text.Trim() | ConvertFrom-Json } catch { return $null }
+    try { return $Text.Trim() | ConvertFrom-Json } catch {
+        foreach ($line in ($Text -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Last 8)) {
+            try { return $line.Trim() | ConvertFrom-Json } catch { }
+        }
+        return $null
+    }
 }
 
 function Invoke-PhaseScript {
