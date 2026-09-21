@@ -6,6 +6,11 @@ import {
   validateLoopbackBaseUrl,
 } from "../src/config/config.js";
 import { CompatibilityPolicy } from "../src/fqgate/compatibility/policy.js";
+import {
+  legacyLookupQualificationEvidence,
+  LOOKUP_HISTORICAL_BASELINE_VERSION,
+  LOOKUP_CONTRACT_FINGERPRINT,
+} from "../src/fqgate/market/compatibility.js";
 import { BridgeError, ERROR_CODES } from "../src/shared/errors.js";
 import { StructuredLogger } from "../src/shared/logger.js";
 import { REDACTED, Redactor } from "../src/shared/redaction.js";
@@ -82,6 +87,29 @@ describe("compatibility policy", () => {
     expect(result.status).toBe("supported_unvalidated");
     expect(result.supported).toBe(true);
     expect(() => policy.assertActivatable("1.1.0")).toThrowError(/not approved/);
+  });
+
+  it("promotes an in-range patch only through qualification", () => {
+    expect(policy.evaluate("1.0.2").status).toBe("supported_unvalidated");
+    expect(policy.evaluateQualified("1.0.2")).toMatchObject({
+      status: "validated",
+      supported: true,
+      validated: true,
+    });
+  });
+
+  it("keeps only the historical baseline migration evidence", () => {
+    expect(legacyLookupQualificationEvidence(LOOKUP_HISTORICAL_BASELINE_VERSION, true)).toEqual([
+      {
+        operationId: "market.instruments.lookup",
+        contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+        semanticProbeId: "market.instruments.lookup.exact-code-v1",
+      },
+    ]);
+    expect(legacyLookupQualificationEvidence("1.0.2", true)).toEqual([]);
+    expect(legacyLookupQualificationEvidence(LOOKUP_HISTORICAL_BASELINE_VERSION, false)).toEqual(
+      [],
+    );
   });
 
   it("fails closed for unsupported and pinned-mismatch versions", () => {

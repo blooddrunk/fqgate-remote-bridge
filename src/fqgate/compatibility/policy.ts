@@ -105,6 +105,41 @@ export class CompatibilityPolicy {
     };
   }
 
+  /**
+   * A quarantined candidate may be admitted only when it is inside the
+   * configured base range (and does not violate an operator pin). This does
+   * not certify any upstream-backed Bridge operation.
+   */
+  assertSupported(version: string): CompatibilityEvaluation {
+    const evaluation = this.evaluate(version);
+    if (!evaluation.supported) {
+      throw new BridgeError(
+        ERROR_CODES.VERSION_INCOMPATIBLE,
+        `FQGate ${version} is outside the supported activation range: ${evaluation.reason}`,
+        {
+          version,
+          status: evaluation.status,
+          supportedRange: this.supportedRange,
+        },
+      );
+    }
+    return evaluation;
+  }
+
+  /**
+   * Promote an artifact only after a bounded candidate qualification has
+   * completed. The configured pin and supported range remain authoritative.
+   */
+  evaluateQualified(version: string): CompatibilityEvaluation {
+    const evaluation = this.assertSupported(version);
+    return {
+      ...evaluation,
+      status: "validated",
+      validated: true,
+      reason: `version passed the bounded candidate qualification gate (${evaluation.version})`,
+    };
+  }
+
   assertActivatable(version: string): CompatibilityEvaluation {
     const evaluation = this.evaluate(version);
     if (!evaluation.validated) {

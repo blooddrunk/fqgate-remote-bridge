@@ -22,10 +22,10 @@ try {
   const status = await createApplicationServices(config).lifecycle.status();
   if (
     status.process.state !== "running" ||
-    status.compatibility?.validated !== true ||
-    status.installed?.version !== "1.0.1"
+    status.compatibility?.supported !== true ||
+    status.compatibility?.validated !== true
   )
-    throw new Error("VALIDATED_RUNNING_VERSION_REQUIRED");
+    throw new Error("SUPPORTED_QUALIFIED_RUNNING_VERSION_REQUIRED");
   emit(stage, {
     result: "PASS",
     version: status.installed.version,
@@ -74,7 +74,19 @@ try {
   stage = "P5B-C3";
   const lookup = new FqgateInstrumentLookup({
     http: transport,
-    runtime: async () => ({ version: status.installed.version, validated: true, running: true }),
+    runtime: async () => ({
+      version: status.installed.version,
+      supported: true,
+      validated: true,
+      operationEvidence: [
+        {
+          operationId: "market.instruments.lookup",
+          contractFingerprint: fingerprint,
+          semanticProbeId: "market.instruments.lookup.exact-code-v1",
+        },
+      ],
+      running: true,
+    }),
     contract: async () => fingerprint,
   });
   const value = await lookup.lookup({ code: "600000" });
@@ -134,7 +146,7 @@ try {
   const allowed = new Set([
     "WINDOWS_REQUIRED",
     "FIXED_ORIGIN_REQUIRED",
-    "VALIDATED_RUNNING_VERSION_REQUIRED",
+    "SUPPORTED_QUALIFIED_RUNNING_VERSION_REQUIRED",
     "CONTRACT_DRIFT",
     "KNOWN_INSTRUMENT_NOT_FOUND",
     "LOGIN_REQUIRED",

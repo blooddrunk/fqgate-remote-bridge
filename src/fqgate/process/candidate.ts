@@ -58,7 +58,11 @@ export class FqgateCandidateValidator {
     return { version, compatibility: this.policy.evaluate(version) };
   }
 
-  async validate(executablePath: string, expectedVersion?: string): Promise<CandidateValidation> {
+  async validate(
+    executablePath: string,
+    expectedVersion?: string,
+    options: { readonly allowSupportedUnvalidated?: boolean } = {},
+  ): Promise<CandidateValidation> {
     const inspected = await this.inspect(executablePath);
     if (expectedVersion !== undefined && inspected.version !== expectedVersion) {
       throw new BridgeError(
@@ -70,7 +74,11 @@ export class FqgateCandidateValidator {
         },
       );
     }
-    this.policy.assertActivatable(inspected.version);
+    if (options.allowSupportedUnvalidated === true) {
+      this.policy.assertSupported(inspected.version);
+    } else {
+      this.policy.assertActivatable(inspected.version);
+    }
     return { executablePath, ...inspected };
   }
 }

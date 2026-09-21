@@ -19,9 +19,12 @@ import { OfficialCloudflaredReleaseSource } from "../cloudflared/release/source.
 import { PosixTokenFileAcl, ProtectedTokenFileStore } from "../cloudflared/token-file.js";
 import { WindowsTokenFileAcl } from "../cloudflared/windows/acl.js";
 import { WindowsCloudflaredServiceController } from "../cloudflared/windows/service.js";
+import { FqgateInstrumentLookup } from "../fqgate/market/lookup.js";
+import { legacyLookupQualificationEvidence } from "../fqgate/market/compatibility.js";
 
 export interface ApplicationServices {
   readonly lifecycle: FqgateLifecycleManager;
+  readonly instrumentLookup: FqgateInstrumentLookup;
   readonly openApi: FqgateOpenApiService;
   readonly update: FqgateUpdateService;
   readonly cloudflared: CloudflaredManager;
@@ -66,6 +69,26 @@ export function createApplicationServices(config: AppConfig): ApplicationService
     runtimeOpenApiProbe: new RequiredContractOpenApiProbe(openApi, listRequiredFqgateContracts()),
     logger: new StructuredLogger({ level: config.logLevel }),
   });
+  const instrumentLookup = new FqgateInstrumentLookup({
+    http,
+    runtime: async () => {
+      const status = await lifecycle.status();
+      const compatibility = status.compatibility ?? status.installed?.compatibility;
+      const operationEvidence =
+        status.installed?.qualification?.operations ??
+        legacyLookupQualificationEvidence(
+          status.installed?.version,
+          compatibility?.validated === true,
+        );
+      return {
+        version: status.installed?.version,
+        supported: compatibility?.supported === true,
+        validated: compatibility?.validated === true,
+        operationEvidence,
+        running: status.process.state === "running",
+      };
+    },
+  });
   const cloudflaredTokenAcl =
     process.platform === "win32"
       ? new WindowsTokenFileAcl({ runner, platform: process.platform })
@@ -98,6 +121,7 @@ export function createApplicationServices(config: AppConfig): ApplicationService
   });
   return {
     lifecycle,
+    instrumentLookup,
     openApi,
     update: new FqgateUpdateService({ lifecycle }),
     cloudflared,

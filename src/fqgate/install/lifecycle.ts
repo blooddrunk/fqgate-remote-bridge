@@ -1,6 +1,11 @@
 import { open } from "node:fs/promises";
 import { basename, join } from "node:path";
 import type { CompatibilityEvaluation, CompatibilityPolicy } from "../compatibility/policy.js";
+import {
+  isOperationQualificationEvidence,
+  type CandidateQualificationProbe,
+  type OperationQualificationEvidence,
+} from "../compatibility/evidence.js";
 import { BridgeError, ERROR_CODES, toBridgeError } from "../../shared/errors.js";
 import { StructuredLogger } from "../../shared/logger.js";
 import { isActivationHealthy } from "../health/probe.js";
@@ -32,6 +37,7 @@ import {
   writeFqgateState,
   type ArtifactRecord,
   type FqgateState,
+  type RuntimeQualification,
 } from "./state.js";
 
 export type FqgateLifecycleState =
@@ -43,6 +49,7 @@ export interface InstalledArtifact {
   readonly sha256: string;
   readonly version?: string;
   readonly compatibility?: CompatibilityEvaluation;
+  readonly qualification?: RuntimeQualification;
   readonly validationError?: string;
 }
 
@@ -67,6 +74,11 @@ export interface InstallResult {
   readonly plan: ReleasePlan;
   readonly action: "installed" | "updated" | "noop" | "planned";
   readonly status?: FqgateStatus;
+}
+
+export interface FqgateQualificationOptions {
+  readonly probes: readonly CandidateQualificationProbe[];
+  readonly dryRun?: boolean;
 }
 
 export interface LifecycleDependencies {
@@ -120,11 +132,22 @@ export class FqgateLifecycleManager {
     this.now = dependencies.now ?? (() => new Date().toISOString());
   }
 
-  async plan(): Promise<ReleasePlan> {
+  async plan(options: { readonly allowSupportedUnvalidated?: boolean } = {}): Promise<ReleasePlan> {
     const release = await this.releaseSource.getStableRelease();
     const selectedPackage = selectWindowsX64Package(release);
-    const compatibility = this.policy.evaluate(release.version);
+    let compatibility = this.policy.evaluate(release.version);
     const current = await this.inspectArtifact(this.layout.currentExecutable);
+
+    if (
+      !compatibility.validated &&
+      current?.version === release.version &&
+      current.sha256 === selectedPackage.sha256 &&
+      current.compatibility?.validated === true
+    ) {
+      // A previously qualified artifact remains a known-good managed runtime
+      // even when its version is not prelisted in the static config.
+      compatibility = current.compatibility;
+    }
 
     if (
       compatibility.validated &&
@@ -143,7 +166,10 @@ export class FqgateLifecycleManager {
       };
     }
 
-    if (!compatibility.validated) {
+    if (
+      !compatibility.validated &&
+      !(options.allowSupportedUnvalidated === true && compatibility.supported)
+    ) {
       return {
         release,
         package: selectedPackage,
@@ -176,26 +202,53 @@ export class FqgateLifecycleManager {
     return this.installPlan(plan, options);
   }
 
+  async qualify(options: FqgateQualificationOptions): Promise<InstallResult> {
+    if (options.probes.length === 0) {
+      throw new BridgeError(
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Candidate qualification requires at least one operation probe",
+      );
+    }
+    const plan = await this.plan({ allowSupportedUnvalidated: true });
+    return this.installPlan(plan, {
+      ...(options.dryRun === undefined ? {} : { dryRun: options.dryRun }),
+      qualificationProbes: options.probes,
+    });
+  }
+
   /**
    * Apply an already observed release plan. Dashboard confirmation uses this
    * boundary so the web layer cannot grow a second updater implementation.
    */
   async installPlan(
     plan: ReleasePlan,
-    options: { readonly dryRun?: boolean } = {},
+    options: {
+      readonly dryRun?: boolean;
+      readonly qualificationProbes?: readonly CandidateQualificationProbe[];
+    } = {},
   ): Promise<InstallResult> {
+    if (options.qualificationProbes !== undefined && options.qualificationProbes.length === 0) {
+      throw new BridgeError(
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Candidate qualification requires at least one operation probe",
+      );
+    }
     if (options.dryRun) {
       return { plan, action: "planned" };
     }
     if (plan.action === "blocked") {
-      this.policy.assertActivatable(plan.release.version);
+      if (options.qualificationProbes === undefined) {
+        this.policy.assertActivatable(plan.release.version);
+      } else {
+        this.policy.assertSupported(plan.release.version);
+      }
     }
     if (plan.action === "noop") {
       return { plan, action: "noop", status: await this.status() };
     }
 
-    await ensureInstallablePlan(plan);
-    await this.ensureLayoutAndLock(async () => this.applyPlan(plan));
+    await ensureInstallablePlan(plan, options.qualificationProbes);
+    await this.ensureLayoutAndLock(async () => this.applyPlan(plan, options.qualificationProbes));
     const status = await this.status();
     return {
       plan,
@@ -279,7 +332,10 @@ export class FqgateLifecycleManager {
     return this.start();
   }
 
-  private async applyPlan(plan: ReleasePlan): Promise<void> {
+  private async applyPlan(
+    plan: ReleasePlan,
+    qualificationProbes: readonly CandidateQualificationProbe[] | undefined,
+  ): Promise<void> {
     await cleanupStagingArtifacts(this.layout.downloadsDirectory);
     const currentBefore = await this.inspectArtifact(this.layout.currentExecutable);
     if (!sameInstalledArtifact(plan.current, currentBefore)) {
@@ -308,6 +364,7 @@ export class FqgateLifecycleManager {
       candidateValidation = await this.candidateValidator.validate(
         staged.path,
         plan.release.version,
+        { allowSupportedUnvalidated: qualificationProbes !== undefined },
       );
     } catch (error) {
       await removeFile(staged.path);
@@ -381,7 +438,12 @@ export class FqgateLifecycleManager {
         );
       }
 
-      const activeRecord = toArtifactRecord(candidateValidation, staged);
+      const qualification =
+        qualificationProbes === undefined
+          ? undefined
+          : await runQualificationProbes(qualificationProbes, this.now());
+
+      const activeRecord = toArtifactRecord(candidateValidation, staged, qualification);
       const state: FqgateState = {
         schemaVersion: 1,
         active: activeRecord,
@@ -645,6 +707,7 @@ export class FqgateLifecycleManager {
     }
 
     const digest = await sha256File(filePath);
+    const state = await readFqgateState(this.layout);
     let validation: CandidateInspection | undefined;
     let validationError: string | undefined;
     try {
@@ -653,13 +716,39 @@ export class FqgateLifecycleManager {
       validationError = error instanceof Error ? error.message : String(error);
     }
 
-    return {
+    const stateRecord =
+      filePath === this.layout.currentExecutable
+        ? state.active
+        : filePath === this.layout.previousExecutable
+          ? state.previous
+          : undefined;
+    const qualified =
+      validation !== undefined &&
+      stateRecord !== undefined &&
+      stateRecord.version === validation.version &&
+      stateRecord.size === digest.size &&
+      stateRecord.sha256 === digest.sha256 &&
+      stateRecord.qualification !== undefined;
+    const baseArtifact = {
       path: filePath,
       size: digest.size,
       sha256: digest.sha256,
-      ...(validation === undefined
-        ? {}
-        : { version: validation.version, compatibility: validation.compatibility }),
+    };
+    if (validation === undefined) {
+      return {
+        ...baseArtifact,
+        ...(validationError === undefined ? {} : { validationError }),
+      };
+    }
+    return {
+      ...baseArtifact,
+      version: validation.version,
+      compatibility: qualified
+        ? this.policy.evaluateQualified(validation.version)
+        : validation.compatibility,
+      ...(qualified && stateRecord?.qualification !== undefined
+        ? { qualification: stateRecord.qualification }
+        : {}),
       ...(validationError === undefined ? {} : { validationError }),
     };
   }
@@ -693,7 +782,10 @@ export class FqgateLifecycleManager {
   }
 }
 
-async function ensureInstallablePlan(plan: ReleasePlan): Promise<void> {
+async function ensureInstallablePlan(
+  plan: ReleasePlan,
+  qualificationProbes: readonly CandidateQualificationProbe[] | undefined,
+): Promise<void> {
   if (plan.action !== "install" && plan.action !== "update") {
     throw new BridgeError(
       ERROR_CODES.ACTIVATION_FAILED,
@@ -701,10 +793,18 @@ async function ensureInstallablePlan(plan: ReleasePlan): Promise<void> {
     );
   }
   if (!plan.compatibility.validated) {
-    throw new BridgeError(
-      ERROR_CODES.VERSION_INCOMPATIBLE,
-      `FQGate ${plan.release.version} is not approved for activation`,
-    );
+    if (qualificationProbes === undefined) {
+      throw new BridgeError(
+        ERROR_CODES.VERSION_INCOMPATIBLE,
+        `FQGate ${plan.release.version} is not approved for activation`,
+      );
+    }
+    if (!plan.compatibility.supported) {
+      throw new BridgeError(
+        ERROR_CODES.VERSION_INCOMPATIBLE,
+        `FQGate ${plan.release.version} is outside the supported activation range`,
+      );
+    }
   }
 }
 
@@ -731,15 +831,61 @@ function artifactRecordFromInstalled(artifact: InstalledArtifact): ArtifactRecor
     fileName: basename(artifact.path),
     size: artifact.size,
     sha256: artifact.sha256,
+    ...(artifact.qualification === undefined ? {} : { qualification: artifact.qualification }),
   };
 }
 
-function toArtifactRecord(validation: CandidateValidation, staged: StagedArtifact): ArtifactRecord {
+function toArtifactRecord(
+  validation: CandidateValidation,
+  staged: StagedArtifact,
+  qualification: RuntimeQualification | undefined,
+): ArtifactRecord {
   return {
     version: validation.version,
     fileName: staged.fileName,
     size: staged.size,
     sha256: staged.sha256,
+    ...(qualification === undefined ? {} : { qualification }),
+  };
+}
+
+async function runQualificationProbes(
+  probes: readonly CandidateQualificationProbe[],
+  qualifiedAt: string,
+): Promise<RuntimeQualification> {
+  const operations = new Map<string, OperationQualificationEvidence>();
+  for (const probe of probes) {
+    if (operations.has(probe.operationId)) {
+      throw new BridgeError(
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Candidate qualification contains a duplicate operation probe",
+      );
+    }
+    let evidence: OperationQualificationEvidence;
+    try {
+      evidence = await probe.run();
+    } catch (error) {
+      if (error instanceof BridgeError) throw error;
+      throw new BridgeError(
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Candidate operation compatibility probe failed",
+        undefined,
+        { cause: error },
+      );
+    }
+    if (evidence.operationId !== probe.operationId || !isOperationQualificationEvidence(evidence)) {
+      throw new BridgeError(
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Candidate operation compatibility probe returned invalid evidence",
+      );
+    }
+    operations.set(evidence.operationId, evidence);
+  }
+  return {
+    qualifiedAt,
+    operations: [...operations.values()].sort((left, right) =>
+      left.operationId.localeCompare(right.operationId),
+    ),
   };
 }
 

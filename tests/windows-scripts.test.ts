@@ -167,6 +167,27 @@ describe("Windows entry points", () => {
     expect(secureWrapper).not.toContain("--client-secret");
   });
 
+  it("provides a bounded post-Phase-5 1.0.2 qualification and rollback command", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/post-phase5-fqgate-1-0-2-qualification.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(script).toContain("D:\\code\\research\\fqgate-remote-bridge");
+    expect(script).toContain('"fqgate", "release", "--json"');
+    expect(script).toContain('"fqgate", "qualify", "--json"');
+    expect(script).toContain("23065088");
+    expect(script).toContain("024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2");
+    expect(script).toContain("MANUAL_FQGATE_LOGIN_REQUIRED");
+    expect(script).toContain("127.0.0.1:17282/login");
+    expect(script).toContain("phase5b-acceptance.ps1");
+    expect(script).toContain("phase5c-acceptance.ps1");
+    expect(script).toContain("-RunAuthenticatedServiceTokenMatrix");
+    expect(script).toContain("fqgate-post-phase5-1-0-2-evidence.json");
+    expect(script).toContain("P5Q-SUMMARY");
+    expect(script).not.toContain("--client-id");
+    expect(script).not.toContain("--client-secret");
+  });
+
   it("keeps the authenticated Phase 4.5 companion harness bounded and secret-safe", () => {
     const harness = readFileSync(
       new URL("../scripts/windows/phase45-authenticated-acceptance.mjs", import.meta.url),

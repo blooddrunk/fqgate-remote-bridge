@@ -34,7 +34,19 @@ function fixture(value: unknown = payload(), status = 200) {
     headers: {},
     body: Buffer.from(JSON.stringify(value)),
   }));
-  const runtime = vi.fn(async () => ({ version: "1.0.1", validated: true, running: true }));
+  const runtime = vi.fn(async () => ({
+    version: "1.0.1",
+    supported: true,
+    validated: true,
+    operationEvidence: [
+      {
+        operationId: "market.instruments.lookup",
+        contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+        semanticProbeId: "market.instruments.lookup.exact-code-v1",
+      },
+    ],
+    running: true,
+  }));
   const contract = vi.fn(async () => LOOKUP_CONTRACT_FINGERPRINT);
   return {
     request,
@@ -165,11 +177,57 @@ describe("Phase 5-B instrument adapter", () => {
       code: "UPSTREAM_UNAVAILABLE",
     });
   });
-  it("rejects unknown version, unvalidated runtime, stopped process, and contract drift before query", async () => {
+  it("accepts a qualified patch release when the operation contract is unchanged", async () => {
+    const f = fixture();
+    f.runtime.mockResolvedValue({
+      version: "1.0.2",
+      supported: true,
+      validated: true,
+      operationEvidence: [
+        {
+          operationId: "market.instruments.lookup",
+          contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+          semanticProbeId: "market.instruments.lookup.exact-code-v1",
+        },
+      ],
+      running: true,
+    });
+    await expect(f.adapter.lookup({ code: "600000" })).resolves.toMatchObject({
+      items: [{ code: "600000" }],
+    });
+  });
+
+  it("fails candidate qualification when the matching contract has no usable semantic result", async () => {
+    const f = fixture({ code: 0, message: "ok", data: { item_count: 0, items: [] } });
+    await expect(f.adapter.createQualificationProbe().run()).rejects.toMatchObject({
+      code: "COMPATIBILITY_PROBE_FAILED",
+    });
+    expect(f.request).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects unsupported or unqualified runtimes, stopped processes, and contract drift before query", async () => {
     for (const runtime of [
-      { version: "1.0.2", validated: true, running: true },
-      { version: "1.0.1", validated: false, running: true },
-      { version: "1.0.1", validated: true, running: false },
+      {
+        version: "2.0.0",
+        supported: false,
+        validated: true,
+        operationEvidence: [],
+        running: true,
+      },
+      {
+        version: "1.0.2",
+        supported: true,
+        validated: false,
+        operationEvidence: [],
+        running: true,
+      },
+      {
+        version: "1.0.1",
+        supported: true,
+        validated: true,
+        operationEvidence: [],
+        running: false,
+      },
     ]) {
       const f = fixture();
       f.runtime.mockResolvedValue(runtime);
@@ -220,6 +278,21 @@ describe("scoped live compatibility", () => {
         ref;
       expect(() => lookupContractFingerprint(value)).toThrow();
     }
+  });
+
+  it("rejects a globally qualified runtime when lookup evidence is absent", async () => {
+    const f = fixture();
+    f.runtime.mockResolvedValue({
+      version: "1.0.2",
+      supported: true,
+      validated: true,
+      operationEvidence: [],
+      running: true,
+    });
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+      code: "FQGATE_INCOMPATIBLE",
+    });
+    expect(f.request).not.toHaveBeenCalled();
   });
   it("uses fixed bounded OpenAPI fetch with redirects disabled", async () => {
     const request = vi.fn(async () => ({

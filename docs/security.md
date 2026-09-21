@@ -148,6 +148,7 @@ structural metadata rather than the raw upstream document.
 - preserve previous known-good binary;
 - verify health after activation;
 - Phase 3 additionally verifies the runtime OpenAPI required-contract baseline before activation is considered successful;
+- the post-Phase-5 qualification path may admit an in-range, not-yet-validated candidate only through a bounded transaction that runs the required base-contract and operation-specific probes;
 - the Runtime OpenAPI target is fixed to `http://127.0.0.1:17281/openapi.json`;
 - rollback on failed activation when safe.
 
@@ -472,13 +473,17 @@ IDs. Unknown request fields fail before any upstream work; oversized or invalid
 results fail instead of truncating. Upstream envelopes/messages never escape.
 Redirects are disabled for market and contract fetches.
 
-Every lookup checks the managed running version (exact live-validated 1.0.1 and
-configured compatibility), then the bounded runtime OpenAPI operation plus its
-transitive schema-reference fingerprint. This conservative gate detects even
-nonbreaking changes to the selected contract and requires renewed evidence;
-unrelated added operations do not affect it. No cache grants stale market
-compatibility. The actual result is parsed again on every call. Version or
-contract failures are distinct from market availability/login/permission errors.
+The historical Phase 5-B closure checked the managed running version (exact live-validated
+1.0.1 and configured compatibility), then the bounded runtime OpenAPI operation plus its
+transitive schema-reference fingerprint. The active maintenance track keeps that old state
+usable through a narrowly scoped migration bridge. New candidates instead persist
+artifact-bound operation evidence from `fqgate qualify`; each lookup requires supported
+runtime state, its own operation evidence, a current approved fingerprint matching that
+evidence, and the existing strict decoder. This conservative gate detects even nonbreaking
+changes to the selected contract and requires renewed evidence; unrelated added operations
+do not affect it. No cache grants stale market compatibility. The actual result is parsed
+again on every call. Version or contract failures are distinct from market
+availability/login/permission errors.
 Health session `unknown` is not itself denial because the live reads succeeded.
 
 This is an operation-local gate: update activation requirements and default
@@ -486,6 +491,28 @@ validated-version policy remain unchanged. Diagnostic/recovery operations remain
 available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
+
+## Post-Phase-5 qualification boundary — ACTIVE
+
+The official stable 1.0.2 Windows x64 artifact is fixed by the manifest identity
+`FQGate-1.0.2-windows-x64-UNSIGNED.exe`, size `23065088`, SHA-256
+`024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2`. These values
+are checked before activation; they do not by themselves certify compatibility.
+
+The reviewed lookup evidence ledger contains operation ID
+`market.instruments.lookup`, the approved operation/transitive-schema fingerprint
+`a0b2bb5b2cdf5ec6e4f22e5a15ef9217bc20b2d4f1cb589fe680fb87d0b39ed5`, and semantic probe
+`market.instruments.lookup.exact-code-v1`. The candidate transaction stores only these
+bounded metadata values and a timestamp. It stores no raw OpenAPI, market payload,
+credential, JWT, QR/session material, or Access metadata.
+
+A changed fingerprint, failed semantic result, missing base contract, invalid runtime
+OpenAPI, failed health check, or activation error fails closed and invokes the existing
+automatic rollback path. The machine allowlist remains exactly
+`market.instruments.lookup` plus `openapi.machine`; no human/admin/old machine permission
+changes. The permanent-Windows procedure is
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`, and this track
+remains active until its external evidence and final-commit CI exist.
 
 ## Phase 5-C machine documentation boundary — closed
 

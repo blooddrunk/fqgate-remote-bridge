@@ -546,6 +546,8 @@ function publicMessageFor(code: string): string {
       return "FQGate is not running.";
     case ERROR_CODES.FQGATE_INCOMPATIBLE:
       return "The active FQGate version is not validated for this operation.";
+    case ERROR_CODES.COMPATIBILITY_PROBE_FAILED:
+      return "FQGate operation compatibility qualification failed.";
     case ERROR_CODES.FQGATE_UNHEALTHY:
       return "FQGate health is not ready for this operation.";
     case ERROR_CODES.UPSTREAM_UNAVAILABLE:

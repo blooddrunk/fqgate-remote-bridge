@@ -398,6 +398,14 @@ Codex handoff:
 
 `docs/prompts/post-phase-5-fqgate-1-0-2-codex-goal.md`
 
+Implementation handoff:
+
+`docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`
+
+Permanent-Windows qualification procedure:
+
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`
+
 This task must qualify and upgrade the permanent Windows environment under
 `D:\\code\\research` to official FQGate 1.0.2 and remove literal patch-version
 coupling from the exposed lookup operation without weakening fail-closed

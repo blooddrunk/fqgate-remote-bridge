@@ -1,11 +1,21 @@
 import { BridgeError, ERROR_CODES, type BridgeErrorCode } from "../../shared/errors.js";
 import { readJsonFile, writeJsonAtomically, type FqgateLayout } from "./layout.js";
+import {
+  isOperationQualificationEvidence,
+  type OperationQualificationEvidence,
+} from "../compatibility/evidence.js";
+
+export interface RuntimeQualification {
+  readonly qualifiedAt: string;
+  readonly operations: readonly OperationQualificationEvidence[];
+}
 
 export interface ArtifactRecord {
   readonly version: string;
   readonly fileName: string;
   readonly size: number;
   readonly sha256: string;
+  readonly qualification?: RuntimeQualification;
 }
 
 export type ActivationState = "none" | "succeeded" | "failed" | "rolled_back" | "rollback_failed";
@@ -102,7 +112,22 @@ function isArtifactRecord(value: unknown): value is ArtifactRecord {
     value.size > 0 &&
     "sha256" in value &&
     typeof value.sha256 === "string" &&
-    /^[a-f0-9]{64}$/.test(value.sha256)
+    /^[a-f0-9]{64}$/.test(value.sha256) &&
+    (!("qualification" in value) ||
+      value.qualification === undefined ||
+      isRuntimeQualification(value.qualification))
+  );
+}
+
+function isRuntimeQualification(value: unknown): value is RuntimeQualification {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.qualifiedAt === "string" &&
+    record.qualifiedAt.length > 0 &&
+    Array.isArray(record.operations) &&
+    record.operations.length > 0 &&
+    record.operations.every((operation) => isOperationQualificationEvidence(operation))
   );
 }
 

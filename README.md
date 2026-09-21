@@ -26,6 +26,7 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | remote-machine         | 独立认证、受限查询 | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝 |
 | Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询         |
 | Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过               |
+| Post-Phase-5 兼容维护  | ACTIVE / 验收中    | 1.0.2 候选资格、lookup 证据化与永久环境刷新           |
 | 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
@@ -124,6 +125,9 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | 当前阶段总设计               | [phase-5-remote-machine-read-only-api.md](docs/plans/phase-5-remote-machine-read-only-api.md)                                                                                                           |
 | Phase 5-C 已关闭任务         | [phase-5-c-filtered-machine-openapi-and-remote-closure.md](docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md)                                                                         |
 | Phase 5-C 实现与关闭证据     | [phase-5-c-implementation-handoff.md](docs/status/phase-5-c-implementation-handoff.md)                                                                                                                  |
+| Post-Phase-5 兼容任务        | [post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md](docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md)                                                             |
+| 1.0.2 永久 Windows 验收      | [windows-post-phase-5-fqgate-1-0-2-qualification.md](docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md)                                                                                |
+| 1.0.2 实现交接               | [post-phase-5-fqgate-1-0-2-implementation-handoff.md](docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md)                                                                                  |
 | Phase 5-B 已关闭任务         | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
 | Phase 5-B 已完成 Codex Goal  | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
 | Phase 5-A 已关闭任务         | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
@@ -724,6 +728,7 @@ task package 允许开始，不要顺手扩大权限。>
 node .\dist\cli\main.js fqgate release --json
 node .\dist\cli\main.js fqgate status --json
 node .\dist\cli\main.js fqgate health --json
+node .\dist\cli\main.js fqgate qualify --json
 node .\dist\cli\main.js fqgate start --json
 node .\dist\cli\main.js fqgate stop --json
 node .\dist\cli\main.js fqgate restart --json
@@ -779,8 +784,9 @@ token 行为、operation registry、远程权限或验收流程，必须在同�
 按完整代码过滤，零匹配返回空数组。最多 16 项、上游 64 KiB、请求 256 bytes，
 不接收任意 pattern、URL、path、method 或 limit。报价仍未开放。
 
-仅实际验证的 FQGate 1.0.1 和该操作及引用 schema 指纹可用；未来版本或结构漂移
-关闭此操作，本地诊断/维护保留。不会修改更新激活基线或默认兼容版本列表。
+这是历史 Phase 5-B closure 的 1.0.1 证据；当时未来版本或结构漂移会关闭此操作，
+本地诊断/维护保留。当前 post-Phase-5 maintenance 改由 operation evidence qualification
+处理，见下方 ACTIVE 章节，不把新版本预先加入默认兼容版本列表。
 `LOGIN_REQUIRED` 必须使用现有本地 `/login` 物理 QR 登录后重试。
 
 重复执行与隐藏 service-token 输入步骤见
@@ -803,3 +809,31 @@ Access 配置、文件路径、session/update/admin operation 或 secret。输�
 [Phase 5-C Windows 验收](docs/operations/windows-phase-5-c-acceptance.md)，精确提交、
 机器生成的检查总数和 CI 证据见
 [Phase 5-C 实现交接](docs/status/phase-5-c-implementation-handoff.md)。
+
+## Post-Phase-5 FQGate 1.0.2 兼容维护（ACTIVE）
+
+官方 stable manifest 已发布 FQGate 1.0.2。当前维护任务要求先保留已验收的 1.0.1
+回滚能力，再通过固定官方 source、精确 size/SHA-256、health、runtime OpenAPI
+required-contract、lookup operation fingerprint 和 bounded exact-code semantic probe
+自动资格审查候选版本。候选未通过资格审查时，Bridge 不把它视为可用版本，并由现有
+transaction 自动恢复 1.0.1。
+
+lookup 的兼容性现在分两层：全局 lifecycle 只判断 supported base range 和候选是否
+通过资格事务；`market.instruments.lookup` 还必须有绑定到当前 artifact 的 operation
+evidence、approved transitive-schema fingerprint 和 semantic probe。变更 fingerprint
+不会自动获批，仍会 fail closed。历史 1.0.1 状态文件通过受限兼容桥保留 Phase 5
+行为；新版本不能只依靠 `validatedVersions`。
+
+官方 1.0.2 identity：
+
+```text
+FQGate-1.0.2-windows-x64-UNSIGNED.exe
+23065088 bytes
+024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2
+```
+
+永久 Windows 的一键有界流程（包括本地 Phase 5-B/5-C 和真实 remote-machine
+service-token matrix）见
+[1.0.2 永久 Windows 验收](docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md)。
+在外部 evidence、机器计数、最终 commit 的 Ubuntu/Windows CI 和 remote acceptance
+全部出现前，本维护任务保持 ACTIVE，不提前声称 Phase 6 或本任务关闭。

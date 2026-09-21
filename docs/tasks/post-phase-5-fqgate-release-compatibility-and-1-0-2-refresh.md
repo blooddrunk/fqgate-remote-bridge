@@ -2,7 +2,13 @@
 
 Date: 2026-09-21
 
-Status: **ACTIVE — maintenance track before Phase 6**
+Status: **ACTIVE — implementation landed; permanent Windows/remote/CI closure pending**
+
+Implementation note (2026-09-21): the quarantined `fqgate qualify` lifecycle boundary,
+artifact-bound operation evidence, operation-scoped lookup gate, deterministic rollback
+coverage, and bounded permanent-Windows harness are implemented. This task remains ACTIVE
+until the required external Windows evidence, real service-token matrix, and final-commit
+Ubuntu/Windows CI run IDs are recorded. Do not infer closure from deterministic tests alone.
 
 ## Why this task exists
 

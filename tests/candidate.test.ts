@@ -80,4 +80,16 @@ describe("FQGate candidate validation", () => {
       expect((error as BridgeError).code).toBe(ERROR_CODES.VERSION_INCOMPATIBLE);
     }
   });
+
+  it("still rejects an unsupported major in the quarantined qualification gate", async () => {
+    const validator = new FqgateCandidateValidator({
+      runner: new FakeRunner(success("FQGate 2.0.0")),
+      policy,
+    });
+    await expect(
+      validator.validate("/candidate/fqgate.exe", "2.0.0", {
+        allowSupportedUnvalidated: true,
+      }),
+    ).rejects.toMatchObject({ code: ERROR_CODES.VERSION_INCOMPATIBLE });
+  });
 });

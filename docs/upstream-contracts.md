@@ -4,6 +4,10 @@ This document records upstream behavior that the project may rely on. It is a co
 
 Baseline date: **2026-09-17**
 
+Post-Phase-5 maintenance observation: **2026-09-21**. The historical Phase 5-B
+contract remains recorded below; the active maintenance track separately qualifies
+the official stable 1.0.2 candidate before making it active.
+
 ## FQGate release source
 
 Official repository:
@@ -17,6 +21,19 @@ Observed stable version at the current baseline:
 ```text
 1.0.0
 ```
+
+The current official stable manifest observed for the maintenance track is:
+
+```text
+version: 1.0.2
+publishedAt: 2026-09-20T18:26:46Z
+Windows x86_64: FQGate-1.0.2-windows-x64-UNSIGNED.exe
+size: 23065088
+sha256: 024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2
+```
+
+These are release identity facts from the official stable manifest, not a compatibility
+approval. The active candidate still requires the bounded Windows qualification transaction.
 
 The official stable manifest is:
 
@@ -301,6 +318,11 @@ pinned:         optional operator-selected version
 autoUpdate:     off | patch | compatible | latest
 ```
 
+For upstream-backed operations, the version decision is only the base lifecycle signal.
+Each operation may additionally require artifact-bound compatibility evidence containing
+its operation ID, approved structural fingerprint, and bounded semantic probe ID. Runtime
+OpenAPI remains evidence only; it never adds an operation to the Bridge registry.
+
 For Phase 3 the effective policy remains:
 
 ```text
@@ -380,8 +402,9 @@ patterns. The upstream has no declared result limit, so Bridge enforces both
 
 Selected operation and transitive local schema-reference fingerprint:
 `a0b2bb5b2cdf5ec6e4f22e5a15ef9217bc20b2d4f1cb589fe680fb87d0b39ed5`.
-Each call rechecks this fingerprint and exact validated running version 1.0.1.
-No updater activation gate was added; unknown later versions fail lookup closed.
+At the historical Phase 5-B closure, each call rechecked this fingerprint and the exact
+live-validated running version 1.0.1. No updater activation gate was added at that time;
+unknown later versions failed lookup closed.
 
 Quote POST `/v1/market/realtime/quote` was observed/probed read-only (one instrument,
 fixed nine fields, HTTP 200/code 0/531 bytes). Its generic nested field records
@@ -390,3 +413,26 @@ adapter commit `b949c542bc722ebe601662ba0c06c80eed9c8da8` independently corrobor
 lookup/snapshot read semantics. Full evidence and bounded commands are in the
 Phase 5-B handoff/Windows acceptance documents. No raw schema or market sample
 is retained.
+
+## Post-Phase-5 operation-scoped qualification — ACTIVE
+
+The active maintenance task is
+`docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`.
+Its reviewed lookup evidence is:
+
+```text
+operationId:     market.instruments.lookup
+fingerprint:     a0b2bb5b2cdf5ec6e4f22e5a15ef9217bc20b2d4f1cb589fe680fb87d0b39ed5
+semanticProbeId: market.instruments.lookup.exact-code-v1
+```
+
+The lifecycle admits an in-range but not prelisted patch only into the qualification
+transaction. It must pass the existing official package/integrity/candidate checks,
+health, all Bridge-required base contracts, this exact operation fingerprint, and the
+fixed exact-code semantic probe before its evidence is persisted. A changed fingerprint
+or failed probe rolls back automatically to the known-good artifact. New candidates may
+not inherit the historical 1.0.1 compatibility bridge.
+
+Qualification evidence contains no raw OpenAPI, market payload, credential, Access metadata,
+or secret. The permanent-Windows procedure and its bounded external evidence path are in
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`.

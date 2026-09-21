@@ -1,4 +1,3 @@
-import { FqgateInstrumentLookup } from "../fqgate/market/lookup.js";
 import { loadConfig } from "../config/config.js";
 import { createApplicationServices } from "../app/runtime.js";
 import { getBuildInfo } from "../shared/build-info.js";
@@ -53,17 +52,7 @@ async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
     const http = new FetchHttpTransport();
     const application = createApplicationServices(config);
     const service = new BridgeService({
-      instrumentLookup: new FqgateInstrumentLookup({
-        http,
-        runtime: async () => {
-          const status = await application.lifecycle.status();
-          return {
-            version: status.installed?.version,
-            validated: status.compatibility?.validated === true,
-            running: status.process.state === "running",
-          };
-        },
-      }),
+      instrumentLookup: application.instrumentLookup,
       buildInfo: getBuildInfo(),
       lifecycle: application.lifecycle,
       updateService: application.update,

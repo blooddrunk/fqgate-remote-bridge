@@ -10,6 +10,8 @@ task package 和安全文档为准。
   永久 Windows / CI / 真实 service-token 验收均已完成。
 - Phase 5-B：**CLOSED**；live census、一个受限目录查询及 Windows/remote/CI 验收完成。
 - Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
+- Post-Phase-5 FQGate 兼容维护：**ACTIVE**；1.0.2 qualification implementation 已完成，
+  永久 Windows、remote-machine 与最终 commit CI 证据待补齐。
 - Phase 6+：尚未授权实施。
 
 稳定拓扑不变：
@@ -34,7 +36,10 @@ Tunnel  -> Bridge only
 8. docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md
 9. docs/status/phase-5-c-implementation-handoff.md
 10. docs/operations/windows-phase-5-c-acceptance.md
-11. 本文
+11. docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md
+12. docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md
+13. docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md
+14. 本文
 
 Codex 执行入口：
 
@@ -99,6 +104,7 @@ quote；bars 只有在行数、时间范围和返回结构都能确定限界时�
 - Phase 5-B local semantic probes；
 - Phase 5-B remote-machine smoke；
 - Phase 5-C local/remote machine OpenAPI matrix；
+- post-Phase-5 FQGate 1.0.2 qualification/rollback harness；
 - 最终 GitHub Actions Ubuntu + Windows。
 
 不要创建第二份临时 Windows checkout 规避永久环境问题。
@@ -161,3 +167,13 @@ remote_machine。Phase 5-B/C 与整个 Phase 5 已 CLOSED；不追加报价或�
 最终实现、实时证据、机器检查总数和后续边界见
 `docs/status/phase-5-c-implementation-handoff.md`；Windows/远程自动矩阵与隐藏输入
 步骤见 `docs/operations/windows-phase-5-c-acceptance.md`。
+
+## Post-Phase-5 维护交接
+
+lookup 不再把 `1.0.1` 当作新版本的唯一授权条件。历史 1.0.1 状态通过受限兼容桥
+保持可用；新候选必须经过 `fqgate qualify`，并把 operation ID、approved fingerprint
+和 semantic probe ID 绑定到当前 artifact。变更 fingerprint、语义探针失败、缺少
+required contract、health 失败或激活失败都必须自动回滚。
+
+当前任务仍为 ACTIVE。不要在没有永久 Windows 外部 evidence、真实 machine service-token
+矩阵、精确最终 commit 和 Ubuntu/Windows CI run ID 时写 CLOSED。

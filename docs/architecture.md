@@ -113,6 +113,8 @@ Responsibilities:
 - verify `--version` and `/v1/market/health`;
 - invoke runtime `/openapi.json` validation, required Bridge path/method checks,
   and endpoint-specific compatibility probes during candidate activation;
+- keep supported-but-unqualified candidates in a bounded qualification transaction;
+- persist only artifact-bound operation evidence after candidate probes pass;
 - roll back when activation fails;
 - expose one transaction interface reused by CLI and Dashboard through the
   framework-agnostic update application service.
@@ -471,12 +473,15 @@ IDs. Unknown request fields fail before any upstream work; oversized or invalid
 results fail instead of truncating. Upstream envelopes/messages never escape.
 Redirects are disabled for market and contract fetches.
 
-Every lookup checks the managed running version (exact live-validated 1.0.1 and
-configured compatibility), then the bounded runtime OpenAPI operation plus its
-transitive schema-reference fingerprint. This conservative gate detects even
-nonbreaking changes to the selected contract and requires renewed evidence;
-unrelated added operations do not affect it. No cache grants stale market
-compatibility. The actual result is parsed again on every call. Version or
+The historical Phase 5-B closure checked the managed running version (exact live-validated
+1.0.1 and configured compatibility), then the bounded runtime OpenAPI operation plus its
+transitive schema-reference fingerprint. The active maintenance track preserves that
+historical 1.0.1 state through a narrowly scoped migration bridge, while new candidates
+must persist artifact-bound operation evidence from `fqgate qualify`. Each lookup now
+requires supported runtime state, its own stored operation evidence, a current approved
+fingerprint matching that evidence, and the existing strict response decoder. This
+conservative gate detects even nonbreaking changes to the selected contract; unrelated
+added operations do not affect it. No cache grants stale market compatibility. Version or
 contract failures are distinct from market availability/login/permission errors.
 Health session `unknown` is not itself denial because the live reads succeeded.
 
@@ -508,3 +513,18 @@ Closure acceptance on 2026-09-21 proved the exact two-path/five-schema document,
 the approved lookup, old-operation and page/static/raw denial, human/admin
 isolation, Bridge-only Tunnel ingress, and both loopback listeners through the
 real machine Access application. Phase 5 adds no second market operation.
+
+## Post-Phase-5 FQGate compatibility maintenance — active
+
+The official stable 1.0.2 Windows x64 package is accepted only through the existing
+fixed-source lifecycle transaction. The reviewed lookup ledger currently approves the
+historical operation/transitive-schema fingerprint
+`a0b2bb5b2cdf5ec6e4f22e5a15ef9217bc20b2d4f1cb589fe680fb87d0b39ed5` and the bounded
+semantic probe `market.instruments.lookup.exact-code-v1`. A candidate outside the base
+supported range, with a changed operation fingerprint, or with a failed semantic/base
+contract/health probe is denied and rolled back. Runtime OpenAPI remains descriptive and
+the Bridge registry remains the only authorization source.
+
+The repeatable Windows command and external evidence contract are documented in
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; the task remains
+active until permanent Windows, remote-machine, and final-commit CI evidence is recorded.

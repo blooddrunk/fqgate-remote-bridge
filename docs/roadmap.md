@@ -351,7 +351,7 @@ operation allowlist, configuration, and tests remain independent.
 
 ## Active maintenance track — FQGate release compatibility and 1.0.2 refresh
 
-Status: **ACTIVE before Phase 6**.
+Status: **ACTIVE — implementation landed; permanent Windows/remote/CI closure pending**.
 
 The official FQGate stable channel moved to 1.0.2 on 2026-09-20. Before starting
 Phase 6, the permanent Windows environment under `D:\\code\\research` must be
@@ -375,6 +375,15 @@ Codex handoff:
 
 This maintenance track does not authorize Phase 6 or any additional market
 operation.
+
+The implementation provides a quarantined `fqgate qualify` command and a bounded permanent
+Windows harness. It keeps the historical 1.0.1 installation usable, admits an in-range patch
+only through the existing staged activation/health/OpenAPI/rollback transaction, and persists
+operation-scoped evidence only after the reviewed lookup fingerprint and exact-code semantic
+probe pass. The repeatable command is documented in
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; closure still requires
+its external evidence, local/remote machine totals, and green Ubuntu/Windows CI for the same
+final commit.
 
 ---
 

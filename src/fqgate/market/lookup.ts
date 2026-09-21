@@ -1,29 +1,49 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
+import type {
+  CandidateQualificationProbe,
+  OperationQualificationEvidence,
+} from "../compatibility/evidence.js";
 import { decodeFqgateResponseEnvelope } from "../http/envelope.js";
 import { decodeResponseText, type HttpTransport } from "../release/http.js";
+import {
+  assertLookupContractApproved,
+  assertLookupQualification,
+  LOOKUP_OPERATION_ID,
+  lookupQualificationEvidence,
+} from "./compatibility.js";
 import { fetchLookupContract, LOOKUP_UPSTREAM_PATH } from "./contract.js";
 
-export const LOOKUP_CONTRACT_FINGERPRINT =
-  "a0b2bb5b2cdf5ec6e4f22e5a15ef9217bc20b2d4f1cb589fe680fb87d0b39ed5";
+export { LOOKUP_CONTRACT_FINGERPRINT } from "./compatibility.js";
+
 export const LOOKUP_MAX_ITEMS = 16;
 export const LOOKUP_MAX_BYTES = 65_536;
+
 export interface InstrumentLookupRequest {
   readonly code: string;
 }
+
 export interface Instrument {
   readonly code: string;
   readonly market: string;
   readonly name: string;
   readonly instrumentId: string;
 }
+
 export interface InstrumentLookupResponse {
   readonly items: readonly Instrument[];
 }
+
 export interface LookupRuntime {
   readonly version: string | undefined;
+  /** The global supported-range decision; it is not operation authorization. */
+  readonly supported: boolean;
+  /** The active artifact passed its bounded candidate qualification gate. */
   readonly validated: boolean;
+  /** Qualification evidence bound to the active artifact, by operation. */
+  readonly operationEvidence: readonly OperationQualificationEvidence[];
   readonly running: boolean;
 }
+
 export interface InstrumentLookupPort {
   lookup(input: unknown): Promise<InstrumentLookupResponse>;
 }
@@ -56,21 +76,45 @@ export class FqgateInstrumentLookup implements InstrumentLookupPort {
   async lookup(input: unknown): Promise<InstrumentLookupResponse> {
     const request = parseInstrumentLookupRequest(input);
     const runtime = await this.options.runtime();
-    if (!runtime.validated || runtime.version !== "1.0.1") {
+    assertRuntime(runtime, true);
+    const fingerprint = await this.approvedContractFingerprint();
+    assertLookupQualification(runtime.operationEvidence, fingerprint);
+    return this.query(request);
+  }
+
+  /**
+   * Return the fixed, bounded candidate probe used by the quarantine gate.
+   * The probe deliberately uses a reviewed exact code and returns only
+   * non-secret compatibility metadata.
+   */
+  createQualificationProbe(): CandidateQualificationProbe {
+    return {
+      operationId: LOOKUP_OPERATION_ID,
+      run: async () => this.runSemanticProbe(),
+    };
+  }
+
+  private async runSemanticProbe(): Promise<OperationQualificationEvidence> {
+    const runtime = await this.options.runtime();
+    assertRuntime(runtime, false);
+    const fingerprint = await this.approvedContractFingerprint();
+    const result = await this.query({ code: "600000" });
+    if (result.items.length === 0) {
       throw new BridgeError(
-        ERROR_CODES.FQGATE_INCOMPATIBLE,
-        "Instrument lookup requires the live-validated version",
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Instrument lookup semantic qualification returned no exact result",
       );
     }
-    if (!runtime.running)
-      throw new BridgeError(ERROR_CODES.FQGATE_NOT_RUNNING, "FQGate is not running");
+    return lookupQualificationEvidence(fingerprint);
+  }
+
+  private async approvedContractFingerprint(): Promise<string> {
     const fingerprint = await (this.options.contract?.() ?? fetchLookupContract(this.options.http));
-    if (fingerprint !== LOOKUP_CONTRACT_FINGERPRINT) {
-      throw new BridgeError(
-        ERROR_CODES.OPENAPI_CONTRACT_MISSING,
-        "Instrument lookup contract has changed",
-      );
-    }
+    assertLookupContractApproved(fingerprint);
+    return fingerprint;
+  }
+
+  private async query(request: InstrumentLookupRequest): Promise<InstrumentLookupResponse> {
     let response;
     try {
       response = await this.options.http.request(`http://127.0.0.1:17281${LOOKUP_UPSTREAM_PATH}`, {
@@ -136,9 +180,22 @@ export class FqgateInstrumentLookup implements InstrumentLookupPort {
     return { items: items.filter((item) => item.code === request.code) };
   }
 }
+
+function assertRuntime(runtime: LookupRuntime, requireValidated: boolean): void {
+  if (!runtime.supported || (requireValidated && !runtime.validated)) {
+    throw new BridgeError(
+      ERROR_CODES.FQGATE_INCOMPATIBLE,
+      "Instrument lookup requires a supported and qualified FQGate runtime",
+    );
+  }
+  if (!runtime.running)
+    throw new BridgeError(ERROR_CODES.FQGATE_NOT_RUNNING, "FQGate is not running");
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
 function boundedString(value: unknown, max: number): value is string {
   return (
     typeof value === "string" &&
@@ -147,6 +204,7 @@ function boundedString(value: unknown, max: number): value is string {
     !/[\p{Cc}\p{Cf}]/u.test(value)
   );
 }
+
 function invalidResponse(): BridgeError {
   return new BridgeError(
     ERROR_CODES.UPSTREAM_RESPONSE_INVALID,

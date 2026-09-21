@@ -6,8 +6,8 @@ import { selectWindowsX64Package } from "../fqgate/release/manifest.js";
 import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
 import { getBuildInfo } from "../shared/build-info.js";
 import { Redactor } from "../shared/redaction.js";
-import { createLifecycleManager } from "../app/runtime.js";
 import { createApplicationServices } from "../app/runtime.js";
+import type { ApplicationServices } from "../app/runtime.js";
 import type {
   CloudflaredInstallPlan,
   CloudflaredManager,
@@ -76,7 +76,8 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
       );
     }
 
-    const manager = createLifecycleManager(config);
+    const application = createApplicationServices(config);
+    const manager = application.lifecycle;
 
     switch (command) {
       case "release":
@@ -87,6 +88,14 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
         return await runHealth(manager, args.json, io);
       case "install":
         return await runInstall(manager, args.dryRun, args.json, io);
+      case "qualify":
+        return await runQualification(
+          manager,
+          application.instrumentLookup,
+          args.dryRun,
+          args.json,
+          io,
+        );
       case "update":
         return await runUpdate(manager, args.check, args.apply, args.dryRun, args.json, io);
       case "start":
@@ -219,6 +228,21 @@ async function runInstall(
   io: CliIo,
 ): Promise<number> {
   const result = await manager.install({ dryRun });
+  output(result, json, io);
+  return 0;
+}
+
+async function runQualification(
+  manager: FqgateLifecycleManager,
+  instrumentLookup: ApplicationServices["instrumentLookup"],
+  dryRun: boolean,
+  json: boolean,
+  io: CliIo,
+): Promise<number> {
+  const result = await manager.qualify({
+    probes: [instrumentLookup.createQualificationProbe()],
+    dryRun,
+  });
   output(result, json, io);
   return 0;
 }
@@ -451,7 +475,8 @@ function exitCodeFor(code: string): number {
   if (
     code === ERROR_CODES.HEALTH_TIMEOUT ||
     code === ERROR_CODES.HEALTH_INVALID ||
-    code === ERROR_CODES.UPSTREAM_RESPONSE_INVALID
+    code === ERROR_CODES.UPSTREAM_RESPONSE_INVALID ||
+    code === ERROR_CODES.COMPATIBILITY_PROBE_FAILED
   )
     return 7;
   if (code === ERROR_CODES.ROLLBACK_FAILED || code === ERROR_CODES.ACTIVATION_FAILED) return 8;
@@ -465,6 +490,7 @@ function usage(): string {
     "fqgate-remote-bridge fqgate status [--json]",
     "fqgate-remote-bridge fqgate health [--json]",
     "fqgate-remote-bridge fqgate install [--dry-run] [--json]",
+    "fqgate-remote-bridge fqgate qualify [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate update --check|--apply [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate start|stop|restart [--json]",
     "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",

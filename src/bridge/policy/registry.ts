@@ -44,7 +44,7 @@ export interface BridgeOperationPolicy {
   readonly timeoutMs: number;
   readonly maxBodyBytes: number;
   readonly sensitivity: BridgeSensitivity;
-  readonly requiredCompatibility: "none" | "validated";
+  readonly requiredCompatibility: "none" | "validated" | "operation_evidence";
   readonly documentationVisible: boolean;
   readonly machineOpenApi?: MachineOpenApiOperationMetadata;
   readonly upstream?: {
@@ -65,7 +65,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     timeoutMs: 20_000,
     maxBodyBytes: 256,
     sensitivity: "none",
-    requiredCompatibility: "validated",
+    requiredCompatibility: "operation_evidence",
     documentationVisible: true,
     machineOpenApi: {
       summary: "Look up an instrument by its exact six-digit code",
@@ -407,6 +407,17 @@ export function assertOperationRegistryInvariants(): void {
       throw new BridgeError(
         ERROR_CODES.BRIDGE_NOT_READY,
         `Unexpected remote administrator maintenance operation: ${key}`,
+      );
+    }
+    if (
+      (operation.requiredCompatibility === "operation_evidence" &&
+        operation.id !== "market.instruments.lookup") ||
+      (operation.id === "market.instruments.lookup" &&
+        operation.requiredCompatibility !== "operation_evidence")
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Invalid operation-scoped compatibility policy: ${key}`,
       );
     }
     if (

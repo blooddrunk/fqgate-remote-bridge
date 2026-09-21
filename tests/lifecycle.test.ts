@@ -22,6 +22,8 @@ import type {
 import type { FqgateActivationOpenApiProbe } from "../src/fqgate/openapi/service.js";
 import type { OpenApiSnapshot } from "../src/fqgate/openapi/types.js";
 import { BridgeError, ERROR_CODES } from "../src/shared/errors.js";
+import type { CandidateQualificationProbe } from "../src/fqgate/compatibility/evidence.js";
+import { LOOKUP_CONTRACT_FINGERPRINT } from "../src/fqgate/market/lookup.js";
 import type {
   ManagedProcessController,
   ManagedProcessSnapshot,
@@ -474,6 +476,89 @@ describe("FQGate lifecycle transaction", () => {
     expect(await readFile(join(root, "fqgate", "current", "fqgate.exe"), "utf8")).toBe("1.0.0");
     expect(runtimeProbe.probes).toBe(2);
     expect(runtimeProbe.invalidations).toBeGreaterThan(0);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("qualifies a supported patch candidate and persists artifact-bound evidence", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-qualification-"));
+    const oldPkg = packageFor("1.0.1", "1.0.1");
+    const newPkg = packageFor("1.0.2", "1.0.2");
+    const bodies = new Map<string, Uint8Array>([
+      [oldPkg.sha256, Buffer.from("1.0.1")],
+      [newPkg.sha256, Buffer.from("1.0.2")],
+    ]);
+    const source = new MutableReleaseSource(releaseFor(oldPkg, "1.0.1"));
+    const process = new FakeManagedProcess();
+    const manager = await createManager({
+      root,
+      source,
+      bodies,
+      process,
+      validatedVersions: ["1.0.1"],
+      healthResponses: [readyHealth(), readyHealth(), readyHealth(), readyHealth()],
+    });
+    await manager.install();
+    source.release = releaseFor(newPkg, "1.0.2");
+    const probe: CandidateQualificationProbe = {
+      operationId: "market.instruments.lookup",
+      run: async () => ({
+        operationId: "market.instruments.lookup",
+        contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+        semanticProbeId: "market.instruments.lookup.exact-code-v1",
+      }),
+    };
+
+    const result = await manager.qualify({ probes: [probe] });
+    expect(result.action).toBe("updated");
+    expect(result.status?.installed?.version).toBe("1.0.2");
+    expect(result.status?.installed?.compatibility?.validated).toBe(true);
+    expect(result.status?.installed?.qualification?.operations).toHaveLength(1);
+    await expect(manager.plan()).resolves.toMatchObject({ action: "noop" });
+    const state = JSON.parse(await readFile(join(root, "fqgate", "state.json"), "utf8")) as {
+      active?: { qualification?: { operations?: unknown[] } };
+    };
+    expect(state.active?.qualification?.operations).toHaveLength(1);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rolls back a qualified candidate when its semantic probe fails", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-qualification-rollback-"));
+    const oldPkg = packageFor("1.0.1", "1.0.1");
+    const newPkg = packageFor("1.0.2", "1.0.2");
+    const bodies = new Map<string, Uint8Array>([
+      [oldPkg.sha256, Buffer.from("1.0.1")],
+      [newPkg.sha256, Buffer.from("1.0.2")],
+    ]);
+    const source = new MutableReleaseSource(releaseFor(oldPkg, "1.0.1"));
+    const process = new FakeManagedProcess();
+    const manager = await createManager({
+      root,
+      source,
+      bodies,
+      process,
+      validatedVersions: ["1.0.1"],
+      healthResponses: [readyHealth(), readyHealth(), readyHealth(), readyHealth()],
+    });
+    await manager.install();
+    source.release = releaseFor(newPkg, "1.0.2");
+    const probe: CandidateQualificationProbe = {
+      operationId: "market.instruments.lookup",
+      run: async () => {
+        throw new BridgeError(ERROR_CODES.COMPATIBILITY_PROBE_FAILED, "semantic fixture failure");
+      },
+    };
+
+    await expect(manager.qualify({ probes: [probe] })).rejects.toMatchObject({
+      code: ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+      details: { rollbackRestored: true },
+    });
+    expect(await readFile(join(root, "fqgate", "current", "fqgate.exe"), "utf8")).toBe("1.0.1");
+    expect((await manager.status()).installed?.version).toBe("1.0.1");
+    const state = JSON.parse(await readFile(join(root, "fqgate", "state.json"), "utf8")) as Record<
+      string,
+      unknown
+    >;
+    expect(state.lastActivation).toBe("rolled_back");
     await rm(root, { recursive: true, force: true });
   });
 });
