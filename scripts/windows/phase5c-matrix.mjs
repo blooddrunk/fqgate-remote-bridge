@@ -1,5 +1,6 @@
 import { request as nativeRequest } from "node:http";
 import process from "node:process";
+import { setTimeout as delay } from "node:timers/promises";
 import { FetchHttpTransport, decodeResponseText } from "../../dist/fqgate/release/http.js";
 import { listBridgeOperations } from "../../dist/bridge/policy/registry.js";
 import { MACHINE_OPENAPI_MAX_BYTES } from "../../dist/bridge/openapi/machine.js";
@@ -118,41 +119,52 @@ async function check(id, origin, path, method, body, expected, headers = credent
   let schemaCount;
   let count;
   let pass = false;
-  try {
-    const response = await http.request(`${origin}${path}`, {
-      method,
-      timeoutMs: 20000,
-      maxBytes: MACHINE_OPENAPI_MAX_BYTES,
-      redirect: "manual",
-      headers: { ...headers, "content-type": "application/json" },
-      ...(body === undefined ? {} : { body }),
-    });
-    status = response.status;
-    let value;
+  let attempts = 0;
+  const maximumAttempts = !local && expected === "document" ? 2 : 1;
+  while (attempts < maximumAttempts && !pass) {
+    attempts += 1;
     try {
-      value = JSON.parse(decodeResponseText(response));
-    } catch {
-      value = undefined;
-    }
-    code = allowedErrors.has(value?.error?.code) ? value.error.code : "NO_BRIDGE_ERROR";
-    if (expected === "document") {
-      pass = status === 200 && validMachineDocument(value, response.body.byteLength);
-      if (pass) {
-        routeCount = Object.keys(value.paths).length;
-        schemaCount = Object.keys(value.components.schemas).length;
+      const response = await http.request(`${origin}${path}`, {
+        method,
+        timeoutMs: 20000,
+        maxBytes: MACHINE_OPENAPI_MAX_BYTES,
+        redirect: "manual",
+        headers: { ...headers, "content-type": "application/json" },
+        ...(body === undefined ? {} : { body }),
+      });
+      status = response.status;
+      let value;
+      try {
+        value = JSON.parse(decodeResponseText(response));
+      } catch {
+        value = undefined;
       }
-    } else if (expected === "lookup") {
-      pass = status === 200 && validLookup(value);
-      if (pass) count = value.items.length;
-    } else if (expected === "challenge") pass = challenges.has(status);
-    else
-      pass = status === expected.status && (expected.code === undefined || code === expected.code);
-  } catch {
-    // Never emit exception text, response bodies, headers, or credentials.
+      code = allowedErrors.has(value?.error?.code) ? value.error.code : "NO_BRIDGE_ERROR";
+      if (expected === "document") {
+        pass = status === 200 && validMachineDocument(value, response.body.byteLength);
+        if (pass) {
+          routeCount = Object.keys(value.paths).length;
+          schemaCount = Object.keys(value.components.schemas).length;
+        }
+      } else if (expected === "lookup") {
+        pass = status === 200 && validLookup(value);
+        if (pass) count = value.items.length;
+      } else if (expected === "challenge") pass = challenges.has(status);
+      else
+        pass =
+          status === expected.status && (expected.code === undefined || code === expected.code);
+    } catch {
+      // Never emit exception text, response bodies, headers, or credentials.
+    }
+    const retryColdJwkFetch =
+      !pass && attempts < maximumAttempts && status === 403 && code === "ACCESS_ASSERTION_INVALID";
+    if (!retryColdJwkFetch) break;
+    await delay(250);
   }
   emit(id, pass, {
     status,
     code,
+    attempts,
     ...(routeCount === undefined ? {} : { routeCount }),
     ...(schemaCount === undefined ? {} : { schemaCount }),
     ...(count === undefined ? {} : { count }),

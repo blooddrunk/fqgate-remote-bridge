@@ -153,9 +153,14 @@ describe("Windows entry points", () => {
     expect(matrix).toContain("/api/v1/openapi/machine");
     expect(matrix).toContain("MACHINE_OPENAPI_MAX_BYTES");
     expect(matrix).toContain('candidate.id !== "updates.apply"');
+    expect(matrix).toContain('code === "ACCESS_ASSERTION_INVALID"');
+    expect(matrix).toContain("attempts < maximumAttempts");
+    expect(matrix).toContain('maximumAttempts = !local && expected === "document" ? 2 : 1');
     expect(matrix).not.toContain("response.body.toString");
     expect(secureWrapper).toContain("[switch]$Phase5CReadOnly");
     expect(secureWrapper).toContain("fqgate-phase5c-remote-evidence.json");
+    expect(secureWrapper).toContain("commit = Get-CurrentCommit");
+    expect(secureWrapper).toContain("$commit -notmatch '^[0-9a-f]{40}$'");
     expect(secureWrapper).not.toContain("--client-id");
     expect(secureWrapper).not.toContain("--client-secret");
   });

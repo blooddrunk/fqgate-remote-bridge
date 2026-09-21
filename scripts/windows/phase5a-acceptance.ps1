@@ -70,6 +70,18 @@ function Resolve-PermanentGitRoot {
     throw "No existing Git working tree was found under D:\code\research. The acceptance script will not create a checkout."
 }
 
+function Get-CurrentCommit {
+    if ([string]::IsNullOrWhiteSpace($script:gitPath)) {
+        throw "Git is required to record the exact acceptance commit."
+    }
+    $output = @(& $script:gitPath -C $repositoryRoot rev-parse HEAD 2>$null)
+    $commit = ($output -join "").Trim()
+    if ($LASTEXITCODE -ne 0 -or $commit -notmatch '^[0-9a-f]{40}$') {
+        throw "The exact acceptance commit could not be resolved."
+    }
+    return $commit
+}
+
 $repositoryRoot = Resolve-PermanentGitRoot
 $resolvedConfigPath = (Resolve-Path -LiteralPath $ConfigPath).Path
 $configRaw = Get-Content -LiteralPath $resolvedConfigPath -Raw
@@ -427,7 +439,7 @@ if (($Phase5BReadOnly -or $Phase5CReadOnly) -and $RunAuthenticatedServiceTokenMa
     # secure strings, exceptions, response bodies, or credential prompts.
     $evidence = @{
         timestamp = [DateTime]::UtcNow.ToString("o")
-        commit = (& $script:gitPath -C $repositoryRoot rev-parse HEAD).Trim()
+        commit = Get-CurrentCommit
         failed = $script:failureCount
         pending = $script:manualCount
         matrixExitCode = $child.ExitCode
