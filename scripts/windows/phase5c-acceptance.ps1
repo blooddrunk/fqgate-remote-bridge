@@ -44,7 +44,7 @@ if ($RunAuthenticatedServiceTokenMatrix) {
     Write-P5CRecord "P5C-W3" $ingressPass @{ origin = $(if ($ingressPass) { "bridge-loopback" } else { "invalid" }) }
     if (-not $ingressPass) { throw "P5C-W3 FAIL EXISTING_MACHINE_INGRESS_MISMATCH" }
     & (Join-Path $PSScriptRoot "phase5a-acceptance.ps1") -ConfigPath $ConfigPath -RunAuthenticatedServiceTokenMatrix -Phase5CReadOnly -TunnelIngressConfigPath $TunnelIngressConfigPath
-    if ($LASTEXITCODE -ne 0) { throw "P5C-REMOTE FAIL See bounded P5C-R check and machine-derived summary" }
+    if (-not $?) { throw "P5C-REMOTE FAIL See bounded P5C-R check and machine-derived summary" }
 }
 $passed = @($records | Where-Object { $_ }).Count
 $summary = [ordered]@{

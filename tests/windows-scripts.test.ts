@@ -145,6 +145,7 @@ describe("Windows entry points", () => {
     expect(script).toContain("-Phase5CReadOnly");
     expect(script).toContain("P5C-W-SUMMARY");
     expect(script).toContain("records.Count");
+    expect(script).toContain("if (-not $?)");
     expect(script).toContain("127.0.0.1");
     expect(script).toContain("17281");
     expect(script).toContain("17282");
