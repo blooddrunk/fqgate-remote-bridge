@@ -71,24 +71,38 @@ function Resolve-Corepack {
     return $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
 }
 
-function Invoke-NodeCli {
-    param([string[]]$Arguments)
+function ConvertTo-ProcessArgument {
+    param([string]$Value)
+
+    if ($null -eq $Value) { return '""' }
+    if ($Value -notmatch '[\s"]') { return $Value }
+    return '"' + $Value.Replace('"', '\"') + '"'
+}
+
+function Invoke-BoundedProcess {
+    param(
+        [Parameter(Mandatory = $true)][string]$FileName,
+        [string[]]$Arguments = @(),
+        [string]$RawArguments,
+        [string]$WorkingDirectory = $root
+    )
+
     $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-    $startInfo.FileName = $script:nodePath
-    $startInfo.WorkingDirectory = $root
+    $startInfo.FileName = $FileName
+    $startInfo.WorkingDirectory = $WorkingDirectory
     $startInfo.UseShellExecute = $false
     $startInfo.CreateNoWindow = $true
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
-    $escaped = @($root + "\dist\cli\main.js") + $Arguments + @("--config", (Resolve-Path -LiteralPath $ConfigPath).Path)
-    $startInfo.Arguments = ($escaped | ForEach-Object {
-        $value = [string]$_
-        if ($value -notmatch '[\s"]') { $value } else { '"' + $value.Replace('"', '\"') + '"' }
-    }) -join " "
+    if ($PSBoundParameters.ContainsKey("RawArguments")) {
+        $startInfo.Arguments = $RawArguments
+    } else {
+        $startInfo.Arguments = ($Arguments | ForEach-Object { ConvertTo-ProcessArgument ([string]$_) }) -join " "
+    }
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $startInfo
     try {
-        if (-not $process.Start()) { throw "CLI_PROCESS_START_FAILED" }
+        if (-not $process.Start()) { throw "PROCESS_START_FAILED" }
         $stdout = $process.StandardOutput.ReadToEnd()
         $stderr = $process.StandardError.ReadToEnd()
         $process.WaitForExit()
@@ -98,6 +112,33 @@ function Invoke-NodeCli {
     } finally {
         $process.Dispose()
     }
+}
+
+function Invoke-ExternalCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [string[]]$Arguments = @(),
+        [string]$WorkingDirectory = $root
+    )
+
+    if ($Path -match '(?i)\.(cmd|bat)$') {
+        $commandShell = $env:ComSpec
+        if ([string]::IsNullOrWhiteSpace($commandShell)) {
+            $commandShell = Join-Path $env:SystemRoot "System32\cmd.exe"
+        }
+        $commandLine = ConvertTo-ProcessArgument $Path
+        if ($Arguments.Count -gt 0) {
+            $commandLine += " " + (($Arguments | ForEach-Object { ConvertTo-ProcessArgument ([string]$_) }) -join " ")
+        }
+        return Invoke-BoundedProcess -FileName $commandShell -RawArguments ('/d /s /c "' + $commandLine + '"') -WorkingDirectory $WorkingDirectory
+    }
+    return Invoke-BoundedProcess -FileName $Path -Arguments $Arguments -WorkingDirectory $WorkingDirectory
+}
+
+function Invoke-NodeCli {
+    param([string[]]$Arguments)
+    $escaped = @($root + "\dist\cli\main.js") + $Arguments + @("--config", (Resolve-Path -LiteralPath $ConfigPath).Path)
+    return Invoke-BoundedProcess -FileName $script:nodePath -Arguments $escaped -WorkingDirectory $root
 }
 
 function Read-JsonOutput {
@@ -112,11 +153,15 @@ function Invoke-PhaseScript {
         [string[]]$Arguments
     )
     $scriptPath = Join-Path $root ("scripts\windows\" + $ScriptName)
-    $output = & $script:powerShellPath -NoProfile -ExecutionPolicy Bypass -File $scriptPath @Arguments 2>&1
-    $exitCode = $LASTEXITCODE
-    $text = ($output | Out-String)
+    if ($ScriptName -match '(?i)\.mjs$') {
+        $child = Invoke-BoundedProcess -FileName $script:nodePath -Arguments (@($scriptPath) + $Arguments) -WorkingDirectory $root
+    } else {
+        $child = Invoke-BoundedProcess -FileName $script:powerShellPath -Arguments (@("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $scriptPath) + $Arguments) -WorkingDirectory $root
+    }
+    $text = $child.Stdout
+    if (-not [string]::IsNullOrWhiteSpace($child.Stderr)) { $text += "`r`n" + $child.Stderr }
     if ($text.Length -gt 64KB) { $text = $text.Substring(0, 64KB) }
-    return [pscustomobject]@{ ExitCode = $exitCode; Output = $text }
+    return [pscustomobject]@{ ExitCode = $child.ExitCode; Output = $text }
 }
 
 function Get-JsonRecords {
@@ -191,13 +236,18 @@ $resolvedConfig = (Resolve-Path -LiteralPath $ConfigPath).Path
 try {
     if ([string]::IsNullOrWhiteSpace($script:gitPath)) { throw "P5Q-W4 FAIL GIT_REQUIRED" }
     if ([string]::IsNullOrWhiteSpace($script:corepackPath)) { throw "P5Q-W6 FAIL COREPACK_REQUIRED" }
-    $dirty = @(& $script:gitPath -C $root status --porcelain 2>$null)
+    $gitStatus = Invoke-ExternalCommand -Path $script:gitPath -Arguments @("-C", $root, "status", "--porcelain") -WorkingDirectory $root
+    $dirty = if ($gitStatus.ExitCode -eq 0) { @($gitStatus.Stdout -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) } else { @("GIT_STATUS_FAILED") }
     Add-Record "P5Q-W4" ($dirty.Count -eq 0) @{ workingTree = $(if ($dirty.Count -eq 0) { "clean" } else { "dirty" }) }
-    $branch = (& $script:gitPath -C $root branch --show-current 2>$null).Trim()
+    $branchResult = Invoke-ExternalCommand -Path $script:gitPath -Arguments @("-C", $root, "branch", "--show-current") -WorkingDirectory $root
+    $branch = if ($branchResult.ExitCode -eq 0) { $branchResult.Stdout.Trim() } else { "" }
     Add-Record "P5Q-W5" ($branch -eq "main") @{ branch = if ([string]::IsNullOrWhiteSpace($branch)) { "unknown" } else { $branch } }
-    $commit = (& $script:gitPath -C $root rev-parse HEAD 2>$null).Trim()
-    $nodeVersion = (& $script:nodePath --version 2>$null | Out-String).Trim()
-    $pnpmVersion = (& $script:corepackPath pnpm --version 2>$null | Out-String).Trim()
+    $commitResult = Invoke-ExternalCommand -Path $script:gitPath -Arguments @("-C", $root, "rev-parse", "HEAD") -WorkingDirectory $root
+    $commit = if ($commitResult.ExitCode -eq 0) { $commitResult.Stdout.Trim() } else { "" }
+    $nodeVersionResult = Invoke-ExternalCommand -Path $script:nodePath -Arguments @("--version") -WorkingDirectory $root
+    $nodeVersion = if ($nodeVersionResult.ExitCode -eq 0) { $nodeVersionResult.Stdout.Trim() } else { "" }
+    $pnpmVersionResult = Invoke-ExternalCommand -Path $script:corepackPath -Arguments @("pnpm", "--version") -WorkingDirectory $root
+    $pnpmVersion = if ($pnpmVersionResult.ExitCode -eq 0) { $pnpmVersionResult.Stdout.Trim() } else { "" }
     $toolchainPass =
         $commit -match '^[0-9a-f]{40}$' -and
         $nodeVersion -match '^v\d+\.\d+\.\d+$' -and
