@@ -59,6 +59,13 @@ corepack pnpm test:e2e
 The qualification harness itself requires the checkout to be on `main` and clean. It records
 the exact commit, Node/pnpm/PowerShell versions, and the bounded pre-upgrade identity.
 
+Before running the Phase 5-B/5-C regression, ensure the already-running Bridge was launched
+with the same external config used by the qualification command. For example, start the
+dashboard with `-ConfigPath D:\code\research\fqgate-acceptance-config.json`, or set
+`FQGATE_REMOTE_BRIDGE_CONFIG` to that exact path for `scripts/start-bridge.mjs`. Do not launch
+`start-bridge.mjs` without this variable: the default compatibility list can reject a qualified
+1.0.2 even while the FQGate CLI reports it as qualified.
+
 ## Run the bounded qualification
 
 The full closure command includes local Phase 5-B/5-C regression and the real remote-machine

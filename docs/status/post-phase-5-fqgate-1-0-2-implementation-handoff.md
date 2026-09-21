@@ -1,7 +1,7 @@
 # Post-Phase-5 FQGate 1.0.2 compatibility maintenance handoff
 
 Date: **2026-09-21**  
-Status: **IMPLEMENTATION IN PROGRESS — live Windows/remote/CI closure pending**
+Status: **CLOSED — permanent-Windows 1.0.2, local, remote and CI acceptance passed**
 
 ## Scope
 
@@ -65,60 +65,71 @@ TypeScript noEmit: passed
 Focused qualification/Phase 5-B/Windows-script tests: 66 passed
 ```
 
-The complete repository gates and the permanent-Windows command were pending at the initial
-implementation handoff; the current verification snapshot below records the synchronized
-results and the remaining live qualification boundary.
+The initial implementation handoff had not yet recorded the complete repository gates or the
+permanent-Windows result. The synchronized closure evidence is recorded below; the only
+operator boundary encountered was hidden service-token entry for the real remote matrix.
 
-## Current verification snapshot (2026-09-21)
+## Final verification snapshot (2026-09-21)
 
-The implementation is synchronized to exact commit
-`7b8a9d234bc0c25a6246b9165f7388bd6d548614` on both the repository and permanent Windows
-`main` checkouts. The final Ubuntu and Windows CI jobs passed in run
-`35564718411`:
+The implementation and documentation baseline was
+`main@2797bea6775876c8f2707bb68ebb8eaa724e8b9b`. The final CI run for that exact commit was
+`35565062952` ([GitHub Actions](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35565062952));
+Ubuntu and Windows jobs both passed. The permanent Windows toolchain recorded Node v24.15.0,
+pnpm 11.23.0 and PowerShell 5.1.26100.9444.
 
-- `Checks (ubuntu-latest)`: success, job `106224173387`;
-- `Checks (windows-latest)`: success, job `106224173207`.
-
-Permanent-Windows pre-qualification gates passed: frozen install, typecheck, lint, 205 unit
-tests, production build, format check, and 13 browser tests. The exact stable manifest check
-also passed for `FQGate-1.0.2-windows-x64-UNSIGNED.exe`, 23065088 bytes,
-SHA-256 `024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2`.
-
-The bounded harness recorded two candidate attempts. Each preserved the baseline census
-(89 runtime operations, approved lookup fingerprint, one exact-code result), then failed
-candidate health readiness and automatically restored the known-good 1.0.1 executable.
-The authoritative permanent-Windows state after the latest attempt is:
+The bounded qualification evidence at
+`D:\code\research\fqgate-post-phase5-1-0-2-evidence.json` records the automated candidate
+checks through `P5Q-Q5` as PASS:
 
 ```text
-active version: 1.0.1
-last activation: rolled_back
-FQGate listener: exactly 127.0.0.1:17281
-Bridge listener: exactly 127.0.0.1:17282
+P5Q-M1: official 1.0.2 package, 23065088 bytes,
+        SHA-256 024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2
+P5Q-B1: known-good 1.0.1 baseline PASS
+P5Q-B2/P5Q-B3: exactly one IPv4-loopback listener on 17281/17282 PASS
+P5Q-B4: 89 runtime operations, approved lookup fingerprint, one exact-code result PASS
+P5Q-Q1: quarantined 1.0.2 qualification PASS
+P5Q-Q3: active 1.0.2 artifact identity and health PASS
+P5Q-Q4/P5Q-Q5: exactly one IPv4-loopback listener on 17281/17282 PASS
 ```
 
-The direct CLI diagnostic identified the candidate failure as `HEALTH_TIMEOUT`: the 1.0.2
-GUI process remained responsive but did not expose the health listener. The upstream Windows
-installer documents that first launch can require a user-completed risk confirmation before
-health becomes available. That confirmation has not yet been completed, so no QR/login or
-service-token boundary has been opened and the remote matrix has not run. The generated
-external evidence file remains bounded and outside Git at
-`D:\code\research\fqgate-post-phase5-1-0-2-evidence.json`; the task remains ACTIVE until
-the first-use confirmation is completed and the full 1.0.2/local/remote evidence is recorded.
-
-## Required closure evidence
-
-Run the command in:
+The first wrapper's `P5Q-R1` record was an acceptance-environment failure, not a candidate
+or market failure: the already-running Bridge process had been launched without
+`FQGATE_REMOTE_BRIDGE_CONFIG` and therefore used the default compatibility list. After that
+process was stopped and the Bridge was relaunched with the repo-external acceptance config,
+the same bounded Phase 5-B and Phase 5-C local commands passed:
 
 ```text
-docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md
+Phase 5-B: P5B-C1/C2/C3/C4/C5/C6 PASS; P5B-L2/L3/L4/L5/L6 PASS
+Phase 5-C: P5C-W2 17281/17282 PASS; P5C-L2/L3/L4/L5/L6/L7 PASS
+P5C-SUMMARY: total 6, passed 6, failed 0
+P5C-W-SUMMARY: total 2, passed 2, failed 0
 ```
 
-It must produce the external bounded file:
+The final live state is:
 
 ```text
-D:\code\research\fqgate-post-phase5-1-0-2-evidence.json
+active version: 1.0.2
+artifact size: 23065088
+artifact SHA-256: 024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2
+qualification: market.instruments.lookup / approved fingerprint / exact-code-v1
+FQGate: ready, connected, 127.0.0.1:17281
+Bridge: 127.0.0.1:17282 with the acceptance config loaded
 ```
 
-The handoff must then be updated with the exact final commit, CI run IDs, `P5Q-SUMMARY` totals,
-local/remote machine totals, active 1.0.2 identity, and any actual QR/manual boundary. Until
-those values exist, the task package stays **ACTIVE**.
+## Closure evidence
+
+The real remote-machine service-token command completed using the existing hidden
+`Read-Host -AsSecureString` prompts. No QR login was needed. The external bounded file is:
+
+```text
+D:\code\research\fqgate-phase5c-remote-evidence.json
+```
+
+It records `commit=2797bea6775876c8f2707bb68ebb8eaa724e8b9b`, `matrixExitCode=0`,
+`failed=0`, `pending=0`, and a machine-derived remote `P5C-SUMMARY` of 21/21 PASS. The
+wrapper recorded `P5C-W-SUMMARY` 3/3 PASS, including both loopback listeners and Bridge-only
+ingress with no 17281 route. The remote matrix proved the filtered machine document and
+lookup, malformed/oversized rejection, all old-operation/raw/page/static denials, human/admin
+hostname isolation, and never called `updates.apply`.
+
+This task is closed. Phase 6 and additional market operations remain outside scope.

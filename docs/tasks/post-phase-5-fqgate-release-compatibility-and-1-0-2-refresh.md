@@ -2,19 +2,24 @@
 
 Date: 2026-09-21
 
-Status: **ACTIVE — implementation landed; permanent Windows/remote/CI closure pending**
+Status: **CLOSED — implementation, permanent Windows, remote and CI acceptance passed**
 
 Implementation note (2026-09-21): the quarantined `fqgate qualify` lifecycle boundary,
 artifact-bound operation evidence, operation-scoped lookup gate, deterministic rollback
-coverage, and bounded permanent-Windows harness are implemented. This task remains ACTIVE
-until the required external Windows evidence, real service-token matrix, and final-commit
-Ubuntu/Windows CI run IDs are recorded. Do not infer closure from deterministic tests alone.
+coverage, and bounded permanent-Windows harness are implemented. The required external
+Windows evidence, real service-token matrix, and final-commit Ubuntu/Windows CI run IDs are
+now recorded in the implementation handoff and Windows qualification procedure.
 
 ## Why this task exists
 
 Phase 5 is closed. The upstream FQGate stable channel has already moved from 1.0.1 to 1.0.2. The current Bridge update/lifecycle model correctly protects installation with a fixed official source, bounded downloads, exact size/SHA-256 validation, stale-plan rejection, health/OpenAPI checks and rollback. Those controls remain mandatory.
 
-The current market lookup compatibility gate is intentionally stricter: it requires both an explicitly validated runtime and the exact 1.0.1 version, plus an approved operation-scoped OpenAPI fingerprint. That was appropriate for the first live Phase 5 slice, but it creates avoidable maintenance churn if upstream publishes frequent patch releases whose relevant contract is unchanged.
+At task start, the current market lookup compatibility gate was intentionally stricter: it
+required both an explicitly validated runtime and the exact 1.0.1 version, plus an approved
+operation-scoped OpenAPI fingerprint. That was appropriate for the first live Phase 5 slice,
+but created avoidable maintenance churn if upstream published frequent patch releases whose
+relevant contract was unchanged. The closed implementation now uses the operation-scoped
+fingerprint and bounded semantic-probe evidence described in the handoff.
 
 This task must refresh the permanent Windows environment to FQGate 1.0.2 and replace version-number coupling with evidence-based per-operation compatibility without weakening fail-closed behavior.
 
@@ -217,3 +222,20 @@ After closure, the project can choose separately between:
 - supervisor/recovery work.
 
 No such follow-on work should be mixed into this task.
+
+## Closure record
+
+The task closed on 2026-09-21 after the official 1.0.2 artifact was qualified and left active
+on the permanent Windows host. The artifact is `23065088` bytes with SHA-256
+`024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2`. The local Phase 5-B and
+Phase 5-C regressions passed with the Bridge started using the repo-external acceptance config;
+the real remote-machine matrix recorded `matrixExitCode=0`, `failed=0`, `pending=0`, and 21/21
+remote checks passed. The external evidence file is
+`D:\code\research\fqgate-phase5c-remote-evidence.json`.
+
+The initial wrapper attempt reported `P5Q-R1` because an already-running Bridge had been
+started without `FQGATE_REMOTE_BRIDGE_CONFIG`; this was corrected by restarting only that
+Bridge with the acceptance config, then rerunning the bounded local matrices. No candidate,
+contract, or remote acceptance check failed after the environment correction. The final
+implementation CI for `2797bea6775876c8f2707bb68ebb8eaa724e8b9b` passed on Ubuntu and Windows
+in run `35565062952`. No Phase 6 or additional market operation was added.
