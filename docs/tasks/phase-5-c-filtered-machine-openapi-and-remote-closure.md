@@ -2,7 +2,7 @@
 
 Date: 2026-09-20
 
-Status: **ACTIVE**
+Status: **CLOSED — deterministic, permanent-Windows, real remote and CI acceptance passed**
 
 Planning baseline: `main@26ba745d4634655223519ad6ad2586a25952f5a2` after Phase 5-B merge.
 
@@ -205,3 +205,14 @@ Phase 5-C is complete only when all are true:
 13. Phase 6 provisioning and all later-phase work remain unimplemented.
 
 If any item is missing, keep Phase 5-C and Phase 5 OPEN and report the exact failing check, observed status/error, what is already proven, and the next precise operator or engineering action.
+
+## Closure record
+
+All thirteen criteria passed on 2026-09-21. Acceptance implementation
+`06ae7c01b780ba856a4f70bfcd3612ef9258abd0` passed permanent-Windows local
+regression, the 21/21 real service-token matrix, Bridge-only ingress and
+loopback-listener checks. CI run `35553157256` passed Ubuntu job
+`106191573144` and Windows job `106191573251`. The documentation closure commit
+is the commit containing this record and must also have green Ubuntu and Windows
+checks before the goal is reported complete. Detailed bounded evidence is in
+the Phase 5-C implementation handoff and Windows acceptance document.

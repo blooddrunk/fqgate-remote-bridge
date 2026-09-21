@@ -27,6 +27,7 @@ import {
   type BridgeOperationPolicy,
 } from "./policy/registry.js";
 import type { BridgeRequestContext, HumanBridgePrincipal } from "./policy/request-context.js";
+import { buildMachineOpenApiDocument } from "./openapi/machine.js";
 
 export interface LifecycleStatusReader {
   status(): Promise<FqgateStatus>;
@@ -72,6 +73,10 @@ export class BridgeService {
     if (!this.instrumentLookup)
       throw new BridgeError(ERROR_CODES.BRIDGE_NOT_READY, "Instrument lookup is unavailable");
     return this.instrumentLookup.lookup(input);
+  }
+
+  machineOpenApi(): Readonly<Record<string, unknown>> {
+    return buildMachineOpenApiDocument();
   }
 
   version(): BridgeVersionResponse {

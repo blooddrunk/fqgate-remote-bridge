@@ -346,7 +346,7 @@ describe("Phase 5-A machine service-token JWT profile", () => {
 });
 
 describe("Phase 5-A zero-privilege server policy", () => {
-  it("preserves the old zero-privilege matrix alongside the sole Phase 5-B grant", () => {
+  it("preserves the old zero-privilege matrix alongside the reviewed Phase 5 grants", () => {
     const expected: Record<string, Set<string>> = {
       local: new Set(listBridgeOperations().map((operation) => operation.id)),
       remote_human: new Set([
@@ -360,10 +360,13 @@ describe("Phase 5-A zero-privilege server policy", () => {
       ]),
       remote_admin: new Set(
         listBridgeOperations()
-          .filter((operation) => operation.id !== "market.instruments.lookup")
+          .filter(
+            (operation) =>
+              operation.id !== "market.instruments.lookup" && operation.id !== "openapi.machine",
+          )
           .map((operation) => operation.id),
       ),
-      remote_machine: new Set(["market.instruments.lookup"]),
+      remote_machine: new Set(["market.instruments.lookup", "openapi.machine"]),
     };
 
     for (const context of ["local", "remote_human", "remote_admin", "remote_machine"] as const) {
@@ -379,7 +382,10 @@ describe("Phase 5-A zero-privilege server policy", () => {
     }
     expect(
       listBridgeOperations()
-        .filter((operation) => operation.id !== "market.instruments.lookup")
+        .filter(
+          (operation) =>
+            operation.id !== "market.instruments.lookup" && operation.id !== "openapi.machine",
+        )
         .every((operation) => !operation.allowedContexts.includes("remote_machine")),
     ).toBe(true);
   });
@@ -437,7 +443,8 @@ describe("Phase 5-A zero-privilege server policy", () => {
     });
 
     for (const operation of listBridgeOperations().filter(
-      (operation) => operation.id !== "market.instruments.lookup",
+      (operation) =>
+        operation.id !== "market.instruments.lookup" && operation.id !== "openapi.machine",
     )) {
       const response = await handler(
         new Request(`https://api.example.com${operation.path}`, {

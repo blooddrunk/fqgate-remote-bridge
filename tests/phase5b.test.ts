@@ -318,10 +318,12 @@ function handlerFixture() {
   };
 }
 describe("Phase 5-B HTTP policy", () => {
-  it("grants exactly one operation and preserves the full independent context matrix", async () => {
+  it("keeps lookup as the sole machine market operation", async () => {
     expect(
       listBridgeOperations()
-        .filter((o) => o.allowedContexts.includes("remote_machine"))
+        .filter(
+          (o) => o.allowedContexts.includes("remote_machine") && o.classification === "market_read",
+        )
         .map((o) => o.id),
     ).toEqual(["market.instruments.lookup"]);
     expect(getBridgeOperation("market.instruments.lookup").allowedContexts).toEqual([
@@ -369,5 +371,28 @@ describe("Phase 5-B HTTP policy", () => {
       expect(response.status).toBe(status);
     }
     expect(f.lookup.request).not.toHaveBeenCalled();
+  });
+
+  it("keeps local diagnostics and machine docs available when lookup compatibility drifts", async () => {
+    const f = handlerFixture();
+    f.lookup.contract.mockResolvedValue("drift");
+    const lookup = await f.handler(
+      new Request("http://127.0.0.1:17282/api/v1/instruments/lookup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: '{"code":"600000"}',
+      }),
+    );
+    expect(lookup.status).toBe(502);
+    await expect(lookup.json()).resolves.toMatchObject({
+      error: { code: "OPENAPI_CONTRACT_MISSING" },
+    });
+
+    const version = await f.handler(new Request("http://127.0.0.1:17282/api/v1/version"));
+    expect(version.status).toBe(200);
+    const machineDocument = await f.handler(
+      new Request("http://127.0.0.1:17282/api/v1/openapi/machine"),
+    );
+    expect(machineDocument.status).toBe(200);
   });
 });

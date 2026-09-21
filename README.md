@@ -13,18 +13,20 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发，Phase 0–5-B 已完成；Phase 5-C 已进入 ACTIVE，目标是生成受策略约束的 machine OpenAPI 并完成 Phase 5 最终远程闭包。
+当前项目仍在持续开发；Phase 0–5 已完成。Phase 5 的最终交付是受策略约束的
+machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双平台 CI 闭包。
 
-| 能力                   | 当前状态           | 说明                                                      |
-| ---------------------- | ------------------ | --------------------------------------------------------- |
-| FQGate 本机运行        | 可用               | 仅 127.0.0.1:17281                                        |
-| Bridge Dashboard/API   | 可用               | 仅 127.0.0.1:17282                                        |
-| 本地维护               | 可用               | 生命周期、更新和 OpenAPI refresh 保持本地边界             |
-| remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog          |
-| remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制       |
-| remote-machine         | 独立认证、受限查询 | 仅允许 market.instruments.lookup；所有旧 operation 仍拒绝 |
-| Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询             |
-| 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                    |
+| 能力                   | 当前状态           | 说明                                                  |
+| ---------------------- | ------------------ | ----------------------------------------------------- |
+| FQGate 本机运行        | 可用               | 仅 127.0.0.1:17281                                    |
+| Bridge Dashboard/API   | 可用               | 仅 127.0.0.1:17282                                    |
+| 本地维护               | 可用               | 生命周期、更新和 OpenAPI refresh 保持本地边界         |
+| remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog      |
+| remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制   |
+| remote-machine         | 独立认证、受限查询 | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝 |
+| Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询         |
+| Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过               |
+| 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
 再继续完成“Cloudflare 人工配置”和“远程验收”。
@@ -38,6 +40,8 @@ Tunnel 把流量安全地送到 Bridge。
 | Phase 4   | remotely-managed Tunnel、ordinary human Access、远程 Dashboard/QR/status/reference       |
 | Phase 4.5 | 独立 remote-admin、移动 Dashboard、CSRF/intent 和一次性 apply confirmation               |
 | Phase 5-A | 独立 remote-machine JWT/context、完整零权限 registry、Windows/CI/真实 service-token 验收 |
+| Phase 5-B | 永久 Windows 实时 contract census 与一个受限六位代码查询                                 |
+| Phase 5-C | registry-derived machine OpenAPI 与最终 Windows/远程/CI 闭包                             |
 
 每个阶段的关闭证据仍保留在文档索引中；“已关闭”只表示该阶段的验收合同完成，不表示
 整个项目停止开发。
@@ -73,12 +77,12 @@ Cloudflare Access 是第一道门，Bridge 是第二道门。即使 Tunnel 配�
 
 ### 1.2 四种请求上下文
 
-| 上下文         | 如何产生                                                | 当前权限                                          |
-| -------------- | ------------------------------------------------------- | ------------------------------------------------- |
-| local          | loopback Host，例如 127.0.0.1:17282                     | 本地策略允许的本地操作                            |
-| remote_human   | 精确匹配普通远程 hostname，并通过 human Access          | Phase 4 远程人工只读面                            |
-| remote_admin   | 精确匹配独立管理员 hostname，并通过独立 human JWT/AUD   | Phase 4.5 的有限维护面                            |
-| remote_machine | 精确匹配独立 machine hostname，并通过 service-token JWT | 仅 market.instruments.lookup；旧 operation 仍拒绝 |
+| 上下文         | 如何产生                                                | 当前权限                                   |
+| -------------- | ------------------------------------------------------- | ------------------------------------------ |
+| local          | loopback Host，例如 127.0.0.1:17282                     | 本地策略允许的本地操作                     |
+| remote_human   | 精确匹配普通远程 hostname，并通过 human Access          | Phase 4 远程人工只读面                     |
+| remote_admin   | 精确匹配独立管理员 hostname，并通过独立 human JWT/AUD   | Phase 4.5 的有限维护面                     |
+| remote_machine | 精确匹配独立 machine hostname，并通过 service-token JWT | market.instruments.lookup、openapi.machine |
 
 remote_machine 不是“管理员的另一种登录方式”。它有独立的 hostname、Access
 application、AUD、JWT claim validator 和 principal kind。Phase 5-A 的成功标准就是：
@@ -93,7 +97,7 @@ Cloudflare hostname 单独决定。当前远程面是：
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | remote_human   | bridge.version、bridge.capabilities、bridge.status、session.qr.begin、session.qr.poll、updates.status、openapi.catalog                                         |
 | remote_admin   | 上述七个 operation，外加 updates.check、updates.plan、updates.apply、openapi.refresh；维护操作还要通过独立 admin JWT、Origin/intent 和 apply confirmation 约束 |
-| remote_machine | 仅 market.instruments.lookup；全部旧 operation 继续拒绝，包括 bridge.version                                                                                   |
+| remote_machine | market.instruments.lookup、openapi.machine；全部旧 operation 继续拒绝，包括 bridge.version                                                                     |
 
 任何未列出的 FQGate path 都不是 Bridge API。不要因为某个路径出现在 FQGate 的
 Runtime OpenAPI 中，就认为它可以远程调用。
@@ -118,8 +122,8 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | Agent 的强制工作合同         | [AGENTS.md](AGENTS.md)                                                                                                                                                                                  |
 | 当前架构和安全边界           | [docs/architecture.md](docs/architecture.md)、[docs/security.md](docs/security.md)                                                                                                                      |
 | 当前阶段总设计               | [phase-5-remote-machine-read-only-api.md](docs/plans/phase-5-remote-machine-read-only-api.md)                                                                                                           |
-| **Phase 5-C 当前任务**       | [phase-5-c-filtered-machine-openapi-and-remote-closure.md](docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md)                                                                          |
-| **Phase 5-C Codex Goal**     | [phase-5-c-codex-goal.md](docs/prompts/phase-5-c-codex-goal.md)                                                                                                                                         |
+| Phase 5-C 已关闭任务         | [phase-5-c-filtered-machine-openapi-and-remote-closure.md](docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md)                                                                         |
+| Phase 5-C 实现与关闭证据     | [phase-5-c-implementation-handoff.md](docs/status/phase-5-c-implementation-handoff.md)                                                                                                                  |
 | Phase 5-B 已关闭任务         | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
 | Phase 5-B 已完成 Codex Goal  | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
 | Phase 5-A 已关闭任务         | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
@@ -738,13 +742,13 @@ CLI 不会在页面加载、Bridge 启动或后台定时器中下载/更新 clou
 
 ## 11. 当前阶段和后续边界
 
-Phase 5-B 已经完成真实 FQGate census、首个受限目录查询和独立机器权限验收。
-整个 Phase 5 尚未完成：Phase 5-C 已激活，当前只允许实现 registry-derived machine OpenAPI 和最终远程闭包。
-机器身份只能调用显式注册的目录查询，不能继承其他任何旧 operation 权限。
+Phase 5 已经完成真实 FQGate census、首个受限目录查询、registry-derived machine
+OpenAPI，以及永久 Windows、真实 service-token 和双平台 CI 闭包。
+机器身份只能调用显式注册的目录查询和机器文档，不能继承其他任何旧 operation 权限。
 
 尚未授权或未实现的工作包括：
 
-- Phase 5-C machine-facing generated OpenAPI，以及首批以外的行情 API；
+- 首批以外的行情 API；
 - Phase 6 Cloudflare provisioning automation；
 - supervisor、notifications、automatic updates；
 - MCP、WebSocket、最终 packaging；
@@ -783,3 +787,19 @@ token 行为、operation registry、远程权限或验收流程，必须在同�
 [Phase 5-B Windows 验收](docs/operations/windows-phase-5-b-acceptance.md)，
 实际证据与后续边界见 [实现交接](docs/status/phase-5-b-implementation-handoff.md)。
 既有 Phase 5-A 命令用于旧权限回归；新行情成功验收使用 Phase 5-B 命令。
+
+## Phase 5-C machine OpenAPI（CLOSED）
+
+`GET /api/v1/openapi/machine` 对 `local` 与 `remote_machine` 开放，对
+`remote_human` 与 `remote_admin` 拒绝。文档只从 Bridge operation registry 中
+明确允许 `remote_machine` 且带有公开 schema metadata 的条目生成；当前恰好包含：
+
+- `POST /api/v1/instruments/lookup`（`market.instruments.lookup`）；
+- `GET /api/v1/openapi/machine`（`openapi.machine`）。
+
+生成器不读取运行时 FQGate `/openapi.json`，不包含上游 path/schema、兼容性指纹、
+Access 配置、文件路径、session/update/admin operation 或 secret。输出顺序稳定并限制在
+64 KiB。永久 Windows 本地与远程验收命令见
+[Phase 5-C Windows 验收](docs/operations/windows-phase-5-c-acceptance.md)，精确提交、
+机器生成的检查总数和 CI 证据见
+[Phase 5-C 实现交接](docs/status/phase-5-c-implementation-handoff.md)。

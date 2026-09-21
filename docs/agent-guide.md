@@ -9,7 +9,8 @@ task package 和安全文档为准。
 - Phase 5-A：CLOSED；remote_machine 身份、独立 JWT claim profile、零权限矩阵、
   永久 Windows / CI / 真实 service-token 验收均已完成。
 - Phase 5-B：**CLOSED**；live census、一个受限目录查询及 Windows/remote/CI 验收完成。
-- Phase 5-C+：尚未授权实施。
+- Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
+- Phase 6+：尚未授权实施。
 
 稳定拓扑不变：
 
@@ -30,26 +31,21 @@ Tunnel  -> Bridge only
 5. docs/upstream-contracts.md
 6. docs/roadmap.md
 7. docs/plans/phase-5-remote-machine-read-only-api.md
-8. docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md
-9. docs/status/phase-5-a-implementation-handoff.md
-10. docs/operations/windows-phase-5-a-acceptance.md
+8. docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md
+9. docs/status/phase-5-c-implementation-handoff.md
+10. docs/operations/windows-phase-5-c-acceptance.md
 11. 本文
 
 Codex 执行入口：
 
-docs/prompts/phase-5-b-codex-goal.md
+docs/prompts/phase-5-c-codex-goal.md
 
-## Phase 5-B 的核心判断
+## Phase 5-C 的核心判断
 
-不要先写行情接口。先回答三个问题：
-
-1. 永久 Windows 机器上当前运行的 FQGate 实际提供哪些候选 market contracts？
-2. 哪些候选能用 live OpenAPI + 官方/公开代码 + 无副作用 semantic probe 证明为
-   read-only，并且输入输出可以严格限界？
-3. 在这些候选中，哪 1–2 个最适合作为第一批稳定 Bridge-owned API？
-
-Runtime /openapi.json 是描述证据，不是授权来源。即使出现新 path，也必须在
-Bridge 中显式 adapter + registry + tests 后才可调用。
+本阶段不再选择行情接口。`openapi.machine` 只从 Bridge registry 中
+`allowedContexts` 明确包含 `remote_machine` 且带有 public schema metadata 的条目
+生成文档。Runtime `/openapi.json` 仍只是描述证据，不能改变文档或授权。Phase 5 已在
+永久 Windows、真实 service-token 和精确提交双平台 CI 通过后关闭。
 
 ## 权限边界
 
@@ -62,9 +58,10 @@ remote_machine
 
 不要顺手给 remote_human 或 remote_admin。
 
-Phase 5-A 的旧矩阵保持：remote_machine 对 bridge.version、status、QR/session、
-updates、admin、openapi.refresh 等既有 operation 继续全部拒绝；machine hostname
-也不能渲染 Dashboard/static 或透传 raw /v1/...。
+Phase 5-A 的旧矩阵保持：remote_machine 只新增了 Phase 5-B 的查询与 Phase 5-C 的
+`openapi.machine`；对 bridge.version、status、QR/session、updates、admin、
+openapi.refresh 等既有 operation 继续全部拒绝。machine hostname 也不能渲染
+Dashboard/static 或透传 raw /v1/...。
 
 ## 实现方式
 
@@ -101,6 +98,7 @@ quote；bars 只有在行数、时间范围和返回结构都能确定限界时�
 - Phase 5-B live OpenAPI census；
 - Phase 5-B local semantic probes；
 - Phase 5-B remote-machine smoke；
+- Phase 5-C local/remote machine OpenAPI matrix；
 - 最终 GitHub Actions Ubuntu + Windows。
 
 不要创建第二份临时 Windows checkout 规避永久环境问题。
@@ -110,7 +108,7 @@ quote；bars 只有在行数、时间范围和返回结构都能确定限界时�
 ### 1. Existing machine service-token secret entry
 
 Phase 5-A 已经创建 machine Access application / service token / Tunnel ingress。
-Phase 5-B 不创建新的 Cloudflare 资源。
+Phase 5-B/C 与整个 Phase 5 都没有创建新的 Cloudflare 资源。
 
 远程 smoke 需要凭据时，operator 只在 PowerShell 的 Read-Host -AsSecureString
 隐藏提示中输入既有 Client ID 和 Client Secret。随后全部测试必须自动完成。
@@ -134,7 +132,8 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 - 不让 runtime OpenAPI 自动授权。
 - 不给 machine 任何旧的 QR/session/update/admin/openapi-refresh 权限。
 - Phase 5-B 最多两个 read-only market operations。
-- 不做 generated machine OpenAPI；那是 Phase 5-C。
+- machine OpenAPI 只允许 registry-derived 的既有 `openapi.machine`，不得从上游
+  OpenAPI 自动扩张或加入第二个 market operation。
 - 不做 Cloudflare provisioning；那是 Phase 6。
 - 不提前做 supervisor、notifications、automatic updates、MCP/WebSocket、
   packaging 或 turtle-value-engine consumer integration。
@@ -158,6 +157,7 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 ## 本次实现交接
 
 首个 operation 为 `market.instruments.lookup`（六位代码查询），仅 local +
-remote_machine。Phase 5-B 已 CLOSED；不追加报价或其他 API，Phase 5-C 需要单独任务。
-实际实时证据、指纹、后续边界见 `docs/status/phase-5-b-implementation-handoff.md`；
-Windows/远程自动矩阵与隐藏输入步骤见 `docs/operations/windows-phase-5-b-acceptance.md`。
+remote_machine。Phase 5-B/C 与整个 Phase 5 已 CLOSED；不追加报价或其他 API。
+最终实现、实时证据、机器检查总数和后续边界见
+`docs/status/phase-5-c-implementation-handoff.md`；Windows/远程自动矩阵与隐藏输入
+步骤见 `docs/operations/windows-phase-5-c-acceptance.md`。

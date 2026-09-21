@@ -10,7 +10,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 3: **CLOSED**
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
-- Phase 5: **ACTIVE — Phase 5-B CLOSED; Phase 5-C ACTIVE**
+- Phase 5: **CLOSED**
 - Phase 6+: planned only
 
 Current deployed topology remains:
@@ -243,7 +243,7 @@ The gate is strict: GitHub Actions must be green on Ubuntu and Windows, and Phas
 
 ## Phase 5 — Remote read-only HTTP API and filtered API docs
 
-Status: **ACTIVE — Phase 5-A/B CLOSED; Phase 5-C ACTIVE**.
+Status: **CLOSED — Phase 5-A/B/C deterministic, Windows, real remote and CI acceptance passed**.
 
 Goal: make selected market-data capabilities safely consumable by remote
 software without turning the Bridge into a generic FQGate proxy and without
@@ -322,14 +322,19 @@ runtime OpenAPI is allowed.
 
 ### 5-C — filtered machine OpenAPI and live remote closure
 
-Status: **ACTIVE**. Executable contract:
+Status: **CLOSED — implementation and final acceptance passed**. Executable contract:
 `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`.
 Codex handoff: `docs/prompts/phase-5-c-codex-goal.md`.
 
 Generate machine-facing OpenAPI only from explicit Bridge registry entries that
 allow `remote_machine`. Upstream discovery remains descriptive only.
 
-Close Phase 5 only after a real machine client through the separate Access
+Implemented route: `openapi.machine`, GET `/api/v1/openapi/machine`, allowed
+exactly for local + remote_machine. It emits a canonical 64-KiB-bounded document
+containing the lookup and docs route only, using explicit registry-owned public
+schema metadata without any runtime discovery dependency.
+
+Phase 5 closed after a real machine client through the separate Access
 application + Tunnel can call the approved read-only operations, forbidden
 human/admin/session/update/raw routes remain denied, compatibility drift fails
 closed, and the live Windows topology is still loopback-only.
@@ -388,17 +393,17 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5-A is closed at the zero-privilege remote-machine checkpoint.
+Phase 5 is closed at the registry-derived machine OpenAPI and real remote closure checkpoint.
 
-Current active executable task:
+Latest closed executable task:
 
 `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`
 
-Current Codex goal:
+Closure Codex goal:
 
 `docs/prompts/phase-5-c-codex-goal.md`
 
-Latest closed executable task remains:
+Previous closed executable task:
 
 `docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`
 
@@ -411,12 +416,8 @@ Phase 5-A closure evidence:
 - `docs/status/phase-5-a-implementation-handoff.md`
 - `docs/operations/windows-phase-5-a-acceptance.md`
 
-Phase 5-B must obtain its market contract from the running permanent-Windows
-FQGate instance before adding any allowlisted operation. It may add at most two
-explicitly read-only machine operations and must keep the existing
-remote-machine deny boundary for every other operation. Generated machine
-OpenAPI belongs to Phase 5-C; Cloudflare provisioning remains Phase 6.
-
 Phase 5-B closed on 2026-09-20. Exact implementation and all acceptance IDs are
 recorded in `docs/status/phase-5-b-implementation-handoff.md` and
-`docs/operations/windows-phase-5-b-acceptance.md`. This does not close Phase 5. Phase 5-C is now explicitly authorized only by the active Phase 5-C task package above.
+`docs/operations/windows-phase-5-b-acceptance.md`. Phase 5-C and Phase 5 closed
+on 2026-09-21 after the registry-derived machine OpenAPI passed permanent-Windows,
+real remote and exact-commit CI acceptance. Cloudflare provisioning remains Phase 6.

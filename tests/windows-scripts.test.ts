@@ -126,6 +126,47 @@ describe("Windows entry points", () => {
     expect(harness).not.toContain("console.log(clientSecret");
   });
 
+  it("provides a machine-counted Phase 5-C local and remote acceptance boundary", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/phase5c-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    const matrix = readFileSync(
+      new URL("../scripts/windows/phase5c-matrix.mjs", import.meta.url),
+      "utf8",
+    );
+    const secureWrapper = readFileSync(
+      new URL("../scripts/windows/phase5a-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("D:\\code\\research\\fqgate-remote-bridge");
+    expect(script).toContain("phase5c-matrix.mjs");
+    expect(script).toContain("-Phase5CReadOnly");
+    expect(script).toContain("P5C-W-SUMMARY");
+    expect(script).toContain("records.Count");
+    expect(script).toContain("if (-not $?)");
+    expect(script).toContain("127.0.0.1");
+    expect(script).toContain("17281");
+    expect(script).toContain("17282");
+    expect(matrix).toContain("P5C-SUMMARY");
+    expect(matrix).toContain("results.length");
+    expect(matrix).toContain("/api/v1/openapi/machine");
+    expect(matrix).toContain("MACHINE_OPENAPI_MAX_BYTES");
+    expect(matrix).toContain('candidate.id !== "updates.apply"');
+    expect(matrix).toContain('code === "ACCESS_ASSERTION_INVALID"');
+    expect(matrix).toContain("attempts < maximumAttempts");
+    expect(matrix).toContain('maximumAttempts = !local && expected === "document" ? 2 : 1');
+    expect(matrix).not.toContain("response.body.toString");
+    expect(secureWrapper).toContain("[switch]$Phase5CReadOnly");
+    expect(secureWrapper).toContain("fqgate-phase5c-remote-evidence.json");
+    expect(secureWrapper).toContain("commit = Get-CurrentCommit");
+    expect(secureWrapper).toContain("RedirectStandardOutput = $true");
+    expect(secureWrapper).toContain("$process.ExitCode -ne 0");
+    expect(secureWrapper).not.toContain("--client-id");
+    expect(secureWrapper).not.toContain("--client-secret");
+  });
+
   it("keeps the authenticated Phase 4.5 companion harness bounded and secret-safe", () => {
     const harness = readFileSync(
       new URL("../scripts/windows/phase45-authenticated-acceptance.mjs", import.meta.url),

@@ -374,12 +374,16 @@ Phase 4 assumes a manually created self-hosted Access application with a
 human Allow policy and Protect with Access enabled on the published
 application. Phase 5-A adds only the independent machine hostname, Access
 application/AUD metadata, service-token JWT verifier, and
-`remote_machine` request context. Its operation allowlist is intentionally
-empty: a valid machine principal is denied by every existing operation and
+`remote_machine` request context. At that historical checkpoint its operation allowlist was intentionally
+empty: a valid machine principal was denied by every existing operation and
 machine-host page/static/raw paths cannot reach the TanStack application. No
-Cloudflare API provisioning or market-data operation is implemented. The real
+Cloudflare API provisioning or market-data operation was implemented in 5-A. The real
 Windows/Cloudflare human acceptance is recorded in the Phase 4 runbook and
 handoff; Phase 4 remains closed.
+
+Phase 5-B later granted the single bounded lookup, and Phase 5-C grants only
+its registry-derived machine documentation operation. Neither changes the
+historical 5-A evidence or grants any old human/admin operation.
 
 ### 12. Cloudflare provisioner — Phase 6
 
@@ -481,3 +485,26 @@ validated-version policy remain unchanged. Diagnostic/recovery operations remain
 available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
+
+## Phase 5-C machine OpenAPI — closed
+
+The Bridge owns a separate machine document at
+`GET /api/v1/openapi/machine`, operation ID `openapi.machine`, allowed exactly
+for `local` and `remote_machine`. The generator receives Bridge operation
+registry entries, filters only entries whose `allowedContexts` includes
+`remote_machine`, and requires explicit public documentation metadata on each
+such entry. Registry invariants fail startup if a machine operation lacks that
+metadata or a non-machine operation carries it.
+
+The document is canonicalized and bounded to 64 KiB. It contains only the
+Bridge public request/response/error schemas for the current lookup and docs
+route. It has no dependency on runtime FQGate OpenAPI and emits no upstream
+paths or schemas, compatibility fingerprints, filesystem/runtime state,
+Access configuration, secrets, or human/admin/session/update operations.
+Runtime FQGate discovery therefore cannot add a machine path or alter machine
+authorization.
+
+Closure acceptance on 2026-09-21 proved the exact two-path/five-schema document,
+the approved lookup, old-operation and page/static/raw denial, human/admin
+isolation, Bridge-only Tunnel ingress, and both loopback listeners through the
+real machine Access application. Phase 5 adds no second market operation.

@@ -139,7 +139,10 @@ describe("Phase 4.5A request contexts and orthogonal operation policy", () => {
       ]),
       remote_admin: new Set(
         listBridgeOperations()
-          .filter((operation) => operation.id !== "market.instruments.lookup")
+          .filter(
+            (operation) =>
+              operation.id !== "market.instruments.lookup" && operation.id !== "openapi.machine",
+          )
           .map((operation) => operation.id),
       ),
     };
