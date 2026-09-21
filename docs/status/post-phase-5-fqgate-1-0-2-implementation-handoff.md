@@ -65,8 +65,45 @@ TypeScript noEmit: passed
 Focused qualification/Phase 5-B/Windows-script tests: 66 passed
 ```
 
-The complete repository gates and the permanent-Windows command remain pending until this
-implementation is synchronized to `D:\code\research\fqgate-remote-bridge`.
+The complete repository gates and the permanent-Windows command were pending at the initial
+implementation handoff; the current verification snapshot below records the synchronized
+results and the remaining live qualification boundary.
+
+## Current verification snapshot (2026-09-21)
+
+The implementation is synchronized to exact commit
+`7b8a9d234bc0c25a6246b9165f7388bd6d548614` on both the repository and permanent Windows
+`main` checkouts. The final Ubuntu and Windows CI jobs passed in run
+`35564718411`:
+
+- `Checks (ubuntu-latest)`: success, job `106224173387`;
+- `Checks (windows-latest)`: success, job `106224173207`.
+
+Permanent-Windows pre-qualification gates passed: frozen install, typecheck, lint, 205 unit
+tests, production build, format check, and 13 browser tests. The exact stable manifest check
+also passed for `FQGate-1.0.2-windows-x64-UNSIGNED.exe`, 23065088 bytes,
+SHA-256 `024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2`.
+
+The bounded harness recorded two candidate attempts. Each preserved the baseline census
+(89 runtime operations, approved lookup fingerprint, one exact-code result), then failed
+candidate health readiness and automatically restored the known-good 1.0.1 executable.
+The authoritative permanent-Windows state after the latest attempt is:
+
+```text
+active version: 1.0.1
+last activation: rolled_back
+FQGate listener: exactly 127.0.0.1:17281
+Bridge listener: exactly 127.0.0.1:17282
+```
+
+The direct CLI diagnostic identified the candidate failure as `HEALTH_TIMEOUT`: the 1.0.2
+GUI process remained responsive but did not expose the health listener. The upstream Windows
+installer documents that first launch can require a user-completed risk confirmation before
+health becomes available. That confirmation has not yet been completed, so no QR/login or
+service-token boundary has been opened and the remote matrix has not run. The generated
+external evidence file remains bounded and outside Git at
+`D:\code\research\fqgate-post-phase5-1-0-2-evidence.json`; the task remains ACTIVE until
+the first-use confirmation is completed and the full 1.0.2/local/remote evidence is recorded.
 
 ## Required closure evidence
 
