@@ -11,7 +11,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
 - Phase 5: **CLOSED**
-- Phase 6+: planned only
+- Phase 6-A: **ACTIVE — read-only discovery and deterministic plan**
+- Phase 6-B/C+: planned only
 
 Current deployed topology remains:
 
@@ -349,60 +350,64 @@ operation allowlist, configuration, and tests remain independent.
 
 ---
 
-## Active maintenance track — FQGate release compatibility and 1.0.2 refresh
+## Closed maintenance track — FQGate release compatibility and 1.0.2 refresh
 
-Status: **ACTIVE — implementation landed; permanent Windows/remote/CI closure pending**.
+Status: **CLOSED — permanent Windows 1.0.2, local/remote acceptance and CI passed**.
 
-The official FQGate stable channel moved to 1.0.2 on 2026-09-20. Before starting
-Phase 6, the permanent Windows environment under `D:\\code\\research` must be
-qualified and upgraded to 1.0.2, and the first market operation's compatibility
-gate must be changed from literal 1.0.1 coupling to operation-scoped evidence.
+The post-Phase-5 qualification work replaced literal patch-version coupling with artifact-bound,
+operation-scoped evidence while preserving fixed official-source pinning, exact size/SHA-256,
+health/OpenAPI checks, rollback, loopback-only listeners and deny-by-default Bridge policy.
 
-The security posture does not become looser: official-source pinning, exact
-size/SHA-256 verification, explicit plan/apply, health/OpenAPI checks, rollback,
-loopback-only listeners and deny-by-default operation policy remain mandatory.
-The maintenance goal is to automate re-certification for frequent patch releases
-when the exact exposed-operation contract remains structurally identical and its
-bounded semantic probe passes.
+Closure evidence is authoritative in:
+- `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`
+- `docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`
 
-Executable task:
-
-`docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`
-
-Codex handoff:
-
-`docs/prompts/post-phase-5-fqgate-1-0-2-codex-goal.md`
-
-This maintenance track does not authorize Phase 6 or any additional market
-operation.
-
-The implementation provides a quarantined `fqgate qualify` command and a bounded permanent
-Windows harness. It keeps the historical 1.0.1 installation usable, admits an in-range patch
-only through the existing staged activation/health/OpenAPI/rollback transaction, and persists
-operation-scoped evidence only after the reviewed lookup fingerprint and exact-code semantic
-probe pass. The repeatable command is documented in
-`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; closure still requires
-its external evidence, local/remote machine totals, and green Ubuntu/Windows CI for the same
-final commit.
+Do not treat this closed maintenance track as a Phase 6 blocker.
 
 ---
 
 ## Phase 6 — Automated Cloudflare provisioning and drift management
 
-Goal: automate the manually proven Phase 4/4.5/5 setup safely.
+Goal: automate the already-proven Phase 4/4.5/5 Cloudflare topology without weakening the
+Bridge's loopback, Access or operation-registry boundaries.
 
-Deliverables:
+Detailed design: `docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`.
 
-- scoped Cloudflare API token validation;
-- account/zone validation;
-- create/adopt named Tunnel;
-- create/adopt DNS records;
-- configure ingress/published applications and Access prerequisites where supported;
-- plan/dry-run before mutation;
-- drift detection;
-- setup-time credentials removable after provisioning.
+### Phase 6-A — read-only discovery, reconciliation and deterministic plan
 
-Never request a Global API Key.
+Status: **ACTIVE**.
+
+Executable task: `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`.  
+Codex handoff: `docs/prompts/phase-6-a-codex-goal.md`.
+
+Phase 6-A has zero Cloudflare mutation authority. It implements a bounded GET-only client,
+inventories the exact account/zone resources used by the existing deployment, compares them
+against explicit Bridge-owned desired state, and emits a stable plan/fingerprint. Duplicate,
+ambiguous or unsafe state is a conflict rather than a guess.
+
+### Phase 6-B — bounded create/adopt/update apply
+
+Status: **PLANNED ONLY; not authorized by 6-A**.
+
+A future task may mutate only after consuming an exact fingerprinted plan, re-reading state,
+rejecting stale plans and using a separately scoped setup-time write credential.
+
+### Phase 6-C — live reconciliation, credential removal and closure
+
+Status: **PLANNED ONLY**.
+
+Closure should prove an idempotent no-op reconciliation on the permanent Windows deployment,
+remove setup write credentials from runtime requirements, re-run human/admin/machine remote
+regressions, and record exact-final-commit Ubuntu/Windows CI.
+
+Phase 6 invariants:
+- never request or accept a Cloudflare Global API Key;
+- API base/endpoint families are fixed in code;
+- Tunnel ingress always targets `http://127.0.0.1:17282`, never 17281;
+- human/admin/machine Access apps, policies and AUDs remain distinct;
+- no Bypass/Everyone widening is silently adopted;
+- setup credentials never enter Git, normal config, logs or evidence;
+- Bridge authorization remains independent of Cloudflare provisioning.
 
 ## Phase 7 — Supervisor, recovery, audit trail, notifications
 
