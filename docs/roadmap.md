@@ -436,31 +436,32 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5 is closed at the registry-derived machine OpenAPI and real remote closure checkpoint.
+Phase 5 and the post-Phase-5 FQGate 1.0.2 compatibility maintenance track are closed.
+The active implementation target is **Phase 6-A only**: Cloudflare read-only discovery,
+reconciliation and deterministic planning. Phase 6-A has no Cloudflare mutation authority.
 
-Latest closed executable task:
+Active executable task:
 
-`docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`
+`docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
 
-Closure Codex goal:
+Active Codex goal:
 
-`docs/prompts/phase-5-c-codex-goal.md`
+`docs/prompts/phase-6-a-codex-goal.md`
 
-Previous closed executable task:
+Phase 6 design source:
 
-`docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`
+`docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`
 
-Phase 5 design source:
+Required historical baselines before implementation:
 
-`docs/plans/phase-5-remote-machine-read-only-api.md`
+- `docs/status/phase-5-c-implementation-handoff.md`
+- `docs/operations/windows-phase-5-c-acceptance.md`
+- `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`
+- `docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`
 
-Phase 5-A closure evidence:
-
-- `docs/status/phase-5-a-implementation-handoff.md`
-- `docs/operations/windows-phase-5-a-acceptance.md`
-
-Phase 5-B closed on 2026-09-20. Exact implementation and all acceptance IDs are
-recorded in `docs/status/phase-5-b-implementation-handoff.md` and
-`docs/operations/windows-phase-5-b-acceptance.md`. Phase 5-C and Phase 5 closed
-on 2026-09-21 after the registry-derived machine OpenAPI passed permanent-Windows,
-real remote and exact-commit CI acceptance. Cloudflare provisioning remains Phase 6.
+Use the permanent Windows checkout at `D:\\code\\research\\fqgate-remote-bridge`.
+Automate every machine-verifiable quality, fixture, discovery, reconciliation, loopback and
+regression check. Human intervention is limited to the explicitly documented hidden credential
+entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that includes the
+exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
+command. Do not advance to Phase 6-B or mutate Cloudflare until Phase 6-A is separately closed.
