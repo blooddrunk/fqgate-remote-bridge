@@ -18,6 +18,8 @@ if ($currentPathExt -notmatch "(?i)(^|;)\.EXE(;|$)" -or $currentPathExt -notmatc
         "$standardPathExt;$currentPathExt"
     }
 }
+$script:playwrightCachePath = Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "ms-playwright"
+$env:PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $evidencePath = "D:\code\research\fqgate-phase6a-discovery-evidence.json"
 $records = [System.Collections.Generic.List[object]]::new()
@@ -97,6 +99,55 @@ function Invoke-BoundedProcess {
         }
         $process.Dispose()
     }
+}
+
+function Get-PlaywrightHeadlessShellPath {
+    $cacheRoot = $script:playwrightCachePath
+    if ([string]::IsNullOrWhiteSpace($cacheRoot) -or -not (Test-Path -LiteralPath $cacheRoot -PathType Container)) {
+        return $null
+    }
+    $directories = @(Get-ChildItem -LiteralPath $cacheRoot -Directory -Filter "chromium_headless_shell-*" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
+    foreach ($directory in $directories) {
+        $candidate = Join-Path $directory.FullName "chrome-headless-shell-win64\chrome-headless-shell.exe"
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            return $candidate
+        }
+    }
+    return $null
+}
+
+function Ensure-PlaywrightHeadlessShell {
+    $existing = Get-PlaywrightHeadlessShellPath
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        Write-Host "P6A-Q7-BROWSER PASS"
+        return
+    }
+    Write-Host "P6A-Q7-BROWSER REPAIR"
+    $install = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments @(
+        "pnpm", "exec", "playwright", "install", "--force", "chromium"
+    ) -Environment @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath } -MaximumOutputBytes 1MB
+    if ($install.ExitCode -ne 0) {
+        throw "P6A-Q7-BROWSER_INSTALL_FAIL"
+    }
+    if ([string]::IsNullOrWhiteSpace((Get-PlaywrightHeadlessShellPath))) {
+        throw "P6A-Q7-BROWSER_MISSING_AFTER_INSTALL"
+    }
+    Write-Host "P6A-Q7-BROWSER PASS"
+}
+
+function Write-QualityGateFailureDiagnostics {
+    param(
+        [Parameter(Mandatory = $true)][string]$GateId,
+        [Parameter(Mandatory = $true)]$Result
+    )
+    $diagnostic = (($Result.Stdout + "`n" + $Result.Stderr).Trim())
+    $diagnostic = $diagnostic -replace '(?i)(authorization|cookie|(?:api|client|tunnel)[_-]?(?:token|secret)|access[_-]?(?:assertion|jwt|token))\s*[:=]\s*[^\s\r\n]+', '$1=<redacted>'
+    if ($diagnostic.Length -gt 8192) {
+        $diagnostic = $diagnostic.Substring($diagnostic.Length - 8192)
+    }
+    Write-Host "${GateId}-DIAGNOSTIC_BEGIN"
+    Write-Host $diagnostic
+    Write-Host "${GateId}-DIAGNOSTIC_END"
 }
 
 function ConvertFrom-SecureStringInMemory {
@@ -253,6 +304,7 @@ try {
     Assert-LoopbackListener "P6A-W6" 17282
 
     if ($RunQualityGates) {
+        $qualityGateEnvironment = @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath }
         foreach ($gate in @(
             @{ id = "P6A-Q1"; args = @("pnpm", "install", "--frozen-lockfile") },
             @{ id = "P6A-Q2"; args = @("pnpm", "typecheck") },
@@ -262,13 +314,19 @@ try {
             @{ id = "P6A-Q6"; args = @("pnpm", "format:check") },
             @{ id = "P6A-Q7"; args = @("pnpm", "test:e2e") }
         )) {
+            if ($gate.id -eq "P6A-Q7") {
+                Ensure-PlaywrightHeadlessShell
+            }
             try {
-                $gateResult = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -MaximumOutputBytes 256KB
+                $gateResult = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -Environment $qualityGateEnvironment -MaximumOutputBytes 256KB
             } finally {
                 Restore-GeneratedRouteTree
             }
             Add-Record $gate.id $(if ($gateResult.ExitCode -eq 0) { "PASS" } else { "FAIL" }) @{ exitCode = $gateResult.ExitCode }
-            if ($gateResult.ExitCode -ne 0) { throw "$($gate.id) FAIL" }
+            if ($gateResult.ExitCode -ne 0) {
+                Write-QualityGateFailureDiagnostics $gate.id $gateResult
+                throw "$($gate.id) FAIL"
+            }
         }
     } else {
         Add-Record "P6A-Q0" "SKIP" @{ reason = "run with -RunQualityGates to execute the frozen full repository gate set" }

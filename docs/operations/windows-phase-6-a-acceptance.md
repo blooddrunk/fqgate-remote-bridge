@@ -68,6 +68,12 @@ quality gate cannot deadlock on a full pipe. The script and each child process
 also restore the standard Windows `PATHEXT` entries when an operator environment
 is missing `.EXE` or `.CMD`, so Git, Corepack and local `node_modules\.bin` shims
 such as Playwright resolve correctly.
+The acceptance process pins Playwright to the current Windows user's
+`%LOCALAPPDATA%\ms-playwright` cache and checks the Chromium headless shell
+before Q7; if that exact binary is absent, it repairs the cache with the official
+Playwright installer before running E2E. If Q7 still fails, a bounded, redacted
+child-process diagnostic is printed between `P6A-Q7-DIAGNOSTIC_BEGIN` and
+`P6A-Q7-DIAGNOSTIC_END`.
 The script also restores the tracked generated route-tree bytes after each quality
 gate, because the route generator may rewrite that file. A non-zero plan result is
 retained as bounded conflict evidence and keeps closure OPEN.

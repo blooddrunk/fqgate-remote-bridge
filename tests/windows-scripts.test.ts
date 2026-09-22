@@ -213,6 +213,10 @@ describe("Windows entry points", () => {
     expect(script).toContain(".COM;.EXE;.BAT;.CMD");
     expect(script).toContain("$env:PATHEXT");
     expect(script).toContain("$currentPathExt");
+    expect(script).toContain("PLAYWRIGHT_BROWSERS_PATH");
+    expect(script).toContain("Ensure-PlaywrightHeadlessShell");
+    expect(script).toContain('"--force", "chromium"');
+    expect(script).toContain("Write-QualityGateFailureDiagnostics");
     expect(script).toContain("ReadAllBytes");
     expect(script).toContain("WriteAllBytes");
     expect(script).toContain("Restore-GeneratedRouteTree");
