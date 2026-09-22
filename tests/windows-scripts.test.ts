@@ -209,6 +209,8 @@ describe("Windows entry points", () => {
     expect(script).toContain("ReadToEndAsync()");
     expect(script).toContain("$stdoutTask");
     expect(script).toContain("$stderrTask");
+    expect(script).toContain('EnvironmentVariables["PATHEXT"]');
+    expect(script).toContain(".COM;.EXE;.BAT;.CMD");
     expect(script).toContain('"INCOMPLETE"');
     expect(script).toContain("-RunQualityGates");
     expect(script).not.toContain("--api-token");

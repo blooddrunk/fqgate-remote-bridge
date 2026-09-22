@@ -59,6 +59,12 @@ function Invoke-BoundedProcess {
     $startInfo.CreateNoWindow = $true
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
+    $pathExt = [string]$startInfo.EnvironmentVariables["PATHEXT"]
+    if ($pathExt -notmatch "(?i)(^|;)\.CMD(;|$)") {
+        $standardPathExt = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC"
+        $startInfo.EnvironmentVariables["PATHEXT"] =
+            if ([string]::IsNullOrWhiteSpace($pathExt)) { $standardPathExt } else { "$standardPathExt;$pathExt" }
+    }
     foreach ($key in $Environment.Keys) {
         $startInfo.EnvironmentVariables[[string]$key] = [string]$Environment[$key]
     }
