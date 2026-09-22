@@ -63,6 +63,9 @@ The script checks the exact main/clean working tree, both IPv4 loopback listener
 then prompts exactly once with `Read-Host -AsSecureString` for the Cloudflare
 read-only token. It runs `cloudflare discover` and `cloudflare plan` in bounded
 child processes without putting the token in arguments, output or evidence. A
+child process's stdout and stderr are drained concurrently so a verbose Windows
+quality gate cannot deadlock on a full pipe. A non-zero plan result is retained as
+bounded conflict evidence and keeps closure OPEN.
 non-zero plan result is retained as bounded conflict evidence and keeps closure
 OPEN.
 

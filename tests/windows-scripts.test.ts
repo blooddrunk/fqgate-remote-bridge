@@ -206,6 +206,9 @@ describe("Windows entry points", () => {
     expect(script).toContain("phase5c-acceptance.ps1");
     expect(script).toContain("MANUAL_REQUIRED");
     expect(script).toContain("MANUAL_FQGATE_LOGIN_REQUIRED");
+    expect(script).toContain("ReadToEndAsync()");
+    expect(script).toContain("$stdoutTask");
+    expect(script).toContain("$stderrTask");
     expect(script).toContain('"INCOMPLETE"');
     expect(script).toContain("-RunQualityGates");
     expect(script).not.toContain("--api-token");

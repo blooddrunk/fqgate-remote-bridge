@@ -66,9 +66,13 @@ function Invoke-BoundedProcess {
     $process.StartInfo = $startInfo
     try {
         if (-not $process.Start()) { throw "P6A_PROCESS_START_FAILED" }
-        $stdout = $process.StandardOutput.ReadToEnd()
-        $stderr = $process.StandardError.ReadToEnd()
+        # Start both reads before waiting for the child. Reading stdout to EOF
+        # before draining stderr can deadlock when a Windows pipe buffer fills.
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
         $process.WaitForExit()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
         if ($stdout.Length -gt $MaximumOutputBytes -or $stderr.Length -gt $MaximumOutputBytes) {
             throw "P6A_CHILD_OUTPUT_TOO_LARGE"
         }
