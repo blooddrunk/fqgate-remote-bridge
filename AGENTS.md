@@ -381,12 +381,51 @@ Follow `docs/roadmap.md`.
 - Phase 5-A: CLOSED — remote-machine identity/context with zero operation privileges
 - Phase 5-B: CLOSED — authoritative live census + one bounded instrument lookup
 - Phase 5-C: CLOSED — filtered machine OpenAPI + final Windows/remote/CI closure
+- Phase 6-A: OPEN — read-only Cloudflare discovery/plan implementation; live and
+  exact-commit closure evidence pending
 - Phase 5-D+: do not opportunistically implement
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6 provisioning and all other later-phase work require a separate task.
+Phase 6-B provisioning and all other later-phase work require a separate task.
+
+## Active Phase 6-A read-only discovery task
+
+The active task package is:
+
+`docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
+
+The primary design note is:
+
+`docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`
+
+The Codex handoff is:
+
+`docs/prompts/phase-6-a-codex-goal.md`
+
+The implementation handoff is:
+
+`docs/status/phase-6-a-implementation-handoff.md`
+
+The permanent-Windows procedure is:
+
+`docs/operations/windows-phase-6-a-acceptance.md`
+
+Phase 6-A is limited to fixed-base Cloudflare GET-only discovery, desired-state
+reconciliation and deterministic secret-free plan/fingerprint. It must not create,
+adopt, update or delete Tunnel/DNS/Access resources, retrieve Tunnel tokens, expose
+a generic Cloudflare REST proxy, add a Bridge route, add market operations, or
+implement Phase 6-B. Its CLI surface is exactly `cloudflare discover` and
+`cloudflare plan`, and `--apply` is rejected.
+
+The Cloudflare API token may enter only through the hidden permanent-Windows
+`Read-Host -AsSecureString` boundary. It must never enter Git, JSON desired state,
+CLI arguments, logs or evidence. A real plan must preserve the exact Bridge origin
+`http://127.0.0.1:17282`, classify direct 17281/wildcard/broad ingress and policy
+widening as conflicts, and keep human/admin/machine Access identities independent.
+If live Cloudflare or exact-commit CI evidence is unavailable, Phase 6-A remains
+OPEN with exact check IDs and the next executable command.
 
 ## Active post-Phase-5 maintenance task
 

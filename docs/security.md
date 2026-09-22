@@ -188,11 +188,21 @@ Do not persist:
 - authorization headers
 - arbitrary upstream response bodies
 
-## Cloudflare credentials (later phase)
+## Cloudflare credentials and control-plane access
 
 ### Setup-time API token
 
-Use only a scoped API token with permissions required to provision/adopt Tunnel/DNS/related resources. Never request/document Global API Key use.
+Phase 6-A accepts only a short-lived, least-privilege, read-only API token
+limited to the exact account/zone and the discovery resources. It is entered only
+through the permanent-Windows hidden `Read-Host -AsSecureString` boundary and is
+briefly passed to a child process environment. It must not appear in a CLI
+argument, repository file, ordinary environment configuration, log, plan or
+evidence. Never request or document Global API Key use.
+
+The Phase 6-A client uses a fixed API origin, fixed GET paths, timeout, redirect
+rejection, bounded bodies and bounded pagination. No mutation method, generic REST
+proxy, Tunnel-token retrieval, resource creation or Access policy change exists.
+Phase 6-B provisioning remains separately unauthorized.
 
 ### Tunnel runtime credential
 
@@ -202,7 +212,8 @@ protected file. The service invocation uses
 the service command line. Token-file creation/read/ACL verification is
 fail-closed; status only reports `secure`, `missing`, `unreadable`, or
 `insecure`, never file contents. The current code has no token input in normal
-JSON configuration and no Cloudflare provisioning API path.
+JSON configuration. Phase 6-A now has only the read-only discovery/plan API path;
+it has no Cloudflare mutation or token-retrieval path.
 
 ### Machine access
 

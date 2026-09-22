@@ -12,7 +12,9 @@ task package 和安全文档为准。
 - Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
 - Post-Phase-5 FQGate 兼容维护：**ACTIVE**；1.0.2 qualification implementation 已完成，
   永久 Windows、remote-machine 与最终 commit CI 证据待补齐。
-- Phase 6+：尚未授权实施。
+- Phase 6-A：**OPEN**；Cloudflare GET-only discovery/plan implementation 已完成，
+  永久 Windows、真实 Cloudflare、exact-commit CI 证据待补齐。
+- Phase 6-B：尚未授权实施。
 
 稳定拓扑不变：
 
@@ -40,6 +42,13 @@ Tunnel  -> Bridge only
 12. docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md
 13. docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md
 14. 本文
+
+Phase 6-A 当前任务还必须阅读：
+
+15. docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md
+16. docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md
+17. docs/status/phase-6-a-implementation-handoff.md
+18. docs/operations/windows-phase-6-a-acceptance.md
 
 Codex 执行入口：
 
@@ -140,7 +149,9 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 - Phase 5-B 最多两个 read-only market operations。
 - machine OpenAPI 只允许 registry-derived 的既有 `openapi.machine`，不得从上游
   OpenAPI 自动扩张或加入第二个 market operation。
-- 不做 Cloudflare provisioning；那是 Phase 6。
+- Phase 6-A 只做固定 API、GET-only Cloudflare discovery/reconciliation/plan；不创建、
+  更新、删除、取得 Tunnel token，也不实现 generic REST proxy。Phase 6-B provisioning
+  仍未授权。
 - 不提前做 supervisor、notifications、automatic updates、MCP/WebSocket、
   packaging 或 turtle-value-engine consumer integration。
 - secret/JWT/cookie/QR/Tunnel token/raw OpenAPI/raw market payload 不进入证据或
@@ -177,3 +188,19 @@ required contract、health 失败或激活失败都必须自动回滚。
 
 当前任务仍为 ACTIVE。不要在没有永久 Windows 外部 evidence、真实 machine service-token
 矩阵、精确最终 commit 和 Ubuntu/Windows CI run ID 时写 CLOSED。
+
+## Phase 6-A 交接
+
+CLI 只增加：
+
+```text
+node .\dist\cli\main.js cloudflare discover --desired-state <repo-external-file> --json
+node .\dist\cli\main.js cloudflare plan --desired-state <repo-external-file> --json
+```
+
+Cloudflare token 只能在永久 Windows 脚本的
+`Read-Host -AsSecureString` 隐藏边界输入。计划必须保持
+`http://127.0.0.1:17282` origin，直接 17281、wildcard/broad ingress、重复资源、
+unexpected AUD、Bypass/Everyone 与 human/admin/machine policy widening 都不能被
+自动化“采用”。Phase 6-A 若缺少实时 token、外部 evidence 或 exact-commit CI，必须
+保持 OPEN，并写出具体 check ID、实际观察结果和下一条命令。

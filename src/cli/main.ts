@@ -18,6 +18,11 @@ import type {
   FqgateStatus,
   ReleasePlan,
 } from "../fqgate/install/lifecycle.js";
+import { CloudflareApiClient } from "../cloudflare/client.js";
+import { loadCloudflareDesiredState } from "../cloudflare/desired.js";
+import { CloudflareDiscoveryService } from "../cloudflare/discovery.js";
+import { reconcileCloudflareState } from "../cloudflare/reconcile.js";
+import { FetchCloudflareGetTransport, getCloudflareApiToken } from "../cloudflare/transport.js";
 
 export interface CliIo {
   readonly stdout: (line: string) => void;
@@ -36,6 +41,7 @@ interface ParsedArguments {
   readonly check: boolean;
   readonly apply: boolean;
   readonly configPath?: string;
+  readonly desiredStatePath?: string;
 }
 
 export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): Promise<number> {
@@ -51,19 +57,34 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
       return 0;
     }
 
-    if (args.positionals[0] !== "fqgate" && args.positionals[0] !== "cloudflared") {
+    if (
+      args.positionals[0] !== "fqgate" &&
+      args.positionals[0] !== "cloudflared" &&
+      args.positionals[0] !== "cloudflare"
+    ) {
       throw new BridgeError(
         ERROR_CODES.CONFIG_INVALID,
-        "Command must begin with fqgate, cloudflared, or version",
+        "Command must begin with fqgate, cloudflared, cloudflare, or version",
       );
     }
 
-    const config = await loadConfig(args.configPath);
     const command = args.positionals[1];
     if (command === undefined) {
       io.stdout(usage());
       return 0;
     }
+
+    if (args.positionals[0] === "cloudflare") {
+      if (args.apply) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "Phase 6-A Cloudflare commands are read-only; --apply is not supported",
+        );
+      }
+      return await runCloudflareReadonly(command, args.desiredStatePath, args.json, io);
+    }
+
+    const config = await loadConfig(args.configPath);
 
     if (args.positionals[0] === "cloudflared") {
       return await runCloudflared(
@@ -168,6 +189,49 @@ async function runCloudflared(
     default:
       throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `Unknown cloudflared command: ${command}`);
   }
+}
+
+async function runCloudflareReadonly(
+  command: string,
+  desiredStatePath: string | undefined,
+  json: boolean,
+  io: CliIo,
+): Promise<number> {
+  if (command !== "discover" && command !== "plan") {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      `Unknown cloudflare command: ${command}; use discover or plan`,
+    );
+  }
+  const resolvedDesiredStatePath =
+    desiredStatePath ?? process.env.FQGATE_REMOTE_BRIDGE_CLOUDFLARE_DESIRED_STATE;
+  if (resolvedDesiredStatePath === undefined || resolvedDesiredStatePath.length === 0) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "cloudflare discover/plan requires --desired-state <repo-external-file>",
+    );
+  }
+  const desired = await loadCloudflareDesiredState(resolvedDesiredStatePath);
+  const transport = new FetchCloudflareGetTransport({
+    apiToken: getCloudflareApiToken(),
+  });
+  const client = new CloudflareApiClient({ transport });
+  const observed = await new CloudflareDiscoveryService(client).discover(desired);
+  if (command === "discover") {
+    output(observed, json, io);
+    return 0;
+  }
+  const plan = reconcileCloudflareState(desired, observed);
+  output(plan, json, io);
+  return plan.checks.some(
+    (check) =>
+      check.classification === "ambiguous" ||
+      check.classification === "unsafe_conflict" ||
+      check.classification === "manual_required" ||
+      check.classification === "blocked",
+  )
+    ? 1
+    : 0;
 }
 
 async function runRelease(
@@ -404,6 +468,7 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
   let check = false;
   let apply = false;
   let configPath: string | undefined;
+  let desiredStatePath: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -432,6 +497,19 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
       if (value.length === 0)
         throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "--config requires a file path");
       configPath = value;
+    } else if (argument === "--desired-state") {
+      const next = argv[index + 1];
+      if (next === undefined || next.startsWith("--")) {
+        throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "--desired-state requires a file path");
+      }
+      desiredStatePath = next;
+      index += 1;
+    } else if (argument.startsWith("--desired-state=")) {
+      const value = argument.slice("--desired-state=".length);
+      if (value.length === 0) {
+        throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "--desired-state requires a file path");
+      }
+      desiredStatePath = value;
     } else if (argument.startsWith("--")) {
       throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `Unknown option: ${argument}`);
     } else {
@@ -446,16 +524,27 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
     check,
     apply,
     ...(configPath === undefined ? {} : { configPath }),
+    ...(desiredStatePath === undefined ? {} : { desiredStatePath }),
   };
 }
 
 function exitCodeFor(code: string): number {
-  if (code === ERROR_CODES.CONFIG_INVALID || code === ERROR_CODES.STATE_INVALID) return 2;
+  if (
+    code === ERROR_CODES.CONFIG_INVALID ||
+    code === ERROR_CODES.STATE_INVALID ||
+    code === ERROR_CODES.CLOUDFLARE_TOKEN_REQUIRED ||
+    code === ERROR_CODES.CLOUDFLARE_DESIRED_STATE_INVALID
+  )
+    return 2;
   if (
     code === ERROR_CODES.MANIFEST_FETCH_FAILED ||
     code === ERROR_CODES.MANIFEST_INVALID ||
     code === ERROR_CODES.PACKAGE_NOT_FOUND ||
-    code === ERROR_CODES.PACKAGE_AMBIGUOUS
+    code === ERROR_CODES.PACKAGE_AMBIGUOUS ||
+    code === ERROR_CODES.CLOUDFLARE_API_REQUEST_FAILED ||
+    code === ERROR_CODES.CLOUDFLARE_API_RESPONSE_INVALID ||
+    code === ERROR_CODES.CLOUDFLARE_API_RESPONSE_TOO_LARGE ||
+    code === ERROR_CODES.CLOUDFLARE_PAGINATION_LIMIT
   )
     return 3;
   if (
@@ -495,6 +584,7 @@ function usage(): string {
     "fqgate-remote-bridge fqgate start|stop|restart [--json]",
     "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",
     "fqgate-remote-bridge cloudflared service install|start|stop|restart|status [--json]",
+    "fqgate-remote-bridge cloudflare discover|plan --desired-state <repo-external-file> [--json]",
   ].join("\n");
 }
 

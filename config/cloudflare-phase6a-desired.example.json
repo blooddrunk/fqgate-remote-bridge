@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "phase6a.v1",
+  "account": {
+    "id": "<exact-account-id>",
+    "name": "<exact-account-name>"
+  },
+  "zone": {
+    "id": "<exact-zone-id>",
+    "name": "example.com"
+  },
+  "tunnel": {
+    "id": "<exact-tunnel-id>",
+    "name": "fqgate-remote-bridge",
+    "origin": "http://127.0.0.1:17282",
+    "dnsTarget": "<exact-tunnel-id>.cfargotunnel.com"
+  },
+  "access": {
+    "teamDomain": "<team-name>.cloudflareaccess.com",
+    "teamName": "<team-name>",
+    "applications": {
+      "human": {
+        "id": "<human-application-id>",
+        "name": "FQGate human",
+        "hostname": "fqgate.example.com",
+        "audience": "<human-audience-tag>",
+        "type": "self_hosted"
+      },
+      "admin": {
+        "id": "<admin-application-id>",
+        "name": "FQGate admin",
+        "hostname": "fqgate-admin.example.com",
+        "audience": "<admin-audience-tag>",
+        "type": "self_hosted"
+      },
+      "machine": {
+        "id": "<machine-application-id>",
+        "name": "FQGate machine",
+        "hostname": "fqgate-api.example.com",
+        "audience": "<machine-audience-tag>",
+        "type": "self_hosted"
+      }
+    },
+    "policies": {
+      "human": {
+        "minimumCount": 1,
+        "requiredDecision": "allow",
+        "exactNonIdentitySelectorCount": 0
+      },
+      "admin": {
+        "minimumCount": 1,
+        "requiredDecision": "allow",
+        "requireMfa": true,
+        "exactNonIdentitySelectorCount": 0
+      },
+      "machine": {
+        "minimumCount": 1,
+        "requiredDecision": "non_identity",
+        "exactNonIdentitySelectorCount": 1
+      }
+    }
+  }
+}

@@ -11,7 +11,9 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
 - Phase 5: **CLOSED**
-- Phase 6+: planned only
+- Phase 6-A: **OPEN** — read-only discovery/reconciliation implementation landed;
+  permanent Windows, real Cloudflare and exact-commit CI closure pending
+- Phase 6-B: planned only — Cloudflare mutations require a separate task
 
 Current deployed topology remains:
 
@@ -387,22 +389,27 @@ final commit.
 
 ---
 
-## Phase 6 — Automated Cloudflare provisioning and drift management
+## Phase 6-A — Cloudflare read-only discovery and deterministic plan
 
-Goal: automate the manually proven Phase 4/4.5/5 setup safely.
+Status: **OPEN**. The implementation validates a short-lived scoped read token,
+discovers the exact account/zone, remotely-managed Tunnel/configuration, three DNS
+records, independent human/admin/machine Access applications/AUDs and policies,
+then produces a stable secret-free reconciliation plan and SHA-256 fingerprint.
+It is GET-only, bounded and fail-closed on ambiguous resources, direct 17281 or
+wrong 17282 origin, broad ingress, unexpected AUD, Bypass/Everyone and policy
+widening. It performs no Cloudflare mutation and changes no Bridge operation
+allowlist. See:
 
-Deliverables:
+- `docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`;
+- `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`;
+- `docs/operations/windows-phase-6-a-acceptance.md`;
+- `docs/status/phase-6-a-implementation-handoff.md`.
 
-- scoped Cloudflare API token validation;
-- account/zone validation;
-- create/adopt named Tunnel;
-- create/adopt DNS records;
-- configure ingress/published applications and Access prerequisites where supported;
-- plan/dry-run before mutation;
-- drift detection;
-- setup-time credentials removable after provisioning.
+## Phase 6-B — Cloudflare provisioning and drift application
 
-Never request a Global API Key.
+Planned only. A separate task must authorize reviewed create/adopt/update/delete
+adapters, plan/apply transactions, rollback and credential lifecycle. Phase 6-A
+does not implement or imply any of them. Never request a Global API Key.
 
 ## Phase 7 — Supervisor, recovery, audit trail, notifications
 

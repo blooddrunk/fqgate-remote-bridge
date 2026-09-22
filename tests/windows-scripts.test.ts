@@ -188,6 +188,30 @@ describe("Windows entry points", () => {
     expect(script).not.toContain("--client-secret");
   });
 
+  it("provides a Phase 6-A GET-only Cloudflare discovery and plan boundary", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/phase6a-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+
+    expect(script).toContain("D:\\code\\research\\fqgate-remote-bridge");
+    expect(script).toContain("D:\\code\\research\\fqgate-phase6a-discovery-evidence.json");
+    expect(script).toContain('Read-Host "Cloudflare read-only API token (hidden)" -AsSecureString');
+    expect(script).toContain("CLOUDFLARE_API_TOKEN");
+    expect(script).toContain("EnvironmentVariables.Remove");
+    expect(script).toContain('"cloudflare", $Command');
+    expect(script).toContain('"discover"');
+    expect(script).toContain('"plan"');
+    expect(script).toContain("mutationMethodCount");
+    expect(script).toContain("phase5c-acceptance.ps1");
+    expect(script).toContain("MANUAL_REQUIRED");
+    expect(script).toContain("MANUAL_FQGATE_LOGIN_REQUIRED");
+    expect(script).toContain('"INCOMPLETE"');
+    expect(script).toContain("-RunQualityGates");
+    expect(script).not.toContain("--api-token");
+    expect(script).not.toContain("--tunnel-token");
+  });
+
   it("keeps the authenticated Phase 4.5 companion harness bounded and secret-safe", () => {
     const harness = readFileSync(
       new URL("../scripts/windows/phase45-authenticated-acceptance.mjs", import.meta.url),

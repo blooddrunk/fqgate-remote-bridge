@@ -16,18 +16,19 @@ Tunnel 把流量安全地送到 Bridge。
 当前项目仍在持续开发；Phase 0–5 已完成。Phase 5 的最终交付是受策略约束的
 machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双平台 CI 闭包。
 
-| 能力                   | 当前状态           | 说明                                                  |
-| ---------------------- | ------------------ | ----------------------------------------------------- |
-| FQGate 本机运行        | 可用               | 仅 127.0.0.1:17281                                    |
-| Bridge Dashboard/API   | 可用               | 仅 127.0.0.1:17282                                    |
-| 本地维护               | 可用               | 生命周期、更新和 OpenAPI refresh 保持本地边界         |
-| remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog      |
-| remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制   |
-| remote-machine         | 独立认证、受限查询 | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝 |
-| Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询         |
-| Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过               |
-| Post-Phase-5 兼容维护  | ACTIVE / 验收中    | 1.0.2 候选资格、lookup 证据化与永久环境刷新           |
-| 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                |
+| 能力                   | 当前状态           | 说明                                                                |
+| ---------------------- | ------------------ | ------------------------------------------------------------------- |
+| FQGate 本机运行        | 可用               | 仅 127.0.0.1:17281                                                  |
+| Bridge Dashboard/API   | 可用               | 仅 127.0.0.1:17282                                                  |
+| 本地维护               | 可用               | 生命周期、更新和 OpenAPI refresh 保持本地边界                       |
+| remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog                    |
+| remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制                 |
+| remote-machine         | 独立认证、受限查询 | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝               |
+| Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询                       |
+| Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                             |
+| Post-Phase-5 兼容维护  | ACTIVE / 验收中    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                         |
+| Phase 6-A Cloudflare   | OPEN / 实现待闭环  | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
+| 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                              |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
 再继续完成“Cloudflare 人工配置”和“远程验收”。
@@ -113,8 +114,8 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 - machine service token、Access assertion、JWT、cookie、Tunnel token 不进入 Git、
   普通配置、日志、命令行参数、浏览器存储或测试证据。
 - 不添加交易、下单、撤单、资金划转、券商控制或任何金融状态变更能力。
-- Cloudflare Tunnel/DNS/Access 自动 provisioning 属于 Phase 6；本阶段只提供人工配置
-  说明和安全验收，不在仓库中加入自动 provisioner。
+- Cloudflare Phase 6-A 只提供固定 API 的 GET-only discovery/plan；不创建、更新、删除
+  或取得 Tunnel token。任何 Cloudflare mutation 属于独立的 Phase 6-B。
 
 ## 2. 文档地图：遇到问题先看哪里
 
@@ -128,6 +129,9 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 | Post-Phase-5 兼容任务        | [post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md](docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md)                                                             |
 | 1.0.2 永久 Windows 验收      | [windows-post-phase-5-fqgate-1-0-2-qualification.md](docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md)                                                                                |
 | 1.0.2 实现交接               | [post-phase-5-fqgate-1-0-2-implementation-handoff.md](docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md)                                                                                  |
+| Phase 6-A 设计/任务          | [phase-6 design](docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md)、[phase-6-a task](docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md)                                  |
+| Phase 6-A Windows 验收       | [windows-phase-6-a-acceptance.md](docs/operations/windows-phase-6-a-acceptance.md)                                                                                                                      |
+| Phase 6-A 实现交接           | [phase-6-a-implementation-handoff.md](docs/status/phase-6-a-implementation-handoff.md)                                                                                                                  |
 | Phase 5-B 已关闭任务         | [phase-5-b-live-contract-census-and-first-read-only-slice.md](docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md)                                                                   |
 | Phase 5-B 已完成 Codex Goal  | [phase-5-b-codex-goal.md](docs/prompts/phase-5-b-codex-goal.md)                                                                                                                                         |
 | Phase 5-A 已关闭任务         | [phase-5-a-remote-machine-zero-privilege.md](docs/tasks/phase-5-a-remote-machine-zero-privilege.md)                                                                                                     |
@@ -141,6 +145,21 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 
 后续每完成一个阶段，至少应同步更新：README 当前状态、可执行部署路径、人工边界、
 自动验收命令、非敏感证据和 Agent prompt。不要只改代码而让 README 继续描述旧安全边界。
+
+### 2.1 Phase 6-A 只读检查
+
+先准备 repo 外 desired-state JSON（可从
+`config/cloudflare-phase6a-desired.example.json` 开始），再在永久 Windows 工作树执行：
+
+```powershell
+Set-Location D:\code\research\fqgate-remote-bridge
+node .\dist\cli\main.js cloudflare plan `
+  --desired-state D:\code\research\fqgate-phase6a-desired.json --json
+```
+
+CLI 不接受 token 参数；永久 Windows 完整验收和隐藏 `Read-Host -AsSecureString`
+输入边界见 [Phase 6-A Windows 验收](docs/operations/windows-phase-6-a-acceptance.md)。
+这个命令只能发现和生成计划，不能 apply。
 
 ## 3. 第一次 Windows 本地部署
 

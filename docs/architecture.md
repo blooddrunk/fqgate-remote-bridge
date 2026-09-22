@@ -387,18 +387,28 @@ Phase 5-B later granted the single bounded lookup, and Phase 5-C grants only
 its registry-derived machine documentation operation. Neither changes the
 historical 5-A evidence or grants any old human/admin operation.
 
-### 12. Cloudflare provisioner — Phase 6
+### 12. Cloudflare control-plane discovery and plan — Phase 6-A
 
-Setup-time functionality:
+Phase 6-A is a framework-independent, read-only control-plane adapter under
+`src/cloudflare/`. It uses the fixed Cloudflare API base and an allowlisted GET
+transport to discover the exact account/zone, remotely-managed Tunnel and
+configuration, three DNS records, three independent Access applications/AUDs and
+their policies. The desired state is repo-external and the reconciler emits a
+canonical, secret-free plan plus SHA-256 fingerprint.
 
-- validate scoped account/zone configuration;
-- create/adopt a named Tunnel;
-- create/adopt DNS records;
-- configure ingress;
-- help establish/verify Access prerequisites;
-- provide plan/dry-run and drift detection.
+The adapter has no POST/PUT/PATCH/DELETE/token-retrieval method and is not a
+generic Cloudflare REST proxy. It never creates, adopts, updates or deletes
+Cloudflare resources. Duplicate resources, broad ingress, direct FQGate origin
+17281, wrong Bridge origin, unexpected AUD, Bypass/Everyone and policy widening
+are explicit conflicts. Runtime FQGate OpenAPI and the Bridge registry remain
+descriptive/authorization boundaries respectively.
 
-Broad setup credentials should not remain required at runtime.
+The CLI surface is limited to `cloudflare discover` and `cloudflare plan`. It does
+not add a Bridge route or change any `remote_machine` permission; the machine
+allowlist remains exactly `market.instruments.lookup` and `openapi.machine`.
+
+Phase 6-B may later contain separately reviewed mutation adapters and apply
+transactions. It is not part of this architecture change.
 
 ### 13. Supervisor/state machine — Phase 7
 

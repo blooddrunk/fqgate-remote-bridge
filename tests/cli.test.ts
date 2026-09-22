@@ -45,5 +45,22 @@ describe("local CLI", () => {
     expect(exitCode).toBe(0);
     expect(capture.stdout[0]).toContain("fqgate-remote-bridge fqgate update --check|--apply");
     expect(capture.stdout[0]).toContain("cloudflared service install|start|stop|restart|status");
+    expect(capture.stdout[0]).toContain("cloudflare discover|plan --desired-state");
+  });
+
+  it("rejects an apply flag on the Phase 6-A Cloudflare CLI surface", async () => {
+    const capture = ioCapture();
+    const exitCode = await runCli(["cloudflare", "plan", "--apply", "--json"], {
+      stdout: (line) => capture.stdout.push(line),
+      stderr: (line) => capture.stderr.push(line),
+    });
+
+    expect(exitCode).toBe(2);
+    expect(JSON.parse(capture.stderr[0] ?? "{}")).toEqual({
+      error: {
+        code: "CONFIG_INVALID",
+        message: "Phase 6-A Cloudflare commands are read-only; --apply is not supported",
+      },
+    });
   });
 });
