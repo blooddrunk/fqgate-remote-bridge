@@ -171,6 +171,15 @@ function Assert-LoopbackListener {
     Add-Record $Id $(if ($pass) { "PASS" } else { "FAIL" }) @{ port = $Port; count = $listeners.Count; address = $(if ($pass) { "127.0.0.1" } else { "invalid" }) }
 }
 
+function Restore-GeneratedRouteTree {
+    if ($null -eq $script:routeTreeBaseline -or
+        [string]::IsNullOrWhiteSpace($script:routeTreePath) -or
+        -not (Test-Path -LiteralPath $script:routeTreePath -PathType Leaf)) {
+        return
+    }
+    [System.IO.File]::WriteAllBytes($script:routeTreePath, $script:routeTreeBaseline)
+}
+
 function Write-Evidence {
     $passed = @($records | Where-Object { $_.result -eq "PASS" }).Count
     $failed = @($records | Where-Object { $_.result -eq "FAIL" }).Count
@@ -206,6 +215,8 @@ $script:planReadOnly = $false
 $script:mutationMethodCount = -1
 $script:observedAccountCount = -1
 $script:observedApplicationCount = -1
+$script:routeTreePath = ""
+$script:routeTreeBaseline = $null
 $resolvedDesiredState = $null
 $desiredConfig = $null
 
@@ -224,6 +235,12 @@ try {
     $status = @(& $script:gitPath -C $repositoryRoot status --porcelain | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     $branch = (& $script:gitPath -C $repositoryRoot branch --show-current).Trim()
     Add-Record "P6A-W4" $(if ($status.Count -eq 0 -and $branch -eq "main" -and $script:commit -match '^[0-9a-f]{40}$') { "PASS" } else { "FAIL" }) @{ branch = $branch; commit = $script:commit; workingTree = $(if ($status.Count -eq 0) { "clean" } else { "dirty" }) }
+    if ($status.Count -eq 0) {
+        $script:routeTreePath = Join-Path $repositoryRoot "src\routeTree.gen.ts"
+        if (Test-Path -LiteralPath $script:routeTreePath -PathType Leaf) {
+            $script:routeTreeBaseline = [System.IO.File]::ReadAllBytes($script:routeTreePath)
+        }
+    }
     Assert-LoopbackListener "P6A-W5" 17281
     Assert-LoopbackListener "P6A-W6" 17282
 
@@ -237,7 +254,11 @@ try {
             @{ id = "P6A-Q6"; args = @("pnpm", "format:check") },
             @{ id = "P6A-Q7"; args = @("pnpm", "test:e2e") }
         )) {
-            $gateResult = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -MaximumOutputBytes 256KB
+            try {
+                $gateResult = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -MaximumOutputBytes 256KB
+            } finally {
+                Restore-GeneratedRouteTree
+            }
             Add-Record $gate.id $(if ($gateResult.ExitCode -eq 0) { "PASS" } else { "FAIL" }) @{ exitCode = $gateResult.ExitCode }
             if ($gateResult.ExitCode -ne 0) { throw "$($gate.id) FAIL" }
         }
@@ -309,6 +330,7 @@ try {
     }
 }
 finally {
+    Restore-GeneratedRouteTree
     Write-Evidence
 }
 

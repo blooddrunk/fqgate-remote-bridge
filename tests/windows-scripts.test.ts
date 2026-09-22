@@ -211,6 +211,9 @@ describe("Windows entry points", () => {
     expect(script).toContain("$stderrTask");
     expect(script).toContain('EnvironmentVariables["PATHEXT"]');
     expect(script).toContain(".COM;.EXE;.BAT;.CMD");
+    expect(script).toContain("ReadAllBytes");
+    expect(script).toContain("WriteAllBytes");
+    expect(script).toContain("Restore-GeneratedRouteTree");
     expect(script).toContain('"INCOMPLETE"');
     expect(script).toContain("-RunQualityGates");
     expect(script).not.toContain("--api-token");

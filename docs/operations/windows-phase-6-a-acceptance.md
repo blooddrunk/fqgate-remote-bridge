@@ -67,8 +67,9 @@ child process's stdout and stderr are drained concurrently so a verbose Windows
 quality gate cannot deadlock on a full pipe. The child environment also restores
 the standard Windows `PATHEXT` entries when an operator environment is missing
 `.CMD`, so local `node_modules\.bin` shims such as Playwright resolve correctly.
-A non-zero plan result is retained as bounded conflict evidence and keeps closure
-OPEN.
+The script also restores the tracked generated route-tree bytes after each quality
+gate, because the route generator may rewrite that file. A non-zero plan result is
+retained as bounded conflict evidence and keeps closure OPEN.
 non-zero plan result is retained as bounded conflict evidence and keeps closure
 OPEN.
 
