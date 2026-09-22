@@ -382,40 +382,69 @@ Follow `docs/roadmap.md`.
 - Phase 5-B: CLOSED — authoritative live census + one bounded instrument lookup
 - Phase 5-C: CLOSED — filtered machine OpenAPI + final Windows/remote/CI closure
 - Phase 5-D+: do not opportunistically implement
+- Post-Phase-5 FQGate 1.0.2 qualification: CLOSED
+- Phase 6-A: ACTIVE — read-only Cloudflare discovery + deterministic drift plan
+- Phase 6-B/C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6 provisioning and all other later-phase work require a separate task.
+Phase 6-A read-only discovery/planning is the active separate task. Phase 6-B provisioning mutation and all later-phase work require their own reviewed tasks.
 
-## Active post-Phase-5 maintenance task
+## Closed post-Phase-5 maintenance task
 
-Before Phase 6, execute:
-
-`docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`
-
-Codex handoff:
-
-`docs/prompts/post-phase-5-fqgate-1-0-2-codex-goal.md`
-
-Implementation handoff:
+The FQGate 1.0.2 compatibility/qualification task is CLOSED. Permanent Windows
+qualification, local Phase 5-B/5-C regression, real remote-machine acceptance,
+and exact-commit Ubuntu/Windows CI all passed. The closure source is:
 
 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`
 
-Permanent-Windows qualification procedure:
+Do not re-open or repeat that maintenance task unless new upstream evidence
+requires a new compatibility task.
 
-`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`
+## Active Phase 6-A task
 
-This task must qualify and upgrade the permanent Windows environment under
-`D:\\code\\research` to official FQGate 1.0.2 and remove literal patch-version
-coupling from the exposed lookup operation without weakening fail-closed
-compatibility. Automate every machine-verifiable step. Human action is limited
-to hidden existing service-token entry and physical QR approval only when an
-exact machine-readable `LOGIN_REQUIRED` condition is observed.
+The only authorized Phase 6 implementation is:
 
-Do not weaken official-source, size/SHA-256, rollback, loopback, request-context,
-operation-registry or remote-machine-denial boundaries to accommodate frequent
-upstream releases.
+`docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
+
+Codex handoff:
+
+`docs/prompts/phase-6-a-codex-goal.md`
+
+Phase 6-A is deliberately read-only against Cloudflare. It may verify the API
+token and retrieve the exact account/zone Tunnel inventory, remotely-managed
+Tunnel configuration, DNS records, Access applications and Access policies
+needed to describe the existing human/admin/machine deployment. It must not call
+Cloudflare POST/PUT/PATCH/DELETE endpoints, create resources, rotate credentials,
+or alter the current deployment.
+
+The permanent Windows verification environment remains
+`D:\\code\\research\\fqgate-remote-bridge`. Resolve and use that existing
+working tree; never create a second temporary checkout to avoid local-state
+problems. Protect operator changes. Machine-verifiable checks must be automated.
+
+Phase 6-A live validation may require only these explicit human-only boundaries:
+
+1. a least-privilege Cloudflare read-only API token entered through a hidden
+   PowerShell prompt and passed to a child process only via its environment;
+2. the existing machine Access Client ID/Secret, again via hidden prompts, only
+   when running the established Phase 5-C remote regression matrix;
+3. only if FQGate returns exact normalized `LOGIN_REQUIRED`, the operator may
+   complete the already-documented physical QR login locally and rerun the same
+   automated command.
+
+Any other unavoidable manual check must name the exact Dashboard path/field,
+expected value, why the API cannot prove it, and the exact command that resumes
+automation. Do not summarize it as "manual evidence incomplete".
+
+The Phase 6-A plan must fail closed on duplicate/ambiguous resources, unexpected
+hostnames, a Tunnel origin other than `http://127.0.0.1:17282`, any direct
+17281 ingress, broad Access Bypass, or a policy shape that cannot be reconciled
+unambiguously. Detected drift is not permission to fix it in Phase 6-A.
+
+Phase 6-B/C remain unimplemented and unauthorized until separate reviewed tasks
+explicitly enable bounded mutation and closure.
 
 ## Documentation rule
 
