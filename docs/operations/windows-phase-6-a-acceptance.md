@@ -64,14 +64,13 @@ then prompts exactly once with `Read-Host -AsSecureString` for the Cloudflare
 read-only token. It runs `cloudflare discover` and `cloudflare plan` in bounded
 child processes without putting the token in arguments, output or evidence. A
 child process's stdout and stderr are drained concurrently so a verbose Windows
-quality gate cannot deadlock on a full pipe. The child environment also restores
-the standard Windows `PATHEXT` entries when an operator environment is missing
-`.CMD`, so local `node_modules\.bin` shims such as Playwright resolve correctly.
+quality gate cannot deadlock on a full pipe. The script and each child process
+also restore the standard Windows `PATHEXT` entries when an operator environment
+is missing `.EXE` or `.CMD`, so Git, Corepack and local `node_modules\.bin` shims
+such as Playwright resolve correctly.
 The script also restores the tracked generated route-tree bytes after each quality
 gate, because the route generator may rewrite that file. A non-zero plan result is
 retained as bounded conflict evidence and keeps closure OPEN.
-non-zero plan result is retained as bounded conflict evidence and keeps closure
-OPEN.
 
 For the existing Phase 5-C real remote-machine regression, after the read-only
 Cloudflare plan succeeds, use the separate hidden service-token boundary:

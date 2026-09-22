@@ -211,6 +211,8 @@ describe("Windows entry points", () => {
     expect(script).toContain("$stderrTask");
     expect(script).toContain('EnvironmentVariables["PATHEXT"]');
     expect(script).toContain(".COM;.EXE;.BAT;.CMD");
+    expect(script).toContain("$env:PATHEXT");
+    expect(script).toContain("$currentPathExt");
     expect(script).toContain("ReadAllBytes");
     expect(script).toContain("WriteAllBytes");
     expect(script).toContain("Restore-GeneratedRouteTree");

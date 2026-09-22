@@ -9,6 +9,15 @@ param(
 
 $ErrorActionPreference = "Stop"
 $expectedRoot = "D:\code\research\fqgate-remote-bridge"
+$standardPathExt = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC"
+$currentPathExt = [string]$env:PATHEXT
+if ($currentPathExt -notmatch "(?i)(^|;)\.EXE(;|$)" -or $currentPathExt -notmatch "(?i)(^|;)\.CMD(;|$)") {
+    $env:PATHEXT = if ([string]::IsNullOrWhiteSpace($currentPathExt)) {
+        $standardPathExt
+    } else {
+        "$standardPathExt;$currentPathExt"
+    }
+}
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $evidencePath = "D:\code\research\fqgate-phase6a-discovery-evidence.json"
 $records = [System.Collections.Generic.List[object]]::new()
@@ -60,8 +69,7 @@ function Invoke-BoundedProcess {
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
     $pathExt = [string]$startInfo.EnvironmentVariables["PATHEXT"]
-    if ($pathExt -notmatch "(?i)(^|;)\.CMD(;|$)") {
-        $standardPathExt = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC"
+    if ($pathExt -notmatch "(?i)(^|;)\.EXE(;|$)" -or $pathExt -notmatch "(?i)(^|;)\.CMD(;|$)") {
         $startInfo.EnvironmentVariables["PATHEXT"] =
             if ([string]::IsNullOrWhiteSpace($pathExt)) { $standardPathExt } else { "$standardPathExt;$pathExt" }
     }
