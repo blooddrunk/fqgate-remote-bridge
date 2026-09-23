@@ -75,11 +75,8 @@ function Set-ConfigTokenPath([string]$path) {
     } finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Force } }
 }
 function Invoke-Service([string]$command) {
-    $env:FQGATE_REMOTE_BRIDGE_CONFIG = $ConfigPath
-    try {
-        & node.exe (Join-Path $root "dist\cli\main.js") cloudflared service $command --json | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "P6V-W4 SERVICE_COMMAND_FAILED" }
-    } finally { Remove-Item Env:\FQGATE_REMOTE_BRIDGE_CONFIG -ErrorAction SilentlyContinue }
+    & node.exe (Join-Path $root "dist\cli\main.js") cloudflared service $command --config $ConfigPath --json | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "P6V-W4 SERVICE_COMMAND_FAILED" }
 }
 function Restart-ServiceBounded {
     Invoke-Service "stop"
@@ -103,11 +100,8 @@ function Restart-ServiceBounded {
 function Assert-Service([string]$path) {
     $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
     if ($null -eq $service -or $service.State -ne "Running" -or $service.StartName -ne "LocalSystem" -or -not $service.PathName.Contains($path)) { throw "P6V-W4 SERVICE_STATE_INVALID" }
-    $env:FQGATE_REMOTE_BRIDGE_CONFIG = $ConfigPath
-    try {
-        $status = & node.exe (Join-Path $root "dist\cli\main.js") cloudflared status --json | ConvertFrom-Json
-        if ($LASTEXITCODE -ne 0 -or $status.tokenFile.state -ne "secure") { throw "P6V-W3 TOKEN_FILE_NOT_SECURE" }
-    } finally { Remove-Item Env:\FQGATE_REMOTE_BRIDGE_CONFIG -ErrorAction SilentlyContinue }
+    $statusLines = @(& node.exe (Join-Path $root "dist\cli\main.js") cloudflared status --config $ConfigPath)
+    if ($LASTEXITCODE -ne 0 -or @($statusLines | Where-Object { $_ -eq "token-file: secure" }).Count -ne 1) { throw "P6V-W3 TOKEN_FILE_NOT_SECURE" }
 }
 function Assert-OldService {
     $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"

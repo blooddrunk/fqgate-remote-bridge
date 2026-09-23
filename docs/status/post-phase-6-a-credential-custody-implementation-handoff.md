@@ -23,6 +23,13 @@ before closure.
   The migration now waits for the stopped state before starting and provides
   an explicit elevated rollback action. This attempt is not closure evidence;
   rollback and the full migration still need to pass.
+- The rollback attempt exposed a separate CLI invocation fault: the
+  `cloudflared service` CLI takes `--config` and does not consume the Bridge
+  runtime's `FQGATE_REMOTE_BRIDGE_CONFIG` variable. Without `--config`, it
+  selected the ProgramData default even while the external config named the
+  old path. The migration now passes the external config explicitly for
+  service commands and secure status. The service remained running on the
+  protected new file while this was diagnosed; the old file was preserved.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does
