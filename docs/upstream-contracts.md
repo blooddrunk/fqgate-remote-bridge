@@ -236,6 +236,13 @@ connected
 login_method
 ```
 
+On the permanent Windows FQGate 1.0.2 target, a live pending poll on
+2026-09-23 returned `flow_id` and `status: waiting_for_scan` with no
+`connected` field. The Bridge treats this exact pending status shape as
+`connected: false`; an unknown status or a connected result without the
+expected boolean remains invalid. This observed compatibility case does not
+authorize another upstream route or a change to remote exposure policy.
+
 Observed upstream error codes `1003` and `3014` have been treated by the public plugin as QR flow expiration/replacement conditions.
 
 The bridge must keep the upstream numeric `flow_id` server-side and expose only a bridge-owned opaque session ID.

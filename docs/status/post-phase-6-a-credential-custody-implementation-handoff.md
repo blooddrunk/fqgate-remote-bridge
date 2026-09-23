@@ -30,6 +30,15 @@ before closure.
   old path. The migration now passes the external config explicitly for
   service commands and secure status. The service remained running on the
   protected new file while this was diagnosed; the old file was preserved.
+- A later elevated migration reached the real authenticated human/admin
+  browser matrix and automatically rolled back when two checks failed. A
+  local, secret-free FQGate 1.0.2 probe reproduced the QR failure: pending
+  poll data had `flow_id` and `status: waiting_for_scan` without `connected`.
+  The QR adapter now accepts only that known pending-status shape as
+  disconnected, with a regression test. The admin button check now waits for
+  client hydration before deciding whether the control is present. The old
+  service path was restored and verified; the full new-path matrix remains
+  outstanding.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does

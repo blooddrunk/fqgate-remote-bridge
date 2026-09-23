@@ -73,6 +73,7 @@ describe("FQGate QR compatibility adapter", () => {
 
   it("normalizes pending and connected poll results", async () => {
     const transport = new QueueTransport([
+      response({ code: 0, message: "ok", data: { flow_id: 42, status: "waiting_for_scan" } }),
       response({
         code: 0,
         message: "ok",
@@ -82,6 +83,10 @@ describe("FQGate QR compatibility adapter", () => {
     ]);
     const adapter = new FqgateQrAdapter({ baseUrl: "http://127.0.0.1:17281", http: transport });
     await expect(adapter.poll(42)).resolves.toEqual({
+      status: "waiting_for_scan",
+      connected: false,
+    });
+    await expect(adapter.poll(42)).resolves.toEqual({
       status: "waiting_for_confirmation",
       connected: false,
     });
@@ -90,6 +95,14 @@ describe("FQGate QR compatibility adapter", () => {
       connected: true,
       loginMethod: "formal",
     });
+  });
+
+  it("rejects a missing connected flag with an unknown QR status", async () => {
+    const transport = new QueueTransport([
+      response({ code: 0, message: "ok", data: { flow_id: 42, status: "unexpected" } }),
+    ]);
+    const adapter = new FqgateQrAdapter({ baseUrl: "http://127.0.0.1:17281", http: transport });
+    await expect(adapter.poll(42)).rejects.toMatchObject({ code: "UPSTREAM_RESPONSE_INVALID" });
   });
 
   it("maps upstream QR expiration and replacement codes", async () => {

@@ -199,8 +199,8 @@ function decodeBeginData(value: unknown): QrBeginUpstreamResult {
 function decodePollData(value: unknown): QrPollUpstreamResult {
   const record = requireRecord(value, "poll");
   const connected = record.connected;
-  if (typeof connected !== "boolean") {
-    throw invalidQrResponse("FQGate QR poll connected must be a boolean");
+  if (connected !== undefined && typeof connected !== "boolean") {
+    throw invalidQrResponse("FQGate QR poll connected must be a boolean when present");
   }
 
   const loginMethod = readOptionalText(record.login_method, "login_method");

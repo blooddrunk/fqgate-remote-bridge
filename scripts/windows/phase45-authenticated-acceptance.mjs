@@ -396,8 +396,11 @@ async function checkAdmin(page) {
   });
   let adminButtonVisible = false;
   try {
-    adminButtonVisible =
-      (await page.getByRole("button", { name: "管理员检查更新", exact: true }).count()) > 0;
+    await page.getByRole("button", { name: "管理员检查更新", exact: true }).waitFor({
+      state: "visible",
+      timeout: REQUEST_TIMEOUT_MS,
+    });
+    adminButtonVisible = true;
   } catch {
     adminButtonVisible = false;
   }
