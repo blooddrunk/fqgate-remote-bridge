@@ -12,8 +12,9 @@ chat, a command, a file, or an argument.
 ## Enroll once or after expiry
 
 Use an ordinary interactive PowerShell window as the account that runs
-acceptance. Set each expiry to the real credential expiry in UTC; local storage
-does not extend it. Each command prompts through `Read-Host -AsSecureString`.
+acceptance. Set each local cutoff in UTC to no later than the remote credential
+expiry and within two years. Local storage does not extend remote validity.
+Each command prompts through `Read-Host -AsSecureString`.
 For a single guided window, run
 `.\scripts\windows\enroll-acceptance-credentials.ps1`; it prompts for all
 three expiries and then the three hidden values. It prints only metadata and

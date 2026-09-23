@@ -5,13 +5,14 @@ $desiredPath = "D:\code\research\fqgate-phase6a-desired.json"
 $configPath = "D:\code\research\fqgate-acceptance-config.json"
 
 Write-Host "FQGate acceptance credential enrollment for the current Windows user."
-Write-Host "Enter each actual UTC expiry as text, then enter the credential only at its hidden prompt."
+Write-Host "Enter a local UTC cutoff within two years and no later than the remote credential expiry."
 Write-Host "Credential values are never shown or written to this window."
 try {
     foreach ($kind in @("CloudflareRead", "MachineClientId", "MachineClientSecret")) {
-        $expiresAt = Read-Host "Actual UTC expiry for $kind (YYYY-MM-DDTHH:MM:SSZ)"
+        $expiresAt = Read-Host "Local UTC cutoff for $kind (YYYY-MM-DDTHH:MM:SSZ)"
         $expiry = [DateTimeOffset]::MinValue
         if (-not [DateTimeOffset]::TryParse($expiresAt, [ref]$expiry)) { throw "VAULT_EXPIRY_INVALID" }
+        if ($expiry -le [DateTimeOffset]::UtcNow -or $expiry -gt [DateTimeOffset]::UtcNow.AddYears(2)) { throw "VAULT_EXPIRY_INVALID" }
         $binding = Get-AcceptanceBinding $kind $desiredPath $configPath
         $secret = Read-Host "Enter $kind (hidden)" -AsSecureString
         try { Set-AcceptanceCredential $kind $secret $expiry $binding }
