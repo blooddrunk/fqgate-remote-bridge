@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true)][ValidateSet("Inventory","Migrate","Finalize")][string]$Action,
+    [Parameter(Mandatory=$true)][ValidateSet("Inventory","Migrate","Verify","Rollback","Finalize")][string]$Action,
     [string]$ConfigPath = "D:\code\research\fqgate-acceptance-config.json",
     [string]$DesiredStatePath = "D:\code\research\fqgate-phase6a-desired.json",
     [string]$TunnelIngressConfigPath = "D:\code\research\fqgate-machine-tunnel-ingress-evidence.json"
@@ -133,16 +133,44 @@ try {
     $consumers = @(Get-Consumers)
     Record "P6V-W5-INVENTORY" "PASS" @{ count=$consumers.Count; consumers=$consumers }
     if ($Action -eq "Inventory") { exit 0 }
-    Assert-Admin
-    if ($Action -eq "Migrate") {
-        if ((Get-Config).cloudflared.tokenFile -ne $oldToken) { throw "P6V-W3 OLD_CONFIG_REQUIRED" }
-        Assert-OldService
+    if ($Action -eq "Verify") {
         . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
         foreach ($kind in @("CloudflareRead", "MachineClientId", "MachineClientSecret")) {
             $binding = Get-AcceptanceBinding $kind $DesiredStatePath $ConfigPath
             $value = Get-AcceptanceCredential $kind $binding
             $value = $null
         }
+        if ((Get-Config).cloudflared.tokenFile -ne $newToken) { throw "P6V-W4 NEW_CONFIG_REQUIRED" }
+        $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
+        if ($null -eq $service -or $service.State -ne "Running" -or $service.StartName -ne "LocalSystem" -or -not $service.PathName.Contains($newToken)) { throw "P6V-W4 SERVICE_STATE_INVALID" }
+        Assert-Listeners
+        if (-not (Test-Path -LiteralPath $evidencePath)) { throw "P6V-W4 MIGRATION_EVIDENCE_MISSING" }
+        $migrationEvidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json
+        if ($migrationEvidence.rollback -ne "PASS" -or $migrationEvidence.remote.humanAdmin -ne "PASS") { throw "P6V-W4 MIGRATION_EVIDENCE_INVALID" }
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "phase6a-acceptance.ps1") -DesiredStatePath $DesiredStatePath -ConfigPath $ConfigPath -TunnelIngressConfigPath $TunnelIngressConfigPath -CredentialSource Vault -RunQualityGates -RunPhase5CRemoteRegression
+        if ($LASTEXITCODE -ne 0) { throw "P6V-W4 REMOTE_REGRESSION_FAILED" }
+        $regression = Assert-RegressionEvidence
+        if ($migrationEvidence.commit -ne $regression.commit) { throw "P6V-W4 COMMIT_MISMATCH" }
+        $migrationEvidence.remote.phase6a = 14
+        $migrationEvidence.remote.phase5c = 21
+        $migrationEvidence.checks += "P6V-W2:PASS"
+        $migrationEvidence.checks += "P6V-W4:PASS"
+        [IO.File]::WriteAllText($evidencePath, ($migrationEvidence | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
+        Record "P6V-W4" "PASS" @{ rollback="PASS"; regression="human-admin-machine"; phase6aPassed=14; phase5cPassed=21 }
+        exit 0
+    }
+    Assert-Admin
+    if ($Action -eq "Rollback") {
+        Set-ConfigTokenPath $oldToken
+        Invoke-Service "install"
+        Invoke-Service "restart"
+        Assert-Service $oldToken
+        Record "P6V-W4-ROLLBACK" "PASS" @{ oldPathRestored=$true }
+        exit 0
+    }
+    if ($Action -eq "Migrate") {
+        if ((Get-Config).cloudflared.tokenFile -ne $oldToken) { throw "P6V-W3 OLD_CONFIG_REQUIRED" }
+        Assert-OldService
         Assert-PlainPath "C:\ProgramData" $true $false
         Assert-PlainPath "C:\ProgramData\FQGateRemoteBridge" $true $true
         Assert-PlainPath $newDirectory $true $true
@@ -187,12 +215,9 @@ try {
             Assert-Listeners
             & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "phase45-acceptance.ps1") -ConfigPath $ConfigPath -RunAuthenticatedBrowserMatrix
             if ($LASTEXITCODE -ne 0) { throw "P6V-W4 HUMAN_ADMIN_REGRESSION_FAILED" }
-            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "phase6a-acceptance.ps1") -DesiredStatePath $DesiredStatePath -ConfigPath $ConfigPath -TunnelIngressConfigPath $TunnelIngressConfigPath -CredentialSource Vault -RunQualityGates -RunPhase5CRemoteRegression
-            if ($LASTEXITCODE -ne 0) { throw "P6V-W4 REMOTE_REGRESSION_FAILED" }
-            $regression = Assert-RegressionEvidence
-            Record "P6V-W4" "PASS" @{ path=$newToken; rollback="PASS"; regression="human-admin-machine"; phase6aPassed=$regression.phase6aPassed; phase5cPassed=$regression.phase5cPassed }
-            $credentialStatus = @("CloudflareRead", "MachineClientId", "MachineClientSecret") | ForEach-Object { $s=Get-AcceptanceCredentialStatus $_; [pscustomobject]@{ kind=$_.ToString(); ownerMatch=$s.ownerMatch; expiry=$s.expiry; state=$s.state } }
-            $evidenceJson = [pscustomobject]@{ schemaVersion=1; task="post-phase6a-credential-custody"; commit=$regression.commit; checks=@("P6V-W1:PASS","P6V-W2:PASS","P6V-W3:PASS","P6V-W4:PASS","P6V-W4-ROLLBACK:PASS"); credentials=$credentialStatus; service=@{ name=$serviceName; identity="LocalSystem"; tokenFile=$newToken }; acl="protected"; rollback="PASS"; remote=@{ humanAdmin="PASS"; phase6a=14; phase5c=21 }; oldConsumerCount=@(Get-Consumers).Count; oldDirectoryRetired=$false } | ConvertTo-Json -Depth 8
+            $commit = (& git.exe -C $root rev-parse HEAD).Trim()
+            Record "P6V-W4-ADMIN" "PASS" @{ path=$newToken; rollback="PASS"; regression="human-admin"; machineVerification="PENDING" }
+            $evidenceJson = [pscustomobject]@{ schemaVersion=1; task="post-phase6a-credential-custody"; commit=$commit; checks=@("P6V-W1:PASS","P6V-W3:PASS","P6V-W4-ROLLBACK:PASS","P6V-W4-ADMIN:PASS"); service=@{ name=$serviceName; identity="LocalSystem"; tokenFile=$newToken }; acl="protected"; rollback="PASS"; remote=@{ humanAdmin="PASS"; phase6a=0; phase5c=0 }; oldConsumerCount=@(Get-Consumers).Count; oldDirectoryRetired=$false } | ConvertTo-Json -Depth 8
             [IO.File]::WriteAllText($evidencePath, $evidenceJson, [Text.UTF8Encoding]::new($false))
         } catch {
             if ($changed) {
@@ -211,12 +236,8 @@ try {
         if (-not (Test-Path -LiteralPath $evidencePath)) { throw "P6V-W5 MIGRATION_EVIDENCE_MISSING" }
         $migrationEvidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json
         $regression = Assert-RegressionEvidence
-        if ($migrationEvidence.commit -ne $regression.commit -or $migrationEvidence.rollback -ne "PASS" -or $migrationEvidence.remote.humanAdmin -ne "PASS") { throw "P6V-W5 MIGRATION_EVIDENCE_INVALID" }
+        if ($migrationEvidence.commit -ne $regression.commit -or $migrationEvidence.rollback -ne "PASS" -or $migrationEvidence.remote.humanAdmin -ne "PASS" -or $migrationEvidence.remote.phase6a -ne 14 -or $migrationEvidence.remote.phase5c -ne 21) { throw "P6V-W5 MIGRATION_EVIDENCE_INVALID" }
         if ($consumers.Count -ne 0) { throw "P6V-W5 OLD_CONSUMERS_REMAIN" }
-        . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
-        $cloudflareBinding = Get-AcceptanceBinding "CloudflareRead" $DesiredStatePath $ConfigPath
-        $enrolledToken = Get-AcceptanceCredential "CloudflareRead" $cloudflareBinding
-        $enrolledToken = $null
         $oldApiToken = Join-Path $oldDirectory "cloudflare-api-token"
         foreach ($path in @($oldToken, $oldApiToken)) {
             Assert-PlainPath $path $false $false

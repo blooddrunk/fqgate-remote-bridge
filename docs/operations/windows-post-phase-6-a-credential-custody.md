@@ -86,11 +86,26 @@ That command checks path types and reparse points, stages the existing bytes
 under `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`, protects and
 verifies its ACL, reconfigures only the local cloudflared service token-file
 argument through the Bridge service controller, exercises rollback, restarts
-on the new path, and runs human/admin and Vault-backed Phase 6-A/5-C
-regressions. The human/admin browser matrix requires the operator to finish
+on the new path, and runs the human/admin browser regression. The browser
+matrix requires the operator to finish
 the existing Access login and MFA in the browser, then press Enter in its
-terminal. No assertion or browser storage is saved. A failure restores the
-old service path and restarts it; both token copies are retained.
+terminal. No assertion or browser storage is saved. A failure in this elevated
+step restores the old service path and restarts it; both token copies are
+retained. The elevated account cannot read the ordinary operator's Credential
+Manager entries.
+
+After `P6V-W4-ADMIN PASS`, return to the **ordinary** PowerShell window in
+the account that enrolled the three credentials and run:
+
+```powershell
+Set-Location D:\code\research\fqgate-remote-bridge
+.\scripts\windows\post-phase6a-token-migration.ps1 -Action Verify
+```
+
+This runs Vault-backed Phase 6-A/5-C acceptance on the new service path and
+records `P6V-W4 PASS` only for 14/14 and 21/21. If verification fails, keep
+both token files and run `-Action Rollback` in the elevated window to restore
+the old service path before diagnosis.
 
 Only after `P6V-W4 PASS`, the external evidence records 14/14 Phase 6-A and
 21/21 Phase 5-C checks at the same commit, and inventory reports zero old

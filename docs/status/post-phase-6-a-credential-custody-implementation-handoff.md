@@ -22,9 +22,10 @@ before closure.
   authenticated acceptance. Prompt remains the default. Vault failure does
   not fall back.
 - ProgramData token-file migration command with old-path inventory, protected
-  ACL checks, bounded service-controller reconfiguration, restart, rollback,
-  human/admin browser matrix, Vault-backed Phase 6-A/5-C matrix and gated
-  finalization.
+  ACL checks, bounded service-controller reconfiguration, restart and rollback.
+  The elevated account runs the human/admin browser matrix; the ordinary
+  enrolled account runs Vault-backed Phase 6-A/5-C verification on the new
+  service path before gated elevated finalization.
 
 ## Local checks completed
 
