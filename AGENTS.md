@@ -437,6 +437,10 @@ The task package is:
 
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 
+The Codex goal is:
+
+`docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
+
 The task is defined but not implemented. It may add an explicit Windows
 Credential Manager provider for the existing Cloudflare read API token and
 machine service-token Client ID/Secret. It also plans to move the cloudflared
