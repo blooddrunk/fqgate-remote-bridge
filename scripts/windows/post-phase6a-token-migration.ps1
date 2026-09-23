@@ -86,6 +86,13 @@ function Assert-Service([string]$path) {
         if ($LASTEXITCODE -ne 0 -or $status.tokenFile.state -ne "secure") { throw "P6V-W3 TOKEN_FILE_NOT_SECURE" }
     } finally { Remove-Item Env:\FQGATE_REMOTE_BRIDGE_CONFIG -ErrorAction SilentlyContinue }
 }
+function Assert-OldService {
+    $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
+    if ($null -eq $service -or $service.State -ne "Running" -or $service.StartName -ne "LocalSystem" -or
+        -not $service.PathName.Contains("tunnel run --token-file") -or
+        -not $service.PathName.Contains('"' + $oldToken + '"') -or
+        $service.PathName -match 'eyJ[a-zA-Z0-9_-]{20,}') { throw "P6V-W3 OLD_SERVICE_SHAPE_INVALID" }
+}
 function Assert-Listeners {
     foreach ($port in @(17281,17282)) {
         $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue)
@@ -125,6 +132,7 @@ try {
     Assert-Admin
     if ($Action -eq "Migrate") {
         if ((Get-Config).cloudflared.tokenFile -ne $oldToken) { throw "P6V-W3 OLD_CONFIG_REQUIRED" }
+        Assert-OldService
         . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
         foreach ($kind in @("CloudflareRead", "MachineClientId", "MachineClientSecret")) {
             $binding = Get-AcceptanceBinding $kind $DesiredStatePath $ConfigPath
