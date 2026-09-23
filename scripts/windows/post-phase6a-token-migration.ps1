@@ -134,9 +134,13 @@ function Assert-RegressionEvidence {
     $phase6 = Get-Content -LiteralPath "D:\code\research\fqgate-phase6a-discovery-evidence.json" -Raw | ConvertFrom-Json
     $phase5 = Get-Content -LiteralPath "D:\code\research\fqgate-phase5c-remote-evidence.json" -Raw | ConvertFrom-Json
     $machineRecords = @($phase5.records -split "`r?`n" | Where-Object { $_.Trim() } | ForEach-Object { $_ | ConvertFrom-Json })
+    $machineChecks = @($machineRecords | Where-Object id -ne "P5C-SUMMARY")
+    $machineSummary = @($machineRecords | Where-Object id -eq "P5C-SUMMARY")
     if ($phase6.commit -ne $commit -or $phase5.commit -ne $commit -or
         $phase6.summary.total -ne 14 -or $phase6.summary.passed -ne 14 -or
-        $machineRecords.Count -ne 21 -or @($machineRecords | Where-Object result -ne "PASS").Count -ne 0) {
+        $machineChecks.Count -ne 21 -or @($machineChecks | Where-Object result -ne "PASS").Count -ne 0 -or
+        $machineSummary.Count -ne 1 -or $machineSummary[0].result -ne "PASS" -or
+        $machineSummary[0].total -ne 21 -or $machineSummary[0].passed -ne 21) {
         throw "P6V-W2 REGRESSION_EVIDENCE_INVALID"
     }
     return [pscustomobject]@{ commit=$commit; phase6aPassed=14; phase5cPassed=21 }
@@ -167,6 +171,12 @@ try {
         if ($migrationEvidence.commit -ne $regression.commit) { throw "P6V-W4 COMMIT_MISMATCH" }
         $migrationEvidence.remote.phase6a = 14
         $migrationEvidence.remote.phase5c = 21
+        $credentialStatus = @("CloudflareRead", "MachineClientId", "MachineClientSecret") | ForEach-Object {
+            $status = Get-AcceptanceCredentialStatus $_
+            [pscustomobject]@{ kind=$_; present=$status.present; ownerMatch=$status.ownerMatch; expiry=$status.expiry; state=$status.state }
+        }
+        if (@($credentialStatus | Where-Object state -ne "READY").Count -ne 0) { throw "P6V-W4 VAULT_NOT_READY" }
+        $migrationEvidence | Add-Member -NotePropertyName credentials -NotePropertyValue $credentialStatus -Force
         $migrationEvidence.verification = "PASS"
         $migrationEvidence.checks += "P6V-W2:PASS"
         $migrationEvidence.checks += "P6V-W4:PASS"

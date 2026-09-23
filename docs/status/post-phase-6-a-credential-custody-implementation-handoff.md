@@ -39,6 +39,14 @@ before closure.
   client hydration before deciding whether the control is present. The old
   service path was restored and verified; the full new-path matrix remains
   outstanding.
+- After those fixes, the elevated human/admin matrix passed and the
+  ordinary-account Vault run passed 14/14 Phase 6-A plus 21/21 remote-machine
+  checks on the new path. The migration verifier counted the machine summary
+  line as a 22nd test and rejected otherwise passing evidence. Its failure
+  signaled the waiting elevated process, which automatically restored the old
+  service and config. The verifier now separates 21 test records from the
+  summary and checks both explicitly; a subsequent full new-path run is still
+  required.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does
