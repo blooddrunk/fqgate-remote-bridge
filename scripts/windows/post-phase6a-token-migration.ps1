@@ -116,6 +116,7 @@ try {
         Assert-PlainPath "C:\ProgramData\FQGateRemoteBridge" $true $true
         Assert-PlainPath $newDirectory $true $true
         if (Test-Path -LiteralPath $newToken) { throw "P6V-W3 NEW_PATH_ALREADY_EXISTS" }
+        Assert-PlainPath $oldDirectory $true $false
         Assert-PlainPath $oldToken $false $false
         New-Item -ItemType Directory -Path $newDirectory -Force | Out-Null
         foreach ($path in @("C:\ProgramData\FQGateRemoteBridge", $newDirectory)) {
@@ -181,6 +182,10 @@ try {
         $regression = Assert-RegressionEvidence
         if ($migrationEvidence.commit -ne $regression.commit -or $migrationEvidence.rollback -ne "PASS" -or $migrationEvidence.remote.humanAdmin -ne "PASS") { throw "P6V-W5 MIGRATION_EVIDENCE_INVALID" }
         if ($consumers.Count -ne 0) { throw "P6V-W5 OLD_CONSUMERS_REMAIN" }
+        . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
+        $cloudflareBinding = Get-AcceptanceBinding "CloudflareRead" $DesiredStatePath $ConfigPath
+        $enrolledToken = Get-AcceptanceCredential "CloudflareRead" $cloudflareBinding
+        $enrolledToken = $null
         $oldApiToken = Join-Path $oldDirectory "cloudflare-api-token"
         foreach ($path in @($oldToken, $oldApiToken)) {
             Assert-PlainPath $path $false $false
