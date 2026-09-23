@@ -36,6 +36,12 @@ correction or hidden re-enrollment. Vault mode never falls back to a prompt.
 `VAULT_INPUT_TOO_LARGE` means the entered value exceeds Windows Credential
 Manager's bounded generic credential blob; check that the input is the single
 intended credential field, not a JSON export, JWT or Tunnel token.
+`VAULT_INPUT_FORMAT_INVALID` for `MachineClientSecret` means the hidden value
+does not match either a current `cfast_` service-token Client Secret (40
+alphanumeric characters plus eight checksum characters after the prefix) or
+the legacy 64-character hexadecimal form. Check for pasted whitespace or a
+different field and retry in a fresh PowerShell process. The command reports
+only the bounded error code; do not paste the value into chat or a log.
 
 The binding compares the configured account/zone or machine hostname/AUD to
 the values recorded at enrollment. If those non-secret targets change, enroll

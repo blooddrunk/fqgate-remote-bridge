@@ -41,6 +41,17 @@ try {
         try { Set-AcceptanceCredential "MachineClientSecret" $oversize $expiry $binding } catch { $rejected = $_.Exception.Message -eq "VAULT_INPUT_TOO_LARGE" }
         Assert $rejected "P6V-T3-SIZE"
     } finally { $oversize.Dispose() }
+    $modern = ConvertTo-SecureString ("cfast_" + ("A" * 48)) -AsPlainText -Force
+    $legacy = ConvertTo-SecureString ("a" * 64) -AsPlainText -Force
+    $malformed = ConvertTo-SecureString ("cfast_" + ("A" * 47) + "-") -AsPlainText -Force
+    try {
+        Assert ([FQGateAcceptanceCredential]::IsMachineSecretFormat($modern)) "P6V-T3-MODERN-FORMAT"
+        Assert ([FQGateAcceptanceCredential]::IsMachineSecretFormat($legacy)) "P6V-T3-LEGACY-FORMAT"
+        Assert (-not [FQGateAcceptanceCredential]::IsMachineSecretFormat($malformed)) "P6V-T3-BAD-FORMAT"
+        $rejected = $false
+        try { Set-AcceptanceCredential "MachineClientSecret" $malformed $expiry $binding } catch { $rejected = $_.Exception.Message -eq "VAULT_INPUT_FORMAT_INVALID" }
+        Assert $rejected "P6V-T3-FORMAT-REJECT"
+    } finally { $modern.Dispose(); $legacy.Dispose(); $malformed.Dispose() }
     Assert ($script:AcceptanceTargets.Count -eq 3) "P6V-T1-NAMESPACE"
     Assert ((Get-AcceptanceErrorCode ([Exception]::new("wrapper", [Exception]::new("VAULT_INPUT_INVALID")))) -eq "VAULT_INPUT_INVALID") "P6V-T4-BOUNDED-CODE"
     Assert ((Get-AcceptanceErrorCode ([Exception]::new("wrapper", [Exception]::new("VAULT_WRITE_FAILED_WIN32_87")))) -eq "VAULT_WRITE_FAILED_WIN32_87") "P6V-T4-WIN32-CODE"

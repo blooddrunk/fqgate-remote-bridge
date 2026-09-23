@@ -28,6 +28,28 @@ public static class FQGateAcceptanceCredential {
     [DllImport("advapi32.dll", SetLastError = true)]
     private static extern void CredFree(IntPtr credential);
     public static int LastError { get { return Marshal.GetLastWin32Error(); } }
+    public static bool IsMachineSecretFormat(SecureString secret) {
+        if (secret == null || (secret.Length != 54 && secret.Length != 64)) return false;
+        IntPtr blob = IntPtr.Zero;
+        try {
+            blob = Marshal.SecureStringToCoTaskMemUnicode(secret);
+            bool modern = secret.Length == 54;
+            const string prefix = "cfast_";
+            for (int i = 0; i < secret.Length; i++) {
+                char character = (char)Marshal.ReadInt16(blob, i * 2);
+                if (modern && i < prefix.Length) {
+                    if (character != prefix[i]) return false;
+                } else if (modern) {
+                    if (!((character >= 'a' && character <= 'z') ||
+                          (character >= 'A' && character <= 'Z') ||
+                          (character >= '0' && character <= '9'))) return false;
+                } else if (!((character >= 'a' && character <= 'f') ||
+                             (character >= 'A' && character <= 'F') ||
+                             (character >= '0' && character <= '9'))) return false;
+            }
+            return true;
+        } finally { if (blob != IntPtr.Zero) Marshal.ZeroFreeCoTaskMemUnicode(blob); }
+    }
     public static void Write(string target, SecureString secret, string comment, string ownerSid) {
         IntPtr blob = IntPtr.Zero;
         try {
@@ -130,6 +152,7 @@ function Set-AcceptanceCredential([string]$Kind, [Security.SecureString]$Secret,
     $target = Get-AcceptanceTarget $Kind
     if ($null -eq $Secret -or $Secret.Length -lt 8) { throw "VAULT_INPUT_INVALID" }
     if ($Secret.Length -gt 1280) { throw "VAULT_INPUT_TOO_LARGE" }
+    if ($Kind -eq "MachineClientSecret" -and -not [FQGateAcceptanceCredential]::IsMachineSecretFormat($Secret)) { throw "VAULT_INPUT_FORMAT_INVALID" }
     if ($Expiry -le [DateTimeOffset]::UtcNow -or $Expiry -gt [DateTimeOffset]::UtcNow.AddYears(2)) { throw "VAULT_EXPIRY_INVALID" }
     if ($Binding -notmatch '^[a-f0-9]{64}$') { throw "VAULT_BINDING_INVALID" }
     $ownerSid = Get-AcceptanceOwnerSid

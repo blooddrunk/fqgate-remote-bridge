@@ -10,6 +10,8 @@ before closure.
 - Fixed three-target Windows Credential Manager provider with current-user SID,
   local-machine persistence, UTC expiry and non-secret deployment binding.
 - Hidden Enroll, metadata-only Status and bounded Remove operations.
+- Bounded machine Client Secret format validation before attempting a vault
+  write, with modern and legacy Cloudflare service-token forms accepted.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does
@@ -48,8 +50,8 @@ remain intact. No Cloudflare mutation occurred.
 - P6V-W5: zero old-path consumers and explicit finalization.
 - P6V-CI2: Ubuntu/Windows Actions on the exact final implementation commit.
 
-The external evidence target is
+The partial, secret-free external evidence is
 `D:\code\research\fqgate-post-phase6a-credential-custody-evidence.json`.
-It does not yet exist; do not infer closure from the historical Phase 6-A
-evidence. Follow the exact commands in
+It records the current OPEN state; do not infer closure from it or the
+historical Phase 6-A evidence. Follow the exact commands in
 `docs/operations/windows-post-phase-6-a-credential-custody.md`.
