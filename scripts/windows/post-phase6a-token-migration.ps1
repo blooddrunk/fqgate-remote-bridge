@@ -92,6 +92,19 @@ function Assert-Listeners {
         if ($listeners.Count -ne 1 -or $listeners[0].LocalAddress -ne "127.0.0.1") { throw "P6V-W4 LOOPBACK_INVALID" }
     }
 }
+function Assert-SameTokenBytes([string]$source, [string]$destination) {
+    $oldBytes = [IO.File]::ReadAllBytes($source)
+    $newBytes = [IO.File]::ReadAllBytes($destination)
+    try {
+        if ($oldBytes.Length -eq 0 -or $oldBytes.Length -gt 16KB -or $oldBytes.Length -ne $newBytes.Length) { throw "P6V-W3 STAGED_TOKEN_MISMATCH" }
+        for ($index=0; $index -lt $oldBytes.Length; $index++) {
+            if ($oldBytes[$index] -ne $newBytes[$index]) { throw "P6V-W3 STAGED_TOKEN_MISMATCH" }
+        }
+    } finally {
+        [Array]::Clear($oldBytes, 0, $oldBytes.Length)
+        [Array]::Clear($newBytes, 0, $newBytes.Length)
+    }
+}
 function Assert-RegressionEvidence {
     $commit = (& git.exe -C $root rev-parse HEAD).Trim()
     $phase6 = Get-Content -LiteralPath "D:\code\research\fqgate-phase6a-discovery-evidence.json" -Raw | ConvertFrom-Json
@@ -112,10 +125,20 @@ try {
     Assert-Admin
     if ($Action -eq "Migrate") {
         if ((Get-Config).cloudflared.tokenFile -ne $oldToken) { throw "P6V-W3 OLD_CONFIG_REQUIRED" }
+        . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
+        foreach ($kind in @("CloudflareRead", "MachineClientId", "MachineClientSecret")) {
+            $binding = Get-AcceptanceBinding $kind $DesiredStatePath $ConfigPath
+            $value = Get-AcceptanceCredential $kind $binding
+            $value = $null
+        }
         Assert-PlainPath "C:\ProgramData" $true $false
         Assert-PlainPath "C:\ProgramData\FQGateRemoteBridge" $true $true
         Assert-PlainPath $newDirectory $true $true
-        if (Test-Path -LiteralPath $newToken) { throw "P6V-W3 NEW_PATH_ALREADY_EXISTS" }
+        Assert-PlainPath $newToken $false $true
+        if ((Test-Path -LiteralPath "C:\ProgramData\FQGateRemoteBridge") -and
+            @(Get-ChildItem -LiteralPath "C:\ProgramData\FQGateRemoteBridge" -Force | Where-Object Name -ne "secrets").Count -ne 0) { throw "P6V-W3 UNEXPECTED_TARGET_CONTENT" }
+        if ((Test-Path -LiteralPath $newDirectory) -and
+            @(Get-ChildItem -LiteralPath $newDirectory -Force | Where-Object Name -ne "tunnel-token").Count -ne 0) { throw "P6V-W3 UNEXPECTED_TARGET_CONTENT" }
         Assert-PlainPath $oldDirectory $true $false
         Assert-PlainPath $oldToken $false $false
         New-Item -ItemType Directory -Path $newDirectory -Force | Out-Null
@@ -124,18 +147,14 @@ try {
             if ($LASTEXITCODE -ne 0) { throw "P6V-W3 ACL_SET_FAILED" }
             Assert-Acl $path
         }
-        Copy-Item -LiteralPath $oldToken -Destination $newToken -ErrorAction Stop
-        & icacls.exe $newToken /inheritance:r /grant:r 'NT AUTHORITY\SYSTEM:(R)' 'BUILTIN\Administrators:(F)' | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "P6V-W3 ACL_SET_FAILED" }
-        Assert-Acl $newToken
-        Record "P6V-W3" "PASS" @{ path=$newToken; serviceIdentity="LocalSystem"; acl="protected" }
-        # Credential preflight occurs before the first service command.
-        . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
-        foreach ($kind in @("CloudflareRead", "MachineClientId", "MachineClientSecret")) {
-            $binding = Get-AcceptanceBinding $kind $DesiredStatePath $ConfigPath
-            $value = Get-AcceptanceCredential $kind $binding
-            $value = $null
+        if (-not (Test-Path -LiteralPath $newToken)) {
+            Copy-Item -LiteralPath $oldToken -Destination $newToken -ErrorAction Stop
+            & icacls.exe $newToken /inheritance:r /grant:r 'NT AUTHORITY\SYSTEM:(R)' 'BUILTIN\Administrators:(F)' | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "P6V-W3 ACL_SET_FAILED" }
         }
+        Assert-Acl $newToken
+        Assert-SameTokenBytes $oldToken $newToken
+        Record "P6V-W3" "PASS" @{ path=$newToken; serviceIdentity="LocalSystem"; acl="protected" }
         $changed = $false
         try {
             $changed = $true
