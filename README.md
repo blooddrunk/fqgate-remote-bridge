@@ -13,7 +13,7 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发；Phase 0–5 已完成。Phase 5 的最终交付是受策略约束的
+当前项目仍在持续开发；Phase 0–6-A 已完成。Phase 5 的最终交付是受策略约束的
 machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双平台 CI 闭包。
 
 | 能力                   | 当前状态           | 说明                                                                |
@@ -26,8 +26,8 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | remote-machine         | 独立认证、受限查询 | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝               |
 | Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询                       |
 | Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                             |
-| Post-Phase-5 兼容维护  | ACTIVE / 验收中    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                         |
-| Phase 6-A Cloudflare   | OPEN / 实现待闭环  | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
+| Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                         |
+| Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
 | 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                              |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
@@ -858,9 +858,9 @@ service-token matrix）见
 本地 Phase 5-B/5-C 回归、真实 remote-machine matrix 与最终 Ubuntu/Windows CI 均通过。
 详细证据见 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`。
 
-## Phase 6-A — Cloudflare 只读发现与计划（OPEN）
+## Phase 6-A — Cloudflare 只读发现与计划（CLOSED）
 
-当前下一阶段只做 Cloudflare 控制面的**只读发现、对账和确定性 drift plan**，不修改真实
+本阶段只做 Cloudflare 控制面的**只读发现、对账和确定性 drift plan**，不修改真实
 Cloudflare 资源。执行合同：
 `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`；Codex handoff：
 `docs/prompts/phase-6-a-codex-goal.md`。
@@ -879,5 +879,14 @@ Cloudflare 资源。执行合同：
   无法自动读取的项必须给出精确 Dashboard 路径、字段、期望值、原因和恢复自动化命令。
 
 Phase 6-B 的真实 provisioning mutation 与 Phase 6-C 闭环均需单独授权。
-Phase 6-A 已在合并前实现提交 `363117e` 上通过永久 Windows 的 14/14 项真实验收；
-合并后的精确提交验证和双平台 CI 尚待完成。
+Phase 6-A 最终实现提交 `9c6babb` 在永久 Windows 通过 14/14 项真实验收，
+其中既有 Phase 5-C 远程矩阵 21/21 通过；同一提交的 Ubuntu/Windows CI 通过。
+证据与运行 ID 见 [Phase 6-A 实现交接](docs/status/phase-6-a-implementation-handoff.md)。
+
+## 下一任务：永久 Windows 验收凭据托管（READY，尚未实现）
+
+任务合同见 [验收凭据托管任务](docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md)。
+目标是在当前 Windows 用户的 Credential Manager 中一次性隐藏录入现有 Cloudflare
+只读 API token、machine Client ID 和 Client Secret，以便之后显式选择自动验收。
+目前仍须使用原有隐藏输入；`D:\code\research\fqgate-secrets` 的继承权限过宽，
+不能直接保存这些凭据。该任务不授权 Cloudflare 资源变更或 Phase 6-B。

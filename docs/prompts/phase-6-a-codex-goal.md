@@ -1,8 +1,8 @@
 # Codex goal — Phase 6-A Cloudflare read-only discovery and deterministic plan
 
-Complete and verify **Phase 6-A only** in `blooddrunk/fqgate-remote-bridge`.
-The read-only implementation and pre-merge live Windows acceptance have passed;
-Phase 6-A remains OPEN until merged-commit verification and exact-commit CI pass.
+Historical goal: **Phase 6-A closed** on implementation commit `9c6babb` after
+permanent-Windows live acceptance and exact-commit Ubuntu/Windows CI. This
+handoff remains the original implementation contract, not a new task.
 
 Start from latest `main`. Read and obey README.md, AGENTS.md, docs/architecture.md,
 docs/security.md, docs/upstream-contracts.md, docs/roadmap.md,

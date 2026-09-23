@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A OPEN; only Phase 6-A is authorized**
+Status: **Phase 6-A CLOSED; Phase 6-B/C remain separately unauthorized**
 
 ## Purpose
 
@@ -37,9 +37,11 @@ Bridge security model.
 
 ### Phase 6-A — read-only discovery + deterministic reconciliation plan
 
-Authorized and implemented. Permanent-Windows live acceptance passed on the
-pre-merge implementation commit `363117ea7a2e6fa285398db53a4f2bba37d1b974`;
-the merged commit and exact-commit CI still require verification.
+Implemented and closed. Permanent-Windows live acceptance and exact-commit
+Ubuntu/Windows CI passed on final Phase 6-A implementation commit
+`9c6babb08eaf9a31a226c7950d64b642fc0b2c90`. The separate
+post-Phase-6-A acceptance credential custody task adds no Cloudflare mutation
+authority.
 
 Build a fixed-endpoint read-only Cloudflare client and inventory exactly the resources that
 implement the current deployment. Compare observed state with explicit desired state and produce

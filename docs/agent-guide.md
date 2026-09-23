@@ -10,10 +10,11 @@ task package 和安全文档为准。
   永久 Windows / CI / 真实 service-token 验收均已完成。
 - Phase 5-B：**CLOSED**；live census、一个受限目录查询及 Windows/remote/CI 验收完成。
 - Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
-- Post-Phase-5 FQGate 兼容维护：**ACTIVE**；1.0.2 qualification implementation 已完成，
-  永久 Windows、remote-machine 与最终 commit CI 证据待补齐。
-- Phase 6-A：**OPEN**；Cloudflare GET-only discovery/plan implementation 已完成，
-  永久 Windows、真实 Cloudflare、exact-commit CI 证据待补齐。
+- Post-Phase-5 FQGate 兼容维护：**CLOSED**；1.0.2 永久 Windows、remote-machine
+  与最终 commit CI 均通过。
+- Phase 6-A：**CLOSED**；Cloudflare GET-only discovery/plan 在 `9c6babb` 上通过
+  永久 Windows、真实 Cloudflare 和 exact-commit Ubuntu/Windows CI。
+- Post-Phase-6-A 验收凭据托管：任务已定义，尚未实现。
 - Phase 6-B：尚未授权实施。
 
 稳定拓扑不变：
@@ -186,8 +187,8 @@ lookup 不再把 `1.0.1` 当作新版本的唯一授权条件。历史 1.0.1 状
 和 semantic probe ID 绑定到当前 artifact。变更 fingerprint、语义探针失败、缺少
 required contract、health 失败或激活失败都必须自动回滚。
 
-当前任务仍为 ACTIVE。不要在没有永久 Windows 外部 evidence、真实 machine service-token
-矩阵、精确最终 commit 和 Ubuntu/Windows CI run ID 时写 CLOSED。
+该维护任务已按交接中的永久 Windows 外部 evidence、真实 machine service-token
+矩阵、精确最终 commit 和 Ubuntu/Windows CI run ID 关闭。
 
 ## Phase 6-A 交接
 
@@ -204,3 +205,8 @@ Cloudflare token 只能在永久 Windows 脚本的
 unexpected AUD、Bypass/Everyone 与 human/admin/machine policy widening 都不能被
 自动化“采用”。Phase 6-A 若缺少实时 token、外部 evidence 或 exact-commit CI，必须
 保持 OPEN，并写出具体 check ID、实际观察结果和下一条命令。
+
+Phase 6-A 已在实现提交 `9c6babb` 上完成上述证据并关闭。下一任务为
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`，
+目前仅定义任务，未实现。不要把验收凭据写入现有 `fqgate-secrets` 目录；
+其继承 ACL 允许更宽泛的用户读/改。任务实现前仍使用隐藏输入。

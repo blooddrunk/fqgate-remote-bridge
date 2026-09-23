@@ -11,8 +11,9 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
 - Phase 5: **CLOSED**
-- Phase 6-A: **OPEN** — implementation and prior-commit live acceptance passed;
-  exact-commit CI and merged-commit verification pending
+- Phase 6-A: **CLOSED** — permanent-Windows live acceptance and Ubuntu/Windows CI
+  passed on `9c6babb`
+- Post-Phase-6-A acceptance credential custody: **READY task; not implemented**
 - Phase 6-B/C+: planned only
 
 Current deployed topology remains:
@@ -370,7 +371,7 @@ Do not treat this closed maintenance track as a Phase 6 blocker.
 
 ## Phase 6-A — Cloudflare read-only discovery and deterministic plan
 
-Status: **OPEN**. The implementation validates a short-lived scoped read token,
+Status: **CLOSED** at implementation commit `9c6babb`. The implementation validates a short-lived scoped read token,
 discovers the exact account/zone, remotely-managed Tunnel/configuration, three DNS
 records, independent human/admin/machine Access applications/AUDs and policies,
 then produces a stable secret-free reconciliation plan and SHA-256 fingerprint.
@@ -383,6 +384,20 @@ allowlist. See:
 - `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`;
 - `docs/operations/windows-phase-6-a-acceptance.md`;
 - `docs/status/phase-6-a-implementation-handoff.md`.
+
+The permanent-Windows run recorded 14/14 PASS, including the 21/21 Phase 5-C
+remote matrix; the same commit passed Ubuntu and Windows CI run `35828737376`.
+
+## Post-Phase-6-A — permanent Windows acceptance credential custody
+
+Task defined; implementation has not started. The acceptance-only task at
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
+will let the current Windows user enroll a bounded Cloudflare read token and
+the existing machine Client ID/Secret once, then explicitly use the local
+Credential Manager for later live verification. The current `fqgate-secrets`
+directory has broad inherited ACLs and is not a safe file-backed vault. The
+task must preserve the prompt path, expiration handling, redaction and all
+Phase 6-A read-only boundaries. It does not authorize Phase 6-B mutation.
 
 Phase 6 invariants:
 
@@ -433,21 +448,17 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5 and the post-Phase-5 FQGate 1.0.2 compatibility maintenance track are closed.
-The active implementation target is **Phase 6-A only**: Cloudflare read-only discovery,
-reconciliation and deterministic planning. Phase 6-A has no Cloudflare mutation authority.
+Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track and Phase 6-A are
+closed. The next defined task is permanent-Windows acceptance credential
+custody, with no Cloudflare mutation authority:
 
-Active executable task:
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 
-`docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
+Phase 6-A historical implementation and evidence:
 
-Active Codex goal:
-
-`docs/prompts/phase-6-a-codex-goal.md`
-
-Phase 6 design source:
-
-`docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`
+- `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
+- `docs/status/phase-6-a-implementation-handoff.md`
+- `docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`
 
 Required historical baselines before implementation:
 
@@ -461,4 +472,5 @@ Automate every machine-verifiable quality, fixture, discovery, reconciliation, l
 regression check. Human intervention is limited to the explicitly documented hidden credential
 entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that includes the
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
-command. Do not advance to Phase 6-B or mutate Cloudflare until Phase 6-A is separately closed.
+command. Phase 6-B still needs a separate provisioning task; credential
+custody does not authorize it.

@@ -383,8 +383,9 @@ Follow `docs/roadmap.md`.
 - Phase 5-C: CLOSED — filtered machine OpenAPI + final Windows/remote/CI closure
 - Phase 5-D+: do not opportunistically implement
 - Post-Phase-5 FQGate 1.0.2 qualification: CLOSED
-- Phase 6-A: OPEN — read-only Cloudflare discovery/plan implementation; exact-commit
-  closure evidence pending
+- Phase 6-A: CLOSED — read-only Cloudflare discovery/plan, permanent Windows
+  live acceptance and exact-commit Ubuntu/Windows CI passed
+- Post-Phase-6-A acceptance credential custody: READY task, not implemented
 - Phase 6-B/C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
@@ -392,9 +393,9 @@ Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remot
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
 Phase 6-B provisioning and all other later-phase work require a separate task.
 
-## Active Phase 6-A read-only discovery task
+## Closed Phase 6-A read-only discovery task
 
-The active task package is:
+The closed task package is:
 
 `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
 
@@ -426,8 +427,25 @@ The Cloudflare API token may enter only through the hidden permanent-Windows
 CLI arguments, logs or evidence. A real plan must preserve the exact Bridge origin
 `http://127.0.0.1:17282`, classify direct 17281/wildcard/broad ingress and policy
 widening as conflicts, and keep human/admin/machine Access identities independent.
-If live Cloudflare or exact-commit CI evidence is unavailable, Phase 6-A remains
-OPEN with exact check IDs and the next executable command.
+Phase 6-A closed on implementation commit
+`9c6babb08eaf9a31a226c7950d64b642fc0b2c90`; closure evidence and CI IDs
+are in `docs/status/phase-6-a-implementation-handoff.md`.
+
+## Next task — permanent Windows acceptance credential custody
+
+The task package is:
+
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
+
+The task is defined but not implemented. It may add an explicit acceptance-only
+Windows credential provider for the existing Cloudflare read API token and
+machine service-token Client ID/Secret. Until that task is implemented and its
+security boundary is updated, the existing hidden PowerShell prompts remain
+the only accepted input path. Do not put plaintext or encrypted acceptance
+credentials into the existing `D:\\code\\research\\fqgate-secrets` directory:
+its current inherited ACL grants broader users access/modification. The initial
+task design uses the current user's Windows Credential Manager and requires
+fail-closed owner/expiry checks, no secret output, and no Cloudflare mutation.
 
 ## Closed post-Phase-5 maintenance task
 

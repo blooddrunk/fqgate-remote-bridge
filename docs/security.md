@@ -204,6 +204,16 @@ rejection, bounded bodies and bounded pagination. No mutation method, generic RE
 proxy, Tunnel-token retrieval, resource creation or Access policy change exists.
 Phase 6-B provisioning remains separately unauthorized.
 
+Phase 6-A closed with hidden-entry live acceptance on implementation commit
+`9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md` but
+has not changed this input boundary yet. Its initial design uses Windows
+Credential Manager generic credentials for the invoking user; such credentials
+remain readable by processes running as that user, so they do not defend
+against compromise of the Windows account. Stored acceptance credentials must
+remain least-privilege and expire/rotate according to Cloudflare. No vault
+storage or automatic use exists until that task is implemented and verified.
+
 ### Tunnel runtime credential
 
 Use the remotely managed tunnel runtime token in a repo-external Windows ACL
@@ -227,6 +237,13 @@ Later Windows implementation should use one of:
 - DPAPI-protected local configuration.
 
 Plaintext `.env` may be used only as an explicit development fallback and must remain ignored by Git.
+It is never an acceptance-credential backend for the permanent Windows host.
+
+The current `D:\code\research\fqgate-secrets` directory inherits broad
+`Authenticated Users: Modify` and `Users: ReadAndExecute` permissions. Do not
+place acceptance secrets or encrypted blobs there until a separate ACL and
+cloudflared service-identity review proves a secure file backend. Credential
+Manager is the initial backend for the future acceptance-only task.
 
 Potential secrets include Cloudflare setup tokens, tunnel tokens, Access service credentials used by self-tests, and notifier credentials.
 
@@ -503,7 +520,7 @@ available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
 
-## Post-Phase-5 qualification boundary — ACTIVE
+## Post-Phase-5 qualification boundary — closed
 
 The official stable 1.0.2 Windows x64 artifact is fixed by the manifest identity
 `FQGate-1.0.2-windows-x64-UNSIGNED.exe`, size `23065088`, SHA-256
@@ -522,8 +539,9 @@ OpenAPI, failed health check, or activation error fails closed and invokes the e
 automatic rollback path. The machine allowlist remains exactly
 `market.instruments.lookup` plus `openapi.machine`; no human/admin/old machine permission
 changes. The permanent-Windows procedure is
-`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`, and this track
-remains active until its external evidence and final-commit CI exist.
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`. Its
+external evidence and final-commit CI passed; the closure record is
+`docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
 
 ## Phase 5-C machine documentation boundary — closed
 

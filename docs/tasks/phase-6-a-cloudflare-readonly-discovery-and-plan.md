@@ -1,8 +1,8 @@
 # Phase 6-A task — Cloudflare read-only discovery and deterministic plan
 
 Date: 2026-09-22
-Status: **OPEN — implementation and pre-merge live acceptance passed; exact-commit
-CI and merged-commit verification pending**
+Status: **CLOSED — exact implementation commit `9c6babb` passed permanent-Windows
+live acceptance and Ubuntu/Windows CI; see the implementation handoff**
 
 ## Goal
 
