@@ -12,6 +12,11 @@ before closure.
 - Hidden Enroll, metadata-only Status and bounded Remove operations.
 - Bounded machine Client Secret format validation before attempting a vault
   write, with modern and legacy Cloudflare service-token forms accepted.
+- The third target's earlier `VAULT_WRITE_FAILED_WIN32_1734` was reproduced
+  with a disposable value through the full setter. Its JSON metadata comment
+  was 259 characters, exceeding Credential Manager's 256-character comment
+  limit. The redundant kind field was removed; an explicit metadata length
+  guard and disposable full-setter regression now cover this boundary.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does

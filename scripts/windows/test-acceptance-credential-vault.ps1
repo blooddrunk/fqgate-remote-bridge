@@ -48,6 +48,9 @@ try {
         Assert ([FQGateAcceptanceCredential]::IsMachineSecretFormat($modern)) "P6V-T3-MODERN-FORMAT"
         Assert ([FQGateAcceptanceCredential]::IsMachineSecretFormat($legacy)) "P6V-T3-LEGACY-FORMAT"
         Assert (-not [FQGateAcceptanceCredential]::IsMachineSecretFormat($malformed)) "P6V-T3-BAD-FORMAT"
+        $script:AcceptanceBackend.Write = { param($target, $secret, $comment, $ownerSid) $script:items[$target] = @($comment, $ownerSid, "2", "test-only-placeholder") }
+        Set-AcceptanceCredential "MachineClientSecret" $modern $expiry $binding
+        Assert ($script:items[(Get-AcceptanceTarget "MachineClientSecret")][0].Length -le 256) "P6V-T3-METADATA-BOUND"
         $rejected = $false
         try { Set-AcceptanceCredential "MachineClientSecret" $malformed $expiry $binding } catch { $rejected = $_.Exception.Message -eq "VAULT_INPUT_FORMAT_INVALID" }
         Assert $rejected "P6V-T3-FORMAT-REJECT"

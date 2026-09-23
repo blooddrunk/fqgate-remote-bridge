@@ -54,6 +54,7 @@ public static class FQGateAcceptanceCredential {
         IntPtr blob = IntPtr.Zero;
         try {
             if (secret.Length > 1280) throw new InvalidOperationException("VAULT_INPUT_TOO_LARGE");
+            if (comment.Length > 256) throw new InvalidOperationException("VAULT_METADATA_TOO_LARGE");
             blob = Marshal.SecureStringToCoTaskMemUnicode(secret);
             for (int i = 0; i < secret.Length; i++) {
                 char character = (char)Marshal.ReadInt16(blob, i * 2);
@@ -156,7 +157,7 @@ function Set-AcceptanceCredential([string]$Kind, [Security.SecureString]$Secret,
     if ($Expiry -le [DateTimeOffset]::UtcNow -or $Expiry -gt [DateTimeOffset]::UtcNow.AddYears(2)) { throw "VAULT_EXPIRY_INVALID" }
     if ($Binding -notmatch '^[a-f0-9]{64}$') { throw "VAULT_BINDING_INVALID" }
     $ownerSid = Get-AcceptanceOwnerSid
-    $comment = @{ kind=$Kind; ownerSid=$ownerSid; enrolled=[DateTimeOffset]::UtcNow.ToString("o"); expiry=$Expiry.ToString("o"); binding=$Binding } | ConvertTo-Json -Compress
+    $comment = @{ ownerSid=$ownerSid; enrolled=[DateTimeOffset]::UtcNow.ToString("o"); expiry=$Expiry.ToString("o"); binding=$Binding } | ConvertTo-Json -Compress
     & $script:AcceptanceBackend.Write $target $Secret $comment $ownerSid
 }
 
