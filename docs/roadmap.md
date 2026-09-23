@@ -13,7 +13,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 5: **CLOSED**
 - Phase 6-A: **CLOSED** — permanent-Windows live acceptance and Ubuntu/Windows CI
   passed on `9c6babb`
-- Post-Phase-6-A acceptance credential custody: **READY task; not implemented**
+- Post-Phase-6-A credential custody and secret-directory retirement:
+  **READY task; not implemented**
 - Phase 6-B/C+: planned only
 
 Current deployed topology remains:
@@ -388,16 +389,21 @@ allowlist. See:
 The permanent-Windows run recorded 14/14 PASS, including the 21/21 Phase 5-C
 remote matrix; the same commit passed Ubuntu and Windows CI run `35828737376`.
 
-## Post-Phase-6-A — permanent Windows acceptance credential custody
+## Post-Phase-6-A — Windows credential custody and secret-directory retirement
 
-Task defined; implementation has not started. The acceptance-only task at
+Task defined; implementation has not started. The credential-custody task at
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 will let the current Windows user enroll a bounded Cloudflare read token and
 the existing machine Client ID/Secret once, then explicitly use the local
 Credential Manager for later live verification. The current `fqgate-secrets`
 directory has broad inherited ACLs and is not a safe file-backed vault. The
 task must preserve the prompt path, expiration handling, redaction and all
-Phase 6-A read-only boundaries. It does not authorize Phase 6-B mutation.
+Phase 6-A read-only boundaries. It also plans to move the LocalSystem Tunnel
+token to the protected `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`
+default, verify service restart and remote access, then retire the old
+`fqgate-secrets` files and directory. The Tunnel token remains a protected
+service file and does not enter the user vault. It does not authorize Phase
+6-B mutation or token rotation.
 
 Phase 6 invariants:
 
@@ -449,8 +455,8 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 ## Current development handoff
 
 Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track and Phase 6-A are
-closed. The next defined task is permanent-Windows acceptance credential
-custody, with no Cloudflare mutation authority:
+closed. The next defined task is Windows credential custody and old
+secret-directory retirement, with no Cloudflare mutation authority:
 
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 

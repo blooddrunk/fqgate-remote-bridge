@@ -431,21 +431,24 @@ Phase 6-A closed on implementation commit
 `9c6babb08eaf9a31a226c7950d64b642fc0b2c90`; closure evidence and CI IDs
 are in `docs/status/phase-6-a-implementation-handoff.md`.
 
-## Next task — permanent Windows acceptance credential custody
+## Next task — Windows credential custody and secret-directory retirement
 
 The task package is:
 
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 
-The task is defined but not implemented. It may add an explicit acceptance-only
-Windows credential provider for the existing Cloudflare read API token and
-machine service-token Client ID/Secret. Until that task is implemented and its
-security boundary is updated, the existing hidden PowerShell prompts remain
-the only accepted input path. Do not put plaintext or encrypted acceptance
-credentials into the existing `D:\\code\\research\\fqgate-secrets` directory:
-its current inherited ACL grants broader users access/modification. The initial
-task design uses the current user's Windows Credential Manager and requires
-fail-closed owner/expiry checks, no secret output, and no Cloudflare mutation.
+The task is defined but not implemented. It may add an explicit Windows
+Credential Manager provider for the existing Cloudflare read API token and
+machine service-token Client ID/Secret. It also plans to move the cloudflared
+Tunnel token from `D:\\code\\research\\fqgate-secrets` to the project's
+protected `C:\\ProgramData\\FQGateRemoteBridge\\secrets\\tunnel-token` default,
+then retire the old directory after a verified service restart, remote
+regression and rollback preparation. The Tunnel token stays in a service-owned
+file; it does not enter the operator's Credential Manager. Until this task is
+implemented and verified, keep the current service path and hidden acceptance
+prompts. Do not put new acceptance credentials in the broad-ACL old directory,
+display Tunnel token contents, retrieve a token from the Cloudflare API, or
+mutate Cloudflare resources.
 
 ## Closed post-Phase-5 maintenance task
 

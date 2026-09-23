@@ -883,10 +883,14 @@ Phase 6-A 最终实现提交 `9c6babb` 在永久 Windows 通过 14/14 项真实�
 其中既有 Phase 5-C 远程矩阵 21/21 通过；同一提交的 Ubuntu/Windows CI 通过。
 证据与运行 ID 见 [Phase 6-A 实现交接](docs/status/phase-6-a-implementation-handoff.md)。
 
-## 下一任务：永久 Windows 验收凭据托管（READY，尚未实现）
+## 下一任务：Windows 凭据托管与旧 secrets 目录退役（READY，尚未实现）
 
 任务合同见 [验收凭据托管任务](docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md)。
 目标是在当前 Windows 用户的 Credential Manager 中一次性隐藏录入现有 Cloudflare
 只读 API token、machine Client ID 和 Client Secret，以便之后显式选择自动验收。
 目前仍须使用原有隐藏输入；`D:\code\research\fqgate-secrets` 的继承权限过宽，
-不能直接保存这些凭据。该任务不授权 Cloudflare 资源变更或 Phase 6-B。
+不能直接保存这些验收凭据。任务还计划把 `LocalSystem` 使用的 Tunnel token
+迁移到受保护的 `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`，
+确认服务重启和远程访问正常后清理旧文件与目录。Tunnel token 仍是服务文件，
+不进入当前用户的 Credential Manager；该任务不授权 Cloudflare 资源变更或
+Phase 6-B。

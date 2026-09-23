@@ -1,4 +1,4 @@
-# Post-Phase-6-A task — permanent Windows acceptance credential custody
+# Post-Phase-6-A task — Windows credential custody and secret-directory retirement
 
 Date: 2026-09-23
 Status: **READY — task defined; implementation not started**
@@ -12,7 +12,12 @@ machine Access service-token Client ID/Client Secret once through hidden local
 prompts. Later acceptance runs explicitly select the local vault and remain
 fully automated until a credential expires or is revoked.
 
-This is acceptance-only credential custody. It grants no Cloudflare mutation,
+The task also moves the existing cloudflared runtime Tunnel token into a
+protected service-owned file under the project's Windows default path, then
+retires the old `fqgate-secrets` directory after its consumers are gone. The
+two stores remain separate: acceptance credentials belong to the current
+Windows user's Credential Manager; the Tunnel service continues to use
+`--token-file` under `LocalSystem`. This task grants no Cloudflare mutation,
 token creation/refresh/rotation, new Bridge operation, background schedule,
 remote credential retrieval, or Phase 6-B authority. Preserve all closed
 Phase 0–6-A behavior and the current prompt-based acceptance path.
@@ -20,18 +25,29 @@ Phase 0–6-A behavior and the current prompt-based acceptance path.
 ## Observed permanent-Windows constraint
 
 The existing `D:\code\research\fqgate-secrets` directory currently inherits
-`Authenticated Users: Modify` and `Users: ReadAndExecute`. It is **not** an
-approved place to write acceptance credentials or DPAPI blobs as-is. Do not
-change that directory or its existing Tunnel-token files opportunistically:
-first inventory the cloudflared service identity and file ACL requirements.
+`Authenticated Users: Modify` and `Users: ReadAndExecute`. The
+`cloudflare-api-token` file inherits those broad rights. The existing
+`tunnel-token` file has its own restricted ACL, but the running cloudflared
+service references its path inside this directory. Do not remove the directory
+or either file before inventory, service reconfiguration, rollback preparation
+and live validation.
+
+At task definition time, `C:\ProgramData\FQGateRemoteBridge\secrets` does not
+exist on the permanent Windows host. Create and protect the destination
+directory before placing any token bytes there; reject links/reparse points
+and unexpected pre-existing objects.
 
 Use Windows Credential Manager generic credentials, scoped to the current
 Windows user and persisted only on this computer, as the initial backend.
-The repository at `D:\code\research\fqgate-remote-bridge` contains only code;
-`D:\code\research\fqgate-secrets` remains available for a separately reviewed
-file backend after its parent ACL and service compatibility are proven. No
-plaintext `.env`, JSON, PowerShell history, command argument, evidence file or
-Git path may carry these values.
+The repository at `D:\code\research\fqgate-remote-bridge` must contain no
+credential material.
+The new Tunnel-token destination is the existing project default
+`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`, with a protected
+parent directory and file ACL verified for the service identity and the
+operator account only as needed. Never put the Tunnel token into the
+current-user Credential Manager: the `LocalSystem` service must start without
+that user signing in. No plaintext `.env`, JSON, PowerShell history, command
+argument, evidence file or Git path may carry these values.
 
 Microsoft documents that generic credentials can be read by processes running
 as their owning user; the vault therefore protects against accidental file/Git
@@ -54,8 +70,8 @@ has its own expiration/rotation lifecycle; local storage never extends it.
    expired input without echoing it.
 3. Add explicit `-CredentialSource Prompt|Vault` to the existing Phase 6-A,
    Phase 5-C and underlying Phase 5-A authenticated acceptance entry points.
-   `Prompt` retains existing behavior;
-   `Vault` reads only the fixed targets under the invoking Windows identity.
+   `Prompt` retains existing behavior. `Vault` reads only the fixed targets
+   under the invoking Windows identity.
    Missing, wrong-user, expired or unreadable entries fail with bounded codes
    before network calls. No silent fallback to a different credential source.
    Vault mode is Windows-only; a Linux/WSL process must invoke the bounded
@@ -78,6 +94,30 @@ has its own expiration/rotation lifecycle; local storage never extends it.
    origin, read-only Cloudflare transport and operation policy. An agent may
    run the acceptance with `Vault` but may not display stored values or run a
    background job under a broader service account.
+8. Inventory every reference to the old Tunnel-token path, including the
+   installed service command and repo-external acceptance/runtime configs.
+   Stage the same token bytes at the new path without printing, parsing or
+   placing them in command arguments. Set and verify protected directory and
+   file ACLs before changing the service. The new file must pass the Bridge's
+   existing `tokenFile.state=secure` check for `LocalSystem`; a missing,
+   unreadable or broad-ACL file fails closed.
+9. Reconfigure the existing service to the new `--token-file` path using the
+   bounded local service controller. Preserve its prior non-secret command
+   shape and old token file for rollback. Restart once, then prove service
+   health, exact Bridge-only ingress, both loopback listeners and the existing
+   human/admin/machine remote regression. If any step fails, restore the old
+   service path and restart; keep both files until the old path is working.
+10. Only after the new service survives a restart and the live regressions pass,
+    confirm no service, config or script refers to `fqgate-secrets`. Retire the
+    old Tunnel-token file and the broadly readable `cloudflare-api-token` file
+    through an explicit finalization action, then remove the directory only if
+    empty. Verify the Cloudflare API token has been enrolled or is intentionally
+    discarded before deleting its old copy. This local cleanup does not revoke
+    or rotate any Cloudflare token. If the broadly readable API token remains
+    active, report that deleting its local file does not invalidate it and
+    provide a separate operator rotation instruction. Preserve a bounded
+    non-secret rollback record; never back up raw token bytes into Git, logs
+    or evidence.
 
 ## Implementation sequence
 
@@ -91,9 +131,13 @@ has its own expiration/rotation lifecycle; local storage never extends it.
    re-enrollment when a credential expires or rotates.
 4. Verify fake-store tests and full repository gates, then perform a permanent
    Windows smoke test using disposable test entries. Remove those entries.
-5. On the permanent Windows account, enroll the real three values through the
-   hidden prompts and rerun full Phase 6-A acceptance with `Vault`. Store only
-   bounded, secret-free external evidence and the exact commit/CI run IDs.
+5. On the permanent Windows account, enroll the real three acceptance values
+   through hidden prompts and rerun full Phase 6-A acceptance with `Vault`.
+6. Stage the existing Tunnel token at the protected ProgramData path, update
+   non-secret config and service references, and run the restart/remote matrix
+   with automatic rollback on failure. Only then finalize deletion of the old
+   copies and empty directory. Store bounded, secret-free external evidence
+   and the exact commit/CI run IDs.
 
 ## Acceptance IDs
 
@@ -107,16 +151,22 @@ has its own expiration/rotation lifecycle; local storage never extends it.
 | P6V-T6  | Cloudflare and Access invalid/expired cases request re-enrollment, no API mutation                                  |
 | P6V-W1  | permanent Windows disposable-entry smoke and cleanup                                                                |
 | P6V-W2  | real vault-backed run passes all 14 existing Phase 6-A checks and the Phase 5-C 21-check matrix on one clean commit |
+| P6V-W3  | protected ProgramData file and parent ACL; LocalSystem read; no broad user read/write; token value never printed    |
+| P6V-W4  | service restart and human/admin/machine remote checks pass on the new file path; rollback tested on a safe failure  |
+| P6V-W5  | old path has zero consumers; old files and empty directory removed only after explicit finalization                 |
 | P6V-CI1 | frozen install, typecheck, lint, tests, build, format and E2E where supported                                       |
 | P6V-CI2 | Ubuntu/Windows CI passes on the exact implementation commit without real secrets                                    |
 
 ## Closure
 
 Keep this task OPEN after implementation until real vault-backed acceptance,
-secret-free evidence, owner/expiry checks, disposable-entry cleanup and
-exact-commit CI all pass. If the storage backend, account identity or ACL
-cannot be proved, retain the prompt path and report the exact blocked check.
+secret-free evidence, owner/expiry checks, disposable-entry cleanup, safe
+Tunnel-token migration and old-directory retirement, and exact-commit CI all
+pass. If service identity, ACL, rollback or remote availability cannot be
+proved, leave the old token path in service and report the exact blocked check.
 
 Reference: [Microsoft Credential Manager generic credentials](https://learn.microsoft.com/en-us/windows/win32/secauthn/kinds-of-credentials),
 [credential persistence](https://learn.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala),
-[Cloudflare service-token lifetime and rotation](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/).
+[Cloudflare service-token lifetime and rotation](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/),
+[Tunnel token scope](https://developers.cloudflare.com/tunnel/reference/tunnel-tokens/),
+[cloudflared `--token-file`](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/configure-tunnels/run-parameters/).

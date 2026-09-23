@@ -14,7 +14,7 @@ task package 和安全文档为准。
   与最终 commit CI 均通过。
 - Phase 6-A：**CLOSED**；Cloudflare GET-only discovery/plan 在 `9c6babb` 上通过
   永久 Windows、真实 Cloudflare 和 exact-commit Ubuntu/Windows CI。
-- Post-Phase-6-A 验收凭据托管：任务已定义，尚未实现。
+- Post-Phase-6-A 凭据托管与旧 secrets 目录退役：任务已定义，尚未实现。
 - Phase 6-B：尚未授权实施。
 
 稳定拓扑不变：
@@ -209,4 +209,6 @@ unexpected AUD、Bypass/Everyone 与 human/admin/machine policy widening 都不�
 Phase 6-A 已在实现提交 `9c6babb` 上完成上述证据并关闭。下一任务为
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`，
 目前仅定义任务，未实现。不要把验收凭据写入现有 `fqgate-secrets` 目录；
-其继承 ACL 允许更宽泛的用户读/改。任务实现前仍使用隐藏输入。
+其继承 ACL 允许更宽泛的用户读/改。任务还计划把 LocalSystem 使用的
+Tunnel token 搬到受保护的 ProgramData 文件，在服务重启和远程回归通过后
+退役旧目录；未完成前保持现有服务路径和隐藏输入。

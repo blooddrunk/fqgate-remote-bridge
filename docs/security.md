@@ -213,6 +213,9 @@ remain readable by processes running as that user, so they do not defend
 against compromise of the Windows account. Stored acceptance credentials must
 remain least-privilege and expire/rotate according to Cloudflare. No vault
 storage or automatic use exists until that task is implemented and verified.
+The same task separately plans to relocate the LocalSystem cloudflared Tunnel
+token to the protected ProgramData token-file path; it must never store that
+runtime token in the invoking user's Credential Manager.
 
 ### Tunnel runtime credential
 
@@ -241,9 +244,14 @@ It is never an acceptance-credential backend for the permanent Windows host.
 
 The current `D:\code\research\fqgate-secrets` directory inherits broad
 `Authenticated Users: Modify` and `Users: ReadAndExecute` permissions. Do not
-place acceptance secrets or encrypted blobs there until a separate ACL and
-cloudflared service-identity review proves a secure file backend. Credential
-Manager is the initial backend for the future acceptance-only task.
+place acceptance secrets or encrypted blobs there. Credential Manager is the
+initial backend for the acceptance portion of the future task.
+The task now includes staging the existing Tunnel token in the protected
+`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` file, changing only
+the local service path after ACL checks, proving restart and remote access,
+keeping the old path for rollback, and retiring the old directory only after
+all consumers are removed. This is local file/service migration, not Cloudflare
+token rotation or provisioning.
 
 Potential secrets include Cloudflare setup tokens, tunnel tokens, Access service credentials used by self-tests, and notifier credentials.
 
