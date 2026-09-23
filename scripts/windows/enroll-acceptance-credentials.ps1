@@ -23,7 +23,7 @@ try {
     }
     Write-Host "ENROLLMENT_READY: all three targets are present for this Windows user."
 } catch {
-    $code = if ($_.Exception.Message -match '^VAULT_[A-Z_]+$') { $_.Exception.Message } else { "VAULT_UNREADABLE" }
+    $code = Get-AcceptanceErrorCode $_.Exception
     Write-Host "ENROLLMENT_FAILED: $code"
 } finally {
     Read-Host "Press Enter to close this window" | Out-Null

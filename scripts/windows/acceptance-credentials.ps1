@@ -23,7 +23,7 @@ try {
     $status = Get-AcceptanceCredentialStatus $Kind
     [pscustomobject]@{ action=$Action; kind=$Kind; present=$status.present; ownerMatch=$status.ownerMatch; expiry=$status.expiry; state=$status.state } | ConvertTo-Json -Compress
 } catch {
-    $code = if ($_.Exception.Message -match '^VAULT_[A-Z_]+$') { $_.Exception.Message } else { "VAULT_UNREADABLE" }
+    $code = Get-AcceptanceErrorCode $_.Exception
     [Console]::Error.WriteLine($code)
     exit 1
 }

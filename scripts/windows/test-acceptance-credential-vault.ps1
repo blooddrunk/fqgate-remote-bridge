@@ -36,5 +36,7 @@ try {
     Assert $failed "P6V-T3-REPLACE"
     Assert ($script:items.ContainsKey($machineTarget)) "P6V-T3-UNRELATED"
     Assert ($script:AcceptanceTargets.Count -eq 3) "P6V-T1-NAMESPACE"
+    Assert ((Get-AcceptanceErrorCode ([Exception]::new("wrapper", [Exception]::new("VAULT_INPUT_INVALID")))) -eq "VAULT_INPUT_INVALID") "P6V-T4-BOUNDED-CODE"
+    Assert ((Get-AcceptanceErrorCode ([Exception]::new("unexpected content"))) -eq "VAULT_UNREADABLE") "P6V-T4-ERROR-REDACTION"
     Write-Output '{"id":"P6V-FAKE-STORE","result":"PASS"}'
 } finally { $dummy.Dispose() }

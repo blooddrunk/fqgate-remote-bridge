@@ -81,6 +81,15 @@ function Assert-AcceptanceWindows {
     if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { throw "VAULT_WINDOWS_ONLY" }
 }
 
+function Get-AcceptanceErrorCode([System.Exception]$ErrorValue) {
+    $current = $ErrorValue
+    for ($depth = 0; $depth -lt 5 -and $null -ne $current; $depth++) {
+        if ($current.Message -match '^VAULT_[A-Z_]+$') { return $current.Message }
+        $current = $current.InnerException
+    }
+    return "VAULT_UNREADABLE"
+}
+
 function Get-AcceptanceOwnerSid {
     Assert-AcceptanceWindows
     return [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
