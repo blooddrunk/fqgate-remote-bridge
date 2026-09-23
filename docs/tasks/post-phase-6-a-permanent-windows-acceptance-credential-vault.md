@@ -97,18 +97,18 @@ has its own expiration/rotation lifecycle; local storage never extends it.
 
 ## Acceptance IDs
 
-| ID      | Required evidence                                                                                 |
-| ------- | ------------------------------------------------------------------------------------------------- |
-| P6V-T1  | fixed three-target namespace; no enumeration, value display or export                             |
-| P6V-T2  | owner-user/local-machine persistence; wrong user and unavailable vault fail closed                |
-| P6V-T3  | hidden enrollment, bounded input, expiry, replacement and removal behavior                        |
-| P6V-T4  | no credential in arguments, process output, errors, config, Git, evidence or CI                   |
-| P6V-T5  | prompt mode unchanged; explicit vault mode, no silent fallback                                    |
-| P6V-T6  | Cloudflare and Access invalid/expired cases request re-enrollment, no API mutation                |
-| P6V-W1  | permanent Windows disposable-entry smoke and cleanup                                              |
+| ID      | Required evidence                                                                                                   |
+| ------- | ------------------------------------------------------------------------------------------------------------------- |
+| P6V-T1  | fixed three-target namespace; no enumeration, value display or export                                               |
+| P6V-T2  | owner-user/local-machine persistence; wrong user and unavailable vault fail closed                                  |
+| P6V-T3  | hidden enrollment, bounded input, expiry, replacement and removal behavior                                          |
+| P6V-T4  | no credential in arguments, process output, errors, config, Git, evidence or CI                                     |
+| P6V-T5  | prompt mode unchanged; explicit vault mode, no silent fallback                                                      |
+| P6V-T6  | Cloudflare and Access invalid/expired cases request re-enrollment, no API mutation                                  |
+| P6V-W1  | permanent Windows disposable-entry smoke and cleanup                                                                |
 | P6V-W2  | real vault-backed run passes all 14 existing Phase 6-A checks and the Phase 5-C 21-check matrix on one clean commit |
-| P6V-CI1 | frozen install, typecheck, lint, tests, build, format and E2E where supported                     |
-| P6V-CI2 | Ubuntu/Windows CI passes on the exact implementation commit without real secrets                  |
+| P6V-CI1 | frozen install, typecheck, lint, tests, build, format and E2E where supported                                       |
+| P6V-CI2 | Ubuntu/Windows CI passes on the exact implementation commit without real secrets                                    |
 
 ## Closure
 
