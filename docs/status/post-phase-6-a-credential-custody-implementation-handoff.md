@@ -10,6 +10,7 @@ before closure.
 - Fixed three-target Windows Credential Manager provider with current-user SID,
   local-machine persistence, UTC expiry and non-secret deployment binding.
 - Hidden Enroll, metadata-only Status and bounded Remove operations.
+- A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does
   not fall back.

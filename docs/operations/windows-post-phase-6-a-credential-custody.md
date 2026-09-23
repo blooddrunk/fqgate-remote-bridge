@@ -14,6 +14,10 @@ chat, a command, a file, or an argument.
 Use an ordinary interactive PowerShell window as the account that runs
 acceptance. Set each expiry to the real credential expiry in UTC; local storage
 does not extend it. Each command prompts through `Read-Host -AsSecureString`.
+For a single guided window, run
+`.\scripts\windows\enroll-acceptance-credentials.ps1`; it prompts for all
+three expiries and then the three hidden values. It prints only metadata and
+keeps the window open until Enter is pressed.
 
 ```powershell
 Set-Location D:\code\research\fqgate-remote-bridge
