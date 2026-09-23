@@ -8,6 +8,10 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$currentPathExt = [string]$env:PATHEXT
+if ($currentPathExt -notmatch '(?i)(^|;)\.EXE(;|$)' -or $currentPathExt -notmatch '(?i)(^|;)\.CMD(;|$)') {
+    $env:PATHEXT = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;$currentPathExt"
+}
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 if ($root -ne "D:\code\research\fqgate-remote-bridge" -or -not (Test-Path (Join-Path $root ".git"))) {
     throw "P5C-W1 FAIL PERMANENT_WINDOWS_CHECKOUT_REQUIRED"

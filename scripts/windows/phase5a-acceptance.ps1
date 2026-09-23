@@ -14,6 +14,10 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$currentPathExt = [string]$env:PATHEXT
+if ($currentPathExt -notmatch '(?i)(^|;)\.EXE(;|$)' -or $currentPathExt -notmatch '(?i)(^|;)\.CMD(;|$)') {
+    $env:PATHEXT = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;$currentPathExt"
+}
 
 <#
     Phase 5-A acceptance.

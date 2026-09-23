@@ -6,6 +6,10 @@ param(
     [string]$TunnelIngressConfigPath = "D:\code\research\fqgate-machine-tunnel-ingress-evidence.json"
 )
 $ErrorActionPreference = "Stop"
+$currentPathExt = [string]$env:PATHEXT
+if ($currentPathExt -notmatch '(?i)(^|;)\.EXE(;|$)' -or $currentPathExt -notmatch '(?i)(^|;)\.CMD(;|$)') {
+    $env:PATHEXT = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;$currentPathExt"
+}
 $root = "D:\code\research\fqgate-remote-bridge"
 $oldDirectory = "D:\code\research\fqgate-secrets"
 $oldToken = Join-Path $oldDirectory "tunnel-token"
