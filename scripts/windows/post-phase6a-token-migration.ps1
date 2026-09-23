@@ -81,6 +81,25 @@ function Invoke-Service([string]$command) {
         if ($LASTEXITCODE -ne 0) { throw "P6V-W4 SERVICE_COMMAND_FAILED" }
     } finally { Remove-Item Env:\FQGATE_REMOTE_BRIDGE_CONFIG -ErrorAction SilentlyContinue }
 }
+function Restart-ServiceBounded {
+    Invoke-Service "stop"
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds(45)
+    do {
+        $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
+        if ($null -eq $service) { throw "P6V-W4 SERVICE_MISSING" }
+        if ($service.State -eq "Stopped") { break }
+        Start-Sleep -Milliseconds 500
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+    if ($service.State -ne "Stopped") { throw "P6V-W4 SERVICE_STOP_TIMEOUT" }
+    Invoke-Service "start"
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds(45)
+    do {
+        $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
+        if ($service.State -eq "Running") { return }
+        Start-Sleep -Milliseconds 500
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+    throw "P6V-W4 SERVICE_START_TIMEOUT"
+}
 function Assert-Service([string]$path) {
     $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
     if ($null -eq $service -or $service.State -ne "Running" -or $service.StartName -ne "LocalSystem" -or -not $service.PathName.Contains($path)) { throw "P6V-W4 SERVICE_STATE_INVALID" }
@@ -163,7 +182,7 @@ try {
     if ($Action -eq "Rollback") {
         Set-ConfigTokenPath $oldToken
         Invoke-Service "install"
-        Invoke-Service "restart"
+        Restart-ServiceBounded
         Assert-Service $oldToken
         Record "P6V-W4-ROLLBACK" "PASS" @{ oldPathRestored=$true }
         exit 0
@@ -200,17 +219,17 @@ try {
             $changed = $true
             Set-ConfigTokenPath $newToken
             Invoke-Service "install"
-            Invoke-Service "restart"
+            Restart-ServiceBounded
             Assert-Service $newToken
             # Exercise the actual rollback path, then switch back to the new file.
             Set-ConfigTokenPath $oldToken
             Invoke-Service "install"
-            Invoke-Service "restart"
+            Restart-ServiceBounded
             Assert-Service $oldToken
             Record "P6V-W4-ROLLBACK" "PASS" @{ oldPathRestored=$true }
             Set-ConfigTokenPath $newToken
             Invoke-Service "install"
-            Invoke-Service "restart"
+            Restart-ServiceBounded
             Assert-Service $newToken
             Assert-Listeners
             & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "phase45-acceptance.ps1") -ConfigPath $ConfigPath -RunAuthenticatedBrowserMatrix
@@ -223,7 +242,7 @@ try {
             if ($changed) {
                 Set-ConfigTokenPath $oldToken
                 Invoke-Service "install"
-                Invoke-Service "restart"
+                Restart-ServiceBounded
                 Assert-Service $oldToken
                 Record "P6V-W4-ROLLBACK" "PASS" @{ oldPathRestored=$true; migrationFailed=$true }
             }

@@ -17,6 +17,12 @@ before closure.
   was 259 characters, exceeding Credential Manager's 256-character comment
   limit. The redundant kind field was removed; an explicit metadata length
   guard and disposable full-setter regression now cover this boundary.
+- The first elevated migration found that Windows can leave `sc stop` pending
+  after the CLI returns. The immediate start failed, leaving the running
+  service on the new protected file and the external config on the old path.
+  The migration now waits for the stopped state before starting and provides
+  an explicit elevated rollback action. This attempt is not closure evidence;
+  rollback and the full migration still need to pass.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does
