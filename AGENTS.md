@@ -385,7 +385,8 @@ Follow `docs/roadmap.md`.
 - Post-Phase-5 FQGate 1.0.2 qualification: CLOSED
 - Phase 6-A: CLOSED — read-only Cloudflare discovery/plan, permanent Windows
   live acceptance and exact-commit Ubuntu/Windows CI passed
-- Post-Phase-6-A acceptance credential custody: READY task, not implemented
+- Post-Phase-6-A acceptance credential custody: implementation in progress;
+  permanent-Windows live acceptance and old-directory retirement pending
 - Phase 6-B/C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
@@ -441,7 +442,8 @@ The Codex goal is:
 
 `docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
 
-The task is defined but not implemented. It may add an explicit Windows
+The task has a Prompt/Vault implementation and migration automation pending
+live acceptance. It may add an explicit Windows
 Credential Manager provider for the existing Cloudflare read API token and
 machine service-token Client ID/Secret. It also plans to move the cloudflared
 Tunnel token from `D:\\code\\research\\fqgate-secrets` to the project's

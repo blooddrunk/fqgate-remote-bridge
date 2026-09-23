@@ -410,6 +410,19 @@ allowlist remains exactly `market.instruments.lookup` and `openapi.machine`.
 Phase 6-B may later contain separately reviewed mutation adapters and apply
 transactions. It is not part of this architecture change.
 
+### Post-Phase-6-A acceptance credential custody
+
+Windows acceptance has an explicit Prompt/Vault source at the existing Phase
+6-A and Phase 5-C/5-A entry points. The Vault provider addresses exactly three
+current-user Credential Manager generic targets; it checks owner SID,
+local-machine persistence, expiry and the non-secret account/zone or machine
+hostname/AUD binding. It never enumerates or exports credentials. The existing
+child-process environment boundary remains the only credential handoff to
+the acceptance harness. The LocalSystem Tunnel token remains in a protected
+file, independent of the user vault. Migration automation uses the bounded
+cloudflared service controller and preserves an old-path rollback until full
+remote verification and explicit finalization.
+
 ### 13. Supervisor/state machine — Phase 7
 
 Suggested dimensions:

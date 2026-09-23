@@ -1,0 +1,54 @@
+# Post-Phase-6-A credential custody handoff
+
+Status: **OPEN**. The code and Windows migration command are present, but
+real credential enrollment, elevated ProgramData/service migration, final
+remote regressions, old-directory retirement and exact-commit CI must pass
+before closure.
+
+## Implemented
+
+- Fixed three-target Windows Credential Manager provider with current-user SID,
+  local-machine persistence, UTC expiry and non-secret deployment binding.
+- Hidden Enroll, metadata-only Status and bounded Remove operations.
+- Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
+  authenticated acceptance. Prompt remains the default. Vault failure does
+  not fall back.
+- ProgramData token-file migration command with old-path inventory, protected
+  ACL checks, bounded service-controller reconfiguration, restart, rollback,
+  human/admin browser matrix, Vault-backed Phase 6-A/5-C matrix and gated
+  finalization.
+
+## Local checks completed
+
+| ID                                                               | Result                                                 |
+| ---------------------------------------------------------------- | ------------------------------------------------------ |
+| P6V-T1..T3 fake store                                            | PASS                                                   |
+| P6V-W1 disposable Windows Credential Manager entries and cleanup | PASS                                                   |
+| Windows frozen install, typecheck, lint, tests, build, format    | PASS                                                   |
+| Windows Playwright E2E                                           | PASS, 13/13                                            |
+| Windows CLI/production loopback smoke                            | PASS                                                   |
+| PowerShell parser on eight affected scripts                      | PASS                                                   |
+| Old-path consumer inventory                                      | PASS, 2 current consumers: service and external config |
+| Non-elevated migration denial                                    | PASS, `P6V-W3 ELEVATION_REQUIRED`, no service change   |
+
+The initially observed format failure on the new goal prompt document from
+latest `main` was corrected and the gate rerun to PASS. The running service
+still uses `D:\code\research\fqgate-secrets\tunnel-token` and the old files
+remain intact. No Cloudflare mutation occurred.
+
+## Outstanding checks
+
+- P6V-T4..T6: integrated real Vault and Prompt regression, no secret in output,
+  expired/revoked behavior.
+- P6V-W2: real Vault-backed 14/14 Phase 6-A and 21/21 Phase 5-C acceptance on
+  one clean commit.
+- P6V-W3/W4: elevated ProgramData ACL, LocalSystem read, safe rollback and
+  human/admin/machine remote behavior.
+- P6V-W5: zero old-path consumers and explicit finalization.
+- P6V-CI2: Ubuntu/Windows Actions on the exact final implementation commit.
+
+The external evidence target is
+`D:\code\research\fqgate-post-phase6a-credential-custody-evidence.json`.
+It does not yet exist; do not infer closure from the historical Phase 6-A
+evidence. Follow the exact commands in
+`docs/operations/windows-post-phase-6-a-credential-custody.md`.

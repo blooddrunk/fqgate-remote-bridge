@@ -208,7 +208,8 @@ unexpected AUD、Bypass/Everyone 与 human/admin/machine policy widening 都不�
 
 Phase 6-A 已在实现提交 `9c6babb` 上完成上述证据并关闭。下一任务为
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`，
-目前仅定义任务，未实现。不要把验收凭据写入现有 `fqgate-secrets` 目录；
+当前已有 Prompt/Vault 代码和迁移脚本，但真实录入、提权 ACL/服务迁移、远程回归与 CI
+未完成前不可关闭任务。不要把验收凭据写入现有 `fqgate-secrets` 目录；
 其继承 ACL 允许更宽泛的用户读/改。任务还计划把 LocalSystem 使用的
 Tunnel token 搬到受保护的 ProgramData 文件，在服务重启和远程回归通过后
 退役旧目录；未完成前保持现有服务路径和隐藏输入。

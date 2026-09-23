@@ -9,7 +9,8 @@ param(
     [string]$MachineUrl,
     [string]$HumanUrl,
     [string]$AdminUrl,
-    [string]$TunnelIngressConfigPath
+    [string]$TunnelIngressConfigPath,
+    [ValidateSet("Prompt", "Vault")][string]$CredentialSource = "Prompt"
 )
 
 $ErrorActionPreference = "Stop"
@@ -404,13 +405,22 @@ if ($RunAuthenticatedServiceTokenMatrix) {
     if ($Phase5CReadOnly) {
         $harnessPath = Join-Path $script:repositoryRoot "scripts\windows\phase5c-matrix.mjs"
     }
-    $clientIdSecure = Read-Host "Cloudflare service-token Client ID (hidden)" -AsSecureString
-    $clientSecretSecure = Read-Host "Cloudflare service-token Client Secret (hidden)" -AsSecureString
+    $clientIdSecure = $null
+    $clientSecretSecure = $null
     $clientId = $null
     $clientSecret = $null
     try {
-        $clientId = ConvertFrom-SecureStringInMemory $clientIdSecure
-        $clientSecret = ConvertFrom-SecureStringInMemory $clientSecretSecure
+        if ($CredentialSource -eq "Vault") {
+            . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
+            $binding = Get-AcceptanceBinding "MachineClientId" "" $ConfigPath
+            $clientId = Get-AcceptanceCredential "MachineClientId" $binding
+            $clientSecret = Get-AcceptanceCredential "MachineClientSecret" $binding
+        } else {
+            $clientIdSecure = Read-Host "Cloudflare service-token Client ID (hidden)" -AsSecureString
+            $clientSecretSecure = Read-Host "Cloudflare service-token Client Secret (hidden)" -AsSecureString
+            $clientId = ConvertFrom-SecureStringInMemory $clientIdSecure
+            $clientSecret = ConvertFrom-SecureStringInMemory $clientSecretSecure
+        }
         $arguments = @(
             $harnessPath,
             "--machine-url", $MachineUrl

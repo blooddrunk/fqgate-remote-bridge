@@ -3,7 +3,8 @@ param(
     [Parameter(Mandatory = $true)][string]$ConfigPath,
     [switch]$VerifyLocal,
     [switch]$RunAuthenticatedServiceTokenMatrix,
-    [string]$TunnelIngressConfigPath
+    [string]$TunnelIngressConfigPath,
+    [ValidateSet("Prompt", "Vault")][string]$CredentialSource = "Prompt"
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,7 +44,7 @@ if ($RunAuthenticatedServiceTokenMatrix) {
         $ingress.hostname -eq $configuration.remoteAccess.machineHostname
     Write-P5CRecord "P5C-W3" $ingressPass @{ origin = $(if ($ingressPass) { "bridge-loopback" } else { "invalid" }) }
     if (-not $ingressPass) { throw "P5C-W3 FAIL EXISTING_MACHINE_INGRESS_MISMATCH" }
-    & (Join-Path $PSScriptRoot "phase5a-acceptance.ps1") -ConfigPath $ConfigPath -RunAuthenticatedServiceTokenMatrix -Phase5CReadOnly -TunnelIngressConfigPath $TunnelIngressConfigPath
+    & (Join-Path $PSScriptRoot "phase5a-acceptance.ps1") -ConfigPath $ConfigPath -RunAuthenticatedServiceTokenMatrix -Phase5CReadOnly -TunnelIngressConfigPath $TunnelIngressConfigPath -CredentialSource $CredentialSource
     if (-not $?) { throw "P5C-REMOTE FAIL See bounded P5C-R check and machine-derived summary" }
 }
 $passed = @($records | Where-Object { $_ }).Count

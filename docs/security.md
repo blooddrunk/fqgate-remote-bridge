@@ -206,13 +206,16 @@ Phase 6-B provisioning remains separately unauthorized.
 
 Phase 6-A closed with hidden-entry live acceptance on implementation commit
 `9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in
-`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md` but
-has not changed this input boundary yet. Its initial design uses Windows
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`.
+Its implementation adds an explicit Prompt/Vault selector and Windows
 Credential Manager generic credentials for the invoking user; such credentials
 remain readable by processes running as that user, so they do not defend
 against compromise of the Windows account. Stored acceptance credentials must
-remain least-privilege and expire/rotate according to Cloudflare. No vault
-storage or automatic use exists until that task is implemented and verified.
+remain least-privilege and expire/rotate according to Cloudflare. The Vault
+source reads only three fixed current-user targets with owner, expiry and
+non-secret deployment binding checks; missing or invalid entries fail closed.
+The prompt path remains available. Live enrollment and remote verification
+are still required before task closure.
 The same task separately plans to relocate the LocalSystem cloudflared Tunnel
 token to the protected ProgramData token-file path; it must never store that
 runtime token in the invoking user's Credential Manager.
@@ -245,7 +248,7 @@ It is never an acceptance-credential backend for the permanent Windows host.
 The current `D:\code\research\fqgate-secrets` directory inherits broad
 `Authenticated Users: Modify` and `Users: ReadAndExecute` permissions. Do not
 place acceptance secrets or encrypted blobs there. Credential Manager is the
-initial backend for the acceptance portion of the future task.
+backend for exactly three acceptance credentials.
 The task now includes staging the existing Tunnel token in the protected
 `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` file, changing only
 the local service path after ACL checks, proving restart and remote access,

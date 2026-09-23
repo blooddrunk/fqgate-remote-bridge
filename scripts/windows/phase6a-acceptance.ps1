@@ -4,7 +4,8 @@ param(
     [string]$ConfigPath,
     [string]$TunnelIngressConfigPath,
     [switch]$RunQualityGates,
-    [switch]$RunPhase5CRemoteRegression
+    [switch]$RunPhase5CRemoteRegression,
+    [ValidateSet("Prompt", "Vault")][string]$CredentialSource = "Prompt"
 )
 
 $ErrorActionPreference = "Stop"
@@ -332,8 +333,15 @@ try {
         Add-Record "P6A-Q0" "SKIP" @{ reason = "run with -RunQualityGates to execute the frozen full repository gate set" }
     }
 
-    $secureToken = Read-Host "Cloudflare read-only API token (hidden)" -AsSecureString
-    $cloudflareToken = ConvertFrom-SecureStringInMemory $secureToken
+    $secureToken = $null
+    if ($CredentialSource -eq "Vault") {
+        . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
+        $binding = Get-AcceptanceBinding "CloudflareRead" $DesiredStatePath $ConfigPath
+        $cloudflareToken = Get-AcceptanceCredential "CloudflareRead" $binding
+    } else {
+        $secureToken = Read-Host "Cloudflare read-only API token (hidden)" -AsSecureString
+        $cloudflareToken = ConvertFrom-SecureStringInMemory $secureToken
+    }
     $childEnvironment = @{ CLOUDFLARE_API_TOKEN = $cloudflareToken }
     try {
         $discoverResult = Invoke-BridgeCloudflare "discover" $childEnvironment
@@ -388,7 +396,7 @@ try {
             throw "P6A-P5C FAIL ConfigPath and TunnelIngressConfigPath are required for the real remote-machine regression"
         }
         $phase5cPath = Join-Path $repositoryRoot "scripts\windows\phase5c-acceptance.ps1"
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $phase5cPath -ConfigPath $ConfigPath -RunAuthenticatedServiceTokenMatrix -TunnelIngressConfigPath $TunnelIngressConfigPath
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $phase5cPath -ConfigPath $ConfigPath -RunAuthenticatedServiceTokenMatrix -TunnelIngressConfigPath $TunnelIngressConfigPath -CredentialSource $CredentialSource
         if ($LASTEXITCODE -ne 0) { throw "P6A-P5C FAIL" }
         Add-Record "P6A-P5C" "PASS" @{ regression = "phase5-c-real-remote-machine" }
     } else {

@@ -1,7 +1,7 @@
 # Post-Phase-6-A task — Windows credential custody and secret-directory retirement
 
 Date: 2026-09-23
-Status: **READY — task defined; implementation not started**
+Status: **IMPLEMENTATION IN PROGRESS — live vault/migration/CI closure pending**
 
 Codex handoff: `docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
 

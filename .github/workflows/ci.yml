@@ -68,3 +68,10 @@ jobs:
         shell: pwsh
         run: |
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\acceptance.ps1" -VerifyBridge
+
+      - name: Windows acceptance vault tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-acceptance-credential-vault.ps1"
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\smoke-acceptance-credential-vault.ps1"

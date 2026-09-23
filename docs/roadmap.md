@@ -14,7 +14,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6-A: **CLOSED** — permanent-Windows live acceptance and Ubuntu/Windows CI
   passed on `9c6babb`
 - Post-Phase-6-A credential custody and secret-directory retirement:
-  **READY task; not implemented**
+  **implementation in progress; live migration and closure pending**
 - Phase 6-B/C+: planned only
 
 Current deployed topology remains:
@@ -391,9 +391,9 @@ remote matrix; the same commit passed Ubuntu and Windows CI run `35828737376`.
 
 ## Post-Phase-6-A — Windows credential custody and secret-directory retirement
 
-Task defined; implementation has not started. The credential-custody task at
+The credential-custody task at
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
-will let the current Windows user enroll a bounded Cloudflare read token and
+adds a bounded current-user Credential Manager provider for a Cloudflare read token and
 the existing machine Client ID/Secret once, then explicitly use the local
 Credential Manager for later live verification. The current `fqgate-secrets`
 directory has broad inherited ACLs and is not a safe file-backed vault. The
@@ -404,6 +404,10 @@ default, verify service restart and remote access, then retire the old
 `fqgate-secrets` files and directory. The Tunnel token remains a protected
 service file and does not enter the user vault. It does not authorize Phase
 6-B mutation or token rotation.
+The provider and migration automation require real credential enrollment,
+elevated ACL/service checks, remote regression, old-directory finalization,
+and exact-commit CI before this task can close. See
+`docs/operations/windows-post-phase-6-a-credential-custody.md`.
 
 Phase 6 invariants:
 
