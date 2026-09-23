@@ -41,7 +41,10 @@ public static class FQGateAcceptanceCredential {
             var c = new CREDENTIAL { Type = 1, TargetName = target, Comment = comment,
                 CredentialBlobSize = checked((UInt32)(secret.Length * 2)), CredentialBlob = blob,
                 Persist = 2, UserName = ownerSid };
-            if (!CredWrite(ref c, 0)) throw new InvalidOperationException("VAULT_WRITE_FAILED");
+            if (!CredWrite(ref c, 0)) {
+                int code = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException("VAULT_WRITE_FAILED_WIN32_" + code.ToString());
+            }
         } finally { if (blob != IntPtr.Zero) Marshal.ZeroFreeCoTaskMemUnicode(blob); }
     }
     public static string[] Read(string target, bool includeSecret) {
@@ -85,7 +88,7 @@ function Assert-AcceptanceWindows {
 function Get-AcceptanceErrorCode([System.Exception]$ErrorValue) {
     $current = $ErrorValue
     for ($depth = 0; $depth -lt 5 -and $null -ne $current; $depth++) {
-        if ($current.Message -match '^VAULT_[A-Z_]+$') { return $current.Message }
+        if ($current.Message -match '^VAULT_[A-Z0-9_]{1,64}$') { return $current.Message }
         $current = $current.InnerException
     }
     return "VAULT_UNREADABLE"
