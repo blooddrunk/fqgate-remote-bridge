@@ -31,6 +31,7 @@ public static class FQGateAcceptanceCredential {
     public static void Write(string target, SecureString secret, string comment, string ownerSid) {
         IntPtr blob = IntPtr.Zero;
         try {
+            if (secret.Length > 1280) throw new InvalidOperationException("VAULT_INPUT_TOO_LARGE");
             blob = Marshal.SecureStringToCoTaskMemUnicode(secret);
             for (int i = 0; i < secret.Length; i++) {
                 char character = (char)Marshal.ReadInt16(blob, i * 2);
@@ -51,7 +52,7 @@ public static class FQGateAcceptanceCredential {
         }
         try {
             var c = (CREDENTIAL)Marshal.PtrToStructure(pointer, typeof(CREDENTIAL));
-            if (c.CredentialBlobSize > 4096 || (c.CredentialBlobSize % 2) != 0)
+            if (c.CredentialBlobSize > 2560 || (c.CredentialBlobSize % 2) != 0)
                 throw new InvalidOperationException("VAULT_UNREADABLE");
             string value = includeSecret ? Marshal.PtrToStringUni(c.CredentialBlob, checked((int)c.CredentialBlobSize / 2)) : null;
             return new [] { c.Comment, c.UserName, c.Persist.ToString(), value };
@@ -124,7 +125,8 @@ function Get-AcceptanceCredential([string]$Kind, [string]$ExpectedBinding) {
 
 function Set-AcceptanceCredential([string]$Kind, [Security.SecureString]$Secret, [DateTimeOffset]$Expiry, [string]$Binding) {
     $target = Get-AcceptanceTarget $Kind
-    if ($null -eq $Secret -or $Secret.Length -lt 8 -or $Secret.Length -gt 2048) { throw "VAULT_INPUT_INVALID" }
+    if ($null -eq $Secret -or $Secret.Length -lt 8) { throw "VAULT_INPUT_INVALID" }
+    if ($Secret.Length -gt 1280) { throw "VAULT_INPUT_TOO_LARGE" }
     if ($Expiry -le [DateTimeOffset]::UtcNow -or $Expiry -gt [DateTimeOffset]::UtcNow.AddYears(2)) { throw "VAULT_EXPIRY_INVALID" }
     if ($Binding -notmatch '^[a-f0-9]{64}$') { throw "VAULT_BINDING_INVALID" }
     $ownerSid = Get-AcceptanceOwnerSid

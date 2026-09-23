@@ -35,6 +35,12 @@ try {
     try { Set-AcceptanceCredential "CloudflareRead" $dummy $expiry $binding } catch { $failed = $_.Exception.Message -eq "VAULT_WRITE_FAILED" }
     Assert $failed "P6V-T3-REPLACE"
     Assert ($script:items.ContainsKey($machineTarget)) "P6V-T3-UNRELATED"
+    $oversize = ConvertTo-SecureString ("x" * 1281) -AsPlainText -Force
+    try {
+        $rejected = $false
+        try { Set-AcceptanceCredential "MachineClientSecret" $oversize $expiry $binding } catch { $rejected = $_.Exception.Message -eq "VAULT_INPUT_TOO_LARGE" }
+        Assert $rejected "P6V-T3-SIZE"
+    } finally { $oversize.Dispose() }
     Assert ($script:AcceptanceTargets.Count -eq 3) "P6V-T1-NAMESPACE"
     Assert ((Get-AcceptanceErrorCode ([Exception]::new("wrapper", [Exception]::new("VAULT_INPUT_INVALID")))) -eq "VAULT_INPUT_INVALID") "P6V-T4-BOUNDED-CODE"
     Assert ((Get-AcceptanceErrorCode ([Exception]::new("unexpected content"))) -eq "VAULT_UNREADABLE") "P6V-T4-ERROR-REDACTION"

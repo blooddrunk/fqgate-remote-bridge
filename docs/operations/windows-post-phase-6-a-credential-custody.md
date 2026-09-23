@@ -33,6 +33,9 @@ remove one local entry, run `-Action Remove -Kind <kind>`; removal does not
 revoke a Cloudflare token. `VAULT_MISSING`, `VAULT_EXPIRED`,
 `VAULT_WRONG_USER`, `VAULT_BINDING_MISMATCH`, and `VAULT_UNREADABLE` require
 correction or hidden re-enrollment. Vault mode never falls back to a prompt.
+`VAULT_INPUT_TOO_LARGE` means the entered value exceeds Windows Credential
+Manager's bounded generic credential blob; check that the input is the single
+intended credential field, not a JSON export, JWT or Tunnel token.
 
 The binding compares the configured account/zone or machine hostname/AUD to
 the values recorded at enrollment. If those non-secret targets change, enroll
