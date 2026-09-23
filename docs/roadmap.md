@@ -460,6 +460,10 @@ secret-directory retirement, with no Cloudflare mutation authority:
 
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 
+Codex handoff:
+
+`docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
+
 Phase 6-A historical implementation and evidence:
 
 - `docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
