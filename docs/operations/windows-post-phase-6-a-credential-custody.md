@@ -92,9 +92,12 @@ the existing Access login and MFA in the browser, then press Enter in its
 terminal. No assertion or browser storage is saved. A failure in this elevated
 step restores the old service path and restarts it; both token copies are
 retained. The elevated account cannot read the ordinary operator's Credential
-Manager entries.
+Manager entries. After `P6V-W4-VERIFY-READY PASS`, leave the elevated command
+running. It waits up to 15 minutes for ordinary-account verification and
+automatically restores the old service path if verification fails or times
+out.
 
-After `P6V-W4-ADMIN PASS`, return to the **ordinary** PowerShell window in
+After `P6V-W4-VERIFY-READY PASS`, return to the **ordinary** PowerShell window in
 the account that enrolled the three credentials and run:
 
 ```powershell
@@ -103,9 +106,9 @@ Set-Location D:\code\research\fqgate-remote-bridge
 ```
 
 This runs Vault-backed Phase 6-A/5-C acceptance on the new service path and
-records `P6V-W4 PASS` only for 14/14 and 21/21. If verification fails, keep
-both token files and run `-Action Rollback` in the elevated window to restore
-the old service path before diagnosis.
+records `P6V-W4 PASS` only for 14/14 and 21/21. The waiting elevated command
+then checks that evidence and returns `P6V-W4 PASS`. If verification fails,
+the elevated command rolls back automatically and keeps both token files.
 
 Only after `P6V-W4 PASS`, the external evidence records 14/14 Phase 6-A and
 21/21 Phase 5-C checks at the same commit, and inventory reports zero old

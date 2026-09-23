@@ -159,13 +159,15 @@ try {
         Assert-Listeners
         if (-not (Test-Path -LiteralPath $evidencePath)) { throw "P6V-W4 MIGRATION_EVIDENCE_MISSING" }
         $migrationEvidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json
-        if ($migrationEvidence.rollback -ne "PASS" -or $migrationEvidence.remote.humanAdmin -ne "PASS") { throw "P6V-W4 MIGRATION_EVIDENCE_INVALID" }
+        $currentCommit = (& git.exe -C $root rev-parse HEAD).Trim()
+        if ($migrationEvidence.commit -ne $currentCommit -or $migrationEvidence.rollback -ne "PASS" -or $migrationEvidence.remote.humanAdmin -ne "PASS") { throw "P6V-W4 MIGRATION_EVIDENCE_INVALID" }
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "phase6a-acceptance.ps1") -DesiredStatePath $DesiredStatePath -ConfigPath $ConfigPath -TunnelIngressConfigPath $TunnelIngressConfigPath -CredentialSource Vault -RunQualityGates -RunPhase5CRemoteRegression
         if ($LASTEXITCODE -ne 0) { throw "P6V-W4 REMOTE_REGRESSION_FAILED" }
         $regression = Assert-RegressionEvidence
         if ($migrationEvidence.commit -ne $regression.commit) { throw "P6V-W4 COMMIT_MISMATCH" }
         $migrationEvidence.remote.phase6a = 14
         $migrationEvidence.remote.phase5c = 21
+        $migrationEvidence.verification = "PASS"
         $migrationEvidence.checks += "P6V-W2:PASS"
         $migrationEvidence.checks += "P6V-W4:PASS"
         [IO.File]::WriteAllText($evidencePath, ($migrationEvidence | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
@@ -232,6 +234,23 @@ try {
             Record "P6V-W4-ADMIN" "PASS" @{ path=$newToken; rollback="PASS"; regression="human-admin"; machineVerification="PENDING" }
             $evidenceJson = [pscustomobject]@{ schemaVersion=1; task="post-phase6a-credential-custody"; commit=$commit; checks=@("P6V-W1:PASS","P6V-W3:PASS","P6V-W4-ROLLBACK:PASS","P6V-W4-ADMIN:PASS"); service=@{ name=$serviceName; identity="LocalSystem"; tokenFile=$newToken }; acl="protected"; rollback="PASS"; remote=@{ humanAdmin="PASS"; phase6a=0; phase5c=0 }; oldConsumerCount=@(Get-Consumers).Count; oldDirectoryRetired=$false } | ConvertTo-Json -Depth 8
             [IO.File]::WriteAllText($evidencePath, $evidenceJson, [Text.UTF8Encoding]::new($false))
+            Record "P6V-W4-VERIFY-READY" "PASS" @{ account="ordinary-enrolled-user"; timeoutMinutes=15 }
+            $deadline = [DateTimeOffset]::UtcNow.AddMinutes(15)
+            $verified = $false
+            do {
+                Start-Sleep -Seconds 2
+                try { $verificationEvidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json }
+                catch { continue }
+                if ($verificationEvidence.commit -ne $commit) { throw "P6V-W4 VERIFICATION_COMMIT_MISMATCH" }
+                if ($verificationEvidence.verification -eq "FAIL") { throw "P6V-W4 REMOTE_REGRESSION_FAILED" }
+                if ($verificationEvidence.verification -eq "PASS" -and $verificationEvidence.remote.phase6a -eq 14 -and $verificationEvidence.remote.phase5c -eq 21) {
+                    $verified = $true
+                    break
+                }
+            } while ([DateTimeOffset]::UtcNow -lt $deadline)
+            if (-not $verified) { throw "P6V-W4 VERIFICATION_TIMEOUT" }
+            $regression = Assert-RegressionEvidence
+            Record "P6V-W4" "PASS" @{ path=$newToken; rollback="PASS"; regression="human-admin-machine"; phase6aPassed=$regression.phase6aPassed; phase5cPassed=$regression.phase5cPassed }
         } catch {
             if ($changed) {
                 Set-ConfigTokenPath $oldToken
@@ -265,6 +284,15 @@ try {
         [IO.File]::WriteAllText($evidencePath, ($migrationEvidence | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
     }
 } catch {
+    if ($Action -eq "Verify" -and (Test-Path -LiteralPath $evidencePath)) {
+        try {
+            $failedEvidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json
+            if ($failedEvidence.verification -ne "PASS") {
+                $failedEvidence | Add-Member -NotePropertyName verification -NotePropertyValue "FAIL" -Force
+                [IO.File]::WriteAllText($evidencePath, ($failedEvidence | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
+            }
+        } catch { }
+    }
     $code = if ($_.Exception.Message -match '^((P6V-[A-Z0-9-]+|VAULT_[A-Z_]+)( [A-Z_]+)?)$') { $_.Exception.Message } else { "P6V-W4 UNEXPECTED_FAILURE" }
     Record "P6V-ERROR" "FAIL" @{ code=$code }
     exit 1

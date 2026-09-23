@@ -38,7 +38,8 @@ before closure.
   ACL checks, bounded service-controller reconfiguration, restart and rollback.
   The elevated account runs the human/admin browser matrix; the ordinary
   enrolled account runs Vault-backed Phase 6-A/5-C verification on the new
-  service path before gated elevated finalization.
+  service path while the elevated migration waits, then the elevated process
+  rolls back automatically on failure or timeout before gated finalization.
 
 ## Local checks completed
 
