@@ -3,6 +3,8 @@
 Date: 2026-09-23
 Status: **READY — task defined; implementation not started**
 
+Codex handoff: `docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
+
 ## Goal and boundary
 
 Let an agent rerun the existing permanent-Windows Phase 6-A and Phase 5-C live
