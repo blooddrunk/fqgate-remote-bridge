@@ -829,7 +829,7 @@ Access 配置、文件路径、session/update/admin operation 或 secret。输�
 机器生成的检查总数和 CI 证据见
 [Phase 5-C 实现交接](docs/status/phase-5-c-implementation-handoff.md)。
 
-## Post-Phase-5 FQGate 1.0.2 兼容维护（ACTIVE）
+## Post-Phase-5 FQGate 1.0.2 兼容维护（CLOSED）
 
 官方 stable manifest 已发布 FQGate 1.0.2。当前维护任务要求先保留已验收的 1.0.1
 回滚能力，再通过固定官方 source、精确 size/SHA-256、health、runtime OpenAPI
@@ -854,5 +854,30 @@ FQGate-1.0.2-windows-x64-UNSIGNED.exe
 永久 Windows 的一键有界流程（包括本地 Phase 5-B/5-C 和真实 remote-machine
 service-token matrix）见
 [1.0.2 永久 Windows 验收](docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md)。
-在外部 evidence、机器计数、最终 commit 的 Ubuntu/Windows CI 和 remote acceptance
-全部出现前，本维护任务保持 ACTIVE，不提前声称 Phase 6 或本任务关闭。
+该维护任务已于 2026-09-21 闭环：永久 Windows 的 FQGate 1.0.2 qualification、
+本地 Phase 5-B/5-C 回归、真实 remote-machine matrix 与最终 Ubuntu/Windows CI 均通过。
+详细证据见 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`。
+
+## Phase 6-A — Cloudflare 只读发现与计划（OPEN）
+
+当前下一阶段只做 Cloudflare 控制面的**只读发现、对账和确定性 drift plan**，不修改真实
+Cloudflare 资源。执行合同：
+`docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`；Codex handoff：
+`docs/prompts/phase-6-a-codex-goal.md`。
+
+核心边界：
+
+- Cloudflare API transport 在 Phase 6-A 只允许固定 endpoint family 的 GET；禁止
+  POST/PUT/PATCH/DELETE、资源创建/更新/删除、token 轮换和 Global API Key。
+- 自动读取并核对 account/zone、Tunnel/config、DNS、human/admin/machine Access
+  applications/policies，与 repo 外 desired state 生成稳定 plan/fingerprint。
+- Tunnel ingress 必须只指向 `http://127.0.0.1:17282`，任何 17281、错误 origin、
+  wildcard/模糊资源或宽泛 Bypass 都标记为冲突，而不是自动修复。
+- 永久 Windows 环境固定使用 `D:\code\research\fqgate-remote-bridge`；Cloudflare
+  read token 仅通过隐藏输入进入内存，现有 machine service token 继续走既有隐藏输入。
+- 只有自动化明确返回 `LOGIN_REQUIRED` 时才允许人工完成本地 FQGate QR；其他确实
+  无法自动读取的项必须给出精确 Dashboard 路径、字段、期望值、原因和恢复自动化命令。
+
+Phase 6-B 的真实 provisioning mutation 与 Phase 6-C 闭环均需单独授权。
+Phase 6-A 已在合并前实现提交 `363117e` 上通过永久 Windows 的 14/14 项真实验收；
+合并后的精确提交验证和双平台 CI 尚待完成。

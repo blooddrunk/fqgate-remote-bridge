@@ -1,79 +1,158 @@
-# Phase 6 — Cloudflare provisioning and drift management
+# Phase 6 — Cloudflare provisioning and drift-management design
 
-This plan is split deliberately. Phase 6-A is the current read-only control-plane
-milestone. Phase 6-B is a future, separately authorized mutation milestone.
+Date: 2026-09-22
+Status: **Phase 6-A OPEN; only Phase 6-A is authorized**
 
-## Phase 6-A status and scope
+## Purpose
 
-Phase 6-A is **OPEN** until the permanent Windows, real Cloudflare, exact-commit
-Ubuntu and exact-commit Windows evidence is recorded. It implements only:
+Phase 4, Phase 4.5 and Phase 5 proved a secure deployment manually:
 
-- a fixed `https://api.cloudflare.com/client/v4` Cloudflare API client;
-- bounded GET-only discovery of the configured account, zone, remotely-managed
-  Tunnel/configuration, three DNS records, three Access applications and their
-  policies;
-- repo-external desired-state parsing;
-- deterministic reconciliation and a canonical SHA-256 fingerprint.
+```text
+Cloudflare Access
+  -> remotely-managed Cloudflare Tunnel
+  -> http://127.0.0.1:17282 Bridge
+  -> explicit Bridge operation policy
+  -> http://127.0.0.1:17281 FQGate
+```
 
-The implementation is framework-independent and lives under `src/cloudflare/`.
-The CLI exposes only `cloudflare discover` and `cloudflare plan`. The Bridge
-operation registry, TanStack routes and FQGate adapter are not changed by this
-milestone.
+Phase 6 converts that manually managed control-plane setup into a bounded, auditable reconciler
+without making Cloudflare credentials a permanent runtime dependency and without weakening the
+Bridge security model.
 
-The allowed control-plane paths are fixed to the exact account/zone, Tunnel,
-Tunnel configuration, DNS, Access application and Access policy GET resources
-used by discovery. The transport has no POST/PUT/PATCH/DELETE/token-retrieval
-method and the CLI has no mutation command.
+## Non-negotiable invariants
 
-## Desired state
+- FQGate remains exactly loopback-only on 127.0.0.1:17281.
+- Bridge remains exactly loopback-only on 127.0.0.1:17282.
+- Cloudflare ingress may target the Bridge only; direct 17281 ingress is unsafe.
+- No Global API Key.
+- Human, admin and machine hostname/application/AUD/policy boundaries remain distinct.
+- No Bypass/Everyone widening may be silently adopted.
+- Runtime OpenAPI never authorizes Cloudflare or Bridge resources.
+- The Bridge operation registry remains the application authorization source.
+- Cloudflare setup credentials never enter Git, standard JSON config, logs, command-line
+  arguments or evidence.
+- Existing Phase 0-5 behavior and acceptance remain regression requirements.
 
-The desired document is repo-external and must contain no credential. A checked-in
-template is available at `config/cloudflare-phase6a-desired.example.json`.
-It identifies:
+## Phase split
 
-- account and zone by bounded name and, preferably, exact ID;
-- the named Tunnel and the immutable Bridge origin
-  `http://127.0.0.1:17282`;
-- Cloudflare Access team domain/name;
-- independent `human`, `admin` and `machine` applications, hostname and AUD;
-- policy minimums: human/admin `allow`, machine `non_identity`, exact machine
-  service-token selector count, and administrator MFA requirement.
+### Phase 6-A — read-only discovery + deterministic reconciliation plan
 
-The desired state never contains an API token, Access assertion, service token,
-Tunnel token, cookie, client secret or QR/session material.
+Authorized and implemented. Permanent-Windows live acceptance passed on the
+pre-merge implementation commit `363117ea7a2e6fa285398db53a4f2bba37d1b974`;
+the merged commit and exact-commit CI still require verification.
 
-## Reconciliation rules
+Build a fixed-endpoint read-only Cloudflare client and inventory exactly the resources that
+implement the current deployment. Compare observed state with explicit desired state and produce
+a stable plan/fingerprint.
 
-Discovery never selects the first matching result. Duplicate account/zone/Tunnel,
-hostname/DNS record, application or ambiguous policy resource is reported as
-`ambiguous`. Missing dependency lookups are `blocked` rather than guessed.
+There is no control-plane mutation in 6-A. The implementation must make POST/PUT/PATCH/DELETE
+impossible at the Cloudflare transport layer.
 
-The plan reports safe future drift actions (`create`, `adopt`, `update`, `remove`)
-but Phase 6-A never performs them. It marks these as `unsafe_conflict` and keeps
-the plan non-applying when it observes:
+The implementation lives in `src/cloudflare/` and exposes exactly
+`cloudflare discover` and `cloudflare plan` through the CLI. The desired-state
+template is `config/cloudflare-phase6a-desired.example.json`. Phase 6-A does not
+add Bridge routes or change the operation registry.
 
-- a direct `127.0.0.1:17281`/localhost FQGate ingress;
-- wildcard, broad or unexpected ingress;
-- an origin other than exactly `http://127.0.0.1:17282`;
-- missing/incorrect Tunnel Access protection, team or AUD;
-- duplicate or non-CNAME/unproxied/wrong-target DNS;
-- application hostname/type/AUD mismatch or shared application ID/AUD;
-- Bypass, Everyone, broad service-token or other widening selectors;
-- human/admin Service Auth or machine human-allow policy inheritance;
-- machine Service Auth not scoped to a specific `service_token` selector.
+### Phase 6-B — bounded apply
 
-If the read API cannot prove administrator MFA, the plan emits structured
-`manual_required` evidence. It does not treat an unproven property as safe.
+Future separate task only.
 
-The canonical plan sorts resource collections and check IDs, excludes the
-fingerprint while hashing, rejects sensitive markers, and computes SHA-256 over
-the canonical UTF-8 JSON. Evidence stores bounded metadata only, never raw API
-responses or authentication material.
+Consume an exact Phase 6-A plan, re-read current state, reject stale plans, and create/adopt/update
+only explicitly supported resources using a separately scoped setup-time write token. Deletion,
+token rotation and broad policy replacement are not implicitly included.
 
-## Phase 6-B boundary
+### Phase 6-C — live closure and credential retirement
 
-Phase 6-B may later add explicit, reviewed mutation adapters and apply transactions
-after a separate task package. It is not implemented here. No resource creation,
-adoption, update, deletion, token creation/rotation/retrieval, DNS change, Access
-policy change, Tunnel configuration mutation or generic REST proxy is authorized
-by Phase 6-A.
+Future separate task only.
+
+Reconcile the real deployment to a deterministic no-op plan, remove the write credential from
+normal runtime requirements, then re-run human/admin/machine remote acceptance and exact-final-
+commit CI.
+
+## Desired-state model
+
+Desired state must come from explicit repo-external configuration, not heuristics. At minimum:
+
+- exact Cloudflare account ID;
+- exact zone ID;
+- intended named Tunnel, preferring stable ID when known;
+- human hostname;
+- admin hostname;
+- machine hostname;
+- expected Access application/AUD mapping for each hostname;
+- expected Bridge origin, validated exactly as `http://127.0.0.1:17282`.
+
+API tokens and Tunnel/service credentials are not desired-state fields. Duplicate resource names
+or multiple candidate matches are conflicts; never choose "the first" match.
+
+## Read-only Cloudflare API boundary
+
+Use fixed base `https://api.cloudflare.com/client/v4`. Phase 6-A implements only typed GET
+operations needed for token verification, Tunnel inventory/config, DNS records, Access
+applications and Access policies.
+
+Requirements: redirects disabled, finite timeout, bounded body and pagination, defensive
+Cloudflare envelope parsing, bounded normalized errors, Authorization redaction, no arbitrary
+host/path/method input, and capability calls to prove the required read scope.
+
+## Reconciliation plan
+
+Emit canonical stable JSON and SHA-256 fingerprint. The implemented check
+classifications are `in_sync`, `missing`, `unexpected`, `mismatch`, `ambiguous`,
+`unsafe_conflict`, `manual_required` and `blocked`. Future actions are `none`,
+`create`, `adopt`, `update` and `remove`. Unsafe and manual checks never apply.
+An `in_sync` check has action `none`; `manual_required` and `unsafe_conflict`
+also carry no mutation action. Safe drift may describe a future action only.
+
+Examples of `unsafe_conflict`: direct 17281 ingress, wrong origin, wildcard/unknown route,
+duplicate ambiguous resources, broad Access Bypass/widening, or app/AUD/hostname mismatch.
+
+Phase 6-A may describe future create/adopt/update actions but cannot execute them.
+
+## Secrets
+
+The Cloudflare read token is runtime-only. On Windows it must be obtained with
+`Read-Host -AsSecureString`, decrypted only briefly in memory, passed to the child by
+environment only, cleared in `finally`, and never printed/persisted.
+
+The existing machine Access Client ID/Secret remain under the existing Phase 5-C hidden-input
+workflow.
+
+## Permanent Windows acceptance
+
+Use the existing checkout:
+
+```text
+D:\code\research\fqgate-remote-bridge
+```
+
+Never create a second checkout to bypass local-state problems. Use the existing repo-external
+acceptance config. The Bridge must be launched with that same config; do not repeat the earlier
+unconfigured `start-bridge.mjs` mistake.
+
+Evidence path:
+
+```text
+D:\code\research\fqgate-phase6a-discovery-evidence.json
+```
+
+Evidence may contain commit/tool versions, bounded resource IDs/counts, PASS/FAIL IDs, drift
+classifications and plan fingerprint, but never tokens, assertions, service-token secrets,
+cookies, QR/session material or raw sensitive API bodies.
+
+## Human-only boundaries
+
+1. Least-privilege Cloudflare read token entered only via hidden prompt.
+2. Existing machine Client ID/Secret only when the existing Phase 5-C remote regression runs.
+3. Physical FQGate QR only if automation returns exact normalized `LOGIN_REQUIRED`.
+4. Any other truly unavoidable manual check must state exact Dashboard navigation, field,
+   expected value, why the API cannot prove it, and the exact resume command.
+
+## Phase 6-A exit
+
+Close only after deterministic tests, full repository gates, permanent-Windows live discovery,
+stable secret-free plan/fingerprint, proof of no Cloudflare mutation path, loopback/Access
+isolation checks, existing Phase 5 remote-machine regression, exact-final-commit Ubuntu/Windows
+CI, and no unresolved manual or unsafe conflict.
+
+Phase 6-A closure does not authorize Phase 6-B.

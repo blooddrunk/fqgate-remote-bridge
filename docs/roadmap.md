@@ -11,9 +11,9 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 4: **CLOSED**
 - Phase 4.5: **CLOSED**
 - Phase 5: **CLOSED**
-- Phase 6-A: **OPEN** — read-only discovery/reconciliation implementation landed;
-  permanent Windows, real Cloudflare and exact-commit CI closure pending
-- Phase 6-B: planned only — Cloudflare mutations require a separate task
+- Phase 6-A: **OPEN** — implementation and prior-commit live acceptance passed;
+  exact-commit CI and merged-commit verification pending
+- Phase 6-B/C+: planned only
 
 Current deployed topology remains:
 
@@ -351,41 +351,20 @@ operation allowlist, configuration, and tests remain independent.
 
 ---
 
-## Active maintenance track — FQGate release compatibility and 1.0.2 refresh
+## Closed maintenance track — FQGate release compatibility and 1.0.2 refresh
 
-Status: **ACTIVE — implementation landed; permanent Windows/remote/CI closure pending**.
+Status: **CLOSED — permanent Windows 1.0.2, local/remote acceptance and CI passed**.
 
-The official FQGate stable channel moved to 1.0.2 on 2026-09-20. Before starting
-Phase 6, the permanent Windows environment under `D:\\code\\research` must be
-qualified and upgraded to 1.0.2, and the first market operation's compatibility
-gate must be changed from literal 1.0.1 coupling to operation-scoped evidence.
+The post-Phase-5 qualification work replaced literal patch-version coupling with artifact-bound,
+operation-scoped evidence while preserving fixed official-source pinning, exact size/SHA-256,
+health/OpenAPI checks, rollback, loopback-only listeners and deny-by-default Bridge policy.
 
-The security posture does not become looser: official-source pinning, exact
-size/SHA-256 verification, explicit plan/apply, health/OpenAPI checks, rollback,
-loopback-only listeners and deny-by-default operation policy remain mandatory.
-The maintenance goal is to automate re-certification for frequent patch releases
-when the exact exposed-operation contract remains structurally identical and its
-bounded semantic probe passes.
+Closure evidence is authoritative in:
 
-Executable task:
+- `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`
+- `docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`
 
-`docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`
-
-Codex handoff:
-
-`docs/prompts/post-phase-5-fqgate-1-0-2-codex-goal.md`
-
-This maintenance track does not authorize Phase 6 or any additional market
-operation.
-
-The implementation provides a quarantined `fqgate qualify` command and a bounded permanent
-Windows harness. It keeps the historical 1.0.1 installation usable, admits an in-range patch
-only through the existing staged activation/health/OpenAPI/rollback transaction, and persists
-operation-scoped evidence only after the reviewed lookup fingerprint and exact-code semantic
-probe pass. The repeatable command is documented in
-`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; closure still requires
-its external evidence, local/remote machine totals, and green Ubuntu/Windows CI for the same
-final commit.
+Do not treat this closed maintenance track as a Phase 6 blocker.
 
 ---
 
@@ -405,11 +384,27 @@ allowlist. See:
 - `docs/operations/windows-phase-6-a-acceptance.md`;
 - `docs/status/phase-6-a-implementation-handoff.md`.
 
-## Phase 6-B — Cloudflare provisioning and drift application
+Phase 6 invariants:
+
+- never request or accept a Cloudflare Global API Key;
+- API base/endpoint families are fixed in code;
+- Tunnel ingress always targets `http://127.0.0.1:17282`, never 17281;
+- human/admin/machine Access apps, policies and AUDs remain distinct;
+- no Bypass/Everyone widening is silently adopted;
+- setup credentials never enter Git, normal config, logs or evidence;
+- Bridge authorization remains independent of Cloudflare provisioning.
+
+## Phase 6-B — bounded Cloudflare provisioning and drift application
 
 Planned only. A separate task must authorize reviewed create/adopt/update/delete
-adapters, plan/apply transactions, rollback and credential lifecycle. Phase 6-A
-does not implement or imply any of them. Never request a Global API Key.
+adapters, stale-plan rejection, rollback and credential lifecycle. Phase 6-A
+does not implement or imply any of them.
+
+## Phase 6-C — live reconciliation and credential retirement
+
+Planned only. A separate task must define no-op reconciliation on permanent
+Windows, removal of setup write credentials from runtime requirements, remote
+regressions and exact-final-commit Ubuntu/Windows CI.
 
 ## Phase 7 — Supervisor, recovery, audit trail, notifications
 
@@ -438,31 +433,32 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5 is closed at the registry-derived machine OpenAPI and real remote closure checkpoint.
+Phase 5 and the post-Phase-5 FQGate 1.0.2 compatibility maintenance track are closed.
+The active implementation target is **Phase 6-A only**: Cloudflare read-only discovery,
+reconciliation and deterministic planning. Phase 6-A has no Cloudflare mutation authority.
 
-Latest closed executable task:
+Active executable task:
 
-`docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`
+`docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md`
 
-Closure Codex goal:
+Active Codex goal:
 
-`docs/prompts/phase-5-c-codex-goal.md`
+`docs/prompts/phase-6-a-codex-goal.md`
 
-Previous closed executable task:
+Phase 6 design source:
 
-`docs/tasks/phase-5-b-live-contract-census-and-first-read-only-slice.md`
+`docs/plans/phase-6-cloudflare-provisioning-and-drift-management.md`
 
-Phase 5 design source:
+Required historical baselines before implementation:
 
-`docs/plans/phase-5-remote-machine-read-only-api.md`
+- `docs/status/phase-5-c-implementation-handoff.md`
+- `docs/operations/windows-phase-5-c-acceptance.md`
+- `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`
+- `docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`
 
-Phase 5-A closure evidence:
-
-- `docs/status/phase-5-a-implementation-handoff.md`
-- `docs/operations/windows-phase-5-a-acceptance.md`
-
-Phase 5-B closed on 2026-09-20. Exact implementation and all acceptance IDs are
-recorded in `docs/status/phase-5-b-implementation-handoff.md` and
-`docs/operations/windows-phase-5-b-acceptance.md`. Phase 5-C and Phase 5 closed
-on 2026-09-21 after the registry-derived machine OpenAPI passed permanent-Windows,
-real remote and exact-commit CI acceptance. Cloudflare provisioning remains Phase 6.
+Use the permanent Windows checkout at `D:\\code\\research\\fqgate-remote-bridge`.
+Automate every machine-verifiable quality, fixture, discovery, reconciliation, loopback and
+regression check. Human intervention is limited to the explicitly documented hidden credential
+entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that includes the
+exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
+command. Do not advance to Phase 6-B or mutate Cloudflare until Phase 6-A is separately closed.
