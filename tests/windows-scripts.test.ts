@@ -2,6 +2,17 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("Windows entry points", () => {
+  it("isolates Playwright from the permanent production Bridge listener", () => {
+    const config = readFileSync(new URL("../playwright.config.ts", import.meta.url), "utf8");
+    expect(config).toContain("const e2ePort = 17283");
+    expect(config).toContain("http://127.0.0.1:${e2ePort}");
+    expect(config).toContain("reuseExistingServer: false");
+    expect(config).toContain("--host 127.0.0.1 --port ${e2ePort}");
+    expect(config).toContain("env: { BRIDGE_PORT: String(e2ePort), PORT: String(e2ePort) }");
+    expect(config).not.toContain("reuseExistingServer: true");
+    expect(config).not.toContain('baseURL: "http://127.0.0.1:17282"');
+  });
+
   it.each(["bootstrap.ps1", "acceptance.ps1"])(
     "resolves and invokes the built CLI from %s",
     (scriptName) => {
