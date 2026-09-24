@@ -226,6 +226,40 @@ describe("Windows entry points", () => {
     expect(script).not.toContain("--tunnel-token");
   });
 
+  it("keeps Phase 6-B1 writes behind the hidden temporary token boundary and reserved canary", () => {
+    const acceptance = readFileSync(
+      new URL("../scripts/windows/phase6b1-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    const canary = readFileSync(
+      new URL("../scripts/windows/phase6b1-canary.mjs", import.meta.url),
+      "utf8",
+    );
+
+    expect(acceptance).toContain(
+      'Read-Host "Short-lived DNS-write token scoped to the exact desired zone (hidden)" -AsSecureString',
+    );
+    expect(acceptance).toContain("CLOUDFLARE_DNS_WRITE_TOKEN");
+    expect(acceptance).toContain("CLOUDFLARE_API_TOKEN");
+    expect(acceptance).toContain("$startInfo.EnvironmentVariables.Remove($name)");
+    expect(acceptance).toContain('Get-AcceptanceCredential "CloudflareRead"');
+    expect(acceptance).toContain("-RunQualityGates");
+    expect(acceptance).toContain("-RunPhase5CRemoteRegression");
+    expect(acceptance).toContain("NO_SUPPORTED_PRODUCTION_DRIFT");
+    expect(acceptance).toContain("CLOUDFLARE_APPLY_REJECTED");
+    expect(acceptance).toContain("P6B1-W5");
+    expect(acceptance).toContain("127.0.0.1:17281,127.0.0.1:17282");
+    expect(acceptance).not.toContain("--dns-write-token");
+    expect(acceptance).not.toContain("Set-AcceptanceCredential");
+
+    expect(canary).toContain("runCloudflareDnsCanary");
+    expect(canary).toContain("getCloudflareDnsWriteToken");
+    expect(canary).toContain("process.argv[2]");
+    expect(canary).toContain("process.argv[3]");
+    expect(canary).toContain('process.env.CLOUDFLARE_DNS_WRITE_TOKEN = ""');
+    expect(canary).not.toContain("process.argv[4]");
+  });
+
   it("keeps the authenticated Phase 4.5 companion harness bounded and secret-safe", () => {
     const harness = readFileSync(
       new URL("../scripts/windows/phase45-authenticated-acceptance.mjs", import.meta.url),

@@ -14,8 +14,10 @@ task package 和安全文档为准。
   与最终 commit CI 均通过。
 - Phase 6-A：**CLOSED**；Cloudflare GET-only discovery/plan 在 `9c6babb` 上通过
   永久 Windows、真实 Cloudflare 和 exact-commit Ubuntu/Windows CI。
-- Post-Phase-6-A 凭据托管与旧 secrets 目录退役：任务已定义，尚未实现。
-- Phase 6-B：尚未授权实施。
+- Post-Phase-6-A 凭据托管与旧 secrets 目录退役：**CLOSED**；三项 Vault 凭据、
+  ProgramData Tunnel token、永久 Windows 回归与旧目录退役均已验收。
+- Phase 6-B1：**OPEN**；stale-plan guarded 单条 DNS CNAME apply、同次调用回滚和
+  acceptance-only TXT canary 正在实现与验收。Phase 6-B2/C 仍未授权。
 
 稳定拓扑不变：
 
@@ -50,6 +52,12 @@ Phase 6-A 当前任务还必须阅读：
 16. docs/tasks/phase-6-a-cloudflare-readonly-discovery-and-plan.md
 17. docs/status/phase-6-a-implementation-handoff.md
 18. docs/operations/windows-phase-6-a-acceptance.md
+
+当前 Phase 6-B1 还必须阅读：
+
+19. docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md
+20. docs/operations/windows-phase-6-b1-acceptance.md
+21. docs/status/phase-6-b1-implementation-handoff.md
 
 Codex 执行入口：
 
@@ -151,8 +159,8 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
 - machine OpenAPI 只允许 registry-derived 的既有 `openapi.machine`，不得从上游
   OpenAPI 自动扩张或加入第二个 market operation。
 - Phase 6-A 只做固定 API、GET-only Cloudflare discovery/reconciliation/plan；不创建、
-  更新、删除、取得 Tunnel token，也不实现 generic REST proxy。Phase 6-B provisioning
-  仍未授权。
+  更新、删除、取得 Tunnel token，也不实现 generic REST proxy。单独授权的 Phase 6-B1
+  正在增加独立 typed CNAME 写入边界；B2/C 仍未授权。
 - 不提前做 supervisor、notifications、automatic updates、MCP/WebSocket、
   packaging 或 turtle-value-engine consumer integration。
 - secret/JWT/cookie/QR/Tunnel token/raw OpenAPI/raw market payload 不进入证据或
@@ -213,4 +221,4 @@ Manager，后续验收可显式选择 `Prompt` 或 `Vault`。LocalSystem 使用�
 token 已搬到受保护的 ProgramData 文件；在服务重启、回滚演练和真实远程回归
 通过后，旧 `fqgate-secrets` 目录以零消费者状态退役。证据见
 `docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`。
-Phase 6-B 仍需单独授权。
+Phase 6-B1 已单独授权并处于 OPEN 状态；B2/C 仍需各自单独授权。

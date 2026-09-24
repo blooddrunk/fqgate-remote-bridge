@@ -388,13 +388,14 @@ Follow `docs/roadmap.md`.
 - Post-Phase-6-A acceptance credential custody: CLOSED — real Vault-backed
   acceptance, protected LocalSystem token file, old-directory retirement and
   Ubuntu/Windows CI passed
-- Phase 6-B1: AUTHORIZED NEXT TASK — stale-plan guarded, one-at-a-time missing DNS CNAME create plus same-invocation rollback
+- Phase 6-B1: OPEN — authorized implementation underway; stale-plan guarded,
+  one-at-a-time missing DNS CNAME create plus same-invocation rollback
 - Phase 6-B2/C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6-B1 is the separately authorized next task. Phase 6-B2 provisioning and all later-phase work still require a separate task.
+Phase 6-B1 is the separately authorized active task. Phase 6-B2 provisioning and all later-phase work still require a separate task.
 
 ## Closed Phase 6-A read-only discovery task
 
@@ -527,8 +528,10 @@ hostnames, a Tunnel origin other than `http://127.0.0.1:17282`, any direct
 17281 ingress, broad Access Bypass, or a policy shape that cannot be reconciled
 unambiguously. Detected drift is not permission to fix it in Phase 6-A.
 
-Phase 6-B/C remain unimplemented and unauthorized until separate reviewed tasks
-explicitly enable bounded mutation and closure.
+Phase 6-B1 is separately authorized and OPEN under
+`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`. Phase 6-B2/C remain
+unimplemented and unauthorized until separate reviewed tasks explicitly enable
+those capabilities.
 
 ## Documentation rule
 

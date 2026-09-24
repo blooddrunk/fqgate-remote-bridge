@@ -16,7 +16,10 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Post-Phase-6-A credential custody and secret-directory retirement:
   **CLOSED** — Vault-backed live acceptance, protected service token and old
   directory retirement passed on permanent Windows
-- Phase 6-B/C+: planned only
+- Phase 6-B1: **OPEN** — bounded stale-plan guarded DNS apply implementation
+  and acceptance are in progress; keep open until permanent-Windows canary,
+  post-canary regressions and exact-final-commit Ubuntu/Windows CI all pass
+- Phase 6-B2/C+: planned only; separately authorized task required
 
 Current deployed topology remains:
 
@@ -421,7 +424,7 @@ provisioner.
 
 ### Phase 6-B1 — stale-plan guarded DNS apply foundation
 
-**AUTHORIZED NEXT TASK; implementation not started.** The task is
+**OPEN — implementation underway; acceptance not yet closed.** The active task is
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`.
 
 B1 adds stale-plan rejection, one-action-per-plan apply and the first production
@@ -431,6 +434,12 @@ A reserved TXT write canary proves real scoped write permission without
 manufacturing drift in the three production hostnames. Access application/policy
 mutation, Tunnel configuration writes, arbitrary DNS update/delete, token
 rotation and background reconciliation remain out of scope.
+
+The Windows acceptance uses the existing permanent checkout, the existing
+read-only credential from the closed Vault, and a separate hidden, short-lived
+DNS-write token prompt. It records evidence outside Git and automatically
+repeats Phase 6-A quality/live checks and the Phase 5-C remote matrix after
+canary cleanup. B1 stays OPEN until those checks and exact-final-commit CI pass.
 
 ### Phase 6-B2 — broader reviewed provisioning
 
@@ -471,8 +480,8 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 ## Current development handoff
 
 Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A and the
-credential-custody task are closed. The authorized next implementation task is
-Phase 6-B1; Phase 6-B2/C remain unauthorized.
+credential-custody task are closed. Phase 6-B1 is the active OPEN task;
+Phase 6-B2/C remain unauthorized.
 
 Current task:
 

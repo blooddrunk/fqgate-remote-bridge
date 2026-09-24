@@ -46,6 +46,7 @@ describe("local CLI", () => {
     expect(capture.stdout[0]).toContain("fqgate-remote-bridge fqgate update --check|--apply");
     expect(capture.stdout[0]).toContain("cloudflared service install|start|stop|restart|status");
     expect(capture.stdout[0]).toContain("cloudflare discover|plan --desired-state");
+    expect(capture.stdout[0]).toContain("cloudflare apply --desired-state");
   });
 
   it("rejects an apply flag on the Phase 6-A Cloudflare CLI surface", async () => {
@@ -61,6 +62,59 @@ describe("local CLI", () => {
         code: "CONFIG_INVALID",
         message: "Phase 6-A Cloudflare commands are read-only; --apply is not supported",
       },
+    });
+  });
+
+  it("rejects multiple Cloudflare apply check IDs before any discovery", async () => {
+    const capture = ioCapture();
+    const exitCode = await runCli(
+      [
+        "cloudflare",
+        "apply",
+        "--desired-state",
+        "D:\\external\\desired.json",
+        "--expected-fingerprint",
+        "a".repeat(64),
+        "--check-id",
+        "dns.human.record",
+        "--check-id",
+        "dns.machine.record",
+        "--json",
+      ],
+      {
+        stdout: (line) => capture.stdout.push(line),
+        stderr: (line) => capture.stderr.push(line),
+      },
+    );
+
+    expect(exitCode).toBe(2);
+    expect(JSON.parse(capture.stderr[0] ?? "{}")).toMatchObject({
+      error: { code: "CONFIG_INVALID", message: "--check-id requires exactly one check ID" },
+    });
+  });
+
+  it("refuses production Cloudflare apply outside Windows before resolving credentials", async () => {
+    if (process.platform === "win32") return;
+    const capture = ioCapture();
+    const exitCode = await runCli(
+      [
+        "cloudflare",
+        "apply",
+        "--expected-fingerprint",
+        "a".repeat(64),
+        "--check-id",
+        "dns.human.record",
+      ],
+      {
+        stdout: (line) => capture.stdout.push(line),
+        stderr: (line) => capture.stderr.push(line),
+      },
+    );
+
+    expect(exitCode).toBe(1);
+    expect(capture.stdout).toEqual([]);
+    expect(JSON.parse(capture.stderr[0] ?? "{}")).toMatchObject({
+      error: { code: "CLOUDFLARE_APPLY_REJECTED" },
     });
   });
 });

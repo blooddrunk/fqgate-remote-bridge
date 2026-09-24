@@ -201,9 +201,21 @@ argument, repository file, ordinary environment configuration, log, plan or
 evidence. Never request or document Global API Key use.
 
 The Phase 6-A client uses a fixed API origin, fixed GET paths, timeout, redirect
-rejection, bounded bodies and bounded pagination. No mutation method, generic REST
-proxy, Tunnel-token retrieval, resource creation or Access policy change exists.
-Phase 6-B provisioning remains separately unauthorized.
+rejection, bounded bodies and bounded pagination. That transport remains
+independently GET-only. Phase 6-B1 adds a separate typed DNS-write transport for
+one missing desired CNAME per invocation, guarded by two current-plan fingerprint
+checks. It can delete only the record ID returned by that same invocation for
+rollback. Its acceptance-only TXT writer can use only the fixed reserved
+`_fqgate-remote-bridge-phase6b-canary.<desired-zone>` name and is not reachable
+through production apply or a Bridge HTTP route. The write token is separate
+from the existing three-entry credential Vault, entered through hidden local
+PowerShell input, scoped to DNS write for the exact zone, and passed only to a
+bounded child process environment. Production CLI apply is refused outside
+Windows before discovery or mutation, because its mandatory Phase 5-C remote
+regression runs in the accepted Windows environment. No generic REST proxy, Tunnel-token
+retrieval, Access application/policy mutation, or Tunnel configuration mutation
+is authorized. Phase 6-B1 remains OPEN until its live and exact-final-commit CI
+acceptance is complete; Phase 6-B2/C remain separately unauthorized.
 
 Phase 6-A closed with hidden-entry live acceptance on implementation commit
 `9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in

@@ -879,7 +879,7 @@ Cloudflare 资源。执行合同：
 - 只有自动化明确返回 `LOGIN_REQUIRED` 时才允许人工完成本地 FQGate QR；其他确实
   无法自动读取的项必须给出精确 Dashboard 路径、字段、期望值、原因和恢复自动化命令。
 
-Phase 6-B1 已作为下一独立任务授权，但只开放 stale-plan 防护下的单条缺失 DNS CNAME 创建与同次调用精确回滚；Phase 6-B2 的 Tunnel/Access mutation 与 Phase 6-C 闭环仍需另行授权。
+Phase 6-B1 已单独授权并处于 OPEN 实施验收状态，只开放 stale-plan 防护下的单条缺失 DNS CNAME 创建与同次调用精确回滚；Phase 6-B2 的 Tunnel/Access mutation 与 Phase 6-C 闭环仍需另行授权。
 Phase 6-A 最终实现提交 `9c6babb` 在永久 Windows 通过 14/14 项真实验收，
 其中既有 Phase 5-C 远程矩阵 21/21 通过；同一提交的 Ubuntu/Windows CI 通过。
 证据与运行 ID 见 [Phase 6-A 实现交接](docs/status/phase-6-a-implementation-handoff.md)。
@@ -898,7 +898,7 @@ Cloudflare API-token 文件不等于撤销远端 token。本任务不授权 Clou
 或 Phase 6-B。证据见
 [实现交接](docs/status/post-phase-6-a-credential-custody-implementation-handoff.md)。
 
-## 下一任务：Phase 6-B1 — stale-plan guarded DNS apply foundation
+## Phase 6-B1 — stale-plan guarded DNS apply foundation（OPEN）
 
 任务合同：
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`；Codex handoff：
@@ -911,3 +911,9 @@ B1 不做“全量 Cloudflare 自动配置”。它先实现一次只允许一�
 自动 create/read/delete 验证，不人为破坏现有三条线上记录来制造 drift。Access
 application/policy、Tunnel 配置写入、任意 DNS update/delete、token 轮换和后台自动
 reconcile 继续禁止。
+
+该任务实现和验收仍在进行。永久 Windows 自动流程、隐藏 DNS-write token
+边界、固定 TXT canary 和当前状态见
+[Phase 6-B1 Windows 验收](docs/operations/windows-phase-6-b1-acceptance.md)
+与[实现交接](docs/status/phase-6-b1-implementation-handoff.md)。在 canary
+清理后的 Phase 6-A/Phase 5-C 回归和精确最终提交双平台 CI 全部通过前，B1 保持 OPEN。

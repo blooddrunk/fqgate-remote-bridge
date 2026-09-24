@@ -23,6 +23,12 @@ import { loadCloudflareDesiredState } from "../cloudflare/desired.js";
 import { CloudflareDiscoveryService } from "../cloudflare/discovery.js";
 import { reconcileCloudflareState } from "../cloudflare/reconcile.js";
 import { FetchCloudflareGetTransport, getCloudflareApiToken } from "../cloudflare/transport.js";
+import { applyCloudflareDnsCheck } from "../cloudflare/apply.js";
+import { runRequiredWindowsPhase5cRegression } from "../cloudflare/windows-regression.js";
+import {
+  FetchCloudflareDnsApplyWriteTransport,
+  getCloudflareDnsWriteToken,
+} from "../cloudflare/write-transport.js";
 
 export interface CliIo {
   readonly stdout: (line: string) => void;
@@ -42,6 +48,8 @@ interface ParsedArguments {
   readonly apply: boolean;
   readonly configPath?: string;
   readonly desiredStatePath?: string;
+  readonly expectedFingerprint?: string;
+  readonly checkId?: string;
 }
 
 export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): Promise<number> {
@@ -81,7 +89,14 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
           "Phase 6-A Cloudflare commands are read-only; --apply is not supported",
         );
       }
-      return await runCloudflareReadonly(command, args.desiredStatePath, args.json, io);
+      return await runCloudflare(
+        command,
+        args.desiredStatePath,
+        args.expectedFingerprint,
+        args.checkId,
+        args.json,
+        io,
+      );
     }
 
     const config = await loadConfig(args.configPath);
@@ -191,16 +206,24 @@ async function runCloudflared(
   }
 }
 
-async function runCloudflareReadonly(
+async function runCloudflare(
   command: string,
   desiredStatePath: string | undefined,
+  expectedFingerprint: string | undefined,
+  checkId: string | undefined,
   json: boolean,
   io: CliIo,
 ): Promise<number> {
-  if (command !== "discover" && command !== "plan") {
+  if (command !== "discover" && command !== "plan" && command !== "apply") {
     throw new BridgeError(
       ERROR_CODES.CONFIG_INVALID,
-      `Unknown cloudflare command: ${command}; use discover or plan`,
+      `Unknown cloudflare command: ${command}; use discover, plan, or apply`,
+    );
+  }
+  if (command === "apply" && process.platform !== "win32") {
+    throw new BridgeError(
+      ERROR_CODES.CLOUDFLARE_APPLY_REJECTED,
+      "Cloudflare production apply requires the permanent Windows Phase 5-C regression environment",
     );
   }
   const resolvedDesiredStatePath =
@@ -208,7 +231,19 @@ async function runCloudflareReadonly(
   if (resolvedDesiredStatePath === undefined || resolvedDesiredStatePath.length === 0) {
     throw new BridgeError(
       ERROR_CODES.CONFIG_INVALID,
-      "cloudflare discover/plan requires --desired-state <repo-external-file>",
+      "cloudflare command requires --desired-state <repo-external-file>",
+    );
+  }
+  if (command === "apply" && (expectedFingerprint === undefined || checkId === undefined)) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "cloudflare apply requires --expected-fingerprint <sha256> and one --check-id <id>",
+    );
+  }
+  if (command !== "apply" && (expectedFingerprint !== undefined || checkId !== undefined)) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "--expected-fingerprint and --check-id are only valid with cloudflare apply",
     );
   }
   const desired = await loadCloudflareDesiredState(resolvedDesiredStatePath);
@@ -216,6 +251,30 @@ async function runCloudflareReadonly(
     apiToken: getCloudflareApiToken(),
   });
   const client = new CloudflareApiClient({ transport });
+  if (command === "apply") {
+    if (expectedFingerprint === undefined || checkId === undefined) {
+      throw new BridgeError(
+        ERROR_CODES.CONFIG_INVALID,
+        "Cloudflare apply arguments are incomplete",
+      );
+    }
+    const result = await applyCloudflareDnsCheck({
+      desired,
+      expectedFingerprint,
+      checkId,
+      discoveryClient: client,
+      createWriteTransport: () =>
+        new FetchCloudflareDnsApplyWriteTransport({ apiToken: getCloudflareDnsWriteToken() }),
+      verifyRequiredRegression: ({ expectedFingerprint, checkId: selectedCheckId }) =>
+        runRequiredWindowsPhase5cRegression({
+          desiredStatePath: resolvedDesiredStatePath,
+          expectedFingerprint,
+          checkId: selectedCheckId,
+        }),
+    });
+    output(result, json, io);
+    return 0;
+  }
   const observed = await new CloudflareDiscoveryService(client).discover(desired);
   if (command === "discover") {
     output(observed, json, io);
@@ -469,6 +528,8 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
   let apply = false;
   let configPath: string | undefined;
   let desiredStatePath: string | undefined;
+  let expectedFingerprint: string | undefined;
+  let checkId: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -510,6 +571,44 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
         throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "--desired-state requires a file path");
       }
       desiredStatePath = value;
+    } else if (argument === "--expected-fingerprint") {
+      const next = argv[index + 1];
+      if (next === undefined || next.startsWith("--") || expectedFingerprint !== undefined) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "--expected-fingerprint requires one SHA-256 value",
+        );
+      }
+      expectedFingerprint = next;
+      index += 1;
+    } else if (argument.startsWith("--expected-fingerprint=")) {
+      const value = argument.slice("--expected-fingerprint=".length);
+      if (value.length === 0 || expectedFingerprint !== undefined) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "--expected-fingerprint requires one SHA-256 value",
+        );
+      }
+      expectedFingerprint = value;
+    } else if (argument === "--check-id") {
+      const next = argv[index + 1];
+      if (next === undefined || next.startsWith("--") || checkId !== undefined) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "--check-id requires exactly one check ID",
+        );
+      }
+      checkId = next;
+      index += 1;
+    } else if (argument.startsWith("--check-id=")) {
+      const value = argument.slice("--check-id=".length);
+      if (value.length === 0 || checkId !== undefined) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "--check-id requires exactly one check ID",
+        );
+      }
+      checkId = value;
     } else if (argument.startsWith("--")) {
       throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `Unknown option: ${argument}`);
     } else {
@@ -525,6 +624,8 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
     apply,
     ...(configPath === undefined ? {} : { configPath }),
     ...(desiredStatePath === undefined ? {} : { desiredStatePath }),
+    ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
+    ...(checkId === undefined ? {} : { checkId }),
   };
 }
 
@@ -585,6 +686,7 @@ function usage(): string {
     "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",
     "fqgate-remote-bridge cloudflared service install|start|stop|restart|status [--json]",
     "fqgate-remote-bridge cloudflare discover|plan --desired-state <repo-external-file> [--json]",
+    "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <dns.context.record> [--json]",
   ].join("\n");
 }
 

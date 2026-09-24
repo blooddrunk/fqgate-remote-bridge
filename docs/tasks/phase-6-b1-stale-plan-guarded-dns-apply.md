@@ -1,7 +1,7 @@
 # Phase 6-B1 — stale-plan guarded DNS apply foundation
 
 Date: 2026-09-24
-Status: **AUTHORIZED NEXT TASK — implementation not started**
+Status: **OPEN — implementation underway; permanent-Windows/live and exact-final-commit CI acceptance pending**
 
 Codex handoff: `docs/prompts/phase-6-b1-codex-goal.md`
 
@@ -167,20 +167,20 @@ Do not create a second checkout to bypass local state.
 
 Required evidence:
 
-| ID | Required evidence |
-| --- | --- |
-| P6B1-T1 | write transport has only fixed DNS POST plus same-invocation rollback DELETE |
-| P6B1-T2 | stale fingerprint and second pre-write state check reject before mutation |
-| P6B1-T3 | only one `missing/create` desired DNS check may apply per invocation |
-| P6B1-T4 | exact CNAME/proxied/tunnel-derived payload; no arbitrary body/path/method |
-| P6B1-T5 | write token is hidden, ephemeral, redacted and absent from vault/config/log/evidence |
-| P6B1-T6 | deterministic create/postcondition/rollback/canary fixture coverage passes |
-| P6B1-W1 | frozen install, typecheck, lint, tests, build, format and Playwright pass on permanent Windows |
-| P6B1-W2 | live Phase 6-A plan on the real deployment is re-read and remains safe/in-sync before B1 testing |
-| P6B1-W3 | live reserved TXT canary create/read/delete/absence passes with the scoped write token |
+| ID      | Required evidence                                                                                 |
+| ------- | ------------------------------------------------------------------------------------------------- |
+| P6B1-T1 | write transport has only fixed DNS POST plus same-invocation rollback DELETE                      |
+| P6B1-T2 | stale fingerprint and second pre-write state check reject before mutation                         |
+| P6B1-T3 | only one `missing/create` desired DNS check may apply per invocation                              |
+| P6B1-T4 | exact CNAME/proxied/tunnel-derived payload; no arbitrary body/path/method                         |
+| P6B1-T5 | write token is hidden, ephemeral, redacted and absent from vault/config/log/evidence              |
+| P6B1-T6 | deterministic create/postcondition/rollback/canary fixture coverage passes                        |
+| P6B1-W1 | frozen install, typecheck, lint, tests, build, format and Playwright pass on permanent Windows    |
+| P6B1-W2 | live Phase 6-A plan on the real deployment is re-read and remains safe/in-sync before B1 testing  |
+| P6B1-W3 | live reserved TXT canary create/read/delete/absence passes with the scoped write token            |
 | P6B1-W4 | live production `apply` on an in-sync plan returns bounded no-op/refusal and performs zero writes |
-| P6B1-W5 | Vault-backed Phase 6-A 14/14 and Phase 5-C 21/21 remote regression pass after the canary |
-| P6B1-CI | Ubuntu/Windows CI passes on the exact final implementation commit |
+| P6B1-W5 | Vault-backed Phase 6-A 14/14 and Phase 5-C 21/21 remote regression pass after the canary          |
+| P6B1-CI | Ubuntu/Windows CI passes on the exact final implementation commit                                 |
 
 If a real supported production DNS drift happens to exist, the same invocation
 may repair exactly one missing record after the operator has supplied the
