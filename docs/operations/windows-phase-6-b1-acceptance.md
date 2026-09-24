@@ -1,7 +1,9 @@
 # Permanent Windows Phase 6-B1 acceptance
 
-Status: **OPEN** until the permanent-Windows canary, post-canary regressions,
-quality gates and exact-final-commit Ubuntu/Windows CI all pass.
+Status: **CLOSED for implementation commit `3cc99033ad9dbac899584ce3b8e3e81053647a98`.**
+The permanent-Windows canary, post-canary regressions, quality gates and
+exact-commit Ubuntu/Windows CI passed on 2026-09-24. Results are in
+`docs/status/phase-6-b1-implementation-handoff.md`.
 
 Use only the existing checkout:
 
@@ -124,16 +126,15 @@ Only when an automated Phase 5-C/Phase 6-A call returns exact normalized
   -TunnelIngressConfigPath D:\code\research\fqgate-machine-tunnel-ingress-evidence.json
 ```
 
-No other manual Cloudflare checks are expected. If the plan reports an
-API-unobservable condition, the operator output must name the exact Dashboard
-path, field, expected value, reason the API cannot prove it, and this resume
-command; B1 remains open until the automated run passes.
+No other manual Cloudflare checks were required for the completed acceptance.
+For any future authorized acceptance, if the plan reports an API-unobservable
+condition, operator output must name the exact Dashboard path, field, expected
+value, reason the API cannot prove it, and this resume command; the run is not
+complete until automation resumes and records passing evidence.
 
 ## Closure requirements
 
-Keep B1 OPEN until focused deterministic coverage, all seven Windows quality
-gates, a safe live Phase 6-A plan, canary create/read/delete/absence, the
-in-sync zero-write apply check (when no supported production drift exists),
-post-canary Phase 6-A 14/14, Phase 5-C 21/21, and Ubuntu/Windows CI on the exact
-final commit all pass. Record the final commit SHA, workflow run ID and both
-job IDs in the handoff and repo-external evidence.
+The initial B1 closure requirements were met on 2026-09-24. The handoff records
+the implementation commit, workflow run and job IDs; machine evidence remains
+outside the repository. Any later change to this security boundary requires a
+separate reviewed task and must repeat the applicable acceptance criteria.

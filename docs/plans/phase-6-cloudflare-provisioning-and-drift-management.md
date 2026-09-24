@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A CLOSED; Phase 6-B1 OPEN and implementation underway; Phase 6-B2/C remain separately unauthorized**
+Status: **Phase 6-A and Phase 6-B1 CLOSED; Phase 6-B2/C remain separately unauthorized**
 
 ## Purpose
 
@@ -57,7 +57,7 @@ add Bridge routes or change the operation registry.
 
 ### Phase 6-B — bounded apply
 
-Phase 6-B1 is the active separately authorized task:
+Phase 6-B1 was the separately authorized task, now closed:
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`.
 
 B1 consumes an exact Phase 6-A fingerprint, re-reads current state twice around
@@ -77,8 +77,10 @@ it only through a hidden prompt and passes it to bounded child processes through
 their environment. It is not added to the three-entry acceptance Vault. The
 canary accepts only the reserved name
 `_fqgate-remote-bridge-phase6b-canary.<desired-zone>` and commit/evidence TXT
-metadata; production apply remains CNAME-only. B1 is not closed until post-canary
-Phase 6-A/Phase 5-C acceptance and exact-final-commit CI pass.
+metadata; production apply remains CNAME-only. Permanent-Windows acceptance
+verified canary cleanup, the in-sync zero-write refusal, post-canary Phase 6-A
+14/14 and Phase 5-C 21/21, and exact-commit Ubuntu/Windows CI on 2026-09-24.
+See `docs/status/phase-6-b1-implementation-handoff.md`.
 
 Phase 6-B2 remains a future separate task for any Tunnel configuration or Access
 application/policy mutation. Arbitrary DNS update/delete, token rotation and

@@ -16,9 +16,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Post-Phase-6-A credential custody and secret-directory retirement:
   **CLOSED** — Vault-backed live acceptance, protected service token and old
   directory retirement passed on permanent Windows
-- Phase 6-B1: **OPEN** — bounded stale-plan guarded DNS apply implementation
-  and acceptance are in progress; keep open until permanent-Windows canary,
-  post-canary regressions and exact-final-commit Ubuntu/Windows CI all pass
+- Phase 6-B1: **CLOSED** — permanent-Windows canary cleanup, post-canary
+  regressions and exact-commit Ubuntu/Windows CI passed on 2026-09-24
 - Phase 6-B2/C+: planned only; separately authorized task required
 
 Current deployed topology remains:
@@ -424,8 +423,9 @@ provisioner.
 
 ### Phase 6-B1 — stale-plan guarded DNS apply foundation
 
-**OPEN — implementation underway; acceptance not yet closed.** The active task is
-`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`.
+**CLOSED — permanent-Windows and exact-commit CI acceptance passed.** The task
+contract is `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`; closure
+evidence is recorded in `docs/status/phase-6-b1-implementation-handoff.md`.
 
 B1 adds stale-plan rejection, one-action-per-plan apply and the first production
 mutation: create exactly one missing desired DNS CNAME. Postcondition failure may
@@ -439,7 +439,9 @@ The Windows acceptance uses the existing permanent checkout, the existing
 read-only credential from the closed Vault, and a separate hidden, short-lived
 DNS-write token prompt. It records evidence outside Git and automatically
 repeats Phase 6-A quality/live checks and the Phase 5-C remote matrix after
-canary cleanup. B1 stays OPEN until those checks and exact-final-commit CI pass.
+canary cleanup. The 2026-09-24 run passed with no supported production drift,
+verified zero-write refusal for an in-sync plan, verified canary cleanup, and
+post-canary Phase 6-A 14/14 and Phase 5-C 21/21.
 
 ### Phase 6-B2 — broader reviewed provisioning
 
@@ -479,11 +481,11 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A and the
-credential-custody task are closed. Phase 6-B1 is the active OPEN task;
-Phase 6-B2/C remain unauthorized.
+Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A,
+credential custody and Phase 6-B1 are closed. Phase 6-B2/C remain planned and
+unauthorized.
 
-Current task:
+Most recently closed task:
 
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`
 
@@ -509,5 +511,5 @@ Automate every machine-verifiable quality, fixture, discovery, reconciliation, l
 regression check. Human intervention is limited to the explicitly documented hidden credential
 entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that includes the
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
-command. Phase 6-B1 has its own narrow authorization; it does not authorize
-Phase 6-B2 or Phase 6-C.
+command. Phase 6-B1 had its own narrow authorization; its closure does not
+authorize Phase 6-B2 or Phase 6-C.

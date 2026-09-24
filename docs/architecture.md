@@ -407,8 +407,13 @@ The CLI surface is limited to `cloudflare discover` and `cloudflare plan`. It do
 not add a Bridge route or change any `remote_machine` permission; the machine
 allowlist remains exactly `market.instruments.lookup` and `openapi.machine`.
 
-Phase 6-B may later contain separately reviewed mutation adapters and apply
-transactions. It is not part of this architecture change.
+Phase 6-B1 adds a separately typed Cloudflare DNS-write adapter for one
+stale-plan guarded desired CNAME creation per invocation, with rollback limited
+to the record created by that invocation. It passed permanent-Windows live
+acceptance and exact-commit Ubuntu/Windows CI on 2026-09-24; see
+`docs/status/phase-6-b1-implementation-handoff.md`. This does not add a Bridge
+route or broaden Phase 6-A's GET-only adapter. Phase 6-B2/C remain separate,
+unauthorized future tasks.
 
 ### Post-Phase-6-A acceptance credential custody
 

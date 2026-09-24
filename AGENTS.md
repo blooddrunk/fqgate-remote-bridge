@@ -388,14 +388,16 @@ Follow `docs/roadmap.md`.
 - Post-Phase-6-A acceptance credential custody: CLOSED — real Vault-backed
   acceptance, protected LocalSystem token file, old-directory retirement and
   Ubuntu/Windows CI passed
-- Phase 6-B1: OPEN — authorized implementation underway; stale-plan guarded,
-  one-at-a-time missing DNS CNAME create plus same-invocation rollback
+- Phase 6-B1: CLOSED — stale-plan guarded, one-at-a-time missing DNS CNAME
+  create plus same-invocation rollback passed permanent-Windows live acceptance
+  and exact-commit Ubuntu/Windows CI on 2026-09-24
 - Phase 6-B2/C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6-B1 is the separately authorized active task. Phase 6-B2 provisioning and all later-phase work still require a separate task.
+Phase 6-B1 was separately authorized and is now closed. Phase 6-B2 provisioning
+and all later-phase work still require separate reviewed tasks.
 
 ## Closed Phase 6-A read-only discovery task
 
@@ -459,9 +461,9 @@ The Tunnel token never entered the user vault. See
 of the old Cloudflare API-token file did not revoke that remote credential.
 No Cloudflare provisioning, token retrieval or Phase 6-B authority was added.
 
-## Current Phase 6-B1 task
+## Closed Phase 6-B1 task
 
-The authorized next task is:
+The closed task package is:
 
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`
 
@@ -469,7 +471,7 @@ Codex goal:
 
 `docs/prompts/phase-6-b1-codex-goal.md`
 
-B1 is deliberately not a general Cloudflare provisioner. It may add only a
+B1 is deliberately not a general Cloudflare provisioner. It added only a
 stale-plan guarded, one-action production apply for one missing desired DNS
 CNAME, plus deletion of the exact same-invocation record ID for automatic
 rollback. A reserved TXT canary may create/read/delete only its hard-coded
@@ -477,12 +479,12 @@ acceptance name to prove the live DNS-write token. Do not mutate Access
 applications/policies or Tunnel configuration, expose a remote mutation route,
 add arbitrary DNS update/delete, persist the write token, or implement B2/C.
 
-All machine-verifiable review and acceptance must be automated. Do not fabricate
-production drift to exercise the write path; use deterministic fixtures and the
-reserved live canary. Human-only boundaries are the hidden scoped write-token
-entry, exact normalized `LOGIN_REQUIRED` QR approval, or a precisely documented
-API-unobservable check with Dashboard path/field/expected value/reason/resume
-command.
+All machine-verifiable review and acceptance was automated. No production drift
+was fabricated. The reserved live canary passed create/read/delete/absence, and
+post-canary Phase 6-A/Phase 5-C checks passed 14/14 and 21/21. Closure evidence
+and exact CI IDs are in `docs/status/phase-6-b1-implementation-handoff.md`.
+Phase 6-B2/C remain unimplemented and unauthorized until separate reviewed
+tasks explicitly enable those capabilities.
 
 ## Closed post-Phase-5 maintenance task
 
@@ -528,10 +530,12 @@ hostnames, a Tunnel origin other than `http://127.0.0.1:17282`, any direct
 17281 ingress, broad Access Bypass, or a policy shape that cannot be reconciled
 unambiguously. Detected drift is not permission to fix it in Phase 6-A.
 
-Phase 6-B1 is separately authorized and OPEN under
-`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`. Phase 6-B2/C remain
-unimplemented and unauthorized until separate reviewed tasks explicitly enable
-those capabilities.
+Phase 6-B1 is closed under
+`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`. The implementation
+commit is `3cc99033ad9dbac899584ce3b8e3e81053647a98`; permanent-Windows evidence
+is at `D:\code\research\fqgate-phase6b1-acceptance-evidence.json`.
+Phase 6-B2/C remain unimplemented and unauthorized until separate reviewed
+tasks explicitly enable those capabilities.
 
 ## Documentation rule
 

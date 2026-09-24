@@ -1,7 +1,7 @@
 # Phase 6-B1 — stale-plan guarded DNS apply foundation
 
 Date: 2026-09-24
-Status: **OPEN — implementation underway; permanent-Windows/live and exact-final-commit CI acceptance pending**
+Status: **CLOSED — permanent-Windows live acceptance and exact-commit Ubuntu/Windows CI passed on 2026-09-24**
 
 Codex handoff: `docs/prompts/phase-6-b1-codex-goal.md`
 
@@ -208,8 +208,19 @@ temporary files or evidence.
 ## Closure
 
 Create `docs/status/phase-6-b1-implementation-handoff.md` and a permanent
-Windows operations procedure during implementation. Keep Phase 6-B1 OPEN until
-all deterministic gates, live canary cleanup, post-canary remote regression and
-exact-final-commit CI pass.
+Windows operations procedure during implementation. Phase 6-B1 remained OPEN
+until all deterministic gates, live canary cleanup, post-canary remote
+regression and exact-final-commit CI passed; those closure requirements are met
+below.
+
+**Closure achieved 2026-09-24.** Implementation commit
+`3cc99033ad9dbac899584ce3b8e3e81053647a98` passed the permanent-Windows
+acceptance. Evidence at
+`D:\code\research\fqgate-phase6b1-acceptance-evidence.json` records P6B1-T1..T6,
+W1..W5, the canary's verified cleanup, the in-sync zero-write apply refusal,
+Phase 6-A 14/14 and Phase 5-C 21/21. No supported production DNS drift existed,
+so no production record was changed. Exact-commit CI run `35974931875` passed
+Ubuntu job `107553065557` and Windows job `107553065434`. Full check IDs and
+results are recorded in `docs/status/phase-6-b1-implementation-handoff.md`.
 
 Phase 6-B2 and Phase 6-C remain unauthorized by this task.

@@ -214,8 +214,10 @@ bounded child process environment. Production CLI apply is refused outside
 Windows before discovery or mutation, because its mandatory Phase 5-C remote
 regression runs in the accepted Windows environment. No generic REST proxy, Tunnel-token
 retrieval, Access application/policy mutation, or Tunnel configuration mutation
-is authorized. Phase 6-B1 remains OPEN until its live and exact-final-commit CI
-acceptance is complete; Phase 6-B2/C remain separately unauthorized.
+is authorized. Phase 6-B1's live canary, post-canary Phase 6-A/Phase 5-C
+regressions and exact-commit Ubuntu/Windows CI passed on 2026-09-24. Its closed
+scope remains limited to guarded one-at-a-time desired DNS CNAME creation and
+same-invocation rollback. Phase 6-B2/C remain separately unauthorized.
 
 Phase 6-A closed with hidden-entry live acceptance on implementation commit
 `9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in

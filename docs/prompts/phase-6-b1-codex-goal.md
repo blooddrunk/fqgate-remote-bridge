@@ -1,5 +1,9 @@
 # Codex goal — Phase 6-B1 stale-plan guarded DNS apply foundation
 
+Status: **CLOSED**. The implementation and acceptance evidence are recorded in
+`docs/status/phase-6-b1-implementation-handoff.md`. This task does not authorize
+Phase 6-B2 or Phase 6-C.
+
 Implement only `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md` in
 `blooddrunk/fqgate-remote-bridge`.
 
