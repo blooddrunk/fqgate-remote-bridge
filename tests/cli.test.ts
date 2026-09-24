@@ -104,6 +104,7 @@ describe("local CLI", () => {
         "a".repeat(64),
         "--check-id",
         "dns.human.record",
+        "--json",
       ],
       {
         stdout: (line) => capture.stdout.push(line),
