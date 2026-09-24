@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A CLOSED; Phase 6-B/C remain separately unauthorized**
+Status: **Phase 6-A CLOSED; Phase 6-B1 authorized next; Phase 6-B2/C remain separately unauthorized**
 
 ## Purpose
 
@@ -57,11 +57,19 @@ add Bridge routes or change the operation registry.
 
 ### Phase 6-B — bounded apply
 
-Future separate task only.
+Phase 6-B1 is now the authorized next task:
+`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`.
 
-Consume an exact Phase 6-A plan, re-read current state, reject stale plans, and create/adopt/update
-only explicitly supported resources using a separately scoped setup-time write token. Deletion,
-token rotation and broad policy replacement are not implicitly included.
+B1 consumes an exact Phase 6-A fingerprint, re-reads current state twice around
+the mutation boundary, rejects stale plans, and applies at most one supported
+action. Its production write surface is only creation of one missing desired DNS
+CNAME; transaction-local rollback may delete only the record ID returned by that
+same invocation. A hard-coded reserved TXT canary is acceptance-only and proves
+live scoped write permission without manufacturing production drift.
+
+Phase 6-B2 remains a future separate task for any Tunnel configuration or Access
+application/policy mutation. Arbitrary DNS update/delete, token rotation and
+broad policy replacement are not authorized by B1.
 
 ### Phase 6-C — live closure and credential retirement
 

@@ -416,9 +416,26 @@ Phase 6 invariants:
 
 ## Phase 6-B — bounded Cloudflare provisioning and drift application
 
-Planned only. A separate task must authorize reviewed create/adopt/update/delete
-adapters, stale-plan rejection, rollback and credential lifecycle. Phase 6-A
-does not implement or imply any of them.
+Phase 6-B is split so the first write slice does not silently become a general
+provisioner.
+
+### Phase 6-B1 — stale-plan guarded DNS apply foundation
+
+**AUTHORIZED NEXT TASK; implementation not started.** The task is
+`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`.
+
+B1 adds stale-plan rejection, one-action-per-plan apply and the first production
+mutation: create exactly one missing desired DNS CNAME. Postcondition failure may
+delete only the record ID created by that invocation as transactional rollback.
+A reserved TXT write canary proves real scoped write permission without
+manufacturing drift in the three production hostnames. Access application/policy
+mutation, Tunnel configuration writes, arbitrary DNS update/delete, token
+rotation and background reconciliation remain out of scope.
+
+### Phase 6-B2 — broader reviewed provisioning
+
+Planned only. Tunnel configuration and Access-resource mutation require a
+separate task after B1 closes; do not infer that authority from B1.
 
 ## Phase 6-C — live reconciliation and credential retirement
 
@@ -454,14 +471,16 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 ## Current development handoff
 
 Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A and the
-credential-custody task are closed. Phase 6-B/C remain separately planned and
-unauthorized by this closure. The closed custody package is:
+credential-custody task are closed. The authorized next implementation task is
+Phase 6-B1; Phase 6-B2/C remain unauthorized.
 
-`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
+Current task:
+
+`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`
 
 Codex handoff:
 
-`docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
+`docs/prompts/phase-6-b1-codex-goal.md`
 
 Phase 6-A historical implementation and evidence:
 
@@ -481,5 +500,5 @@ Automate every machine-verifiable quality, fixture, discovery, reconciliation, l
 regression check. Human intervention is limited to the explicitly documented hidden credential
 entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that includes the
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
-command. Phase 6-B still needs a separate provisioning task; credential
-custody does not authorize it.
+command. Phase 6-B1 has its own narrow authorization; it does not authorize
+Phase 6-B2 or Phase 6-C.
