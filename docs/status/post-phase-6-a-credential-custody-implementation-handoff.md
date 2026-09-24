@@ -84,8 +84,8 @@ old-directory retirement and exact-final-commit closure remain pending.
 | Real current-user vault metadata                                 | PASS, three `READY` entries with owner match           |
 | Real new-path human/admin browser matrix                         | PASS                                                   |
 | Real Vault Phase 6-A discovery/plan on new path                  | PASS, 14/14, zero drift/mutation                       |
-| Real Vault Phase 5-C machine matrix on new path                  | FAIL, 20/21; `P5C-R3 UPSTREAM_UNAVAILABLE`            |
-| Automatic rollback after failed verifier                        | PASS, old path active and service running              |
+| Real Vault Phase 5-C machine matrix on new path                  | FAIL, 20/21; `P5C-R3 UPSTREAM_UNAVAILABLE`             |
+| Automatic rollback after failed verifier                         | PASS, old path active and service running              |
 | Ubuntu/Windows Actions on `9dba36a`                              | PASS, run `35845939786`                                |
 
 The running service still uses `D:\code\research\fqgate-secrets\tunnel-token`
