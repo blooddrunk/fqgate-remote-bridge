@@ -21,16 +21,16 @@ D:\code\research\fqgate-phase6b1-acceptance-evidence.json
 Evidence was generated at `2026-09-24T08:37:16Z`. It contains 13 records: 12
 passed checks, one expected bounded in-sync refusal result, and zero failures.
 
-| Check | Result |
-| --- | --- |
-| P6B1-T1..T6 deterministic write/apply/canary coverage | PASS |
-| P6B1-W1 frozen install and all seven repository quality gates | PASS |
-| P6B1-W2 safe live Phase 6-A discovery and plan | PASS; 14/14, zero conflicts, blocked checks, or drift |
-| Production drift assessment | `NO_SUPPORTED_PRODUCTION_DRIFT`; no production DNS record was changed |
-| P6B1-W4 in-sync production apply without a write token | `CLOUDFLARE_APPLY_REJECTED`; `writeCredentialProvided=false`, `mutation=none` |
-| P6B1-W3 reserved DNS TXT canary | PASS; create/read/delete/absence verified, `cleanupVerified=true` |
-| P6B1-W5 post-canary regressions | PASS; Phase 6-A 14/14, Phase 5-C 21/21; listeners remained `127.0.0.1:17281` and `127.0.0.1:17282` |
-| P6B1-CI on the implementation commit | PASS; [workflow run 35974931875](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35974931875), Ubuntu job `107553065557`, Windows job `107553065434` |
+| Check                                                         | Result                                                                                                                                                               |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P6B1-T1..T6 deterministic write/apply/canary coverage         | PASS                                                                                                                                                                 |
+| P6B1-W1 frozen install and all seven repository quality gates | PASS                                                                                                                                                                 |
+| P6B1-W2 safe live Phase 6-A discovery and plan                | PASS; 14/14, zero conflicts, blocked checks, or drift                                                                                                                |
+| Production drift assessment                                   | `NO_SUPPORTED_PRODUCTION_DRIFT`; no production DNS record was changed                                                                                                |
+| P6B1-W4 in-sync production apply without a write token        | `CLOUDFLARE_APPLY_REJECTED`; `writeCredentialProvided=false`, `mutation=none`                                                                                        |
+| P6B1-W3 reserved DNS TXT canary                               | PASS; create/read/delete/absence verified, `cleanupVerified=true`                                                                                                    |
+| P6B1-W5 post-canary regressions                               | PASS; Phase 6-A 14/14, Phase 5-C 21/21; listeners remained `127.0.0.1:17281` and `127.0.0.1:17282`                                                                   |
+| P6B1-CI on the implementation commit                          | PASS; [workflow run 35974931875](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35974931875), Ubuntu job `107553065557`, Windows job `107553065434` |
 
 The DNS-write token was entered only through the hidden permanent-Windows
 prompt. It was not placed in the Vault, repository, command arguments, or
