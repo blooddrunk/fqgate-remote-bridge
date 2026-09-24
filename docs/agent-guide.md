@@ -206,10 +206,11 @@ unexpected AUD、Bypass/Everyone 与 human/admin/machine policy widening 都不�
 自动化“采用”。Phase 6-A 若缺少实时 token、外部 evidence 或 exact-commit CI，必须
 保持 OPEN，并写出具体 check ID、实际观察结果和下一条命令。
 
-Phase 6-A 已在实现提交 `9c6babb` 上完成上述证据并关闭。下一任务为
-`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`，
-当前已有 Prompt/Vault 代码和迁移脚本，但真实录入、提权 ACL/服务迁移、远程回归与 CI
-未完成前不可关闭任务。不要把验收凭据写入现有 `fqgate-secrets` 目录；
-其继承 ACL 允许更宽泛的用户读/改。任务还计划把 LocalSystem 使用的
-Tunnel token 搬到受保护的 ProgramData 文件，在服务重启和远程回归通过后
-退役旧目录；未完成前保持现有服务路径和隐藏输入。
+Phase 6-A 已在实现提交 `9c6babb` 上完成上述证据并关闭。后续的
+`docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
+也已关闭：三项验收凭据通过隐藏输入登记到当前 Windows 用户的 Credential
+Manager，后续验收可显式选择 `Prompt` 或 `Vault`。LocalSystem 使用的 Tunnel
+token 已搬到受保护的 ProgramData 文件；在服务重启、回滚演练和真实远程回归
+通过后，旧 `fqgate-secrets` 目录以零消费者状态退役。证据见
+`docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`。
+Phase 6-B 仍需单独授权。

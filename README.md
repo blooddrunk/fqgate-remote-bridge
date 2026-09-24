@@ -28,6 +28,7 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                             |
 | Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                         |
 | Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
+| 验收凭据托管与目录退役 | CLOSED / 已验收    | 三项 Windows Vault 凭据、受保护的 Tunnel token 文件、旧目录清理     |
 | 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                              |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
@@ -883,15 +884,16 @@ Phase 6-A 最终实现提交 `9c6babb` 在永久 Windows 通过 14/14 项真实�
 其中既有 Phase 5-C 远程矩阵 21/21 通过；同一提交的 Ubuntu/Windows CI 通过。
 证据与运行 ID 见 [Phase 6-A 实现交接](docs/status/phase-6-a-implementation-handoff.md)。
 
-## 当前任务：Windows 凭据托管与旧 secrets 目录退役（实现待现场验收）
+## Windows 凭据托管与旧 secrets 目录退役（CLOSED）
 
 任务合同见 [验收凭据托管任务](docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md)。
 目标是在当前 Windows 用户的 Credential Manager 中一次性隐藏录入现有 Cloudflare
 只读 API token、machine Client ID 和 Client Secret，以便之后显式选择自动验收。
-目前可以显式选择 `Prompt` 或 `Vault`；真实 Vault 录入与迁移尚待现场验收。
-`D:\code\research\fqgate-secrets` 的继承权限过宽，
-不能直接保存这些验收凭据。任务还计划把 `LocalSystem` 使用的 Tunnel token
-迁移到受保护的 `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`，
-确认服务重启和远程访问正常后清理旧文件与目录。Tunnel token 仍是服务文件，
-不进入当前用户的 Credential Manager；该任务不授权 Cloudflare 资源变更或
-Phase 6-B。
+现在可显式选择 `Prompt` 或 `Vault`；三项真实凭据已在永久 Windows 用户的
+Credential Manager 中登记。`LocalSystem` 使用的 Tunnel token 已迁移到受保护的
+`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`。服务重启、回滚演练和
+真实 human/admin/machine 验证通过后，旧 `D:\code\research\fqgate-secrets` 目录已
+清理。Tunnel token 仍是服务文件，不进入用户 Credential Manager。删除旧的本地
+Cloudflare API-token 文件不等于撤销远端 token。本任务不授权 Cloudflare 资源变更
+或 Phase 6-B。证据见
+[实现交接](docs/status/post-phase-6-a-credential-custody-implementation-handoff.md)。

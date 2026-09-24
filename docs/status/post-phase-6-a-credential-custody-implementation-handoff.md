@@ -1,108 +1,55 @@
 # Post-Phase-6-A credential custody handoff
 
-Status: **OPEN**. All three real acceptance credentials are enrolled, and the
-protected ProgramData token file passed its staging checks. The latest
-new-path verification failed on the live FQGate market lookup, so the service
-and external config were automatically restored to the old token path. The
-old-directory retirement and exact-final-commit closure remain pending.
+Status: **CLOSED on 2026-09-24**. The permanent Windows checkout completed real
+Vault-backed acceptance, protected Tunnel-token migration, rollback exercise,
+human/admin/machine regression and retirement of the old secret directory.
+Phase 6-B remains unauthorized.
 
-## Implemented
+## Delivered boundary
 
-- Fixed three-target Windows Credential Manager provider with current-user SID,
-  local-machine persistence, UTC expiry and non-secret deployment binding.
-- Hidden Enroll, metadata-only Status and bounded Remove operations.
-- Bounded machine Client Secret format validation before attempting a vault
-  write, with modern and legacy Cloudflare service-token forms accepted.
-- The third target's earlier `VAULT_WRITE_FAILED_WIN32_1734` was reproduced
-  with a disposable value through the full setter. Its JSON metadata comment
-  was 259 characters, exceeding Credential Manager's 256-character comment
-  limit. The redundant kind field was removed; an explicit metadata length
-  guard and disposable full-setter regression now cover this boundary.
-- The first elevated migration found that Windows can leave `sc stop` pending
-  after the CLI returns. The immediate start failed, leaving the running
-  service on the new protected file and the external config on the old path.
-  The migration now waits for the stopped state before starting and provides
-  an explicit elevated rollback action. This attempt is not closure evidence;
-  rollback and the full migration still need to pass.
-- The rollback attempt exposed a separate CLI invocation fault: the
-  `cloudflared service` CLI takes `--config` and does not consume the Bridge
-  runtime's `FQGATE_REMOTE_BRIDGE_CONFIG` variable. Without `--config`, it
-  selected the ProgramData default even while the external config named the
-  old path. The migration now passes the external config explicitly for
-  service commands and secure status. The service remained running on the
-  protected new file while this was diagnosed; the old file was preserved.
-- A later elevated migration reached the real authenticated human/admin
-  browser matrix and automatically rolled back when two checks failed. A
-  local, secret-free FQGate 1.0.2 probe reproduced the QR failure: pending
-  poll data had `flow_id` and `status: waiting_for_scan` without `connected`.
-  The QR adapter now accepts only that known pending-status shape as
-  disconnected, with a regression test. The admin button check now waits for
-  client hydration before deciding whether the control is present. The old
-  service path was restored and verified; the full new-path matrix remains
-  outstanding.
-- After those fixes, the elevated human/admin matrix passed and the
-  ordinary-account Vault run passed 14/14 Phase 6-A plus 21/21 remote-machine
-  checks on the new path. The migration verifier counted the machine summary
-  line as a 22nd test and rejected otherwise passing evidence. Its failure
-  signaled the waiting elevated process, which automatically restored the old
-  service and config. The verifier now separates 21 test records from the
-  summary and checks both explicitly; a subsequent full new-path run is still
-  required.
-- On commit `9dba36a9c965acc807dc57cce1adc49d28a66898`, the next elevated
-  run passed the human/admin browser matrix, and ordinary-account Vault
-  verification passed Phase 6-A discovery/plan with zero drift or mutation.
-  Phase 5-C passed 20/21 checks. `P5C-R3` returned `UPSTREAM_UNAVAILABLE` on
-  the instrument lookup, so `P6V-W4` failed and automatically restored the
-  running service and external config to the old token path. A direct local
-  FQGate catalog lookup also timed out; FQGate health reported `connected=false`
-  and normalized session `unknown`. A bounded local FQGate restart did not
-  restore connectivity. No normalized `LOGIN_REQUIRED` result was observed,
-  so QR intervention has not been requested. Both token files remain intact.
-- A guided Windows PowerShell enrollment window for the three hidden prompts.
-- Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
-  authenticated acceptance. Prompt remains the default. Vault failure does
-  not fall back.
-- ProgramData token-file migration command with old-path inventory, protected
-  ACL checks, bounded service-controller reconfiguration, restart and rollback.
-  The elevated account runs the human/admin browser matrix; the ordinary
-  enrolled account runs Vault-backed Phase 6-A/5-C verification on the new
-  service path while the elevated migration waits, then the elevated process
-  rolls back automatically on failure or timeout before gated finalization.
+- Exactly three fixed Windows Credential Manager targets hold the Cloudflare
+  read-only API token and machine Access Client ID/Secret for the invoking
+  Windows user. Enrollment uses hidden input; Status exposes only owner/expiry
+  metadata. `Prompt` remains available; `Vault` has no fallback or enumeration.
+- The `LocalSystem` cloudflared service uses
+  `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` with protected
+  parent/file ACLs. The Tunnel token did not enter the user vault.
+- The old `D:\code\research\fqgate-secrets` directory was removed after an
+  automated zero-consumer inventory. Deleting its local `cloudflare-api-token`
+  file did **not** revoke the remote Cloudflare token. No Cloudflare resource or
+  credential was created, refreshed, rotated or mutated by this task.
 
-## Local checks completed
+## Permanent Windows evidence
 
-| ID                                                               | Result                                                 |
-| ---------------------------------------------------------------- | ------------------------------------------------------ |
-| P6V-T1..T3 fake store                                            | PASS                                                   |
-| P6V-W1 disposable Windows Credential Manager entries and cleanup | PASS                                                   |
-| Windows frozen install, typecheck, lint, tests, build, format    | PASS                                                   |
-| Windows Playwright E2E                                           | PASS, 13/13                                            |
-| Windows CLI/production loopback smoke                            | PASS                                                   |
-| PowerShell parser on eight affected scripts                      | PASS                                                   |
-| Old-path consumer inventory                                      | PASS, 2 current consumers: service and external config |
-| Non-elevated migration denial                                    | PASS, `P6V-W3 ELEVATION_REQUIRED`, no service change   |
-| Real current-user vault metadata                                 | PASS, three `READY` entries with owner match           |
-| Real new-path human/admin browser matrix                         | PASS                                                   |
-| Real Vault Phase 6-A discovery/plan on new path                  | PASS, 14/14, zero drift/mutation                       |
-| Real Vault Phase 5-C machine matrix on new path                  | FAIL, 20/21; `P5C-R3 UPSTREAM_UNAVAILABLE`             |
-| Automatic rollback after failed verifier                         | PASS, old path active and service running              |
-| Ubuntu/Windows Actions on `9dba36a`                              | PASS, run `35845939786`                                |
-
-The running service still uses `D:\code\research\fqgate-secrets\tunnel-token`
-and the old files remain intact. No Cloudflare mutation occurred. The Actions
-run above has Windows job `107131992463` and Ubuntu job `107131992710`; it is
-not final closure CI.
-
-## Outstanding checks
-
-- P6V-W2/W4: repeat real Vault-backed Phase 5-C after the local FQGate catalog
-  lookup recovers, then complete one full new-path human/admin/machine run on a
-  clean commit. The latest bounded failure is `P5C-R3 UPSTREAM_UNAVAILABLE`.
-- P6V-W5: zero old-path consumers and explicit finalization.
-- P6V-CI2: Ubuntu/Windows Actions on the exact final closure commit.
-
-The partial, secret-free external evidence is
+The secret-free evidence file is
 `D:\code\research\fqgate-post-phase6a-credential-custody-evidence.json`.
-It records the current OPEN state; do not infer closure from it or the
-historical Phase 6-A evidence. Follow the exact commands in
-`docs/operations/windows-post-phase-6-a-credential-custody.md`.
+Live implementation commit: `a671a310bf93093bc80b4f54b529593bd565bbc4`.
+The evidence records all three vault entries as `READY` with owner match and
+UTC expiry metadata; it contains no values or recoverable derivatives.
+
+| Check           | Result                                                                                                                      |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| P6V-T1..T6      | PASS — fixed namespace, fake-store denial/replacement/expiry tests, explicit Prompt/Vault paths and bounded secret handling |
+| P6V-W1          | PASS — disposable Windows Credential Manager entries, full setter and cleanup                                               |
+| P6V-W2          | PASS — real Vault-backed Phase 6-A 14/14 and Phase 5-C remote machine 21/21 on one clean commit                             |
+| P6V-W3          | PASS — ProgramData path/reparse and protected ACL checks; LocalSystem token-file use                                        |
+| P6V-W4-ROLLBACK | PASS — old service/config path restored and restarted during exercise and failed attempts                                   |
+| P6V-W4          | PASS — service on new file, loopback listeners, human/admin browser matrix and machine matrix                               |
+| P6V-W5          | PASS — zero old-path consumers; old Tunnel token, local Cloudflare API-token file and empty directory removed               |
+| P6V-CI1         | PASS — frozen install, typecheck, lint, tests, build, format, Playwright and Windows CLI/loopback checks                    |
+
+The final service is Running as `LocalSystem` from the protected new file.
+FQGate and Bridge listen only on `127.0.0.1:17281` and
+`127.0.0.1:17282`. The temporary `UPSTREAM_UNAVAILABLE` result during an
+earlier attempt resolved when FQGate's market session reconnected; the final
+`P5C-R3` lookup returned HTTP 200. The verifier evidence-field fault found
+after a fully passing matrix was fixed and rerun to `P6V-W4 PASS`.
+
+The implementation commit passed [Ubuntu and Windows CI](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/35952868937): run
+`35952868937`, Ubuntu job `107484942314`, Windows job `107484942359`.
+The exact final documentation commit and its Ubuntu/Windows run/job IDs are
+recorded in the external evidence file after CI completes; this avoids
+putting a future CI run ID into the commit that triggers that run.
+
+No human-only action remains. For future expiry or rotation, use hidden local
+enrollment in `docs/operations/windows-post-phase-6-a-credential-custody.md`.

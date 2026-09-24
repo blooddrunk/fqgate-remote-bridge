@@ -14,7 +14,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6-A: **CLOSED** — permanent-Windows live acceptance and Ubuntu/Windows CI
   passed on `9c6babb`
 - Post-Phase-6-A credential custody and secret-directory retirement:
-  **implementation in progress; live migration and closure pending**
+  **CLOSED** — Vault-backed live acceptance, protected service token and old
+  directory retirement passed on permanent Windows
 - Phase 6-B/C+: planned only
 
 Current deployed topology remains:
@@ -393,21 +394,15 @@ remote matrix; the same commit passed Ubuntu and Windows CI run `35828737376`.
 
 The credential-custody task at
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
-adds a bounded current-user Credential Manager provider for a Cloudflare read token and
-the existing machine Client ID/Secret once, then explicitly use the local
-Credential Manager for later live verification. The current `fqgate-secrets`
-directory has broad inherited ACLs and is not a safe file-backed vault. The
-task must preserve the prompt path, expiration handling, redaction and all
-Phase 6-A read-only boundaries. It also plans to move the LocalSystem Tunnel
-token to the protected `C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token`
-default, verify service restart and remote access, then retire the old
-`fqgate-secrets` files and directory. The Tunnel token remains a protected
-service file and does not enter the user vault. It does not authorize Phase
-6-B mutation or token rotation.
-The provider and migration automation require real credential enrollment,
-elevated ACL/service checks, remote regression, old-directory finalization,
-and exact-commit CI before this task can close. See
-`docs/operations/windows-post-phase-6-a-credential-custody.md`.
+is closed. A bounded current-user Credential Manager provider holds the three
+existing acceptance credentials with explicit Prompt/Vault selection. The
+LocalSystem Tunnel token moved to the protected
+`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` file, and the old
+`fqgate-secrets` directory was retired after zero-consumer proof, restart,
+rollback exercise and real human/admin/machine regression. Prompt mode and
+Phase 6-A read-only boundaries remain. Local deletion of the old Cloudflare
+API-token file did not revoke its remote token. See
+`docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`.
 
 Phase 6 invariants:
 
@@ -458,9 +453,9 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track and Phase 6-A are
-closed. The next defined task is Windows credential custody and old
-secret-directory retirement, with no Cloudflare mutation authority:
+Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A and the
+credential-custody task are closed. Phase 6-B/C remain separately planned and
+unauthorized by this closure. The closed custody package is:
 
 `docs/tasks/post-phase-6-a-permanent-windows-acceptance-credential-vault.md`
 

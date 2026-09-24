@@ -385,8 +385,9 @@ Follow `docs/roadmap.md`.
 - Post-Phase-5 FQGate 1.0.2 qualification: CLOSED
 - Phase 6-A: CLOSED — read-only Cloudflare discovery/plan, permanent Windows
   live acceptance and exact-commit Ubuntu/Windows CI passed
-- Post-Phase-6-A acceptance credential custody: implementation in progress;
-  permanent-Windows live acceptance and old-directory retirement pending
+- Post-Phase-6-A acceptance credential custody: CLOSED — real Vault-backed
+  acceptance, protected LocalSystem token file, old-directory retirement and
+  Ubuntu/Windows CI passed
 - Phase 6-B/C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
@@ -423,16 +424,18 @@ a generic Cloudflare REST proxy, add a Bridge route, add market operations, or
 implement Phase 6-B. Its CLI surface is exactly `cloudflare discover` and
 `cloudflare plan`, and `--apply` is rejected.
 
-The Cloudflare API token may enter only through the hidden permanent-Windows
-`Read-Host -AsSecureString` boundary. It must never enter Git, JSON desired state,
-CLI arguments, logs or evidence. A real plan must preserve the exact Bridge origin
+The original Phase 6-A acceptance entered the Cloudflare API token through a
+hidden permanent-Windows `Read-Host -AsSecureString` prompt. The closed custody
+task also permits explicit current-user `Vault` selection for the same bounded
+acceptance process. The token must never enter Git, JSON desired state, CLI
+arguments, logs or evidence. A real plan must preserve the exact Bridge origin
 `http://127.0.0.1:17282`, classify direct 17281/wildcard/broad ingress and policy
 widening as conflicts, and keep human/admin/machine Access identities independent.
 Phase 6-A closed on implementation commit
 `9c6babb08eaf9a31a226c7950d64b642fc0b2c90`; closure evidence and CI IDs
 are in `docs/status/phase-6-a-implementation-handoff.md`.
 
-## Next task — Windows credential custody and secret-directory retirement
+## Closed Windows credential custody and secret-directory retirement
 
 The task package is:
 
@@ -442,19 +445,17 @@ The Codex goal is:
 
 `docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
 
-The task has a Prompt/Vault implementation and migration automation pending
-live acceptance. It may add an explicit Windows
-Credential Manager provider for the existing Cloudflare read API token and
-machine service-token Client ID/Secret. It also plans to move the cloudflared
-Tunnel token from `D:\\code\\research\\fqgate-secrets` to the project's
-protected `C:\\ProgramData\\FQGateRemoteBridge\\secrets\\tunnel-token` default,
-then retire the old directory after a verified service restart, remote
-regression and rollback preparation. The Tunnel token stays in a service-owned
-file; it does not enter the operator's Credential Manager. Until this task is
-implemented and verified, keep the current service path and hidden acceptance
-prompts. Do not put new acceptance credentials in the broad-ACL old directory,
-display Tunnel token contents, retrieve a token from the Cloudflare API, or
-mutate Cloudflare resources.
+The task is closed. The three acceptance credentials use fixed names in the
+invoking Windows user's Credential Manager with explicit Prompt/Vault choice.
+The LocalSystem cloudflared service uses the protected
+`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` file. After service
+restart, rollback exercise and real human/admin/machine regressions, the old
+`D:\code\research\fqgate-secrets` directory was removed with zero consumers.
+The Tunnel token never entered the user vault. See
+`docs/status/post-phase-6-a-credential-custody-implementation-handoff.md` and
+`docs/operations/windows-post-phase-6-a-credential-custody.md`. Local deletion
+of the old Cloudflare API-token file did not revoke that remote credential.
+No Cloudflare provisioning, token retrieval or Phase 6-B authority was added.
 
 ## Closed post-Phase-5 maintenance task
 
@@ -479,7 +480,9 @@ The permanent Windows verification environment remains
 working tree; never create a second temporary checkout to avoid local-state
 problems. Protect operator changes. Machine-verifiable checks must be automated.
 
-Phase 6-A live validation may require only these explicit human-only boundaries:
+The original Phase 6-A live validation permitted these human-only boundaries;
+the later closed custody task allows explicit Vault reuse instead of repeated
+hidden entry:
 
 1. a least-privilege Cloudflare read-only API token entered through a hidden
    PowerShell prompt and passed to a child process only via its environment;

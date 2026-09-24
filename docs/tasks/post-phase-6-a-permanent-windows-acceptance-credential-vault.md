@@ -1,7 +1,7 @@
 # Post-Phase-6-A task — Windows credential custody and secret-directory retirement
 
 Date: 2026-09-23
-Status: **IMPLEMENTATION IN PROGRESS — live vault/migration/CI closure pending**
+Status: **CLOSED — permanent-Windows live Vault, migration, retirement and CI passed on 2026-09-24**
 
 Codex handoff: `docs/prompts/post-phase-6-a-credential-custody-codex-goal.md`
 
@@ -24,17 +24,17 @@ token creation/refresh/rotation, new Bridge operation, background schedule,
 remote credential retrieval, or Phase 6-B authority. Preserve all closed
 Phase 0–6-A behavior and the current prompt-based acceptance path.
 
-## Observed permanent-Windows constraint
+## Observed permanent-Windows constraint at task definition
 
-The existing `D:\code\research\fqgate-secrets` directory currently inherits
+At task definition, `D:\code\research\fqgate-secrets` inherited
 `Authenticated Users: Modify` and `Users: ReadAndExecute`. The
-`cloudflare-api-token` file inherits those broad rights. The existing
-`tunnel-token` file has its own restricted ACL, but the running cloudflared
-service references its path inside this directory. Do not remove the directory
+`cloudflare-api-token` file inherited those broad rights. The old
+`tunnel-token` file had its own restricted ACL, but the running cloudflared
+service referenced its path inside this directory. Do not remove the directory
 or either file before inventory, service reconfiguration, rollback preparation
 and live validation.
 
-At task definition time, `C:\ProgramData\FQGateRemoteBridge\secrets` does not
+At task definition time, `C:\ProgramData\FQGateRemoteBridge\secrets` did not
 exist on the permanent Windows host. Create and protect the destination
 directory before placing any token bytes there; reject links/reparse points
 and unexpected pre-existing objects.
@@ -161,11 +161,14 @@ has its own expiration/rotation lifecycle; local storage never extends it.
 
 ## Closure
 
-Keep this task OPEN after implementation until real vault-backed acceptance,
-secret-free evidence, owner/expiry checks, disposable-entry cleanup, safe
-Tunnel-token migration and old-directory retirement, and exact-commit CI all
-pass. If service identity, ACL, rollback or remote availability cannot be
-proved, leave the old token path in service and report the exact blocked check.
+Closure evidence is recorded in
+`docs/status/post-phase-6-a-credential-custody-implementation-handoff.md` and
+the secret-free external file
+`D:\code\research\fqgate-post-phase6a-credential-custody-evidence.json`.
+All three credentials were `READY` for the invoking Windows user; Vault-backed
+Phase 6-A passed 14/14, Phase 5-C passed 21/21, human/admin browser regression
+passed, and the protected LocalSystem token path survived restart. The old
+directory was removed after zero-consumer inventory and rollback proof.
 
 Reference: [Microsoft Credential Manager generic credentials](https://learn.microsoft.com/en-us/windows/win32/secauthn/kinds-of-credentials),
 [credential persistence](https://learn.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala),

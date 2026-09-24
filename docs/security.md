@@ -192,10 +192,11 @@ Do not persist:
 
 ### Setup-time API token
 
-Phase 6-A accepts only a short-lived, least-privilege, read-only API token
-limited to the exact account/zone and the discovery resources. It is entered only
-through the permanent-Windows hidden `Read-Host -AsSecureString` boundary and is
-briefly passed to a child process environment. It must not appear in a CLI
+Phase 6-A accepts only a time-bounded, least-privilege, read-only API token
+limited to the exact account/zone and the discovery resources. The original
+acceptance used the permanent-Windows hidden `Read-Host -AsSecureString`
+boundary; the closed custody task also permits explicit current-user Vault
+reuse. The value is briefly passed to a child process environment. It must not appear in a CLI
 argument, repository file, ordinary environment configuration, log, plan or
 evidence. Never request or document Global API Key use.
 
@@ -214,11 +215,15 @@ against compromise of the Windows account. Stored acceptance credentials must
 remain least-privilege and expire/rotate according to Cloudflare. The Vault
 source reads only three fixed current-user targets with owner, expiry and
 non-secret deployment binding checks; missing or invalid entries fail closed.
-The prompt path remains available. Live enrollment and remote verification
-are still required before task closure.
-The same task separately plans to relocate the LocalSystem cloudflared Tunnel
-token to the protected ProgramData token-file path; it must never store that
-runtime token in the invoking user's Credential Manager.
+The prompt path remains available. On 2026-09-24, real Vault-backed Phase 6-A
+and Phase 5-C acceptance, protected LocalSystem Tunnel-token migration,
+human/admin/machine regression and old-directory retirement passed. The old
+Cloudflare API-token file was deleted locally; this did not revoke the remote
+token. The closure evidence is in
+`docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`.
+The same task relocated the LocalSystem cloudflared Tunnel token to the
+protected ProgramData token-file path; it never stores that runtime token in
+the invoking user's Credential Manager.
 
 ### Tunnel runtime credential
 
@@ -237,24 +242,18 @@ Machine callers should use Cloudflare Access service credentials or another Acce
 
 ## Secret storage
 
-Later Windows implementation should use one of:
-
-- Windows Credential Manager; or
-- DPAPI-protected local configuration.
+The permanent Windows acceptance backend uses Windows Credential Manager for
+exactly three fixed current-user targets. The LocalSystem Tunnel token remains
+in a protected service file.
 
 Plaintext `.env` may be used only as an explicit development fallback and must remain ignored by Git.
 It is never an acceptance-credential backend for the permanent Windows host.
 
-The current `D:\code\research\fqgate-secrets` directory inherits broad
-`Authenticated Users: Modify` and `Users: ReadAndExecute` permissions. Do not
-place acceptance secrets or encrypted blobs there. Credential Manager is the
-backend for exactly three acceptance credentials.
-The task now includes staging the existing Tunnel token in the protected
-`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` file, changing only
-the local service path after ACL checks, proving restart and remote access,
-keeping the old path for rollback, and retiring the old directory only after
-all consumers are removed. This is local file/service migration, not Cloudflare
-token rotation or provisioning.
+The old `D:\code\research\fqgate-secrets` directory had broad inherited ACLs
+and was removed after zero-consumer proof. The LocalSystem Tunnel token now
+resides in the protected
+`C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token` file. The local
+file/service migration did not rotate or provision Cloudflare tokens.
 
 Potential secrets include Cloudflare setup tokens, tunnel tokens, Access service credentials used by self-tests, and notifier credentials.
 
