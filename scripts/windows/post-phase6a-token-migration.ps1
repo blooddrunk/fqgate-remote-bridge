@@ -177,7 +177,7 @@ try {
         }
         if (@($credentialStatus | Where-Object state -ne "READY").Count -ne 0) { throw "P6V-W4 VAULT_NOT_READY" }
         $migrationEvidence | Add-Member -NotePropertyName credentials -NotePropertyValue $credentialStatus -Force
-        $migrationEvidence.verification = "PASS"
+        $migrationEvidence | Add-Member -NotePropertyName verification -NotePropertyValue "PASS" -Force
         $migrationEvidence.checks += "P6V-W2:PASS"
         $migrationEvidence.checks += "P6V-W4:PASS"
         [IO.File]::WriteAllText($evidencePath, ($migrationEvidence | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
@@ -242,7 +242,7 @@ try {
             if ($LASTEXITCODE -ne 0) { throw "P6V-W4 HUMAN_ADMIN_REGRESSION_FAILED" }
             $commit = (& git.exe -C $root rev-parse HEAD).Trim()
             Record "P6V-W4-ADMIN" "PASS" @{ path=$newToken; rollback="PASS"; regression="human-admin"; machineVerification="PENDING" }
-            $evidenceJson = [pscustomobject]@{ schemaVersion=1; task="post-phase6a-credential-custody"; commit=$commit; checks=@("P6V-W1:PASS","P6V-W3:PASS","P6V-W4-ROLLBACK:PASS","P6V-W4-ADMIN:PASS"); service=@{ name=$serviceName; identity="LocalSystem"; tokenFile=$newToken }; acl="protected"; rollback="PASS"; remote=@{ humanAdmin="PASS"; phase6a=0; phase5c=0 }; oldConsumerCount=@(Get-Consumers).Count; oldDirectoryRetired=$false } | ConvertTo-Json -Depth 8
+            $evidenceJson = [pscustomobject]@{ schemaVersion=1; task="post-phase6a-credential-custody"; commit=$commit; checks=@("P6V-W1:PASS","P6V-W3:PASS","P6V-W4-ROLLBACK:PASS","P6V-W4-ADMIN:PASS"); service=@{ name=$serviceName; identity="LocalSystem"; tokenFile=$newToken }; acl="protected"; rollback="PASS"; remote=@{ humanAdmin="PASS"; phase6a=0; phase5c=0 }; oldConsumerCount=@(Get-Consumers).Count; oldDirectoryRetired=$false; verification="PENDING" } | ConvertTo-Json -Depth 8
             [IO.File]::WriteAllText($evidencePath, $evidenceJson, [Text.UTF8Encoding]::new($false))
             Record "P6V-W4-VERIFY-READY" "PASS" @{ account="ordinary-enrolled-user"; timeoutMinutes=15 }
             $deadline = [DateTimeOffset]::UtcNow.AddMinutes(15)
