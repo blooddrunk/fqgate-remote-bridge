@@ -256,6 +256,13 @@ describe("Windows entry points", () => {
     expect(acceptance).toContain('Get-AcceptanceCredential "CloudflareRead"');
     expect(acceptance).toContain("-RunQualityGates");
     expect(acceptance).toContain("-RunPhase5CRemoteRegression");
+    expect(acceptance).toContain(
+      '$summaries = @($results | Where-Object { $_.id -eq "P5C-SUMMARY" })',
+    );
+    expect(acceptance).toContain(
+      '$checks = @($results | Where-Object { $_.id -ne "P5C-SUMMARY" })',
+    );
+    expect(acceptance).toContain("$summaries[0].total -ne 21");
     expect(acceptance).toContain("NO_SUPPORTED_PRODUCTION_DRIFT");
     expect(acceptance).toContain("CLOUDFLARE_APPLY_REJECTED");
     expect(acceptance).toContain("P6B1-W5");

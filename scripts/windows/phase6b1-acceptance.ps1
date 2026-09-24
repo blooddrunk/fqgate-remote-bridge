@@ -179,9 +179,15 @@ function Assert-Phase5CRemoteEvidence([string]$Stage) {
     }
     $lines = ([string]$evidence.records).Trim() -split "`r?`n"
     $results = @($lines | ForEach-Object { Get-JsonValue $_ } | Where-Object { $null -ne $_ -and $_.result -in @("PASS", "FAIL") })
-    $passed = @($results | Where-Object { $_.result -eq "PASS" }).Count
-    if ($results.Count -ne 21 -or $passed -ne 21) { throw "P6B1_$Stage-PHASE5C_NOT_21_OF_21" }
-    return $results.Count
+    $summaries = @($results | Where-Object { $_.id -eq "P5C-SUMMARY" })
+    $checks = @($results | Where-Object { $_.id -ne "P5C-SUMMARY" })
+    $passed = @($checks | Where-Object { $_.result -eq "PASS" }).Count
+    if ($checks.Count -ne 21 -or $passed -ne 21 -or $summaries.Count -ne 1 -or
+        $summaries[0].result -ne "PASS" -or $summaries[0].total -ne 21 -or
+        $summaries[0].passed -ne 21 -or $summaries[0].failed -ne 0) {
+        throw "P6B1_$Stage-PHASE5C_NOT_21_OF_21"
+    }
+    return $checks.Count
 }
 
 function Invoke-Phase6AAcceptance([string]$Stage) {
