@@ -294,8 +294,9 @@ try {
         "pnpm", "exec", "vitest", "run", "tests/phase6b1.test.ts", "tests/cli.test.ts", "tests/windows-scripts.test.ts", "--reporter=dot"
     ) -TimeoutMs 600000 -MaximumOutputCharacters 256KB
     if ($focused.ExitCode -ne 0) { throw "P6B1_FOCUSED_TESTS_FAILED" }
+    $focusedSummary = [string]$focused.Stdout -replace '\x1b\[[0-?]*[ -/]*[@-~]', ''
     $focusedCount = 0
-    if ($focused.Stdout -match 'Tests\s+(\d+) passed') { $focusedCount = [int]$Matches[1] }
+    if ($focusedSummary -match 'Tests\s+(\d+)\s+passed') { $focusedCount = [int]$Matches[1] }
     if ($focusedCount -lt 20) { throw "P6B1_FOCUSED_TEST_SUMMARY_INVALID" }
     foreach ($id in @("P6B1-T1", "P6B1-T2", "P6B1-T3", "P6B1-T4", "P6B1-T5", "P6B1-T6")) {
         Add-Record $id "PASS" @{ focusedSuiteTestsPassed = $focusedCount }
