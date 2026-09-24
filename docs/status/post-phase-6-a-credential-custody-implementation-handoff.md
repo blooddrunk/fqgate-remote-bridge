@@ -1,9 +1,10 @@
 # Post-Phase-6-A credential custody handoff
 
-Status: **OPEN**. The code and Windows migration command are present, but
-real credential enrollment, elevated ProgramData/service migration, final
-remote regressions, old-directory retirement and exact-commit CI must pass
-before closure.
+Status: **OPEN**. All three real acceptance credentials are enrolled, and the
+protected ProgramData token file passed its staging checks. The latest
+new-path verification failed on the live FQGate market lookup, so the service
+and external config were automatically restored to the old token path. The
+old-directory retirement and exact-final-commit closure remain pending.
 
 ## Implemented
 
@@ -47,6 +48,16 @@ before closure.
   service and config. The verifier now separates 21 test records from the
   summary and checks both explicitly; a subsequent full new-path run is still
   required.
+- On commit `9dba36a9c965acc807dc57cce1adc49d28a66898`, the next elevated
+  run passed the human/admin browser matrix, and ordinary-account Vault
+  verification passed Phase 6-A discovery/plan with zero drift or mutation.
+  Phase 5-C passed 20/21 checks. `P5C-R3` returned `UPSTREAM_UNAVAILABLE` on
+  the instrument lookup, so `P6V-W4` failed and automatically restored the
+  running service and external config to the old token path. A direct local
+  FQGate catalog lookup also timed out; FQGate health reported `connected=false`
+  and normalized session `unknown`. A bounded local FQGate restart did not
+  restore connectivity. No normalized `LOGIN_REQUIRED` result was observed,
+  so QR intervention has not been requested. Both token files remain intact.
 - A guided Windows PowerShell enrollment window for the three hidden prompts.
 - Explicit Prompt/Vault source at Phase 6-A, Phase 5-C and Phase 5-A
   authenticated acceptance. Prompt remains the default. Vault failure does
@@ -70,22 +81,25 @@ before closure.
 | PowerShell parser on eight affected scripts                      | PASS                                                   |
 | Old-path consumer inventory                                      | PASS, 2 current consumers: service and external config |
 | Non-elevated migration denial                                    | PASS, `P6V-W3 ELEVATION_REQUIRED`, no service change   |
+| Real current-user vault metadata                                 | PASS, three `READY` entries with owner match           |
+| Real new-path human/admin browser matrix                         | PASS                                                   |
+| Real Vault Phase 6-A discovery/plan on new path                  | PASS, 14/14, zero drift/mutation                       |
+| Real Vault Phase 5-C machine matrix on new path                  | FAIL, 20/21; `P5C-R3 UPSTREAM_UNAVAILABLE`            |
+| Automatic rollback after failed verifier                        | PASS, old path active and service running              |
+| Ubuntu/Windows Actions on `9dba36a`                              | PASS, run `35845939786`                                |
 
-The initially observed format failure on the new goal prompt document from
-latest `main` was corrected and the gate rerun to PASS. The running service
-still uses `D:\code\research\fqgate-secrets\tunnel-token` and the old files
-remain intact. No Cloudflare mutation occurred.
+The running service still uses `D:\code\research\fqgate-secrets\tunnel-token`
+and the old files remain intact. No Cloudflare mutation occurred. The Actions
+run above has Windows job `107131992463` and Ubuntu job `107131992710`; it is
+not final closure CI.
 
 ## Outstanding checks
 
-- P6V-T4..T6: integrated real Vault and Prompt regression, no secret in output,
-  expired/revoked behavior.
-- P6V-W2: real Vault-backed 14/14 Phase 6-A and 21/21 Phase 5-C acceptance on
-  one clean commit.
-- P6V-W3/W4: elevated ProgramData ACL, LocalSystem read, safe rollback and
-  human/admin/machine remote behavior.
+- P6V-W2/W4: repeat real Vault-backed Phase 5-C after the local FQGate catalog
+  lookup recovers, then complete one full new-path human/admin/machine run on a
+  clean commit. The latest bounded failure is `P5C-R3 UPSTREAM_UNAVAILABLE`.
 - P6V-W5: zero old-path consumers and explicit finalization.
-- P6V-CI2: Ubuntu/Windows Actions on the exact final implementation commit.
+- P6V-CI2: Ubuntu/Windows Actions on the exact final closure commit.
 
 The partial, secret-free external evidence is
 `D:\code\research\fqgate-post-phase6a-credential-custody-evidence.json`.
