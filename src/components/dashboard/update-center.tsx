@@ -32,6 +32,9 @@ export interface UpdateCenterViewProps {
   readonly onPreview: () => void;
   readonly isPreviewing: boolean;
   readonly previewError: Error | null;
+  readonly onQualify: (planId: string) => void;
+  readonly isQualifying: boolean;
+  readonly qualifyError: Error | null;
   readonly onPrepareApply: (planId: string) => void;
   readonly isPreparingApply: boolean;
   readonly prepareError: Error | null;
@@ -56,6 +59,9 @@ export function UpdateCenterView({
   onPreview,
   isPreviewing,
   previewError,
+  onQualify,
+  isQualifying,
+  qualifyError,
   onPrepareApply,
   isPreparingApply,
   prepareError,
@@ -70,6 +76,9 @@ export function UpdateCenterView({
 }: UpdateCenterViewProps) {
   const [confirmedPlanId, setConfirmedPlanId] = useState<string | undefined>();
   const [finalConfirmedPlanId, setFinalConfirmedPlanId] = useState<string | undefined>();
+  const [qualificationConfirmedPlanId, setQualificationConfirmedPlanId] = useState<
+    string | undefined
+  >();
 
   if (isLoading && status === undefined) return <UpdateCenterSkeleton />;
   if (status === undefined && error !== null && error !== undefined) {
@@ -92,16 +101,26 @@ export function UpdateCenterView({
 
   const plan = status.plan;
   const planCanApply = plan?.action === "install" || plan?.action === "update";
+  const planCanQualify =
+    plan?.action === "blocked" &&
+    plan.compatibility.status === "supported_unvalidated" &&
+    plan.compatibility.supported &&
+    !plan.compatibility.validated;
   const confirmed = plan !== undefined && confirmedPlanId === plan.planId;
   const finalConfirmed = plan !== undefined && finalConfirmedPlanId === plan.planId;
+  const qualificationConfirmed = plan !== undefined && qualificationConfirmedPlanId === plan.planId;
   const confirmationMatches =
     plan !== undefined &&
     confirmation?.operationId === "updates.apply" &&
     confirmation.planId === plan.planId &&
     confirmation.candidateId === plan.candidateId;
   const errorMessage =
-    checkError?.message ?? previewError?.message ?? prepareError?.message ?? applyError?.message;
-  const localMaintenanceEnabled = contextReady && !isRemoteHuman && !isRemoteAdmin;
+    checkError?.message ??
+    previewError?.message ??
+    qualifyError?.message ??
+    prepareError?.message ??
+    applyError?.message;
+  const localMaintenanceEnabled = contextReady && requestContext === "local";
   const remoteAdminMaintenanceEnabled = contextReady && isRemoteAdmin;
 
   return (
@@ -129,7 +148,7 @@ export function UpdateCenterView({
             variant="secondary"
             className="w-full sm:w-auto"
             onClick={onRefreshStatus}
-            disabled={isLoading || isApplying}
+            disabled={isLoading || isApplying || isQualifying}
           >
             <RefreshCw size={16} aria-hidden="true" /> 刷新状态
           </Button>
@@ -144,7 +163,8 @@ export function UpdateCenterView({
               disabled={
                 (!localMaintenanceEnabled && !remoteAdminMaintenanceEnabled) ||
                 isChecking ||
-                isApplying
+                isApplying ||
+                isQualifying
               }
             >
               <Download size={16} aria-hidden="true" />
@@ -173,6 +193,11 @@ export function UpdateCenterView({
             {applyError !== null ? (
               <p className="mt-2 text-xs opacity-80">
                 请重新检查；旧的确认不会复用到新的候选版本。
+              </p>
+            ) : null}
+            {qualifyError !== null ? (
+              <p className="mt-2 text-xs opacity-80">
+                如事务摘要显示已回滚，原有版本已恢复；若计划过期，请重新检查并预览。
               </p>
             ) : null}
           </div>
@@ -305,7 +330,7 @@ export function UpdateCenterView({
                           onChange={(event) =>
                             setConfirmedPlanId(event.target.checked ? plan.planId : undefined)
                           }
-                          disabled={isApplying}
+                          disabled={isApplying || isQualifying}
                         />
                         <span>
                           我已确认候选版本、文件大小和 SHA-256，并允许桥接停止/重启
@@ -317,7 +342,11 @@ export function UpdateCenterView({
                           variant="primary"
                           onClick={() => onApply(plan.planId)}
                           disabled={
-                            !confirmed || isApplying || status.transaction.state === "applying"
+                            !confirmed ||
+                            isApplying ||
+                            isQualifying ||
+                            status.transaction.state === "applying" ||
+                            status.transaction.state === "qualifying"
                           }
                         >
                           <ShieldCheck size={16} aria-hidden="true" />
@@ -327,7 +356,7 @@ export function UpdateCenterView({
                           variant="secondary"
                           size="sm"
                           onClick={onPreview}
-                          disabled={isPreviewing || isApplying}
+                          disabled={isPreviewing || isApplying || isQualifying}
                         >
                           {isPreviewing ? "生成中…" : "重新生成预览"}
                         </Button>
@@ -340,7 +369,71 @@ export function UpdateCenterView({
                     </div>
                   )
                 ) : plan.action === "blocked" ? (
-                  <Alert tone="warning">当前候选被兼容性策略阻止，不能确认安装。</Alert>
+                  planCanQualify && requestContext === "local" ? (
+                    <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-950 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+                      <div>
+                        <p className="font-semibold">候选尚未通过兼容性验证</p>
+                        <p className="mt-1 leading-6">
+                          该版本在配置的支持范围内。资格验证会检查官方文件大小与
+                          SHA-256，临时启动候选并运行健康、OpenAPI
+                          和固定证券代码查询探针；失败时自动恢复当前受管版本。
+                        </p>
+                      </div>
+                      <label className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 accent-cyan-500"
+                          checked={qualificationConfirmed}
+                          onChange={(event) =>
+                            setQualificationConfirmedPlanId(
+                              event.target.checked ? plan.planId : undefined,
+                            )
+                          }
+                          disabled={isQualifying || isApplying}
+                        />
+                        <span>
+                          我确认现在验证并升级到此候选版本。FQGate
+                          会重启，登录状态可能需要重新扫码。
+                        </span>
+                      </label>
+                      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setQualificationConfirmedPlanId(undefined);
+                            onQualify(plan.planId);
+                          }}
+                          disabled={
+                            !qualificationConfirmed ||
+                            isQualifying ||
+                            isApplying ||
+                            status.transaction.state === "applying" ||
+                            status.transaction.state === "qualifying"
+                          }
+                        >
+                          <ShieldCheck size={16} aria-hidden="true" />
+                          {isQualifying ? "验证并升级中…" : "验证兼容并升级"}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={onPreview}
+                          disabled={isPreviewing || isApplying || isQualifying}
+                        >
+                          {isPreviewing ? "生成中…" : "重新生成预览"}
+                        </Button>
+                      </div>
+                      <p className="break-all text-xs opacity-80">
+                        仅本机 Dashboard 可执行；计划身份：{plan.planId}
+                      </p>
+                    </div>
+                  ) : (
+                    <Alert tone="warning">
+                      {planCanQualify
+                        ? "当前候选在支持范围内，但资格验证和升级仅能从本机 Dashboard 执行。"
+                        : "当前候选被兼容性策略阻止，不能确认安装。"}
+                    </Alert>
+                  )
                 ) : (
                   <Alert tone="success">当前受管文件与固定可信源候选一致，无需执行更新。</Alert>
                 )}
@@ -419,17 +512,21 @@ export function UpdateCenterView({
             ? "远程管理员页面不提供本机 CLI、Tunnel 或进程控制；仅可使用上方显式注册的维护操作。"
             : isRemoteHuman
               ? "远程页面不提供维护命令；请在 Bridge 所在 Windows 主机的本机回环环境执行维护。"
-              : "如需在 Dashboard 不可用时操作，可运行"}
-          {!isRemoteHuman && !isRemoteAdmin ? (
+              : requestContext === "local"
+                ? "如需在 Dashboard 不可用时操作，可运行"
+                : "当前上下文不提供本机维护命令。"}
+          {requestContext === "local" ? (
             <>
+              普通安装可用
               <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs dark:bg-white/10">
-                node .\dist\cli\main.js fqgate update --check
+                node .\dist\cli\main.js fqgate update --check --json
               </code>
-              或使用
+              检查；受支持但未验证的候选可用
               <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs dark:bg-white/10">
-                fqgate update --apply --dry-run
+                node .\dist\cli\main.js fqgate qualify --json --config
+                D:\code\research\fqgate-acceptance-config.json
               </code>
-              预览。GitHub 是当前唯一启用的固定可信源；本页面没有任意 URL 输入框。
+              执行同一资格探针与回滚流程。GitHub 是固定可信源；本页面没有任意 URL 输入框。
             </>
           ) : null}
         </p>
@@ -670,6 +767,7 @@ function transactionLabel(value: string): string {
   const labels: Record<string, string> = {
     idle: "空闲",
     applying: "执行中",
+    qualifying: "资格验证并升级中",
     succeeded: "成功",
     failed: "失败",
     rolled_back: "已回滚",
@@ -706,6 +804,8 @@ function contextLabel(value: BridgeRequestContext | undefined): string {
       return "远程人工（只读维护）";
     case "remote_admin":
       return "远程管理员（独立 Access / 强认证）";
+    case "remote_machine":
+      return "远程机器（只读市场数据）";
     default:
       return "未确认";
   }

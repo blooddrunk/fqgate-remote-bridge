@@ -7,7 +7,7 @@ import type { LogLevel } from "../shared/logger.js";
 import { parseVersion, parseVersionRange } from "../shared/semver.js";
 
 export const DEFAULT_MANIFEST_URL =
-  "https://raw.githubusercontent.com/zhuyifang/fqgate-releases/main/releases/stable.json";
+  "https://raw.githubusercontent.com/fqgate/FQGate-releases/main/releases/stable.json";
 export const DEFAULT_FQGATE_BASE_URL = "http://127.0.0.1:17281";
 export const DEFAULT_CLOUDFLARED_VERSION = "2026.9.0";
 export const DEFAULT_CLOUDFLARED_SERVICE_NAME = "FQGateRemoteBridgeCloudflared";
@@ -163,7 +163,9 @@ function validateManifestUrl(value: string): string {
     );
   }
 
-  const validPath = url.pathname === "/zhuyifang/fqgate-releases/main/releases/stable.json";
+  const validPath =
+    url.pathname === "/fqgate/FQGate-releases/main/releases/stable.json" ||
+    url.pathname === "/zhuyifang/fqgate-releases/main/releases/stable.json";
   if (
     url.protocol !== "https:" ||
     url.hostname !== "raw.githubusercontent.com" ||

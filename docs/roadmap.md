@@ -18,6 +18,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
   directory retirement passed on permanent Windows
 - Phase 6-B1: **CLOSED** — permanent-Windows canary cleanup, post-canary
   regressions and exact-commit Ubuntu/Windows CI passed on 2026-09-24
+- Post-Phase-5 FQGate 1.0.4 qualification: **ACTIVE** — local Dashboard entry,
+  official-source update, and permanent-Windows upgrade are in progress
 - Phase 6-B2/C+: planned only; separately authorized task required
 
 Current deployed topology remains:
@@ -371,6 +373,23 @@ Closure evidence is authoritative in:
 
 Do not treat this closed maintenance track as a Phase 6 blocker.
 
+## Active maintenance task — FQGate 1.0.4 local Dashboard qualification
+
+Status: **ACTIVE — 1.0.4 is an unvalidated candidate; permanent-Windows closure is pending**.
+
+The latest official stable manifest declares FQGate 1.0.4. This separate task
+updates the fixed repository source and adds one `updates.qualify` operation
+allowed exactly for `local`. It reuses `fqgate qualify`'s fixed operation probe,
+artifact identity, health/OpenAPI checks, persisted evidence, and rollback.
+Ordinary apply, CLI qualification, the remote-admin four-operation allowlist,
+remote-human behavior, and the remote-machine matrix remain unchanged.
+
+Design:
+`docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md`
+
+Task:
+`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`
+
 ---
 
 ## Phase 6-A — Cloudflare read-only discovery and deterministic plan
@@ -482,8 +501,8 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 ## Current development handoff
 
 Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A,
-credential custody and Phase 6-B1 are closed. Phase 6-B2/C remain planned and
-unauthorized.
+credential custody and Phase 6-B1 are closed. The separate 1.0.4 qualification
+task is active. Phase 6-B2/C remain planned and unauthorized.
 
 Most recently closed task:
 

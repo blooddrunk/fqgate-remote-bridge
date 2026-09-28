@@ -123,7 +123,10 @@ export function createApplicationServices(config: AppConfig): ApplicationService
     lifecycle,
     instrumentLookup,
     openApi,
-    update: new FqgateUpdateService({ lifecycle }),
+    update: new FqgateUpdateService({
+      lifecycle,
+      qualificationProbes: [instrumentLookup.createQualificationProbe()],
+    }),
     cloudflared,
   };
 }

@@ -151,6 +151,7 @@ describe("Phase 4 request context and operation exposure", () => {
       "openapi.machine",
       "updates.check",
       "updates.plan",
+      "updates.qualify",
       "updates.apply",
       "openapi.refresh",
     ]);
@@ -163,6 +164,7 @@ describe("Phase 4 request context and operation exposure", () => {
     for (const path of [
       "/api/v1/updates/check",
       "/api/v1/updates/plan",
+      "/api/v1/updates/qualify",
       "/api/v1/openapi/refresh",
     ]) {
       const response = await handler(
@@ -205,6 +207,7 @@ describe("Phase 4 request context and operation exposure", () => {
   it("continues to allow local maintenance operations through loopback", async () => {
     const updateStatus = makeUpdateStatus();
     const checkForUpdate = vi.fn(async () => updateStatus);
+    const qualifySupportedCandidate = vi.fn(async () => updateStatus);
     const refresh = vi.fn(async () => makeOpenApiSnapshot());
     const handler = createBridgeHttpHandler({
       service: createService({
@@ -212,6 +215,7 @@ describe("Phase 4 request context and operation exposure", () => {
           getStatus: async () => updateStatus,
           checkForUpdate,
           planInstallOrUpdate: async () => updateStatus,
+          qualifySupportedCandidate,
           applyConfirmed: async () => updateStatus,
         },
         openApiService: {
@@ -232,6 +236,16 @@ describe("Phase 4 request context and operation exposure", () => {
     );
     expect(updateResponse.status).toBe(200);
     expect(checkForUpdate).toHaveBeenCalledOnce();
+
+    const qualifyResponse = await handler(
+      new Request("http://127.0.0.1:17282/api/v1/updates/qualify", {
+        method: "POST",
+        headers: { host: "127.0.0.1:17282", "content-type": "application/json" },
+        body: JSON.stringify({ planId: "plan-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }),
+      }),
+    );
+    expect(qualifyResponse.status).toBe(200);
+    expect(qualifySupportedCandidate).toHaveBeenCalledWith("plan-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 
     const refreshResponse = await handler(
       new Request("http://127.0.0.1:17282/api/v1/openapi/refresh", {

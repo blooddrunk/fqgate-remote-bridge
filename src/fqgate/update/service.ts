@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 import type { CompatibilityEvaluation } from "../compatibility/policy.js";
+import type { CandidateQualificationProbe } from "../compatibility/evidence.js";
 import type { FqgateStatus, ReleasePlan } from "../install/lifecycle.js";
 import { BridgeError, ERROR_CODES, toBridgeError } from "../../shared/errors.js";
 import { fingerprintJson } from "../openapi/catalog.js";
 
 export type ReleaseSourceId = "github";
-export type UpdateTransactionState = "idle" | "applying" | "succeeded" | "failed" | "rolled_back";
+export type UpdateTransactionState =
+  "idle" | "applying" | "qualifying" | "succeeded" | "failed" | "rolled_back";
 export type UpdateCheckResult = "no_update" | "available" | "blocked" | "failed";
 
 export interface UpdatePlanView {
@@ -74,15 +76,19 @@ interface StoredPlan {
 
 export interface FqgateUpdateServiceDependencies {
   readonly lifecycle: UpdateLifecyclePort;
+  readonly qualificationProbes?: readonly CandidateQualificationProbe[];
   readonly now?: () => string;
   readonly idFactory?: () => string;
 }
 
 export interface UpdateLifecyclePort {
-  plan(): Promise<ReleasePlan>;
+  plan(options?: { readonly allowSupportedUnvalidated?: boolean }): Promise<ReleasePlan>;
   installPlan(
     plan: ReleasePlan,
-    options?: { readonly dryRun?: boolean },
+    options?: {
+      readonly dryRun?: boolean;
+      readonly qualificationProbes?: readonly CandidateQualificationProbe[];
+    },
   ): Promise<{
     readonly plan: ReleasePlan;
     readonly action: "installed" | "updated" | "noop" | "planned";
@@ -95,10 +101,12 @@ export interface FqgateUpdateServicePort {
   checkForUpdate(): Promise<UpdateStatusView>;
   planInstallOrUpdate(): Promise<UpdateStatusView>;
   applyConfirmed(planId: string): Promise<UpdateStatusView>;
+  qualifySupportedCandidate(planId: string): Promise<UpdateStatusView>;
 }
 
 export class FqgateUpdateService implements FqgateUpdateServicePort {
   private readonly lifecycle: UpdateLifecyclePort;
+  private readonly qualificationProbes: readonly CandidateQualificationProbe[];
   private readonly now: () => string;
   private readonly idFactory: () => string;
   private currentPlan: StoredPlan | undefined;
@@ -109,6 +117,7 @@ export class FqgateUpdateService implements FqgateUpdateServicePort {
 
   constructor(dependencies: FqgateUpdateServiceDependencies) {
     this.lifecycle = dependencies.lifecycle;
+    this.qualificationProbes = dependencies.qualificationProbes ?? [];
     this.now = dependencies.now ?? (() => new Date().toISOString());
     this.idFactory = dependencies.idFactory ?? randomUUID;
   }
@@ -118,7 +127,7 @@ export class FqgateUpdateService implements FqgateUpdateServicePort {
     return {
       releaseSource: {
         id: "github",
-        label: "GitHub · zhuyifang/fqgate-releases（固定可信源）",
+        label: "GitHub · fqgate/FQGate-releases（固定可信源）",
       },
       lifecycle: lifecycle.lifecycle,
       installedVersion: lifecycle.installed?.version ?? null,
@@ -231,6 +240,120 @@ export class FqgateUpdateService implements FqgateUpdateServicePort {
     }
   }
 
+  async qualifySupportedCandidate(planId: string): Promise<UpdateStatusView> {
+    assertPlanId(planId);
+    if (this.mutationActive) {
+      throw new BridgeError(
+        ERROR_CODES.UPDATE_IN_PROGRESS,
+        "Another FQGate update transaction is already in progress",
+      );
+    }
+    if (this.qualificationProbes.length === 0) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        "The bounded FQGate candidate qualification probe is not configured",
+      );
+    }
+
+    const stored = this.currentPlan;
+    if (
+      stored === undefined ||
+      stored.view.planId !== planId ||
+      stored.raw.action !== "blocked" ||
+      !stored.raw.compatibility.supported ||
+      stored.raw.compatibility.validated
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.UPDATE_CONFIRMATION_STALE,
+        "The selected FQGate candidate is stale or is not eligible for qualification",
+      );
+    }
+
+    this.mutationActive = true;
+    const transactionId = this.idFactory();
+    const startedAt = this.now();
+    this.transaction = {
+      state: "qualifying",
+      transactionId,
+      startedAt,
+      targetVersion: stored.view.targetVersion,
+    };
+
+    try {
+      const fresh = await this.lifecycle.plan({ allowSupportedUnvalidated: true });
+      const freshView = toPlanView(fresh, this.now());
+      if (
+        freshView.candidateId !== stored.view.candidateId ||
+        !sameInstalledArtifact(stored.raw, fresh) ||
+        !fresh.compatibility.supported ||
+        fresh.compatibility.validated ||
+        (fresh.action !== "install" && fresh.action !== "update")
+      ) {
+        throw new BridgeError(
+          ERROR_CODES.UPDATE_CONFIRMATION_STALE,
+          "The FQGate release or installed baseline changed after preview; check for updates again",
+        );
+      }
+
+      const result = await this.lifecycle.installPlan(fresh, {
+        qualificationProbes: this.qualificationProbes,
+      });
+      if (result.action !== "installed" && result.action !== "updated") {
+        throw new BridgeError(
+          ERROR_CODES.ACTIVATION_FAILED,
+          "FQGate candidate qualification did not activate the selected release",
+        );
+      }
+
+      const completedAt = this.now();
+      this.transaction = {
+        state: "succeeded",
+        transactionId,
+        startedAt,
+        completedAt,
+        targetVersion: stored.view.targetVersion,
+      };
+      this.lastResult = {
+        completedAt,
+        outcome: result.action,
+        targetVersion: stored.view.targetVersion,
+      };
+      if (this.currentPlan?.view.planId === planId) this.currentPlan = undefined;
+      return this.getStatus();
+    } catch (error) {
+      const bridgeError = toBridgeError(
+        error,
+        ERROR_CODES.ACTIVATION_FAILED,
+        "FQGate candidate qualification failed",
+      );
+      if (bridgeError.code === ERROR_CODES.UPDATE_CONFIRMATION_STALE) {
+        this.transaction = { state: "idle" };
+        throw bridgeError;
+      }
+      const rolledBack = bridgeError.details?.rollbackRestored === true;
+      const completedAt = this.now();
+      this.transaction = {
+        state: rolledBack ? "rolled_back" : "failed",
+        transactionId,
+        startedAt,
+        completedAt,
+        targetVersion: stored.view.targetVersion,
+        errorCode: bridgeError.code,
+        message: safeMessage(bridgeError.message),
+      };
+      this.lastResult = {
+        completedAt,
+        outcome: rolledBack ? "rolled_back" : "failed",
+        targetVersion: stored.view.targetVersion,
+        errorCode: bridgeError.code,
+        message: safeMessage(bridgeError.message),
+      };
+      throw bridgeError;
+    } finally {
+      this.mutationActive = false;
+    }
+  }
+
   private async createPlan(kind: "check" | "preview"): Promise<UpdateStatusView> {
     if (this.mutationActive) {
       throw new BridgeError(
@@ -312,6 +435,20 @@ function assertPlanId(value: string): void {
   if (!/^plan-[a-f0-9]{32}$/.test(value)) {
     throw new BridgeError(ERROR_CODES.REQUEST_INVALID, "planId is invalid");
   }
+}
+
+function sameInstalledArtifact(left: ReleasePlan, right: ReleasePlan): boolean {
+  const previous = left.current;
+  const current = right.current;
+  if (previous === undefined || current === undefined) {
+    return previous === current;
+  }
+  return (
+    previous.path === current.path &&
+    previous.size === current.size &&
+    previous.sha256 === current.sha256 &&
+    previous.version === current.version
+  );
 }
 
 function safeMessage(value: string): string {

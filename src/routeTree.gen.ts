@@ -23,6 +23,7 @@ import { Route as ApiV1OpenapiRefreshRouteImport } from './routes/api/v1/openapi
 import { Route as ApiV1UpdatesApplyRouteImport } from './routes/api/v1/updates/apply'
 import { Route as ApiV1UpdatesCheckRouteImport } from './routes/api/v1/updates/check'
 import { Route as ApiV1UpdatesPlanRouteImport } from './routes/api/v1/updates/plan'
+import { Route as ApiV1UpdatesQualifyRouteImport } from './routes/api/v1/updates/qualify'
 import { Route as ApiV1UpdatesStatusRouteImport } from './routes/api/v1/updates/status'
 import { Route as ApiV1SessionQrBeginRouteImport } from './routes/api/v1/session/qr/begin'
 import { Route as ApiV1SessionQrPollRouteImport } from './routes/api/v1/session/qr/poll'
@@ -97,6 +98,11 @@ const ApiV1UpdatesPlanRoute = ApiV1UpdatesPlanRouteImport.update({
   path: '/api/v1/updates/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1UpdatesQualifyRoute = ApiV1UpdatesQualifyRouteImport.update({
+  id: '/api/v1/updates/qualify',
+  path: '/api/v1/updates/qualify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1UpdatesStatusRoute = ApiV1UpdatesStatusRouteImport.update({
   id: '/api/v1/updates/status',
   path: '/api/v1/updates/status',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
   '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
   '/api/v1/updates/plan': typeof ApiV1UpdatesPlanRoute
+  '/api/v1/updates/qualify': typeof ApiV1UpdatesQualifyRoute
   '/api/v1/updates/status': typeof ApiV1UpdatesStatusRoute
   '/api/v1/session/qr/begin': typeof ApiV1SessionQrBeginRoute
   '/api/v1/session/qr/poll': typeof ApiV1SessionQrPollRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
   '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
   '/api/v1/updates/plan': typeof ApiV1UpdatesPlanRoute
+  '/api/v1/updates/qualify': typeof ApiV1UpdatesQualifyRoute
   '/api/v1/updates/status': typeof ApiV1UpdatesStatusRoute
   '/api/v1/session/qr/begin': typeof ApiV1SessionQrBeginRoute
   '/api/v1/session/qr/poll': typeof ApiV1SessionQrPollRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/api/v1/updates/apply': typeof ApiV1UpdatesApplyRoute
   '/api/v1/updates/check': typeof ApiV1UpdatesCheckRoute
   '/api/v1/updates/plan': typeof ApiV1UpdatesPlanRoute
+  '/api/v1/updates/qualify': typeof ApiV1UpdatesQualifyRoute
   '/api/v1/updates/status': typeof ApiV1UpdatesStatusRoute
   '/api/v1/session/qr/begin': typeof ApiV1SessionQrBeginRoute
   '/api/v1/session/qr/poll': typeof ApiV1SessionQrPollRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/api/v1/updates/apply'
     | '/api/v1/updates/check'
     | '/api/v1/updates/plan'
+    | '/api/v1/updates/qualify'
     | '/api/v1/updates/status'
     | '/api/v1/session/qr/begin'
     | '/api/v1/session/qr/poll'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/api/v1/updates/apply'
     | '/api/v1/updates/check'
     | '/api/v1/updates/plan'
+    | '/api/v1/updates/qualify'
     | '/api/v1/updates/status'
     | '/api/v1/session/qr/begin'
     | '/api/v1/session/qr/poll'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/api/v1/updates/apply'
     | '/api/v1/updates/check'
     | '/api/v1/updates/plan'
+    | '/api/v1/updates/qualify'
     | '/api/v1/updates/status'
     | '/api/v1/session/qr/begin'
     | '/api/v1/session/qr/poll'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   ApiV1UpdatesApplyRoute: typeof ApiV1UpdatesApplyRoute
   ApiV1UpdatesCheckRoute: typeof ApiV1UpdatesCheckRoute
   ApiV1UpdatesPlanRoute: typeof ApiV1UpdatesPlanRoute
+  ApiV1UpdatesQualifyRoute: typeof ApiV1UpdatesQualifyRoute
   ApiV1UpdatesStatusRoute: typeof ApiV1UpdatesStatusRoute
   ApiV1SessionQrBeginRoute: typeof ApiV1SessionQrBeginRoute
   ApiV1SessionQrPollRoute: typeof ApiV1SessionQrPollRoute
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1UpdatesPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/updates/qualify': {
+      id: '/api/v1/updates/qualify'
+      path: '/api/v1/updates/qualify'
+      fullPath: '/api/v1/updates/qualify'
+      preLoaderRoute: typeof ApiV1UpdatesQualifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/updates/status': {
       id: '/api/v1/updates/status'
       path: '/api/v1/updates/status'
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1UpdatesApplyRoute: ApiV1UpdatesApplyRoute,
   ApiV1UpdatesCheckRoute: ApiV1UpdatesCheckRoute,
   ApiV1UpdatesPlanRoute: ApiV1UpdatesPlanRoute,
+  ApiV1UpdatesQualifyRoute: ApiV1UpdatesQualifyRoute,
   ApiV1UpdatesStatusRoute: ApiV1UpdatesStatusRoute,
   ApiV1SessionQrBeginRoute: ApiV1SessionQrBeginRoute,
   ApiV1SessionQrPollRoute: ApiV1SessionQrPollRoute,

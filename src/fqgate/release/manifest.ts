@@ -2,8 +2,7 @@ import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
 import { parseVersion } from "../../shared/semver.js";
 import type { FqgatePackage, FqgateRelease } from "./types.js";
 
-export const DEFAULT_ASSET_BASE_URL =
-  "https://github.com/zhuyifang/fqgate-releases/releases/download";
+export const DEFAULT_ASSET_BASE_URL = "https://github.com/fqgate/FQGate-releases/releases/download";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -53,7 +52,7 @@ function buildAssetUrl(version: string, fileName: string, assetBaseUrl: string):
   if (
     base.protocol !== "https:" ||
     base.hostname !== "github.com" ||
-    base.pathname !== "/zhuyifang/fqgate-releases/releases/download"
+    base.pathname !== "/fqgate/FQGate-releases/releases/download"
   ) {
     throw new BridgeError(
       ERROR_CODES.MANIFEST_INVALID,

@@ -190,6 +190,10 @@ async function dispatchRequest(
     case "updates.plan":
       rejectEmptyBody(await readJsonBody(request, operation.maxBodyBytes, "update plan"));
       return service.planInstallOrUpdate();
+    case "updates.qualify": {
+      const body = await readJsonBody(request, operation.maxBodyBytes, "update qualification");
+      return service.qualifyUpdate(readPlanId(body));
+    }
     case "updates.apply": {
       const body = await readJsonBody(request, operation.maxBodyBytes, "update apply");
       const applyRequest = readUpdateApplyRequest(body, requestContext);
@@ -253,6 +257,7 @@ async function readJsonBody(
     | "poll"
     | "update check"
     | "update plan"
+    | "update qualification"
     | "update apply"
     | "OpenAPI refresh"
     | "instrument lookup",

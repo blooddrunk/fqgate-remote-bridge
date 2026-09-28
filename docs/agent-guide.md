@@ -12,6 +12,8 @@ task package 和安全文档为准。
 - Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
 - Post-Phase-5 FQGate 兼容维护：**CLOSED**；1.0.2 永久 Windows、remote-machine
   与最终 commit CI 均通过。
+- Post-Phase-5 FQGate 1.0.4 更新：**ACTIVE**；本机 Dashboard 资格入口已实现，
+  永久 Windows 升级和 closure 仍待完成。独立于已关闭的 1.0.2 任务。
 - Phase 6-A：**CLOSED**；Cloudflare GET-only discovery/plan 在 `9c6babb` 上通过
   永久 Windows、真实 Cloudflare 和 exact-commit Ubuntu/Windows CI。
 - Post-Phase-6-A 凭据托管与旧 secrets 目录退役：**CLOSED**；三项 Vault 凭据、
@@ -197,6 +199,15 @@ required contract、health 失败或激活失败都必须自动回滚。
 
 该维护任务已按交接中的永久 Windows 外部 evidence、真实 machine service-token
 矩阵、精确最终 commit 和 Ubuntu/Windows CI run ID 关闭。
+
+## 当前 FQGate 1.0.4 更新任务
+
+官方 stable manifest 已迁移到 `fqgate/FQGate-releases`。1.0.4 仍是未验证候选，
+不预先写入 `validatedVersions`。本机 `/updates` 的 `updates.qualify` 入口只对
+`local` 开放，并复用 `fqgate qualify` 固定探针、现有完整性/health/OpenAPI 检查
+和自动回滚；CLI 保留。remote-human、remote-admin 四项维护 allowlist 和
+remote-machine 权限矩阵均不变。永久 Windows 步骤与验收要求见
+`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`。
 
 ## Phase 6-A 交接
 

@@ -161,6 +161,10 @@ export class BridgeService {
     return this.requireUpdateService().planInstallOrUpdate();
   }
 
+  async qualifyUpdate(planId: string): Promise<BridgeUpdateStatusResponse> {
+    return this.requireUpdateService().qualifySupportedCandidate(planId);
+  }
+
   async applyUpdate(planId: string): Promise<BridgeUpdateStatusResponse> {
     return this.requireUpdateService().applyConfirmed(planId);
   }

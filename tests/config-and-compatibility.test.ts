@@ -21,8 +21,25 @@ describe("configuration", () => {
 
     expect(config.fqgateBaseUrl).toBe(DEFAULT_FQGATE_BASE_URL);
     expect(config.installDirectory).toBe("C:\\Users\\tester\\AppData\\Local\\FQGateRemoteBridge");
-    expect(config.manifestUrl).toContain("raw.githubusercontent.com/zhuyifang/fqgate-releases");
+    expect(config.manifestUrl).toBe(
+      "https://raw.githubusercontent.com/fqgate/FQGate-releases/main/releases/stable.json",
+    );
     expect(config.activation.healthTimeoutMs).toBe(120_000);
+  });
+
+  it("accepts only the exact previous official manifest URL as a config migration alias", () => {
+    const config = parseConfig({
+      manifestUrl:
+        "https://raw.githubusercontent.com/zhuyifang/fqgate-releases/main/releases/stable.json",
+    });
+    expect(config.manifestUrl).toBe(
+      "https://raw.githubusercontent.com/zhuyifang/fqgate-releases/main/releases/stable.json",
+    );
+    expect(() =>
+      parseConfig({
+        manifestUrl: "https://raw.githubusercontent.com/other/fqgate/main/stable.json",
+      }),
+    ).toThrowError(BridgeError);
   });
 
   it.each([

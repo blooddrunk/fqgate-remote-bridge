@@ -23,6 +23,9 @@ function UpdatesPage() {
       onPreview={() => update.preview.mutate()}
       isPreviewing={update.preview.isPending}
       previewError={update.preview.error}
+      onQualify={(planId) => update.qualify.mutate(planId)}
+      isQualifying={update.qualify.isPending}
+      qualifyError={update.qualify.error}
       onPrepareApply={(planId) => update.prepareApply.mutate(planId)}
       isPreparingApply={update.prepareApply.isPending}
       prepareError={update.prepareApply.error}

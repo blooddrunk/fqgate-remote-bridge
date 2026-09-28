@@ -70,7 +70,10 @@ function assertOfficialManifestUrl(value: string): void {
   if (
     url.protocol !== "https:" ||
     url.hostname !== "raw.githubusercontent.com" ||
-    url.pathname !== "/zhuyifang/fqgate-releases/main/releases/stable.json" ||
+    ![
+      "/fqgate/FQGate-releases/main/releases/stable.json",
+      "/zhuyifang/fqgate-releases/main/releases/stable.json",
+    ].includes(url.pathname) ||
     url.username ||
     url.password ||
     url.search ||

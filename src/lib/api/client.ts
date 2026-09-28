@@ -75,6 +75,17 @@ export async function planInstallOrUpdate(): Promise<BridgeUpdateStatusResponse>
   return postEmpty<BridgeUpdateStatusResponse>("/api/v1/updates/plan");
 }
 
+export async function qualifyUpdate(planId: string): Promise<BridgeUpdateStatusResponse> {
+  return fetchJson<BridgeUpdateStatusResponse>("/api/v1/updates/qualify", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...BRIDGE_ADMIN_INTENT_HEADERS,
+    },
+    body: JSON.stringify({ planId }),
+  });
+}
+
 export async function prepareUpdateApply(planId: string): Promise<UpdateApplyConfirmationResponse> {
   return fetchJson<UpdateApplyConfirmationResponse>("/api/v1/updates/apply", {
     method: "POST",

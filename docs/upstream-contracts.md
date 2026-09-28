@@ -4,16 +4,16 @@ This document records upstream behavior that the project may rely on. It is a co
 
 Baseline date: **2026-09-17**
 
-Post-Phase-5 maintenance observation: **2026-09-21**. The historical Phase 5-B
-contract remains recorded below; the active maintenance track separately qualifies
-the official stable 1.0.2 candidate before making it active.
+Historical 1.0.2 maintenance observation: **2026-09-21**. Current stable release
+observation: **2026-09-28**. The Phase 5-B and 1.0.2 contracts below remain
+historical; the separate 1.0.4 maintenance task is active.
 
 ## FQGate release source
 
 Official repository:
 
 ```text
-https://github.com/zhuyifang/fqgate-releases
+https://github.com/fqgate/FQGate-releases
 ```
 
 Observed stable version at the current baseline:
@@ -22,7 +22,20 @@ Observed stable version at the current baseline:
 1.0.0
 ```
 
-The current official stable manifest observed for the maintenance track is:
+The current official stable manifest observed on 2026-09-28 is:
+
+```text
+version: 1.0.4
+publishedAt: 2026-09-24T18:52:55Z
+Windows x86_64: FQGate-1.0.4-windows-x64-UNSIGNED.exe
+size: 23201792
+sha256: 6816b8e9225db3ffee464c8f61173eea02ae66663ba2b137e9aa39c4d6bc9290
+```
+
+This is release identity evidence, not compatibility approval. The active
+1.0.4 task must qualify the artifact before activation.
+
+The previously observed 1.0.2 package was:
 
 ```text
 version: 1.0.2
@@ -33,7 +46,7 @@ sha256: 024bf1a395977856e70d7b03a3d6616620f82dfbf4872ca710a70b138ae47bc2
 ```
 
 These are release identity facts from the official stable manifest, not a compatibility
-approval. The active candidate still requires the bounded Windows qualification transaction.
+approval. Its qualification task closed on 2026-09-21.
 
 The official stable manifest is:
 
@@ -57,8 +70,12 @@ The Windows package is selected by platform/architecture from the manifest.
 The manifest does not currently contain an asset URL field. The release adapter therefore represents the observed official layout as:
 
 ```text
-https://github.com/zhuyifang/fqgate-releases/releases/download/fqgate-v<version>/<fileName>
+https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v<version>/<fileName>
 ```
+
+The former exact `zhuyifang/fqgate-releases` manifest path is accepted only as a
+fixed compatibility alias for existing external configuration files. New
+defaults and generated asset URLs use `fqgate/FQGate-releases`.
 
 For the current Windows x64 package, the baseline previously recorded exact size and SHA-256 in repository history/tests. Treat these values as version-specific observations rather than permanent constants.
 
@@ -421,9 +438,9 @@ lookup/snapshot read semantics. Full evidence and bounded commands are in the
 Phase 5-B handoff/Windows acceptance documents. No raw schema or market sample
 is retained.
 
-## Post-Phase-5 operation-scoped qualification — ACTIVE
+## Post-Phase-5 operation-scoped qualification for FQGate 1.0.2 — CLOSED
 
-The active maintenance task is
+The closed maintenance task was
 `docs/tasks/post-phase-5-fqgate-release-compatibility-and-1-0-2-refresh.md`.
 Its reviewed lookup evidence is:
 
@@ -442,4 +459,18 @@ not inherit the historical 1.0.1 compatibility bridge.
 
 Qualification evidence contains no raw OpenAPI, market payload, credential, Access metadata,
 or secret. The permanent-Windows procedure and its bounded external evidence path are in
-`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`.
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; closure evidence is
+in `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
+
+## FQGate 1.0.4 qualification — ACTIVE
+
+The official manifest identifies the 1.0.4 Windows x64 candidate above. It must
+remain unvalidated until the existing lifecycle qualification transaction proves
+artifact integrity, required runtime contracts, the reviewed lookup fingerprint,
+and the exact-code semantic probe. The active task adds only a local Dashboard
+entry that invokes this same fixed-probe transaction. It does not add a Bridge
+market operation or change any remote operation matrix.
+
+Design and task:
+`docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
+`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.

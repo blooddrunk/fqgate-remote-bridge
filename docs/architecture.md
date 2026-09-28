@@ -319,6 +319,8 @@ Phase 3 adds two operator surfaces without changing the technology shape:
 The update center has explicit status, check, plan, and apply operations. A
 plan identity includes the fixed source, candidate version, file name, size,
 SHA-256, and installed candidate context; apply rejects stale identities. The
+active FQGate 1.0.4 maintenance task adds a distinct local-only qualify action
+for a supported-but-unvalidated candidate. It uses the same lifecycle transaction.
 API reference page has separate Upstream FQGate, Bridge API, and
 Compatibility/Changes views and never offers raw upstream execution.
 
@@ -503,7 +505,7 @@ Redirects are disabled for market and contract fetches.
 
 The historical Phase 5-B closure checked the managed running version (exact live-validated
 1.0.1 and configured compatibility), then the bounded runtime OpenAPI operation plus its
-transitive schema-reference fingerprint. The active maintenance track preserves that
+transitive schema-reference fingerprint. The closed 1.0.2 maintenance task preserves that
 historical 1.0.1 state through a narrowly scoped migration bridge, while new candidates
 must persist artifact-bound operation evidence from `fqgate qualify`. Each lookup now
 requires supported runtime state, its own stored operation evidence, a current approved
@@ -542,7 +544,7 @@ the approved lookup, old-operation and page/static/raw denial, human/admin
 isolation, Bridge-only Tunnel ingress, and both loopback listeners through the
 real machine Access application. Phase 5 adds no second market operation.
 
-## Post-Phase-5 FQGate compatibility maintenance — active
+## Post-Phase-5 FQGate 1.0.2 maintenance — closed
 
 The official stable 1.0.2 Windows x64 package is accepted only through the existing
 fixed-source lifecycle transaction. The reviewed lookup ledger currently approves the
@@ -554,5 +556,23 @@ contract/health probe is denied and rolled back. Runtime OpenAPI remains descrip
 the Bridge registry remains the only authorization source.
 
 The repeatable Windows command and external evidence contract are documented in
-`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; the task remains
-active until permanent Windows, remote-machine, and final-commit CI evidence is recorded.
+`docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; permanent
+Windows, remote-machine, and final-commit CI evidence is closed in
+`docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
+
+## FQGate 1.0.4 qualification — active
+
+The current stable release is a supported-but-unvalidated candidate. The local
+Dashboard exposes an explicit qualify-and-update action only for the current
+blocked preview. The service refreshes the manifest, binds it to the exact
+candidate and installed baseline, then passes the fixed qualification probe to
+the existing lifecycle transaction. The lifecycle keeps its integrity,
+candidate-version, health, OpenAPI, semantic-probe, artifact-evidence, and
+rollback behavior.
+
+`updates.qualify` is local-only. The remote-admin allowlist remains the existing
+four operations, remote-human permissions remain unchanged, and
+remote-machine still receives only the lookup and machine OpenAPI operations.
+The design and active task are recorded in
+`docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
+`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.

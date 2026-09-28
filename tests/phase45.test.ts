@@ -141,7 +141,9 @@ describe("Phase 4.5A request contexts and orthogonal operation policy", () => {
         listBridgeOperations()
           .filter(
             (operation) =>
-              operation.id !== "market.instruments.lookup" && operation.id !== "openapi.machine",
+              operation.id !== "market.instruments.lookup" &&
+              operation.id !== "openapi.machine" &&
+              operation.id !== "updates.qualify",
           )
           .map((operation) => operation.id),
       ),
@@ -239,6 +241,7 @@ describe("Phase 4.5A request contexts and orthogonal operation policy", () => {
           getStatus: async () => status,
           checkForUpdate,
           planInstallOrUpdate,
+          qualifySupportedCandidate: async () => status,
           applyConfirmed,
         },
         openApiService: {

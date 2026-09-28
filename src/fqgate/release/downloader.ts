@@ -194,7 +194,7 @@ function assertOfficialAssetUrl(value: string, fileName: string): void {
   if (
     url.protocol !== "https:" ||
     url.hostname !== "github.com" ||
-    !url.pathname.startsWith("/zhuyifang/fqgate-releases/releases/download/fqgate-v") ||
+    !url.pathname.startsWith("/fqgate/FQGate-releases/releases/download/fqgate-v") ||
     !url.pathname.endsWith(expectedSuffix) ||
     url.username ||
     url.password ||

@@ -14,6 +14,7 @@ export type BridgeOperationId =
   | "updates.status"
   | "updates.check"
   | "updates.plan"
+  | "updates.qualify"
   | "updates.apply"
   | "openapi.catalog"
   | "openapi.refresh";
@@ -215,6 +216,20 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     documentationVisible: true,
   },
   {
+    id: "updates.qualify",
+    method: "POST",
+    path: "/api/v1/updates/qualify",
+    classification: "local_admin",
+    intent: "local_admin",
+    allowedContexts: ["local"],
+    requiresConfirmation: false,
+    timeoutMs: 10 * 60_000,
+    maxBodyBytes: 1_024,
+    sensitivity: "none",
+    requiredCompatibility: "none",
+    documentationVisible: true,
+  },
+  {
     id: "updates.apply",
     method: "POST",
     path: "/api/v1/updates/apply",
@@ -407,6 +422,17 @@ export function assertOperationRegistryInvariants(): void {
       throw new BridgeError(
         ERROR_CODES.BRIDGE_NOT_READY,
         `Unexpected remote administrator maintenance operation: ${key}`,
+      );
+    }
+    if (
+      operation.id === "updates.qualify" &&
+      (operation.allowedContexts.join(",") !== "local" ||
+        operation.intent !== "local_admin" ||
+        operation.requiresConfirmation)
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.BRIDGE_NOT_READY,
+        `Candidate qualification must remain local-only: ${key}`,
       );
     }
     if (

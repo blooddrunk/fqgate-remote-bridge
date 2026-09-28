@@ -43,6 +43,64 @@ test.describe("Phase 3 local update center", () => {
     await expect(page.getByText("升级完成")).toBeVisible();
     expect(checkCalls).toBe(2);
   });
+
+  test("qualifies an in-range candidate only after explicit local confirmation", async ({
+    page,
+  }) => {
+    let statusCalls = 0;
+    let qualificationRequest: { readonly url: string; readonly body: unknown } | undefined;
+    const baseline = updateStatusPayload({ version: "1.0.2" });
+    const blocked = blockedCandidateStatusPayload();
+    const succeeded = updateStatusPayload({ succeeded: true, version: "1.0.4" });
+
+    await page.route("**/api/v1/capabilities", async (route) => {
+      await json(route, { requestContext: "local" });
+    });
+    await page.route("**/api/v1/updates/status", async (route) => {
+      statusCalls += 1;
+      await json(route, statusCalls === 1 ? baseline : succeeded);
+    });
+    await page.route("**/api/v1/updates/check", async (route) => {
+      await json(route, blocked);
+    });
+    await page.route("**/api/v1/updates/qualify", async (route) => {
+      qualificationRequest = {
+        url: route.request().url(),
+        body: route.request().postDataJSON(),
+      };
+      await json(route, succeeded);
+    });
+
+    await page.goto("/updates");
+    await expect(page.getByRole("button", { name: "验证兼容并升级" })).toHaveCount(0);
+    await page.getByRole("button", { name: "检查更新" }).click();
+    await expect(page.getByText("FQGate 1.0.4", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "验证兼容并升级" })).toBeDisabled();
+    await page.getByRole("checkbox").check();
+    await page.getByRole("button", { name: "验证兼容并升级" }).click();
+    await expect(page.getByText("升级完成")).toBeVisible();
+    expect(qualificationRequest).toEqual({
+      url: expect.stringContaining("/api/v1/updates/qualify"),
+      body: { planId: "plan-cccccccccccccccccccccccccccccccc" },
+    });
+  });
+
+  test("does not expose qualification to the remote-admin Dashboard", async ({ page }) => {
+    await page.route("**/api/v1/capabilities", async (route) => {
+      await json(route, { requestContext: "remote_admin" });
+    });
+    await page.route("**/api/v1/updates/status", async (route) => {
+      await json(route, updateStatusPayload());
+    });
+    await page.route("**/api/v1/updates/check", async (route) => {
+      await json(route, blockedCandidateStatusPayload());
+    });
+
+    await page.goto("/updates");
+    await page.getByRole("button", { name: "管理员检查更新" }).click();
+    await expect(page.getByText("资格验证和升级仅能从本机 Dashboard 执行。")).toBeVisible();
+    await expect(page.getByRole("button", { name: "验证兼容并升级" })).toHaveCount(0);
+  });
 });
 
 test.describe("Phase 3 runtime API reference", () => {
@@ -85,14 +143,18 @@ function updateStatusPayload(
     readonly withPlan?: boolean;
     readonly succeeded?: boolean;
     readonly planId?: string;
+    readonly version?: string;
+    readonly targetVersion?: string;
   } = {},
 ) {
+  const version = options.version ?? (options.succeeded ? "1.0.1" : "1.0.0");
+  const targetVersion = options.targetVersion ?? (options.succeeded ? version : "1.0.1");
   return {
-    releaseSource: { id: "github", label: "GitHub · zhuyifang/fqgate-releases（固定可信源）" },
+    releaseSource: { id: "github", label: "GitHub · fqgate/FQGate-releases（固定可信源）" },
     lifecycle: "ready",
-    installedVersion: options.succeeded ? "1.0.1" : "1.0.0",
+    installedVersion: version,
     compatibility: {
-      version: options.succeeded ? "1.0.1" : "1.0.0",
+      version,
       status: "validated",
       supported: true,
       validated: true,
@@ -105,19 +167,19 @@ function updateStatusPayload(
             candidateId: "candidate-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
             createdAt: "2026-09-17T00:00:00.000Z",
             source: "github",
-            installedVersion: "1.0.0",
-            targetVersion: "1.0.1",
+            installedVersion: version,
+            targetVersion,
             action: "update",
             reason: "selected release differs",
             compatibility: {
-              version: "1.0.1",
+              version: targetVersion,
               status: "validated",
               supported: true,
               validated: true,
               reason: "validated",
             },
             package: {
-              fileName: "FQGate-1.0.1-windows-x64-UNSIGNED.exe",
+              fileName: `FQGate-${targetVersion}-windows-x64-UNSIGNED.exe`,
               size: 1024,
               sha256: "c".repeat(64),
             },
@@ -127,23 +189,53 @@ function updateStatusPayload(
           lastCheck: {
             checkedAt: "2026-09-17T00:00:00.000Z",
             result: "available",
-            planId: "plan-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            targetVersion: "1.0.1",
+            planId: options.planId ?? "plan-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            targetVersion,
           },
         }
       : {}),
-    transaction: options.succeeded
-      ? { state: "succeeded", targetVersion: "1.0.1" }
-      : { state: "idle" },
+    transaction: options.succeeded ? { state: "succeeded", targetVersion } : { state: "idle" },
     ...(options.succeeded
       ? {
           lastResult: {
             completedAt: "2026-09-17T00:01:00.000Z",
             outcome: "updated",
-            targetVersion: "1.0.1",
+            targetVersion,
           },
         }
       : {}),
+  };
+}
+
+function blockedCandidateStatusPayload() {
+  const status = updateStatusPayload({
+    withPlan: true,
+    version: "1.0.2",
+    targetVersion: "1.0.4",
+    planId: "plan-cccccccccccccccccccccccccccccccc",
+  });
+  const plan = status.plan;
+  if (plan === undefined) throw new Error("fixture update plan is missing");
+  return {
+    ...status,
+    plan: {
+      ...plan,
+      targetVersion: "1.0.4",
+      action: "blocked",
+      reason: "FQGate 1.0.4 is in range but not yet validated",
+      compatibility: {
+        version: "1.0.4",
+        status: "supported_unvalidated",
+        supported: true,
+        validated: false,
+        reason: "supported but not yet qualified",
+      },
+      package: {
+        fileName: "FQGate-1.0.4-windows-x64-UNSIGNED.exe",
+        size: 23_201_792,
+        sha256: "d".repeat(64),
+      },
+    },
   };
 }
 

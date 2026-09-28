@@ -69,7 +69,7 @@ describe("official release manifest", () => {
     expect(selected.platform).toBe("windows");
     expect(selected.architecture).toBe("x86_64");
     expect(selected.assetUrl).toBe(
-      "https://github.com/zhuyifang/fqgate-releases/releases/download/fqgate-v1.0.0/FQGate-1.0.0-windows-x64-UNSIGNED.exe",
+      "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v1.0.0/FQGate-1.0.0-windows-x64-UNSIGNED.exe",
     );
   });
 
@@ -182,7 +182,7 @@ describe("safe artifact downloader", () => {
     size: body.byteLength,
     sha256: createSha256(body),
     assetUrl:
-      "https://github.com/zhuyifang/fqgate-releases/releases/download/fqgate-v1.0.0/FQGate-1.0.0-windows-x64-UNSIGNED.exe",
+      "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v1.0.0/FQGate-1.0.0-windows-x64-UNSIGNED.exe",
   });
 
   it("stages, verifies, and returns a candidate path", async () => {

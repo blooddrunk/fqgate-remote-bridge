@@ -156,7 +156,7 @@ function packageFor(version: string, content: string): FqgatePackage {
     fileName: `FQGate-${version}-windows-x64-UNSIGNED.exe`,
     size: body.byteLength,
     sha256: createHash("sha256").update(body).digest("hex"),
-    assetUrl: `https://github.com/zhuyifang/fqgate-releases/releases/download/fqgate-v${version}/FQGate-${version}-windows-x64-UNSIGNED.exe`,
+    assetUrl: `https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v${version}/FQGate-${version}-windows-x64-UNSIGNED.exe`,
   };
 }
 

@@ -383,6 +383,8 @@ Follow `docs/roadmap.md`.
 - Phase 5-C: CLOSED — filtered machine OpenAPI + final Windows/remote/CI closure
 - Phase 5-D+: do not opportunistically implement
 - Post-Phase-5 FQGate 1.0.2 qualification: CLOSED
+- Post-Phase-5 FQGate 1.0.4 Dashboard qualification: ACTIVE — separate
+  maintenance task; does not reopen the 1.0.2 closure or Phase 5
 - Phase 6-A: CLOSED — read-only Cloudflare discovery/plan, permanent Windows
   live acceptance and exact-commit Ubuntu/Windows CI passed
 - Post-Phase-6-A acceptance credential custody: CLOSED — real Vault-backed
@@ -496,6 +498,30 @@ and exact-commit Ubuntu/Windows CI all passed. The closure source is:
 
 Do not re-open or repeat that maintenance task unless new upstream evidence
 requires a new compatibility task.
+
+## Active post-Phase-5 FQGate 1.0.4 qualification task
+
+The current official stable candidate is FQGate 1.0.4. Read these current task
+artifacts before changing its update path:
+
+- `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md`
+- `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`
+
+The only new Bridge operation is `updates.qualify`, allowed exactly for
+`local`. It must bind to the current in-memory plan, refreshed official artifact,
+and unchanged installed baseline, then reuse the fixed qualification probe and
+the existing lifecycle integrity, health, OpenAPI, evidence, and rollback gates.
+Preserve `fqgate qualify` CLI. Do not add this operation to the four-item
+remote-admin allowlist, the remote-human surface, or the remote-machine surface.
+The permanent Windows tree remains `D:\\code\\research\\fqgate-remote-bridge`;
+protect operator changes and do not force-kill a process that fails managed
+identity checks.
+
+The canonical fixed release repository is
+`fqgate/FQGate-releases`. The previous exact `zhuyifang/fqgate-releases`
+manifest path may remain accepted only as a fixed compatibility alias for
+existing external config files; candidate asset generation and integrity checks
+must use the canonical repository.
 
 Phase 6-A is deliberately read-only against Cloudflare. It may verify the API
 token and retrieve the exact account/zone Tunnel inventory, remotely-managed

@@ -122,6 +122,7 @@ The exposed local operations are explicit registry entries only:
 GET  /api/v1/updates/status
 POST /api/v1/updates/check
 POST /api/v1/updates/plan
+POST /api/v1/updates/qualify
 POST /api/v1/updates/apply
 GET  /api/v1/openapi/catalog
 POST /api/v1/openapi/refresh
@@ -132,6 +133,12 @@ release URLs, executable URLs, manifest bodies, or upstream paths. The update
 service re-checks the fixed trusted candidate before passing the original plan
 to the lifecycle manager. Runtime OpenAPI catalog responses contain bounded
 structural metadata rather than the raw upstream document.
+
+`updates.qualify` accepts only the current in-memory plan identity for a
+supported-but-unvalidated release and is allowed exactly for the `local`
+context. It re-fetches the fixed official release and verifies the installed
+baseline before invoking the existing bounded qualification transaction. It
+does not add a remote-admin or remote-machine permission.
 
 ## Release source / supply-chain policy
 
@@ -348,8 +355,9 @@ update status, and reference catalog operations allow `local`,
 `remote_human`, and a successfully verified `remote_admin` context. The
 implemented 4.5C policy adds remote-admin permission to exactly
 `updates.check`, `updates.plan`, `updates.apply`, and `openapi.refresh`; all
-other operations remain outside that context. The handler enforces the matrix
-before dispatch, so hiding a button is not an authorization control.
+other operations, including `updates.qualify`, remain outside that context. The
+handler enforces the matrix before dispatch, so hiding a button is not an
+authorization control.
 
 ### Phase 4.5A remote-admin authentication boundary
 
@@ -527,7 +535,7 @@ Redirects are disabled for market and contract fetches.
 
 The historical Phase 5-B closure checked the managed running version (exact live-validated
 1.0.1 and configured compatibility), then the bounded runtime OpenAPI operation plus its
-transitive schema-reference fingerprint. The active maintenance track keeps that old state
+transitive schema-reference fingerprint. The closed 1.0.2 maintenance task keeps that old state
 usable through a narrowly scoped migration bridge. New candidates instead persist
 artifact-bound operation evidence from `fqgate qualify`; each lookup requires supported
 runtime state, its own operation evidence, a current approved fingerprint matching that
@@ -544,7 +552,7 @@ available. The machine top-level page/static/raw gate, separate JWT claim
 profile, host/AUD isolation, and old-operation denial remain unchanged.
 The historical Phase 5-A zero-privilege checkpoint above is not rewritten.
 
-## Post-Phase-5 qualification boundary — closed
+## Post-Phase-5 FQGate 1.0.2 qualification boundary — closed
 
 The official stable 1.0.2 Windows x64 artifact is fixed by the manifest identity
 `FQGate-1.0.2-windows-x64-UNSIGNED.exe`, size `23065088`, SHA-256
@@ -566,6 +574,22 @@ changes. The permanent-Windows procedure is
 `docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`. Its
 external evidence and final-commit CI passed; the closure record is
 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
+
+## FQGate 1.0.4 local qualification — active
+
+The 1.0.4 stable package is a new candidate, not an approved artifact. The
+local Dashboard may request `updates.qualify` only after the user reviews the
+blocked candidate and confirms the operation. The handler refreshes and binds
+the candidate to the exact preview and currently installed artifact, then uses
+the existing artifact-integrity, health, runtime OpenAPI, semantic-probe,
+evidence-persistence, and automatic-rollback gates. A plan drift or changed
+installed baseline is rejected before activation.
+
+The operation registry fixes `updates.qualify` to `allowedContexts: ["local"]`.
+It is excluded from the remote-admin four-operation set and denied to
+remote-human and remote-machine contexts. The existing CLI qualification route
+remains available and follows the same lifecycle transaction. The active task
+is `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.
 
 ## Phase 5-C machine documentation boundary — closed
 

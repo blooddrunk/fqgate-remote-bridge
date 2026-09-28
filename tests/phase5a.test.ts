@@ -362,7 +362,9 @@ describe("Phase 5-A zero-privilege server policy", () => {
         listBridgeOperations()
           .filter(
             (operation) =>
-              operation.id !== "market.instruments.lookup" && operation.id !== "openapi.machine",
+              operation.id !== "market.instruments.lookup" &&
+              operation.id !== "openapi.machine" &&
+              operation.id !== "updates.qualify",
           )
           .map((operation) => operation.id),
       ),
