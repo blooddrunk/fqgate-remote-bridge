@@ -21,7 +21,8 @@ task package 和安全文档为准。
 - Post-Phase-6-A 凭据托管与旧 secrets 目录退役：**CLOSED**；三项 Vault 凭据、
   ProgramData Tunnel token、永久 Windows 回归与旧目录退役均已验收。
 - Phase 6-B1：**CLOSED**；stale-plan guarded DNS apply、canary cleanup、post-canary
-  Windows/remote 回归与精确提交双平台 CI 均已通过。Phase 6-B2/C 仍未授权。
+  Windows/remote 回归与精确提交双平台 CI 均已通过。Phase 6-B2 已有独立授权任务，
+  永久 Windows 验收和精确提交双平台 CI 已通过，现已闭环；Phase 6-C 未授权。
 
 稳定拓扑不变：
 
@@ -164,7 +165,8 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
   OpenAPI 自动扩张或加入第二个 market operation。
 - Phase 6-A 只做固定 API、GET-only Cloudflare discovery/reconciliation/plan；不创建、
   更新、删除、取得 Tunnel token，也不实现 generic REST proxy。已闭环的 Phase 6-B1
-  仅增加独立 typed CNAME 写入边界；B2/C 仍未授权。
+  仅增加独立 typed CNAME 写入边界；B2 按独立任务实施 Tunnel/Access 有界写入，
+  C 仍未授权。
 - 不提前做 supervisor、notifications、automatic updates、MCP/WebSocket、
   packaging 或 turtle-value-engine consumer integration。
 - secret/JWT/cookie/QR/Tunnel token/raw OpenAPI/raw market payload 不进入证据或
@@ -234,4 +236,4 @@ Manager，后续验收可显式选择 `Prompt` 或 `Vault`。LocalSystem 使用�
 token 已搬到受保护的 ProgramData 文件；在服务重启、回滚演练和真实远程回归
 通过后，旧 `fqgate-secrets` 目录以零消费者状态退役。证据见
 `docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`。
-Phase 6-B1 曾单独授权并已 CLOSED；B2/C 仍需各自单独审查和授权。
+Phase 6-B1 曾单独授权并已 CLOSED；B2 已通过独立任务验收并闭环，C 仍需单独授权。

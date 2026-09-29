@@ -394,13 +394,14 @@ Follow `docs/roadmap.md`.
 - Phase 6-B1: CLOSED — stale-plan guarded, one-at-a-time missing DNS CNAME
   create plus same-invocation rollback passed permanent-Windows live acceptance
   and exact-commit Ubuntu/Windows CI on 2026-09-24
-- Phase 6-B2/C: planned only; do not implement without a separate task
+- Phase 6-B2: separately authorized under `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; CLOSED on 2026-09-29 after permanent-Windows acceptance and exact-commit Ubuntu/Windows CI
+- Phase 6-C: planned only; do not implement without a separate task
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6-B1 was separately authorized and is now closed. Phase 6-B2 provisioning
-and all later-phase work still require separate reviewed tasks.
+Phase 6-B1 was separately authorized and is now closed. Phase 6-B2 has its own
+reviewed task package; it closed after permanent-Windows acceptance and exact-commit CI. Phase 6-C still requires a separate task.
 
 ## Closed Phase 6-A read-only discovery task
 
@@ -486,8 +487,8 @@ All machine-verifiable review and acceptance was automated. No production drift
 was fabricated. The reserved live canary passed create/read/delete/absence, and
 post-canary Phase 6-A/Phase 5-C checks passed 14/14 and 21/21. Closure evidence
 and exact CI IDs are in `docs/status/phase-6-b1-implementation-handoff.md`.
-Phase 6-B2/C remain unimplemented and unauthorized until separate reviewed
-tasks explicitly enable those capabilities.
+Phase 6-B2 is authorized only by its separate bounded task package. Phase 6-C
+remains unimplemented and unauthorized.
 
 ## Closed post-Phase-5 maintenance task
 
@@ -562,8 +563,8 @@ Phase 6-B1 is closed under
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`. The implementation
 commit is `3cc99033ad9dbac899584ce3b8e3e81053647a98`; permanent-Windows evidence
 is at `D:\code\research\fqgate-phase6b1-acceptance-evidence.json`.
-Phase 6-B2/C remain unimplemented and unauthorized until separate reviewed
-tasks explicitly enable those capabilities.
+Phase 6-B2 is authorized only by its separate bounded task package. Phase 6-C
+remains unimplemented and unauthorized.
 
 ## Documentation rule
 

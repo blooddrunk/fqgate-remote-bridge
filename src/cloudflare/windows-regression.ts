@@ -38,6 +38,8 @@ export async function runRequiredWindowsPhase5cRegression(input: {
   const childEnvironment = { ...process.env };
   delete childEnvironment.CLOUDFLARE_API_TOKEN;
   delete childEnvironment.CLOUDFLARE_DNS_WRITE_TOKEN;
+  delete childEnvironment.CLOUDFLARE_B2_WRITE_TOKEN;
+  delete childEnvironment.CLOUDFLARE_B2_SCOPE_READ_TOKEN;
 
   try {
     await execFileAsync(
@@ -88,5 +90,7 @@ export async function runRequiredWindowsPhase5cRegression(input: {
   } finally {
     delete childEnvironment.CLOUDFLARE_API_TOKEN;
     delete childEnvironment.CLOUDFLARE_DNS_WRITE_TOKEN;
+    delete childEnvironment.CLOUDFLARE_B2_WRITE_TOKEN;
+    delete childEnvironment.CLOUDFLARE_B2_SCOPE_READ_TOKEN;
   }
 }

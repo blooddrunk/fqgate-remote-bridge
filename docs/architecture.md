@@ -414,7 +414,10 @@ stale-plan guarded desired CNAME creation per invocation, with rollback limited
 to the record created by that invocation. It passed permanent-Windows live
 acceptance and exact-commit Ubuntu/Windows CI on 2026-09-24; see
 `docs/status/phase-6-b1-implementation-handoff.md`. This does not add a Bridge
-route or broaden Phase 6-A's GET-only adapter. Phase 6-B2/C remain separate,
+route or broaden Phase 6-A's GET-only adapter. Phase 6-B2 has a separate
+fixed-endpoint Tunnel/Access write adapter and external exact-policy profile.
+It reuses the Phase 6-A plan fingerprint and one-action CLI path while leaving
+the read transport GET-only. Phase 6-C remains separate,
 unauthorized future tasks.
 
 ### Post-Phase-6-A acceptance credential custody

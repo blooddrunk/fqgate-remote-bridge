@@ -343,4 +343,37 @@ describe("Windows entry points", () => {
     expect(wrapper).toContain("start-phase4.ps1");
     expect(wrapper).toContain("%*");
   });
+  it("keeps B2 live acceptance on the permanent checkout and bounded hidden credentials", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/phase6b2-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(script).toContain('"D:\\code\\research\\fqgate-remote-bridge"');
+    expect(script).toContain('"codex/phase-6-b2"');
+    expect(script).toContain(
+      'Get-HiddenToken "Short-lived exact-account Tunnel/Access-write token',
+    );
+    expect(script).toContain('Get-HiddenToken "Short-lived account-token scope-read credential');
+    expect(script).toContain('"CLOUDFLARE_B2_WRITE_TOKEN"');
+    expect(script).toContain('"CLOUDFLARE_B2_SCOPE_READ_TOKEN"');
+    expect(script).toContain('"P6B2-NOOP"');
+    expect(script).toContain('"P6B2-ONE-ACTION"');
+    expect(script).toContain('"P6B2-POST-PLAN"');
+    expect(script).toContain('"P6B2-LOOPBACK"');
+    expect(script).toContain("-RunAuthenticatedBrowserMatrix");
+    const phase6a = readFileSync(
+      new URL("../scripts/windows/phase6a-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(phase6a).toContain("$AllowPhase6B2ReviewBranch");
+    expect(phase6a).toContain('Resolve-CommandPath "pnpm.cmd"');
+    expect(phase6a).toContain('$pnpmVersion.Stdout.Trim() -ne "11.23.0"');
+    const resume = readFileSync(
+      new URL("../scripts/windows/phase6b2-resume-local.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(resume).toContain('"P6B2-PHASE45-BROWSER"');
+    expect(resume).toContain('"P6B2_RESUME_RUNTIME_CHANGED"');
+    expect(resume).toContain('"P6B2-RESUME-P5B-LOCAL"');
+  });
 });
