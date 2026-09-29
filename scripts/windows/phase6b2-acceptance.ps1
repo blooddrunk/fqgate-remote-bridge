@@ -101,12 +101,14 @@ function Invoke-Plan([string]$Desired) {
     return $plan
 }
 
-function Invoke-Phase6A([string]$Stage, [string]$Desired, [string]$Config, [string]$Ingress) {
-    $result = Invoke-BoundedProcess $powershell @(
+function Invoke-Phase6A([string]$Stage, [string]$Desired, [string]$Config, [string]$Ingress, [bool]$RunRemote) {
+    $arguments = @(
         "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $root "scripts\windows\phase6a-acceptance.ps1"),
         "-DesiredStatePath", $Desired, "-ConfigPath", $Config, "-TunnelIngressConfigPath", $Ingress,
-        "-CredentialSource", "Vault", "-RunQualityGates", "-RunPhase5CRemoteRegression", "-AllowPhase6B2ReviewBranch"
-    ) @{} 2400000
+        "-CredentialSource", "Vault", "-RunQualityGates", "-AllowPhase6B2ReviewBranch"
+    )
+    if ($RunRemote) { $arguments += "-RunPhase5CRemoteRegression" }
+    $result = Invoke-BoundedProcess $powershell $arguments @{} 2400000
     if ($result.ExitCode -ne 0) {
         if (($result.Stdout + $result.Stderr) -match '\bLOGIN_REQUIRED\b') {
             Write-Host "MANUAL_FQGATE_LOGIN_REQUIRED: open http://127.0.0.1:17282/login, start the existing QR flow, physically scan and approve. Resume: .\scripts\windows\phase6b2-acceptance.ps1 -DesiredStatePath `"$Desired`" -ConfigPath `"$Config`" -TunnelIngressConfigPath `"$Ingress`""
@@ -114,10 +116,12 @@ function Invoke-Phase6A([string]$Stage, [string]$Desired, [string]$Config, [stri
         throw "P6B2_$Stage`_PHASE6A_FAILED"
     }
     $evidence = Get-Content -LiteralPath $phase6aEvidencePath -Raw | ConvertFrom-Json -ErrorAction Stop
-    if ($evidence.commit -ne $commit -or $evidence.summary.total -ne 14 -or $evidence.summary.passed -ne 14 -or $evidence.summary.failed -ne 0 -or $evidence.summary.manual -ne 0 -or $evidence.summary.skipped -ne 0) {
-        throw "P6B2_$Stage`_PHASE6A_NOT_14_OF_14"
+    $expectedPassed = if ($RunRemote) { 14 } else { 13 }
+    $expectedSkipped = if ($RunRemote) { 0 } else { 1 }
+    if ($evidence.commit -ne $commit -or $evidence.summary.total -ne 14 -or $evidence.summary.passed -ne $expectedPassed -or $evidence.summary.failed -ne 0 -or $evidence.summary.manual -ne 0 -or $evidence.summary.skipped -ne $expectedSkipped) {
+        throw "P6B2_$Stage`_PHASE6A_COUNTS_INVALID"
     }
-    Add-Record "P6B2-$Stage-P6A" "PASS" @{ checks = 14; fingerprint = [string]$evidence.plan.fingerprint; quality = "frozen-install,typecheck,lint,test,build,format,e2e"; remoteMachine = "phase5c" }
+    Add-Record "P6B2-$Stage-P6A" "PASS" @{ checks = 14; passed = $expectedPassed; fingerprint = [string]$evidence.plan.fingerprint; quality = "frozen-install,typecheck,lint,test,build,format,e2e"; remoteMachine = $(if ($RunRemote) { "phase5c" } else { "postcheck-pending" }) }
     return $evidence
 }
 
@@ -147,7 +151,7 @@ try {
     foreach ($path in @($desired, $config, $ingress)) {
         if ($path.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) { throw "P6B2_CONFIG_MUST_REMAIN_REPO_EXTERNAL" }
     }
-    $pre = Invoke-Phase6A "PRE" $desired $config $ingress
+    $pre = Invoke-Phase6A "PRE" $desired $config $ingress $false
     . (Join-Path $PSScriptRoot "acceptance-credential-vault.ps1")
     $binding = Get-AcceptanceBinding "CloudflareRead" $desired $config
     $secrets["CLOUDFLARE_API_TOKEN"] = Get-AcceptanceCredential "CloudflareRead" $binding
@@ -195,7 +199,7 @@ try {
     $afterFingerprint = [string]$postPlan.fingerprint
     if (@($postPlan.checks | Where-Object { $_.classification -ne "in_sync" }).Count -ne 0) { throw "P6B2_POST_PLAN_NOT_IN_SYNC" }
     Add-Record "P6B2-POST-PLAN" "PASS" @{ classification = "in_sync"; fingerprint = $afterFingerprint; mutationCount = $mutationCount }
-    $post = Invoke-Phase6A "POST" $desired $config $ingress
+    $post = Invoke-Phase6A "POST" $desired $config $ingress $true
     if ($post.plan.fingerprint -ne $afterFingerprint) { throw "P6B2_POST_ACCEPTANCE_PLAN_CHANGED" }
     $browser = Invoke-BoundedProcess $powershell @("-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $root "scripts\windows\phase45-acceptance.ps1"), "-ConfigPath", $config, "-RunAuthenticatedBrowserMatrix") @{} 900000
     if ($browser.ExitCode -ne 0 -or $browser.Stdout -match '"result"\s*:\s*"(?:FAIL|MANUAL)"') { throw "P6B2_PHASE45_BROWSER_FAILED" }

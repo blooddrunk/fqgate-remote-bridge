@@ -62,10 +62,11 @@ From an interactive PowerShell in the permanent checkout, on the clean
   -TunnelIngressConfigPath '<repo-external Tunnel ingress config JSON>'
 ```
 
-The script first runs full Phase 6-A quality and live read-only discovery/plan,
-including the Phase 5-C real service-token matrix. With an in-sync plan, it
+The script first runs full repository quality gates and Phase 6-A live read-only
+discovery/plan. With an in-sync plan, it
 proves the B2 CLI refuses apply with zero writes and without a write credential.
-It then reruns Phase 6-A, Phase 5-C, Phase 4.5 headed ordinary/admin browser,
+It then reruns Phase 6-A with the Phase 5-C real service-token matrix,
+Phase 4.5 headed ordinary/admin browser,
 local Phase 5-A/B/C, and loopback checks. The secret-free result is written to
 `D:\code\research\fqgate-phase6b2-acceptance-evidence.json`.
 
