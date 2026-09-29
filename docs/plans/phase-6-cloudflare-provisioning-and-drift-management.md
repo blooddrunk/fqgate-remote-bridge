@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A and Phase 6-B1 CLOSED; Phase 6-B2/C remain separately unauthorized**
+Status: **Phase 6-A and Phase 6-B1 CLOSED; Phase 6-B2 AUTHORIZED / READY FOR IMPLEMENTATION; Phase 6-C remains unauthorized**
 
 ## Purpose
 
@@ -82,9 +82,13 @@ verified canary cleanup, the in-sync zero-write refusal, post-canary Phase 6-A
 14/14 and Phase 5-C 21/21, and exact-commit Ubuntu/Windows CI on 2026-09-24.
 See `docs/status/phase-6-b1-implementation-handoff.md`.
 
-Phase 6-B2 remains a future separate task for any Tunnel configuration or Access
-application/policy mutation. Arbitrary DNS update/delete, token rotation and
-broad policy replacement are not authorized by B1.
+Phase 6-B2 is separately authorized by
+`docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`. It adds only the
+bounded, plan-bound Tunnel ingress and Access application/policy mutations defined
+there, while preserving B1 one-action and stale-plan semantics. Arbitrary DNS
+update/delete, destructive resource deletion, token rotation, broad policy
+replacement/widening, wildcard/direct-17281 ingress, background reconciliation and
+Phase 6-C behavior remain unauthorized.
 
 ### Phase 6-C — live closure and credential retirement
 
