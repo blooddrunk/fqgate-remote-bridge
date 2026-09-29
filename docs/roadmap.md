@@ -22,7 +22,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
   official artifact, permanent-Windows local/remote regressions and
   exact-runtime-commit Ubuntu/Windows CI passed on 2026-09-29
 - Phase 6-B2: **CLOSED** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
-- Phase 6-C+: planned only; separately authorized task required
+- Phase 6-C: **AUTHORIZED / OPEN** — live closure and provisioning-credential retirement; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
+- Post-Phase-6 work: unauthorized unless a separate reviewed task exists
 
 Current deployed topology remains:
 
