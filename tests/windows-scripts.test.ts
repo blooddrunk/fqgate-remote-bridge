@@ -368,5 +368,12 @@ describe("Windows entry points", () => {
     expect(phase6a).toContain("$AllowPhase6B2ReviewBranch");
     expect(phase6a).toContain('Resolve-CommandPath "pnpm.cmd"');
     expect(phase6a).toContain('$pnpmVersion.Stdout.Trim() -ne "11.23.0"');
+    const resume = readFileSync(
+      new URL("../scripts/windows/phase6b2-resume-local.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(resume).toContain('"P6B2-PHASE45-BROWSER"');
+    expect(resume).toContain('"P6B2_RESUME_RUNTIME_CHANGED"');
+    expect(resume).toContain('"P6B2-RESUME-P5B-LOCAL"');
   });
 });

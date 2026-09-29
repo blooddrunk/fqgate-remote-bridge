@@ -219,7 +219,7 @@ try {
     Assert-Loopback
 } catch {
     $message = [string]$_.Exception.Message
-    $failure = if ($message -match '^P6B2_[A-Z0-9_-]{1,180}$') { $message } else { "P6B2_ACCEPTANCE_FAILED" }
+    $failure = if ($message -match '^P6B2[-_][A-Z0-9_-]{1,180}$') { $message } else { "P6B2_ACCEPTANCE_FAILED" }
     Add-Record "P6B2-FAIL" "FAIL" @{ code = $failure }
 } finally {
     foreach ($key in @("CLOUDFLARE_API_TOKEN", "CLOUDFLARE_DNS_WRITE_TOKEN", "CLOUDFLARE_B2_WRITE_TOKEN", "CLOUDFLARE_B2_SCOPE_READ_TOKEN")) {

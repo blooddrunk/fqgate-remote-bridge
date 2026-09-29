@@ -95,3 +95,12 @@ returns exact `LOGIN_REQUIRED`. Use the existing local
 Access login/MFA follows the existing headed browser harness. Record exact
 human-only limitations; never mark the phase closed while a required check,
 permanent-Windows run, or exact-final-commit Ubuntu/Windows CI is unresolved.
+
+If all live plan, remote and headed browser checks passed but a later local
+regression failed transiently, retain the failed evidence and run
+`phase6b2-resume-local.ps1` with the same three path arguments. The resume
+script accepts only a clean descendant review commit with no runtime changes,
+the same in-sync plan fingerprint and the recorded ordinary/admin browser PASS.
+It reruns Phase 6-A 14/14 and all local Phase 5/loopback checks. Its separate
+secret-free evidence names the prior failure explicitly; it never converts a
+failed production mutation or browser step into a pass.
