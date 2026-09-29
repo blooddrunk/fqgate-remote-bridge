@@ -6,7 +6,7 @@ Baseline date: **2026-09-17**
 
 Historical 1.0.2 maintenance observation: **2026-09-21**. Current stable release
 observation: **2026-09-28**. The Phase 5-B and 1.0.2 contracts below remain
-historical; the separate 1.0.4 maintenance task is active.
+historical; the separate 1.0.4 maintenance task closed on 2026-09-29.
 
 ## FQGate release source
 
@@ -462,7 +462,7 @@ or secret. The permanent-Windows procedure and its bounded external evidence pat
 `docs/operations/windows-post-phase-5-fqgate-1-0-2-qualification.md`; closure evidence is
 in `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
 
-## FQGate 1.0.4 qualification — ACTIVE
+## FQGate 1.0.4 qualification — CLOSED
 
 The official manifest identifies the 1.0.4 Windows x64 candidate above. It must
 remain unvalidated until the existing lifecycle qualification transaction proves
@@ -471,6 +471,8 @@ and the exact-code semantic probe. The active task adds only a local Dashboard
 entry that invokes this same fixed-probe transaction. It does not add a Bridge
 market operation or change any remote operation matrix.
 
-Design and task:
+The exact 1.0.4 artifact passed the permanent-Windows qualification and real
+remote regression gates on 2026-09-29. Design and closed task:
 `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
 `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.
+Final evidence: `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`.

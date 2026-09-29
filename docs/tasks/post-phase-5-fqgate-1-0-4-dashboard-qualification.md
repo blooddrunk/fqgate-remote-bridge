@@ -1,6 +1,6 @@
 # Post-Phase-5 FQGate 1.0.4 Dashboard qualification
 
-Status: **ACTIVE — local implementation, permanent-Windows 1.0.4 upgrade and exact-implementation-commit CI are complete; real remote closure is pending**.
+Status: **CLOSED — local Dashboard qualification, permanent-Windows 1.0.4, real remote-human/admin/machine regressions and exact-runtime-commit CI passed on 2026-09-29**.
 
 This is a new maintenance task based on the official 1.0.4 stable release. It is
 separate from the closed Post-Phase-5 FQGate 1.0.2 qualification task. Phase 5,
@@ -127,12 +127,30 @@ typecheck, lint, tests, build, format check, Windows CLI smoke, loopback smoke
 and acceptance-vault checks; browser E2E remains intentionally exercised by the
 Ubuntu job in the current CI workflow.
 
-The task therefore remains ACTIVE only for the existing real remote-human,
-remote-admin and remote-machine regression closure and its bounded evidence
-record. If closure work changes runtime code, the new runtime implementation
-commit must receive its own exact-commit Ubuntu/Windows CI before the task is
-marked CLOSED. This maintenance task does not expand any remote operation
-permissions or reopen Phase 5.
+At this 2026-09-28 checkpoint, real remote-human, remote-admin and
+remote-machine regression closure was still pending. The later post-reset
+restoration and final remote results are recorded in
+`docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`. Closure
+changed documentation only, so the exact runtime implementation commit and
+CI run above remain authoritative. This maintenance task did not expand any
+remote operation permissions or reopen Phase 5.
+
+## Final closure — 2026-09-29
+
+The permanent Windows checkout was restored after a Windows 11 reset and
+again qualified the exact official 1.0.4 artifact through the managed
+lifecycle. Native frozen install, typecheck, lint, unit/integration, build,
+format and browser E2E gates passed. Native Phase 5-A/B/C local acceptance,
+the headed ordinary/admin Access browser matrix, and the real Vault-backed
+remote-machine matrix all passed. The final machine matrix was 22/22 and its
+Windows wrapper 3/3; the browser helper exited 0 after its real Access/MFA
+steps. FQGate remained connected and validated, with both services listening
+only on their specified IPv4 loopback ports.
+
+The exact artifact identity, bounded checks, external evidence paths,
+runtime implementation commit and Ubuntu/Windows CI job IDs are in
+`docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`. Phase
+6-B2 and Phase 6-C remain separate, unauthorized future work.
 
 ## Implementation scope
 
