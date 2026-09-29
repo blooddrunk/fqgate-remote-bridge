@@ -383,8 +383,9 @@ Follow `docs/roadmap.md`.
 - Phase 5-C: CLOSED — filtered machine OpenAPI + final Windows/remote/CI closure
 - Phase 5-D+: do not opportunistically implement
 - Post-Phase-5 FQGate 1.0.2 qualification: CLOSED
-- Post-Phase-5 FQGate 1.0.4 Dashboard qualification: ACTIVE — separate
-  maintenance task; does not reopen the 1.0.2 closure or Phase 5
+- Post-Phase-5 FQGate 1.0.4 Dashboard qualification: CLOSED — permanent
+  Windows local/remote acceptance and exact-runtime-commit CI passed; does
+  not reopen the 1.0.2 closure or Phase 5
 - Phase 6-A: CLOSED — read-only Cloudflare discovery/plan, permanent Windows
   live acceptance and exact-commit Ubuntu/Windows CI passed
 - Post-Phase-6-A acceptance credential custody: CLOSED — real Vault-backed
@@ -499,13 +500,14 @@ and exact-commit Ubuntu/Windows CI all passed. The closure source is:
 Do not re-open or repeat that maintenance task unless new upstream evidence
 requires a new compatibility task.
 
-## Active post-Phase-5 FQGate 1.0.4 qualification task
+## Closed post-Phase-5 FQGate 1.0.4 qualification task
 
-The current official stable candidate is FQGate 1.0.4. Read these current task
-artifacts before changing its update path:
+The qualified official stable candidate was FQGate 1.0.4. Read these task
+artifacts and the final handoff before changing its update path:
 
 - `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md`
 - `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`
+- `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`
 
 The only new Bridge operation is `updates.qualify`, allowed exactly for
 `local`. It must bind to the current in-memory plan, refreshed official artifact,

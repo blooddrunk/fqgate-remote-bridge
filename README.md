@@ -27,7 +27,7 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询                       |
 | Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                             |
 | Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                         |
-| FQGate 1.0.4 更新      | ACTIVE / 验收中    | 本机 Dashboard 资格验证入口与永久环境升级                           |
+| FQGate 1.0.4 更新      | CLOSED / 已验收    | 本机 Dashboard 资格验证、永久环境与真实远程回归                     |
 | Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
 | 验收凭据托管与目录退役 | CLOSED / 已验收    | 三项 Windows Vault 凭据、受保护的 Tunnel token 文件、旧目录清理     |
 | 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                              |
@@ -890,13 +890,14 @@ service-token matrix）见
 本地 Phase 5-B/5-C 回归、真实 remote-machine matrix 与最终 Ubuntu/Windows CI 均通过。
 详细证据见 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`。
 
-## FQGate 1.0.4 当前更新（ACTIVE）
+## FQGate 1.0.4 更新（CLOSED）
 
 官方 stable manifest 当前发布 FQGate 1.0.4。版本号、文件大小和 SHA-256 只标识候选，
 不会自动把版本加入验证名单。支持范围内的未验证候选必须通过更新中心的本机
 “验证兼容并升级”或现有 `fqgate qualify` CLI；两者都复用生命周期健康、OpenAPI、
-固定查询探针和自动回滚。永久 Windows 升级与关闭证据见
-[1.0.4 更新任务](docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md)。
+固定查询探针和自动回滚。永久 Windows 的本地、远程和精确运行时代码提交 CI 均已
+通过；见[1.0.4 更新任务](docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md)
+与[最终验收证据](docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md)。
 
 ## Phase 6-A — Cloudflare 只读发现与计划（CLOSED）
 

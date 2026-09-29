@@ -575,9 +575,10 @@ changes. The permanent-Windows procedure is
 external evidence and final-commit CI passed; the closure record is
 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
 
-## FQGate 1.0.4 local qualification — active
+## FQGate 1.0.4 local qualification — closed
 
-The 1.0.4 stable package is a new candidate, not an approved artifact. The
+The official 1.0.4 package passed the bounded permanent-Windows qualification
+gate; an unqualified package remains blocked until that gate passes. The
 local Dashboard may request `updates.qualify` only after the user reviews the
 blocked candidate and confirms the operation. The handler refreshes and binds
 the candidate to the exact preview and currently installed artifact, then uses
@@ -588,8 +589,9 @@ installed baseline is rejected before activation.
 The operation registry fixes `updates.qualify` to `allowedContexts: ["local"]`.
 It is excluded from the remote-admin four-operation set and denied to
 remote-human and remote-machine contexts. The existing CLI qualification route
-remains available and follows the same lifecycle transaction. The active task
-is `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.
+remains available and follows the same lifecycle transaction. The closed task
+is `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`; final
+evidence is in `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`.
 
 ## Phase 5-C machine documentation boundary — closed
 

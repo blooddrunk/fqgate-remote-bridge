@@ -319,7 +319,7 @@ Phase 3 adds two operator surfaces without changing the technology shape:
 The update center has explicit status, check, plan, and apply operations. A
 plan identity includes the fixed source, candidate version, file name, size,
 SHA-256, and installed candidate context; apply rejects stale identities. The
-active FQGate 1.0.4 maintenance task adds a distinct local-only qualify action
+closed FQGate 1.0.4 maintenance task added a distinct local-only qualify action
 for a supported-but-unvalidated candidate. It uses the same lifecycle transaction.
 API reference page has separate Upstream FQGate, Bridge API, and
 Compatibility/Changes views and never offers raw upstream execution.
@@ -560,11 +560,12 @@ The repeatable Windows command and external evidence contract are documented in
 Windows, remote-machine, and final-commit CI evidence is closed in
 `docs/status/post-phase-5-fqgate-1-0-2-implementation-handoff.md`.
 
-## FQGate 1.0.4 qualification — active
+## FQGate 1.0.4 qualification — closed
 
-The current stable release is a supported-but-unvalidated candidate. The local
-Dashboard exposes an explicit qualify-and-update action only for the current
-blocked preview. The service refreshes the manifest, binds it to the exact
+The official 1.0.4 release passed the bounded qualification gate in the
+permanent Windows environment. The local Dashboard exposes an explicit
+qualify-and-update action for a supported-but-unvalidated blocked preview.
+The service refreshes the manifest, binds it to the exact
 candidate and installed baseline, then passes the fixed qualification probe to
 the existing lifecycle transaction. The lifecycle keeps its integrity,
 candidate-version, health, OpenAPI, semantic-probe, artifact-evidence, and
@@ -573,6 +574,7 @@ rollback behavior.
 `updates.qualify` is local-only. The remote-admin allowlist remains the existing
 four operations, remote-human permissions remain unchanged, and
 remote-machine still receives only the lookup and machine OpenAPI operations.
-The design and active task are recorded in
+The design and closed task are recorded in
 `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
-`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.
+`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`; final
+evidence is in `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`.

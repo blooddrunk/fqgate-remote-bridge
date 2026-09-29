@@ -12,8 +12,10 @@ task package 和安全文档为准。
 - Phase 5-C / Phase 5：**CLOSED**；machine OpenAPI 与最终 Windows/remote/CI 闭包完成。
 - Post-Phase-5 FQGate 兼容维护：**CLOSED**；1.0.2 永久 Windows、remote-machine
   与最终 commit CI 均通过。
-- Post-Phase-5 FQGate 1.0.4 更新：**ACTIVE**；本机 Dashboard 资格入口已实现，
-  永久 Windows 升级和 closure 仍待完成。独立于已关闭的 1.0.2 任务。
+- Post-Phase-5 FQGate 1.0.4 更新：**CLOSED**；本机 Dashboard 资格入口、
+  永久 Windows 1.0.4、本地与真实远程回归、精确运行时代码提交 CI 均已通过。
+  独立于已关闭的 1.0.2 任务；见
+  `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`。
 - Phase 6-A：**CLOSED**；Cloudflare GET-only discovery/plan 在 `9c6babb` 上通过
   永久 Windows、真实 Cloudflare 和 exact-commit Ubuntu/Windows CI。
 - Post-Phase-6-A 凭据托管与旧 secrets 目录退役：**CLOSED**；三项 Vault 凭据、
