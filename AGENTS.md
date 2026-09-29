@@ -395,13 +395,14 @@ Follow `docs/roadmap.md`.
   create plus same-invocation rollback passed permanent-Windows live acceptance
   and exact-commit Ubuntu/Windows CI on 2026-09-24
 - Phase 6-B2: separately authorized under `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; CLOSED on 2026-09-29 after permanent-Windows acceptance and exact-commit Ubuntu/Windows CI
-- Phase 6-C: planned only; do not implement without a separate task
+- Phase 6-C: AUTHORIZED / OPEN under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; close Phase 6 without expanding the Cloudflare mutation surface
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6-B1 was separately authorized and is now closed. Phase 6-B2 has its own
-reviewed task package; it closed after permanent-Windows acceptance and exact-commit CI. Phase 6-C still requires a separate task.
+Phase 6-B1 and Phase 6-B2 are closed. Phase 6-C is now separately authorized by
+`docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; it must prove
+zero normal-runtime dependency on B1/B2 provisioning credentials without widening or deleting the guarded repair paths.
 
 ## Closed Phase 6-A read-only discovery task
 
