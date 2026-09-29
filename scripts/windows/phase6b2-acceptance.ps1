@@ -109,7 +109,9 @@ function Invoke-Phase6A([string]$Stage, [string]$Desired, [string]$Config, [stri
     )
     if ($RunRemote) { $arguments += "-RunPhase5CRemoteRegression" }
     $result = Invoke-BoundedProcess $powershell $arguments @{} 2400000
-    if ($result.ExitCode -ne 0) {
+    $expectedExit = if ($RunRemote) { 0 } else { 1 }
+    $expectedSummary = if ($RunRemote) { '"result":"PASS"' } else { '"result":"INCOMPLETE"' }
+    if ($result.ExitCode -ne $expectedExit -or $result.Stdout -notmatch [regex]::Escape($expectedSummary)) {
         if (($result.Stdout + $result.Stderr) -match '\bLOGIN_REQUIRED\b') {
             Write-Host "MANUAL_FQGATE_LOGIN_REQUIRED: open http://127.0.0.1:17282/login, start the existing QR flow, physically scan and approve. Resume: .\scripts\windows\phase6b2-acceptance.ps1 -DesiredStatePath `"$Desired`" -ConfigPath `"$Config`" -TunnelIngressConfigPath `"$Ingress`""
         }
