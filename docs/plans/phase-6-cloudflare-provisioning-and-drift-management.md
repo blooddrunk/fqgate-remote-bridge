@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A and Phase 6-B1 CLOSED; Phase 6-B2 CLOSED; Phase 6-C remains unauthorized**
+Status: **Phase 6-A/B1/B2 CLOSED; Phase 6-C AUTHORIZED / OPEN**
 
 ## Purpose
 
@@ -92,11 +92,14 @@ Phase 6-C behavior remain unauthorized.
 
 ### Phase 6-C — live closure and credential retirement
 
-Future separate task only.
+Authorized by `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
 
-Reconcile the real deployment to a deterministic no-op plan, remove the write credential from
-normal runtime requirements, then re-run human/admin/machine remote acceptance and exact-final-
-commit CI.
+Reconcile the real deployment to a deterministic no-op plan and prove that normal runtime,
+read-only planning and human/admin/machine acceptance have no dependency on B1/B2 provisioning
+credentials. Keep the guarded B1/B2 apply paths as explicit future drift-repair tools; their write
+credentials remain transient-only. Then re-run the full permanent-Windows regressions and exact-
+final-commit Ubuntu/Windows CI. Phase 6-C must not add a new mutation class, generic credential
+manager, background reconciliation, or destructive token lifecycle behavior.
 
 ## Desired-state model
 
