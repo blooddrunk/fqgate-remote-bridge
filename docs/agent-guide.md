@@ -22,7 +22,7 @@ task package 和安全文档为准。
   ProgramData Tunnel token、永久 Windows 回归与旧目录退役均已验收。
 - Phase 6-B1：**CLOSED**；stale-plan guarded DNS apply、canary cleanup、post-canary
   Windows/remote 回归与精确提交双平台 CI 均已通过。Phase 6-B2 已有独立授权任务，
-  验收与 CI 完成前保持开放；Phase 6-C 未授权。
+  永久 Windows 验收和精确提交双平台 CI 已通过，现已闭环；Phase 6-C 未授权。
 
 稳定拓扑不变：
 
@@ -236,4 +236,4 @@ Manager，后续验收可显式选择 `Prompt` 或 `Vault`。LocalSystem 使用�
 token 已搬到受保护的 ProgramData 文件；在服务重启、回滚演练和真实远程回归
 通过后，旧 `fqgate-secrets` 目录以零消费者状态退役。证据见
 `docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`。
-Phase 6-B1 曾单独授权并已 CLOSED；B2 已由独立任务授权但尚未闭环，C 仍需单独授权。
+Phase 6-B1 曾单独授权并已 CLOSED；B2 已通过独立任务验收并闭环，C 仍需单独授权。

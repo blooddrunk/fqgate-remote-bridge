@@ -1,6 +1,6 @@
 # Phase 6-B2 — bounded Tunnel ingress and Access provisioning
 
-Status: **AUTHORIZED / READY FOR IMPLEMENTATION**.
+Status: **CLOSED on 2026-09-29**; implementation and acceptance evidence in `docs/status/phase-6-b2-implementation-handoff.md`.
 
 ## Goal
 

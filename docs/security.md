@@ -231,8 +231,7 @@ separate from the B1 DNS credential and Phase 6-A GET-only transport. The
 external policy profile binds exact human/admin selectors and the machine
 service token selector; a profile fingerprint, repeated discovery, raw identity
 checks and postcondition gate every write. Uncertain partial writes require
-manual inspection of the identified resource before retry. B2 remains open
-until live acceptance and CI pass; Phase 6-C remains unauthorized.
+manual inspection of the identified resource before retry. B2 closed after live acceptance and exact-commit CI; Phase 6-C remains unauthorized.
 
 Phase 6-A closed with hidden-entry live acceptance on implementation commit
 `9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in

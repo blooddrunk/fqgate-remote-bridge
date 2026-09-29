@@ -1,6 +1,6 @@
 # Phase 6-B2 permanent-Windows acceptance
 
-Status: implementation and live acceptance in progress. The task contract is
+Status: closed after permanent-Windows live acceptance on 2026-09-29. The task contract is
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`. Use only the existing
 `D:\code\research\fqgate-remote-bridge` checkout. Never manufacture drift in the
 three production hostnames or policies.
