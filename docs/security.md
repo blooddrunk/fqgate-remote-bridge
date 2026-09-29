@@ -224,7 +224,15 @@ retrieval, Access application/policy mutation, or Tunnel configuration mutation
 is authorized. Phase 6-B1's live canary, post-canary Phase 6-A/Phase 5-C
 regressions and exact-commit Ubuntu/Windows CI passed on 2026-09-24. Its closed
 scope remains limited to guarded one-at-a-time desired DNS CNAME creation and
-same-invocation rollback. Phase 6-B2/C remain separately unauthorized.
+same-invocation rollback. Phase 6-B2 is separately authorized for exact
+plan-bound Tunnel ingress and Access application/policy writes. Its write
+transport uses fixed endpoints and a short-lived account-scoped credential,
+separate from the B1 DNS credential and Phase 6-A GET-only transport. The
+external policy profile binds exact human/admin selectors and the machine
+service token selector; a profile fingerprint, repeated discovery, raw identity
+checks and postcondition gate every write. Uncertain partial writes require
+manual inspection of the identified resource before retry. B2 remains open
+until live acceptance and CI pass; Phase 6-C remains unauthorized.
 
 Phase 6-A closed with hidden-entry live acceptance on implementation commit
 `9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in

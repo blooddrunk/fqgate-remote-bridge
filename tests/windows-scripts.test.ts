@@ -343,4 +343,23 @@ describe("Windows entry points", () => {
     expect(wrapper).toContain("start-phase4.ps1");
     expect(wrapper).toContain("%*");
   });
+  it("keeps B2 live acceptance on the permanent checkout and bounded hidden credentials", () => {
+    const script = readFileSync(
+      new URL("../scripts/windows/phase6b2-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(script).toContain('"D:\\code\\research\\fqgate-remote-bridge"');
+    expect(script).toContain('"codex/phase-6-b2"');
+    expect(script).toContain(
+      'Get-HiddenToken "Short-lived exact-account Tunnel/Access-write token',
+    );
+    expect(script).toContain('Get-HiddenToken "Short-lived account-token scope-read credential');
+    expect(script).toContain('"CLOUDFLARE_B2_WRITE_TOKEN"');
+    expect(script).toContain('"CLOUDFLARE_B2_SCOPE_READ_TOKEN"');
+    expect(script).toContain('"P6B2-NOOP"');
+    expect(script).toContain('"P6B2-ONE-ACTION"');
+    expect(script).toContain('"P6B2-POST-PLAN"');
+    expect(script).toContain('"P6B2-LOOPBACK"');
+    expect(script).toContain('"-RunAuthenticatedBrowserMatrix"');
+  });
 });

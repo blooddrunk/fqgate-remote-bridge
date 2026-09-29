@@ -23,7 +23,20 @@ import { loadCloudflareDesiredState } from "../cloudflare/desired.js";
 import { CloudflareDiscoveryService } from "../cloudflare/discovery.js";
 import { reconcileCloudflareState } from "../cloudflare/reconcile.js";
 import { FetchCloudflareGetTransport, getCloudflareApiToken } from "../cloudflare/transport.js";
-import { applyCloudflareDnsCheck } from "../cloudflare/apply.js";
+import {
+  applyCloudflareB2Check,
+  applyCloudflareDnsCheck,
+  refuseCloudflareB2InSyncApply,
+} from "../cloudflare/apply.js";
+import { loadCloudflareB2Profile } from "../cloudflare/b2-profile.js";
+import {
+  FetchCloudflareB2WriteTransport,
+  getCloudflareB2WriteToken,
+} from "../cloudflare/b2-write-transport.js";
+import {
+  getCloudflareB2ScopeReadToken,
+  validateCloudflareB2WriteCapabilities,
+} from "../cloudflare/b2-capabilities.js";
 import { runRequiredWindowsPhase5cRegression } from "../cloudflare/windows-regression.js";
 import {
   FetchCloudflareDnsApplyWriteTransport,
@@ -50,6 +63,8 @@ interface ParsedArguments {
   readonly desiredStatePath?: string;
   readonly expectedFingerprint?: string;
   readonly checkId?: string;
+  readonly b2ProfilePath?: string;
+  readonly expectedB2ProfileFingerprint?: string;
 }
 
 export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): Promise<number> {
@@ -94,6 +109,8 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
         args.desiredStatePath,
         args.expectedFingerprint,
         args.checkId,
+        args.b2ProfilePath,
+        args.expectedB2ProfileFingerprint,
         args.json,
         io,
       );
@@ -211,13 +228,20 @@ async function runCloudflare(
   desiredStatePath: string | undefined,
   expectedFingerprint: string | undefined,
   checkId: string | undefined,
+  b2ProfilePath: string | undefined,
+  expectedB2ProfileFingerprint: string | undefined,
   json: boolean,
   io: CliIo,
 ): Promise<number> {
-  if (command !== "discover" && command !== "plan" && command !== "apply") {
+  if (
+    command !== "discover" &&
+    command !== "plan" &&
+    command !== "apply" &&
+    command !== "b2-profile-fingerprint"
+  ) {
     throw new BridgeError(
       ERROR_CODES.CONFIG_INVALID,
-      `Unknown cloudflare command: ${command}; use discover, plan, or apply`,
+      `Unknown cloudflare command: ${command}; use discover, plan, apply, or b2-profile-fingerprint`,
     );
   }
   if (command === "apply" && process.platform !== "win32") {
@@ -225,6 +249,22 @@ async function runCloudflare(
       ERROR_CODES.CLOUDFLARE_APPLY_REJECTED,
       "Cloudflare production apply requires the permanent Windows Phase 5-C regression environment",
     );
+  }
+  if (command === "b2-profile-fingerprint") {
+    if (
+      b2ProfilePath === undefined ||
+      desiredStatePath !== undefined ||
+      expectedFingerprint !== undefined ||
+      checkId !== undefined ||
+      expectedB2ProfileFingerprint !== undefined
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.CONFIG_INVALID,
+        "b2-profile-fingerprint requires only --b2-write-profile <repo-external-file>",
+      );
+    }
+    output({ fingerprint: (await loadCloudflareB2Profile(b2ProfilePath)).fingerprint }, json, io);
+    return 0;
   }
   const resolvedDesiredStatePath =
     desiredStatePath ?? process.env.FQGATE_REMOTE_BRIDGE_CLOUDFLARE_DESIRED_STATE;
@@ -246,6 +286,15 @@ async function runCloudflare(
       "--expected-fingerprint and --check-id are only valid with cloudflare apply",
     );
   }
+  if (
+    command !== "apply" &&
+    (b2ProfilePath !== undefined || expectedB2ProfileFingerprint !== undefined)
+  ) {
+    throw new BridgeError(
+      ERROR_CODES.CONFIG_INVALID,
+      "B2 write profile arguments are only valid with cloudflare apply",
+    );
+  }
   const desired = await loadCloudflareDesiredState(resolvedDesiredStatePath);
   const transport = new FetchCloudflareGetTransport({
     apiToken: getCloudflareApiToken(),
@@ -256,6 +305,54 @@ async function runCloudflare(
       throw new BridgeError(
         ERROR_CODES.CONFIG_INVALID,
         "Cloudflare apply arguments are incomplete",
+      );
+    }
+    if (!checkId.startsWith("dns.")) {
+      if (b2ProfilePath === undefined && expectedB2ProfileFingerprint === undefined) {
+        await refuseCloudflareB2InSyncApply({
+          desired,
+          expectedFingerprint,
+          checkId,
+          discoveryClient: client,
+        });
+      }
+      if (b2ProfilePath === undefined || expectedB2ProfileFingerprint === undefined) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "B2 apply requires --b2-write-profile and --expected-b2-profile-fingerprint",
+        );
+      }
+      const profile = await loadCloudflareB2Profile(b2ProfilePath);
+      const result = await applyCloudflareB2Check({
+        desired,
+        expectedFingerprint,
+        checkId,
+        profile,
+        expectedProfileFingerprint: expectedB2ProfileFingerprint,
+        discoveryClient: client,
+        createWriteTransport: async (plan) => {
+          const writeToken = getCloudflareB2WriteToken();
+          await validateCloudflareB2WriteCapabilities({
+            accountId: plan.observed.account.selected!.id,
+            writeToken,
+            scopeReadToken: getCloudflareB2ScopeReadToken(),
+          });
+          return new FetchCloudflareB2WriteTransport({ apiToken: writeToken });
+        },
+        verifyRequiredRegression: ({ expectedFingerprint: before, checkId: selected }) =>
+          runRequiredWindowsPhase5cRegression({
+            desiredStatePath: resolvedDesiredStatePath,
+            expectedFingerprint: before,
+            checkId: selected,
+          }),
+      });
+      output(result, json, io);
+      return 0;
+    }
+    if (b2ProfilePath !== undefined || expectedB2ProfileFingerprint !== undefined) {
+      throw new BridgeError(
+        ERROR_CODES.CONFIG_INVALID,
+        "DNS apply cannot use the B2 write profile",
       );
     }
     const result = await applyCloudflareDnsCheck({
@@ -530,6 +627,8 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
   let desiredStatePath: string | undefined;
   let expectedFingerprint: string | undefined;
   let checkId: string | undefined;
+  let b2ProfilePath: string | undefined;
+  let expectedB2ProfileFingerprint: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -609,6 +708,21 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
         );
       }
       checkId = value;
+    } else if (argument === "--b2-write-profile") {
+      const next = argv[index + 1];
+      if (next === undefined || next.startsWith("--") || b2ProfilePath !== undefined)
+        throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "--b2-write-profile requires one path");
+      b2ProfilePath = next;
+      index += 1;
+    } else if (argument === "--expected-b2-profile-fingerprint") {
+      const next = argv[index + 1];
+      if (next === undefined || next.startsWith("--") || expectedB2ProfileFingerprint !== undefined)
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "--expected-b2-profile-fingerprint requires one SHA-256 value",
+        );
+      expectedB2ProfileFingerprint = next;
+      index += 1;
     } else if (argument.startsWith("--")) {
       throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `Unknown option: ${argument}`);
     } else {
@@ -626,6 +740,8 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
     ...(desiredStatePath === undefined ? {} : { desiredStatePath }),
     ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
     ...(checkId === undefined ? {} : { checkId }),
+    ...(b2ProfilePath === undefined ? {} : { b2ProfilePath }),
+    ...(expectedB2ProfileFingerprint === undefined ? {} : { expectedB2ProfileFingerprint }),
   };
 }
 
@@ -687,6 +803,8 @@ function usage(): string {
     "fqgate-remote-bridge cloudflared service install|start|stop|restart|status [--json]",
     "fqgate-remote-bridge cloudflare discover|plan --desired-state <repo-external-file> [--json]",
     "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <dns.context.record> [--json]",
+    "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <B2-check> --b2-write-profile <repo-external-file> --expected-b2-profile-fingerprint <sha256> [--json]",
+    "fqgate-remote-bridge cloudflare b2-profile-fingerprint --b2-write-profile <repo-external-file> [--json]",
   ].join("\n");
 }
 

@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A and Phase 6-B1 CLOSED; Phase 6-B2 AUTHORIZED / READY FOR IMPLEMENTATION; Phase 6-C remains unauthorized**
+Status: **Phase 6-A and Phase 6-B1 CLOSED; Phase 6-B2 AUTHORIZED / IMPLEMENTATION IN PROGRESS; Phase 6-C remains unauthorized**
 
 ## Purpose
 

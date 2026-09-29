@@ -5,6 +5,7 @@ param(
     [string]$TunnelIngressConfigPath,
     [switch]$RunQualityGates,
     [switch]$RunPhase5CRemoteRegression,
+    [switch]$AllowPhase6B2ReviewBranch,
     [ValidateSet("Prompt", "Vault")][string]$CredentialSource = "Prompt"
 )
 
@@ -294,7 +295,8 @@ try {
     $script:commit = (& $script:gitPath -C $repositoryRoot rev-parse HEAD).Trim()
     $status = @(& $script:gitPath -C $repositoryRoot status --porcelain | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     $branch = (& $script:gitPath -C $repositoryRoot branch --show-current).Trim()
-    Add-Record "P6A-W4" $(if ($status.Count -eq 0 -and $branch -eq "main" -and $script:commit -match '^[0-9a-f]{40}$') { "PASS" } else { "FAIL" }) @{ branch = $branch; commit = $script:commit; workingTree = $(if ($status.Count -eq 0) { "clean" } else { "dirty" }) }
+    $allowedBranch = $branch -eq "main" -or ($AllowPhase6B2ReviewBranch -and $branch -eq "codex/phase-6-b2")
+    Add-Record "P6A-W4" $(if ($status.Count -eq 0 -and $allowedBranch -and $script:commit -match '^[0-9a-f]{40}$') { "PASS" } else { "FAIL" }) @{ branch = $branch; commit = $script:commit; workingTree = $(if ($status.Count -eq 0) { "clean" } else { "dirty" }) }
     if ($status.Count -eq 0) {
         $script:routeTreePath = Join-Path $repositoryRoot "src\routeTree.gen.ts"
         if (Test-Path -LiteralPath $script:routeTreePath -PathType Leaf) {

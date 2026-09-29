@@ -21,7 +21,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Post-Phase-5 FQGate 1.0.4 qualification: **CLOSED** — local Dashboard qualification,
   official artifact, permanent-Windows local/remote regressions and
   exact-runtime-commit Ubuntu/Windows CI passed on 2026-09-29
-- Phase 6-B2: **AUTHORIZED / READY FOR IMPLEMENTATION** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
+- Phase 6-B2: **AUTHORIZED / IMPLEMENTATION IN PROGRESS** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
 - Phase 6-C+: planned only; separately authorized task required
 
 Current deployed topology remains:
@@ -473,7 +473,7 @@ post-canary Phase 6-A 14/14 and Phase 5-C 21/21.
 
 ### Phase 6-B2 — bounded Tunnel ingress and Access provisioning
 
-**AUTHORIZED / READY FOR IMPLEMENTATION.** The executable task contract is
+**AUTHORIZED / IMPLEMENTATION IN PROGRESS.** The executable task contract is
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md` and the coding-agent
 handoff is `docs/prompts/phase-6-b2-coding-agent-goal.md`.
 
