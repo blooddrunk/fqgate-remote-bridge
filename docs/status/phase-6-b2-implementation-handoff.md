@@ -27,7 +27,7 @@ run and were not persisted.
 
 ## Deterministic checks and CI
 
-Frozen pnpm install, typecheck, lint, 21 Vitest files with 271 tests,
+Frozen pnpm install, typecheck, lint, 21 Vitest files with 272 tests,
 production build, format check and 15 Playwright E2E tests passed. B2 fixtures
 cover exact method/path/count, one action, stale plan, wrong origin/17281,
 wildcards, duplicate/ambiguous identities, wrong AUD, cross-profile policy,

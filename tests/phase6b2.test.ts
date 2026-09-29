@@ -602,6 +602,42 @@ describe("Phase 6-B2 fixed HTTP and scope contract", () => {
     },
   );
 
+  it("bounds a stalled B2 write and keeps an upstream exception secret", async () => {
+    const observed = await plan({ missingRoute: "human" });
+    const routes = [
+      ...contexts.map((context) => ({
+        hostname: hostnames[context],
+        service: "http://127.0.0.1:17282",
+        originRequest: {
+          access: { required: true as const, teamName: "research", audTag: [audiences[context]] },
+        },
+      })),
+      { service: "http_status:404" },
+    ];
+    vi.useFakeTimers();
+    try {
+      const transport = new FetchCloudflareB2WriteTransport({
+        apiToken: "hidden-write-token",
+        timeoutMs: 1_000,
+        fetchImpl: async (_url, init) =>
+          await new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () =>
+              reject(new Error("Authorization: Bearer hidden-write-token")),
+            );
+          }),
+      });
+      const pending = transport.replaceExactTunnelIngress(observed, routes);
+      const rejection = expect(pending).rejects.toMatchObject({
+        code: "CLOUDFLARE_WRITE_FAILED",
+        message: "Cloudflare B2 write request failed",
+      });
+      await vi.advanceTimersByTimeAsync(1_000);
+      await rejection;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("reports a bounded manual-required result after a partial write with no compensating write", async () => {
     let state: State = { missingRoute: "human" };
     const before = await plan(state);
