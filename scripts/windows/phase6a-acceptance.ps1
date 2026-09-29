@@ -125,9 +125,15 @@ function Ensure-PlaywrightHeadlessShell {
         return
     }
     Write-Host "P6A-Q7-BROWSER REPAIR"
-    $install = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments @(
-        "pnpm", "exec", "playwright", "install", "--force", "chromium"
-    ) -Environment @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath } -MaximumOutputBytes 1MB
+    $install = if ($AllowPhase6B2ReviewBranch) {
+        Invoke-BoundedProcess -FileName $script:pnpmPath -Arguments @(
+            "exec", "playwright", "install", "--force", "chromium"
+        ) -Environment @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath } -MaximumOutputBytes 1MB
+    } else {
+        Invoke-BoundedProcess -FileName $script:corepackPath -Arguments @(
+            "pnpm", "exec", "playwright", "install", "--force", "chromium"
+        ) -Environment @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath } -MaximumOutputBytes 1MB
+    }
     if ($install.ExitCode -ne 0) {
         throw "P6A-Q7-BROWSER_INSTALL_FAIL"
     }
@@ -270,6 +276,7 @@ function Write-Evidence {
 $script:nodePath = Resolve-CommandPath "node.exe"
 $script:gitPath = Resolve-CommandPath "git.exe"
 $script:corepackPath = Resolve-CommandPath "corepack.cmd"
+$script:pnpmPath = Resolve-CommandPath "pnpm.cmd"
 $script:commit = ""
 $script:planFingerprint = ""
 $script:planReadOnly = $false
@@ -285,6 +292,7 @@ try {
     if ([string]::IsNullOrWhiteSpace($script:nodePath)) { throw "P6A-W2 FAIL_NODE_REQUIRED" }
     if ([string]::IsNullOrWhiteSpace($script:gitPath)) { throw "P6A-W2 FAIL_GIT_REQUIRED" }
     if ([string]::IsNullOrWhiteSpace($script:corepackPath)) { throw "P6A-W2 FAIL_COREPACK_REQUIRED" }
+    if ($AllowPhase6B2ReviewBranch -and [string]::IsNullOrWhiteSpace($script:pnpmPath)) { throw "P6A-W2 FAIL_PNPM_REQUIRED" }
     $resolvedDesiredState = (Resolve-Path -LiteralPath $DesiredStatePath).Path
     if (-not (Test-Path -LiteralPath $resolvedDesiredState -PathType Leaf)) { throw "P6A-W3 FAIL_DESIRED_STATE_REQUIRED" }
     $desiredText = Get-Content -LiteralPath $resolvedDesiredState -Raw
@@ -307,6 +315,10 @@ try {
     Assert-LoopbackListener "P6A-W6" 17282
 
     if ($RunQualityGates) {
+        if ($AllowPhase6B2ReviewBranch) {
+            $pnpmVersion = Invoke-BoundedProcess -FileName $script:pnpmPath -Arguments @("--version")
+            if ($pnpmVersion.ExitCode -ne 0 -or $pnpmVersion.Stdout.Trim() -ne "11.23.0") { throw "P6A-Q0 FAIL_PNPM_VERSION" }
+        }
         $qualityGateEnvironment = @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath }
         foreach ($gate in @(
             @{ id = "P6A-Q1"; args = @("pnpm", "install", "--frozen-lockfile") },
@@ -321,7 +333,11 @@ try {
                 Ensure-PlaywrightHeadlessShell
             }
             try {
-                $gateResult = Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -Environment $qualityGateEnvironment -MaximumOutputBytes 256KB
+                $gateResult = if ($AllowPhase6B2ReviewBranch) {
+                    Invoke-BoundedProcess -FileName $script:pnpmPath -Arguments @($gate.args | Select-Object -Skip 1) -Environment $qualityGateEnvironment -MaximumOutputBytes 256KB
+                } else {
+                    Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -Environment $qualityGateEnvironment -MaximumOutputBytes 256KB
+                }
             } finally {
                 Restore-GeneratedRouteTree
             }

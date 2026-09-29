@@ -361,5 +361,12 @@ describe("Windows entry points", () => {
     expect(script).toContain('"P6B2-POST-PLAN"');
     expect(script).toContain('"P6B2-LOOPBACK"');
     expect(script).toContain('"-RunAuthenticatedBrowserMatrix"');
+    const phase6a = readFileSync(
+      new URL("../scripts/windows/phase6a-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(phase6a).toContain("$AllowPhase6B2ReviewBranch");
+    expect(phase6a).toContain('Resolve-CommandPath "pnpm.cmd"');
+    expect(phase6a).toContain('$pnpmVersion.Stdout.Trim() -ne "11.23.0"');
   });
 });
