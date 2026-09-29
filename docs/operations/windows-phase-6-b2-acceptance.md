@@ -52,7 +52,7 @@ B1 DNS writes use their separate exact-zone token.
 
 ## Automated run
 
-From an interactive PowerShell in the permanent checkout, on the clean
+From an interactive PowerShell terminal in the permanent checkout, on the clean
 `codex/phase-6-b2` review branch:
 
 ```powershell
@@ -66,7 +66,8 @@ The script first runs full repository quality gates and Phase 6-A live read-only
 discovery/plan. With an in-sync plan, it
 proves the B2 CLI refuses apply with zero writes and without a write credential.
 It then reruns Phase 6-A with the Phase 5-C real service-token matrix,
-Phase 4.5 headed ordinary/admin browser,
+Phase 4.5 headed ordinary/admin browser (complete each Access login and MFA in
+the opened browser, then press Enter in that same terminal),
 local Phase 5-A/B/C, and loopback checks. The secret-free result is written to
 `D:\code\research\fqgate-phase6b2-acceptance-evidence.json`.
 

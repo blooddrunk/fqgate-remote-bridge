@@ -203,8 +203,9 @@ try {
     Add-Record "P6B2-POST-PLAN" "PASS" @{ classification = "in_sync"; fingerprint = $afterFingerprint; mutationCount = $mutationCount }
     $post = Invoke-Phase6A "POST" $desired $config $ingress $true
     if ($post.plan.fingerprint -ne $afterFingerprint) { throw "P6B2_POST_ACCEPTANCE_PLAN_CHANGED" }
-    $browser = Invoke-BoundedProcess $powershell @("-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $root "scripts\windows\phase45-acceptance.ps1"), "-ConfigPath", $config, "-RunAuthenticatedBrowserMatrix") @{} 900000
-    if ($browser.ExitCode -ne 0 -or $browser.Stdout -match '"result"\s*:\s*"(?:FAIL|MANUAL)"') { throw "P6B2_PHASE45_BROWSER_FAILED" }
+    # The existing headed harness requires a real terminal for operator Access login/MFA.
+    & $powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "scripts\windows\phase45-acceptance.ps1") -ConfigPath $config -RunAuthenticatedBrowserMatrix
+    if ($LASTEXITCODE -ne 0) { throw "P6B2_PHASE45_BROWSER_FAILED" }
     Add-Record "P6B2-PHASE45-BROWSER" "PASS" @{ contexts = "ordinary,admin" }
     foreach ($spec in @(
         @{ Id = "P6B2-P5A-LOCAL"; File = "phase5a-acceptance.ps1"; Args = @("-ConfigPath", $config, "-VerifyLocal") },
