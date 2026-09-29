@@ -21,7 +21,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Post-Phase-5 FQGate 1.0.4 qualification: **CLOSED** — local Dashboard qualification,
   official artifact, permanent-Windows local/remote regressions and
   exact-runtime-commit Ubuntu/Windows CI passed on 2026-09-29
-- Phase 6-B2/C+: planned only; separately authorized task required
+- Phase 6-B2: **AUTHORIZED / READY FOR IMPLEMENTATION** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
+- Phase 6-C+: planned only; separately authorized task required
 
 Current deployed topology remains:
 
@@ -470,10 +471,18 @@ canary cleanup. The 2026-09-24 run passed with no supported production drift,
 verified zero-write refusal for an in-sync plan, verified canary cleanup, and
 post-canary Phase 6-A 14/14 and Phase 5-C 21/21.
 
-### Phase 6-B2 — broader reviewed provisioning
+### Phase 6-B2 — bounded Tunnel ingress and Access provisioning
 
-Planned only. Tunnel configuration and Access-resource mutation require a
-separate task after B1 closes; do not infer that authority from B1.
+**AUTHORIZED / READY FOR IMPLEMENTATION.** The executable task contract is
+`docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md` and the coding-agent
+handoff is `docs/prompts/phase-6-b2-coding-agent-goal.md`.
+
+B2 is intentionally not a generic Cloudflare provisioner. It may add only the
+reviewed, plan-bound Tunnel ingress and human/admin/machine Access application/policy
+mutations defined by that task, one action per invocation, with B1 stale-plan and
+fingerprint semantics. Arbitrary deletion, policy widening, token rotation, wildcard
+or direct-17281 ingress, background reconciliation and Phase 6-C behavior remain
+unauthorized.
 
 ## Phase 6-C — live reconciliation and credential retirement
 
@@ -511,7 +520,7 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 Phase 5, both post-Phase-5 FQGate 1.0.2 and 1.0.4 maintenance tracks, Phase
 6-A, credential custody and Phase 6-B1 are closed. The 1.0.4 local upgrade,
 real remote-human/admin/machine regressions and exact runtime-commit CI are
-recorded in its final handoff. Phase 6-B2/C remain planned and unauthorized.
+recorded in its final handoff. Phase 6-B2 is now authorized under its bounded task contract; Phase 6-C remains planned and unauthorized.
 
 Most recently closed FQGate maintenance task:
 
@@ -547,5 +556,6 @@ Automate every machine-verifiable quality, fixture, discovery, reconciliation, l
 regression check. Human intervention is limited to the explicitly documented hidden credential
 entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that includes the
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
-command. Phase 6-B1 had its own narrow authorization; its closure does not
-authorize Phase 6-B2 or Phase 6-C.
+command. Phase 6-B2 now has its own narrow authorization in
+`docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
+does not authorize Phase 6-C.
