@@ -1,6 +1,6 @@
 # Post-Phase-5 FQGate 1.0.4 Dashboard qualification
 
-Status: **ACTIVE — implementation and permanent-Windows acceptance in progress**.
+Status: **ACTIVE — local implementation, permanent-Windows 1.0.4 upgrade and exact-implementation-commit CI are complete; real remote closure is pending**.
 
 This is a new maintenance task based on the official 1.0.4 stable release. It is
 separate from the closed Post-Phase-5 FQGate 1.0.2 qualification task. Phase 5,
@@ -10,6 +10,10 @@ market-data operations.
 Read the design first:
 
 `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md`
+
+Closure/Coding-agent handoff:
+
+`docs/prompts/post-phase-5-fqgate-1-0-4-closure-codex-goal.md`
 
 ## Goals
 
@@ -111,10 +115,24 @@ matrix modules were then run as direct Windows Node processes and exited 0 with
 all bounded checks passing. Rerun the aggregate wrapper from native Windows
 PowerShell if that wrapper-level evidence is needed for closure.
 
-This confirms the permanent Windows 1.0.4 update and local regression. The task
-remains active until the existing real remote-human/admin/machine regressions
-and exact-commit Ubuntu/Windows CI are recorded; this update does not expand any
-remote operation permissions or reopen Phase 5.
+This confirms the permanent Windows 1.0.4 update and local regression.
+
+## Exact implementation-commit CI — 2026-09-28
+
+Implementation commit `c03a3393597ad44dc00b0c1975ec4ab19d8b90b0` passed
+GitHub Actions CI run `36372964583` with exact matching `head_sha`. Ubuntu job
+`108772902641` passed the frozen install, typecheck, lint, tests, build, browser
+E2E and format check. Windows job `108772902787` passed the frozen install,
+typecheck, lint, tests, build, format check, Windows CLI smoke, loopback smoke
+and acceptance-vault checks; browser E2E remains intentionally exercised by the
+Ubuntu job in the current CI workflow.
+
+The task therefore remains ACTIVE only for the existing real remote-human,
+remote-admin and remote-machine regression closure and its bounded evidence
+record. If closure work changes runtime code, the new runtime implementation
+commit must receive its own exact-commit Ubuntu/Windows CI before the task is
+marked CLOSED. This maintenance task does not expand any remote operation
+permissions or reopen Phase 5.
 
 ## Implementation scope
 

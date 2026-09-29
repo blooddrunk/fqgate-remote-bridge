@@ -18,8 +18,9 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
   directory retirement passed on permanent Windows
 - Phase 6-B1: **CLOSED** — permanent-Windows canary cleanup, post-canary
   regressions and exact-commit Ubuntu/Windows CI passed on 2026-09-24
-- Post-Phase-5 FQGate 1.0.4 qualification: **ACTIVE** — local Dashboard entry,
-  official-source update, and permanent-Windows upgrade are in progress
+- Post-Phase-5 FQGate 1.0.4 qualification: **ACTIVE** — local Dashboard qualification,
+  official-source 1.0.4 permanent-Windows upgrade and exact-implementation-commit CI are complete;
+  real remote-human/admin/machine closure remains
 - Phase 6-B2/C+: planned only; separately authorized task required
 
 Current deployed topology remains:
@@ -375,7 +376,7 @@ Do not treat this closed maintenance track as a Phase 6 blocker.
 
 ## Active maintenance task — FQGate 1.0.4 local Dashboard qualification
 
-Status: **ACTIVE — 1.0.4 is an unvalidated candidate; permanent-Windows closure is pending**.
+Status: **ACTIVE — 1.0.4 is locally qualified and installed; exact-implementation-commit CI is green; real remote closure is pending**.
 
 The latest official stable manifest declares FQGate 1.0.4. This separate task
 updates the fixed repository source and adds one `updates.qualify` operation
@@ -389,6 +390,9 @@ Design:
 
 Task:
 `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`
+
+Closure/Coding-agent handoff:
+`docs/prompts/post-phase-5-fqgate-1-0-4-closure-codex-goal.md`
 
 ---
 
@@ -501,14 +505,24 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 ## Current development handoff
 
 Phase 5, the post-Phase-5 FQGate 1.0.2 maintenance track, Phase 6-A,
-credential custody and Phase 6-B1 are closed. The separate 1.0.4 qualification
-task is active. Phase 6-B2/C remain planned and unauthorized.
+credential custody and Phase 6-B1 are closed. The separate FQGate 1.0.4
+qualification is the current ACTIVE task. Its local upgrade and exact
+implementation-commit CI are complete; real remote-human/admin/machine closure
+remains. Phase 6-B2/C remain planned and unauthorized.
 
-Most recently closed task:
+Current active task:
+
+`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`
+
+Closure/Coding-agent handoff:
+
+`docs/prompts/post-phase-5-fqgate-1-0-4-closure-codex-goal.md`
+
+Most recently closed Phase 6 task:
 
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`
 
-Codex handoff:
+Historical Phase 6-B1 Codex handoff:
 
 `docs/prompts/phase-6-b1-codex-goal.md`
 
