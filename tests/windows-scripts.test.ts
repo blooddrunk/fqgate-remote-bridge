@@ -360,7 +360,7 @@ describe("Windows entry points", () => {
     expect(script).toContain('"P6B2-ONE-ACTION"');
     expect(script).toContain('"P6B2-POST-PLAN"');
     expect(script).toContain('"P6B2-LOOPBACK"');
-    expect(script).toContain('"-RunAuthenticatedBrowserMatrix"');
+    expect(script).toContain("-RunAuthenticatedBrowserMatrix");
     const phase6a = readFileSync(
       new URL("../scripts/windows/phase6a-acceptance.ps1", import.meta.url),
       "utf8",
