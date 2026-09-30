@@ -22,6 +22,7 @@ Prefer automated evidence over narrative claims.
 Create/update deterministic tests that cover every policy state, thresholds, cooldown, exhaustion, stable reset, corrupt history, path safety, CLI option rejection, and explicit proof that no actuator/service restart/update/Cloudflare/notification path is reachable.
 
 Create a permanent-Windows acceptance script with fixed IDs that automatically runs:
+
 - frozen install;
 - typecheck;
 - lint;
