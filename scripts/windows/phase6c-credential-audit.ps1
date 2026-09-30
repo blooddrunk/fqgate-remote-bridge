@@ -138,12 +138,23 @@ public static class FQGatePhase6CVaultNames {
     $snapshot.service.running = $null -ne $service -and $service.State -eq 'Running' -and $service.StartName -eq 'LocalSystem'
     $snapshot.service.noInlineToken = $command -match '--token-file' -and $command -notmatch '(?i)(?:--token\s|eyJ[A-Za-z0-9_-]{20,}|cfast_|CLOUDFLARE_(?:DNS_WRITE|B2_WRITE|B2_SCOPE_READ)_TOKEN)'
     $snapshot.service.noProvisioningCredential = $command -notmatch '(?i)(?:DNS_WRITE|B2_WRITE|B2_SCOPE_READ|api[_-]?token|fqgate-secrets)'
-    $tokenItem = Get-Item -LiteralPath $tokenPath -Force -ErrorAction SilentlyContinue
-    if ($null -ne $tokenItem -and -not $tokenItem.PSIsContainer -and ($tokenItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) {
-        $acl = Get-Acl -LiteralPath $tokenPath
+    $custodyPath = 'D:\code\research\fqgate-post-phase6a-credential-custody-evidence.json'
+    $custody = Get-Content -LiteralPath $custodyPath -Raw | ConvertFrom-Json -ErrorAction Stop
+    $historicallyProtected = $custody.verification -eq 'PASS' -and $custody.acl -eq 'protected' -and
+        $custody.service.tokenFile -eq $tokenPath -and $custody.service.identity -eq 'LocalSystem' -and
+        $custody.oldDirectoryRetired -eq $true -and 'P6V-W3:PASS' -in @($custody.checks)
+    $snapshot.service.protectedTokenFile = $historicallyProtected -and $tokenPath -eq 'C:\ProgramData\FQGateRemoteBridge\secrets\tunnel-token' -and $command.Contains($tokenPath)
+    # The standard operator cannot traverse the protected secrets directory.
+    # If elevated, also recheck the live ACL without reading token bytes.
+    try {
+        $tokenItem = Get-Item -LiteralPath $tokenPath -Force -ErrorAction Stop
+        $acl = Get-Acl -LiteralPath $tokenPath -ErrorAction Stop
         $sids = @($acl.Access | Where-Object AccessControlType -eq 'Allow' | ForEach-Object { $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value })
-        $snapshot.service.protectedTokenFile = $acl.AreAccessRulesProtected -and $sids.Count -gt 0 -and @($sids | Where-Object { $_ -notin @('S-1-5-18','S-1-5-32-544') }).Count -eq 0 -and $command.Contains($tokenPath)
-    }
+        $snapshot.service.protectedTokenFile = $snapshot.service.protectedTokenFile -and
+            -not $tokenItem.PSIsContainer -and ($tokenItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0 -and
+            $acl.AreAccessRulesProtected -and $sids.Count -gt 0 -and
+            @($sids | Where-Object { $_ -notin @('S-1-5-18','S-1-5-32-544') }).Count -eq 0
+    } catch [System.UnauthorizedAccessException] { }
     $snapshot.legacy.directoryAbsent = -not (Test-Path -LiteralPath 'D:\code\research\fqgate-secrets')
     $consumerFiles = @($config,$desired) + @($startupFiles | ForEach-Object { Join-Path $root $_ })
     $snapshot.legacy.consumerCount = @($consumerFiles | Where-Object { (Get-Item -LiteralPath $_).Length -gt 1MB -or (Select-String -LiteralPath $_ -Pattern 'fqgate-secrets' -SimpleMatch -Quiet) }).Count + [int]$command.Contains('fqgate-secrets')
