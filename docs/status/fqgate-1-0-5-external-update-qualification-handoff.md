@@ -20,7 +20,6 @@ The implementation commit `daf0523` passed [Ubuntu and Windows CI](https://githu
 
 Prefer the existing local Dashboard preview/qualification transaction while the old managed binary still exists; that path has a real rollback file. If FQGate has already self-updated, the explicit one-command CLI path above avoids a manual file swap, release hard-code change, and repeated state repair. The release's real Windows and remote regression checks remain acceptance requirements; they can be automated with existing scripts and Vault-backed credentials.
 
-
 ## Review hardening
 
 Repository review found one fail-closed ordering defect in the first implementation: candidate inspection executed `fqgate.exe --version` before the current file's size/SHA-256 was compared with the official manifest. The implementation was corrected so an externally replaced current file is hashed and rejected **before any candidate execution**. A deterministic regression test now asserts that the candidate runner is invoked zero times for a wrong-hash current artifact.
