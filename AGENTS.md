@@ -399,7 +399,7 @@ Follow `docs/roadmap.md`.
 - Phase 6: CLOSED
 - Phase 7-A: CLOSED under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; permanent-Windows P7A-01..P7A-13 and exact-commit CI passed
 - Phase 7-B1: CLOSED under `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`; deterministic policy and dry-run planning only, no actuator
-- Phase 7-B1-R1: integration hardening under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main reconstruction and RecoveryStore decision hardening in progress, no actuator
+- Phase 7-B1-R1: CLOSED under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main integration and RecoveryStore decision hardening accepted in PR #14, no actuator; merge remains separate
 - Phase 7-B2/7-C: NOT AUTHORIZED; no automatic recovery actuation/startup integration or notifications yet
 - FQGate 1.0.5 external-update qualification: LIVE QUALIFIED; CLI-only implementation is integrated under
   `docs/tasks/fqgate-1-0-5-external-update-qualification.md`;

@@ -28,7 +28,7 @@ task package 和安全文档为准。
 - Phase 7-A：**CLOSED**；只读 supervisor observation + bounded event journal 已验收。
   Phase 7-B1 本机 recovery policy + dry-run plan 已闭环，任务见
   `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`。7-B2 自动恢复和 7-C 通知均未授权。
-- Phase 7-B1-R1：集成验收进行中；1.0.5/B1 从最新主线重建，RecoveryStore
+- Phase 7-B1-R1：**CLOSED**；集成验收已通过，PR #14 待合并。1.0.5/B1 从最新主线重建，RecoveryStore
   严格校验 decision/action 与历史语义；没有增加 actuator。详见
   `docs/tasks/phase-7-b1-r1-integration-hardening.md` 与
   `docs/status/phase-7-b1-r1-implementation-handoff.md`。

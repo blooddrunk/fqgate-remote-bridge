@@ -1,7 +1,10 @@
 # Phase 7-B1-R1 — integration and RecoveryStore decision hardening
 
-Status: **IN PROGRESS**. Phase 7-B1 remains CLOSED; this task integrates its
-existing planning-only implementation and tightens persisted decision validation.
+Status: **CLOSED**. Phase 7-B1 remains CLOSED. The integration and persisted
+decision hardening passed permanent-Windows acceptance and exact-final-commit
+Ubuntu/Windows CI in PR #14; merging that PR remains a separate action.
+The evidence locations and commit reconciliation are in
+`docs/status/phase-7-b1-r1-implementation-handoff.md`.
 
 ## Goal
 
