@@ -249,6 +249,16 @@ export function evaluateRecovery(input: {
       return decision("forbidden", "incompatible");
     if (observation.snapshot.tunnel === "missing") return decision("forbidden", "missing_tunnel");
     if (observation.failed.length > 0) return decision("forbidden", "probe_failed");
+    // Unknown session never permits recovery. A fully healthy deployment still
+    // has no action to take, regardless of whether FQGate names its guest state.
+    if (
+      observation.snapshot.session === "unknown" &&
+      observation.snapshot.bridge === "ready" &&
+      observation.snapshot.fqgate === "ready" &&
+      observation.snapshot.tunnel === "running" &&
+      safety.fqgateTransaction === "clear"
+    )
+      return decision("no_action", "healthy");
     if (
       observation.snapshot.session === "unknown" ||
       observation.snapshot.fqgate === "unknown" ||

@@ -655,3 +655,8 @@ The local supervisor journal builds records only from fixed component/state/reas
 ## Phase 7-B1 planning boundary
 
 Recovery planning models only `bridge.restart`, `fqgate.restart` and `tunnel.restart` as identifiers. They are never executed. Eligibility requires consecutive failures, a clear transaction gate, qualified FQGate, known identity for the affected component, an unexpired cooldown and remaining attempt budget. Incompatible FQGate, login-required, missing tunnel, unknown state or probe failure forbids every candidate. The current CLI deliberately treats Bridge and tunnel identity as unknown until a separately reviewed read-only identity proof exists, so it cannot emit an eligible plan for those components. The bounded recovery file uses schema allowlists, a 4-KiB cap, repo-external path/link checks, and the Phase 7-A single-writer lock. Corrupt history cannot grant eligibility. No remote operation or permission is added.
+
+When Bridge, FQGate and tunnel are all ready, an unknown session label can return
+`no_action` because there is no recovery candidate. It never counts toward a
+failure threshold or permits a restart. Any failure alongside an unknown session
+remains forbidden.

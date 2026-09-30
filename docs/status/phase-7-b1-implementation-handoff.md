@@ -42,5 +42,18 @@ The subsequent run passed baseline and frozen install, then stopped at
 12.6.0 when the outer command used Corepack. The gate now invokes the installed
 `pnpm.cmd` directly from the repository; its project-aware version switch reports
 the pinned 11.23.0, including nested script invocations.
+The next run passed all quality and Playwright checks, then stopped at
+`P7B1-10-INSPECT`: `bridge=ready`, `tunnel=running`, `fqgate=unhealthy`,
+`session=unknown`. The existing lifecycle status reported `identity_mismatch`
+for the recorded FQGate PID even though loopback health returned HTTP 200.
+`Win32_Process.ExecutablePath` was unreadable from the non-elevated shell.
+No process was killed, restarted or adopted. An elevated read-only identity
+check is required before any next live acceptance attempt. The policy also now
+returns `no_action` for a fully ready deployment whose session label is unknown;
+an unknown session with any failed component remains forbidden.
+The operator reported that an elevated read-only `Win32_Process.ExecutablePath`
+check resolved the recorded PID to the exact managed FQGate executable. The
+non-elevated CLI still cannot verify it; the next acceptance must run from an
+elevated native Windows PowerShell process and prove the state directly.
 
 Phase 7-B2 actuation/startup integration and Phase 7-C notifications remain unauthorized.

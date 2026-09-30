@@ -125,7 +125,6 @@ describe("Phase 7-B1 decision layer", () => {
     [{ fqgate: "incompatible" }, "incompatible"],
     [{ fqgate: "unknown" }, "unknown_state"],
     [{ session: "login_required" }, "login_required"],
-    [{ session: "unknown" }, "unknown_state"],
     [{ tunnel: "missing" }, "missing_tunnel"],
     [{ tunnel: "unknown" }, "unknown_state"],
   ] as const)("forbids dangerous global state %j", (patch, reason) => {
@@ -133,6 +132,19 @@ describe("Phase 7-B1 decision layer", () => {
       run(withState(patch)).decisions.every(
         (item) =>
           item.decision === "forbidden" && item.reason === reason && item.action === undefined,
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps a fully ready but unnamed session at no_action and forbids recovery candidates", () => {
+    expect(
+      run(withState({ session: "unknown" })).decisions.every(
+        (item) => item.decision === "no_action" && item.action === undefined,
+      ),
+    ).toBe(true);
+    expect(
+      run(withState({ session: "unknown", bridge: "unavailable" })).decisions.every(
+        (item) => item.decision === "forbidden" && item.action === undefined,
       ),
     ).toBe(true);
   });
