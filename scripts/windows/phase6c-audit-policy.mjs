@@ -1,7 +1,5 @@
 // Pure, deterministic policy. The Windows collector passes booleans and fixed target names only.
-import { resolve } from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
 export const ALLOWED_TARGETS = Object.freeze([
   "FQGateRemoteBridge/acceptance/v1/cloudflare-read",
   "FQGateRemoteBridge/acceptance/v1/machine-client-id",
@@ -137,7 +135,7 @@ export function serializeAuditEvidence(evidence) {
   return encoded;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1]?.toLowerCase().endsWith("phase6c-audit-policy.mjs")) {
   let input = "";
   for await (const chunk of process.stdin) {
     input += chunk;

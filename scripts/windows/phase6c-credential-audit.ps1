@@ -118,7 +118,7 @@ public static class FQGatePhase6CVaultNames {
     }
     try {
       if (count > 4096) throw new InvalidOperationException("P6C_VAULT_COUNT_UNBOUNDED");
-      string[] names = new string[count];
+      string[] names = new string[checked((int)count)];
       for (int i=0; i<count; i++) {
         IntPtr item = Marshal.ReadIntPtr(array, i * IntPtr.Size);
         names[i] = ((Credential)Marshal.PtrToStructure(item, typeof(Credential))).TargetName;
@@ -169,7 +169,7 @@ public static class FQGatePhase6CVaultNames {
 } catch {
     $code = [string]$_.Exception.Message
     if ($code -notmatch '^P6C_[A-Z0-9_]{1,80}$' -and $code -notmatch '^VAULT_[A-Z0-9_]{1,80}$') { $code = 'P6C_AUDIT_COLLECTION_FAILED' }
-    Write-Host "P6C-AUDIT-COLLECTION FAIL $code"
+    Write-Host ("P6C-AUDIT-COLLECTION FAIL code={0} line={1} type={2}" -f $code,$_.InvocationInfo.ScriptLineNumber,$_.Exception.GetType().Name)
 } finally {
     foreach ($key in @('GIT_CONFIG_COUNT','GIT_CONFIG_KEY_0','GIT_CONFIG_VALUE_0')) { [Environment]::SetEnvironmentVariable($key,$null,'Process') }
 }
