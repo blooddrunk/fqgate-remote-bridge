@@ -119,6 +119,13 @@ Responsibilities:
 - expose one transaction interface reused by CLI and Dashboard through the
   framework-agnostic update application service.
 
+When FQGate's own updater has already replaced the managed file, the separate
+explicit local `fqgate qualify-current` CLI may qualify that exact official
+current artifact in place. It verifies the loopback listener's owning process,
+health, required OpenAPI and the fixed lookup semantic contract before writing
+artifact-bound evidence. It does not replace or restart the binary and cannot
+claim an absent previous executable as rollback material.
+
 Phase 0/1 implemented the lifecycle boundary. Phase 3 extends the same boundary rather than reimplementing updater logic in web routes.
 
 #### Release-source registry

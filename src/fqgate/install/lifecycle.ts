@@ -81,6 +81,12 @@ export interface FqgateQualificationOptions {
   readonly dryRun?: boolean;
 }
 
+export interface CurrentQualificationResult {
+  readonly version: string;
+  readonly sha256: string;
+  readonly status: FqgateStatus;
+}
+
 export interface LifecycleDependencies {
   readonly layout?: FqgateLayout;
   readonly releaseSource: FqgateReleaseSource;
@@ -214,6 +220,118 @@ export class FqgateLifecycleManager {
       ...(options.dryRun === undefined ? {} : { dryRun: options.dryRun }),
       qualificationProbes: options.probes,
     });
+  }
+
+  /** Qualify an official artifact already installed by FQGate's own updater. */
+  async qualifyCurrent(
+    probes: readonly CandidateQualificationProbe[],
+  ): Promise<CurrentQualificationResult> {
+    if (probes.length === 0) {
+      throw new BridgeError(
+        ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+        "Current qualification requires an operation probe",
+      );
+    }
+    let version = "";
+    let sha256 = "";
+    await this.ensureLayoutAndLock(async () => {
+      if (await pathExists(this.layout.transactionFile)) {
+        throw new BridgeError(
+          ERROR_CODES.ACTIVATION_FAILED,
+          "An FQGate activation transaction remains unresolved",
+        );
+      }
+      const release = await this.releaseSource.getStableRelease();
+      const pkg = selectWindowsX64Package(release);
+      this.policy.assertSupported(release.version);
+      const current = await this.inspectArtifact(this.layout.currentExecutable);
+      if (
+        current === undefined ||
+        current.validationError !== undefined ||
+        current.version !== release.version ||
+        current.size !== pkg.size ||
+        current.sha256 !== pkg.sha256
+      ) {
+        throw new BridgeError(
+          ERROR_CODES.CANDIDATE_INVALID,
+          "Managed current FQGate does not match the official stable artifact",
+        );
+      }
+      const running = await this.processController.adoptCurrent(
+        this.layout.currentExecutable,
+        this.layout.processFile,
+      );
+      if (running.state !== "running" || running.pid === undefined) {
+        throw new BridgeError(
+          ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+          "Managed current FQGate listener is not verified",
+        );
+      }
+      this.runtimeOpenApiProbe?.invalidate();
+      const health = await this.healthProbe.waitUntilReady(
+        this.activationHealthTimeoutMs,
+        this.activationHealthPollIntervalMs,
+      );
+      if (!isActivationHealthy(health)) {
+        throw new BridgeError(ERROR_CODES.HEALTH_TIMEOUT, "Current FQGate health is not usable");
+      }
+      if (this.runtimeOpenApiProbe === undefined) {
+        throw new BridgeError(
+          ERROR_CODES.COMPATIBILITY_PROBE_FAILED,
+          "Required OpenAPI probe is unavailable",
+        );
+      }
+      await this.runtimeOpenApiProbe.probe();
+      await this.healthProbe.waitUntilReady(
+        this.activationHealthTimeoutMs,
+        this.activationHealthPollIntervalMs,
+      );
+      const qualification = await runQualificationProbes(probes, this.now());
+      const freshRelease = await this.releaseSource.getStableRelease();
+      const freshPkg = selectWindowsX64Package(freshRelease);
+      const freshCurrent = await this.inspectArtifact(this.layout.currentExecutable);
+      const freshProcess = await this.processController.adoptCurrent(
+        this.layout.currentExecutable,
+        this.layout.processFile,
+      );
+      if (
+        freshRelease.version !== release.version ||
+        freshPkg.size !== pkg.size ||
+        freshPkg.sha256 !== pkg.sha256 ||
+        !sameInstalledArtifact(current, freshCurrent) ||
+        freshProcess.state !== "running" ||
+        freshProcess.pid !== running.pid
+      ) {
+        throw new BridgeError(
+          ERROR_CODES.ACTIVATION_FAILED,
+          "FQGate release, artifact or listener changed during qualification",
+        );
+      }
+      const before = await readFqgateState(this.layout);
+      const previous = await this.inspectArtifact(this.layout.previousExecutable);
+      const previousRecord =
+        previous !== undefined &&
+        before.previous !== undefined &&
+        artifactMatches(previous, before.previous)
+          ? before.previous
+          : undefined;
+      await writeFqgateState(this.layout, {
+        schemaVersion: 1,
+        active: {
+          version: release.version,
+          fileName: basename(this.layout.currentExecutable),
+          size: pkg.size,
+          sha256: pkg.sha256,
+          qualification,
+        },
+        ...(previousRecord === undefined ? {} : { previous: previousRecord }),
+        lastActivation: "succeeded",
+        updatedAt: this.now(),
+      });
+      version = release.version;
+      sha256 = pkg.sha256;
+    });
+    return { version, sha256, status: await this.status() };
   }
 
   /**

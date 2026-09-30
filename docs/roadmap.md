@@ -25,6 +25,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6-C: **CLOSED** — live all-`in_sync` plan, credential-dependency audit and remote/local regression; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
 - Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
 - Phase 7-A: **AUTHORIZED / OPEN** — read-only supervisor observation and bounded event journal; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+- FQGate 1.0.5 external-update qualification: **AUTHORIZED / OPEN** — separate CLI-only maintenance task in `docs/tasks/fqgate-1-0-5-external-update-qualification.md`; does not add a Phase 7-A action
 - Phase 7-B/7-C: **NOT AUTHORIZED** — recovery and notifications require separate reviewed tasks
 
 Current deployed topology remains:

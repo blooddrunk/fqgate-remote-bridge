@@ -60,6 +60,7 @@ export interface ProcessControlOptions {
 
 export interface ManagedProcessController {
   status(executablePath: string, recordPath: string): Promise<ManagedProcessSnapshot>;
+  adoptCurrent(executablePath: string, recordPath: string): Promise<ManagedProcessSnapshot>;
   start(
     executablePath: string,
     recordPath: string,

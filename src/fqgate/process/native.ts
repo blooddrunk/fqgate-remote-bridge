@@ -32,6 +32,7 @@ export interface NativeProcessDependencies {
 
 export class NativeManagedProcessController implements ManagedProcessController {
   private readonly platform: NodeJS.Platform;
+  private readonly runner: ProcessRunner;
   private readonly inspector: ProcessInspector;
   private readonly launcher: ProcessLauncher;
   private readonly terminator: ProcessTerminator;
@@ -40,6 +41,7 @@ export class NativeManagedProcessController implements ManagedProcessController 
   constructor(dependencies: NativeProcessDependencies = {}) {
     this.platform = dependencies.platform ?? process.platform;
     const runner = dependencies.runner ?? new ChildProcessRunner();
+    this.runner = runner;
     this.inspector =
       dependencies.inspector ?? new NativeProcessInspector({ platform: this.platform, runner });
     this.launcher = dependencies.launcher ?? new NativeProcessLauncher();
@@ -95,6 +97,77 @@ export class NativeManagedProcessController implements ManagedProcessController 
       expectedPath,
       actualPath: inspection.executablePath,
     };
+  }
+
+  async adoptCurrent(executablePath: string, recordPath: string): Promise<ManagedProcessSnapshot> {
+    if (this.platform !== "win32") {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+        "Live FQGate adoption requires Windows",
+      );
+    }
+    const current = await this.status(executablePath, recordPath);
+    if (current.state === "identity_mismatch" || current.state === "unknown") {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+        "Existing FQGate process identity is unsafe",
+      );
+    }
+    const script =
+      "$ErrorActionPreference = 'Stop'; $all = @(Get-NetTCPConnection -State Listen -LocalPort 17281); if ($all.Count -ne 1 -or $all[0].LocalAddress -ne '127.0.0.1') { exit 4 }; [pscustomobject]@{ Pid = [int]$all[0].OwningProcess } | ConvertTo-Json -Compress";
+    const result = await this.runner.run(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-Command", script],
+      {
+        timeoutMs: 5_000,
+        maxOutputBytes: 4_096,
+      },
+    );
+    if (result.exitCode !== 0 || result.timedOut || result.truncated) {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+        "FQGate must have exactly one IPv4 loopback listener on 17281",
+      );
+    }
+    let pid: number;
+    try {
+      const value = JSON.parse(result.stdout) as { Pid?: unknown };
+      if (!Number.isSafeInteger(value.Pid) || (value.Pid as number) <= 0) throw new Error();
+      pid = value.Pid as number;
+    } catch {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+        "FQGate listener identity response was invalid",
+      );
+    }
+    const expectedPath = resolve(executablePath);
+    const inspected = await this.inspector.inspect(pid);
+    if (
+      !inspected.running ||
+      inspected.executablePath === undefined ||
+      !pathsEqual(expectedPath, inspected.executablePath, this.platform) ||
+      (current.state === "running" && current.pid !== pid)
+    ) {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+        "FQGate listener is not the managed current executable",
+      );
+    }
+    if (current.state === "not_running") {
+      await writeProcessRecord(recordPath, {
+        pid,
+        executablePath: expectedPath,
+        startedAt: new Date().toISOString(),
+      });
+    }
+    const adopted = await this.status(executablePath, recordPath);
+    if (adopted.state !== "running" || adopted.pid !== pid) {
+      throw new BridgeError(
+        ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+        "FQGate listener changed during adoption",
+      );
+    }
+    return adopted;
   }
 
   async start(
