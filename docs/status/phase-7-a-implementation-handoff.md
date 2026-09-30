@@ -8,7 +8,7 @@ Implementation commit `4ad9c6abd2348bb0c8c1355f940421677ef786ac` adds the local 
 
 The existing permanent Windows checkout at `D:\code\research\fqgate-remote-bridge` passed fixed checks `P7A-01-CHECKOUT` through `P7A-08-E2E` on that implementation commit: frozen pnpm 11.23.0 install, typecheck, lint, 288 unit/integration tests, production build, format check and 15 Playwright E2E tests. A separate three-cycle live watch wrote four initial records, zero steady-state duplicates and zero rotated files. No production component was stopped to prove a transition; failure and recovery transitions are covered by deterministic fixtures.
 
-The implementation commit passed [GitHub Actions CI run 36662097451](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/36662097451): Ubuntu job `109718876661` and Windows job `109718876394`. Exact-final-commit CI is still required after this handoff commit.
+The implementation commit passed [GitHub Actions CI run 36662097451](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/36662097451): Ubuntu job `109718876661` and Windows job `109718876394`. The docs-only final commit's exact CI run and job IDs are kept in the repo-external evidence to avoid a self-referential commit hash.
 
 ## Exact live blocker
 
