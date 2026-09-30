@@ -22,7 +22,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
   official artifact, permanent-Windows local/remote regressions and
   exact-runtime-commit Ubuntu/Windows CI passed on 2026-09-29
 - Phase 6-B2: **CLOSED** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
-- Phase 6-C: **AUTHORIZED / OPEN** — live closure and provisioning-credential retirement; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
+- Phase 6-C: **CLOSED** — live all-`in_sync` plan, credential-dependency audit and remote/local regression; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
+- Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
 - Post-Phase-6 work: unauthorized unless a separate reviewed task exists
 
 Current deployed topology remains:
@@ -482,14 +483,17 @@ B2 is intentionally not a generic Cloudflare provisioner. It may add only the
 reviewed, plan-bound Tunnel ingress and human/admin/machine Access application/policy
 mutations defined by that task, one action per invocation, with B1 stale-plan and
 fingerprint semantics. Arbitrary deletion, policy widening, token rotation, wildcard
-or direct-17281 ingress, background reconciliation and Phase 6-C behavior remain
-unauthorized.
+or direct-17281 ingress and background reconciliation remain unauthorized.
+Phase 6-C was subsequently authorized by its own task and added no mutation.
 
 ## Phase 6-C — live reconciliation and credential retirement
 
-Planned only. A separate task must define no-op reconciliation on permanent
-Windows, removal of setup write credentials from runtime requirements, remote
-regressions and exact-final-commit Ubuntu/Windows CI.
+Closed under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
+The fixed-scope Windows credential-dependency audit proved an all-`in_sync`
+real plan and identical pre/post results. B1/B2 guarded apply remains an
+explicit future drift repair tool with transient write credentials. Local and
+human/admin/machine remote regressions and loopback listeners passed. Exact
+evidence and CI IDs are in `docs/status/phase-6-c-implementation-handoff.md`.
 
 ## Phase 7 — Supervisor, recovery, audit trail, notifications
 
@@ -521,7 +525,8 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 Phase 5, both post-Phase-5 FQGate 1.0.2 and 1.0.4 maintenance tracks, Phase
 6-A, credential custody and Phase 6-B1 are closed. The 1.0.4 local upgrade,
 real remote-human/admin/machine regressions and exact runtime-commit CI are
-recorded in its final handoff. Phase 6-B2 passed permanent-Windows acceptance and exact-commit Ubuntu/Windows CI; Phase 6-C remains planned and unauthorized.
+recorded in its final handoff. Phase 6-B2 and Phase 6-C passed permanent-Windows
+acceptance and exact-commit Ubuntu/Windows CI; Phase 6 is closed.
 
 Most recently closed FQGate maintenance task:
 
@@ -559,4 +564,5 @@ entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that in
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
 command. Phase 6-B2 now has its own narrow authorization in
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
-does not authorize Phase 6-C.
+was followed by a separate Phase 6-C task. Phase 6 is now closed; any later
+capability needs a new reviewed task.

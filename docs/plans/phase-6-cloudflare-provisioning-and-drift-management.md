@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A/B1/B2 CLOSED; Phase 6-C AUTHORIZED / OPEN**
+Status: **Phase 6-A/B1/B2/C CLOSED; Phase 6 CLOSED**
 
 ## Purpose
 
@@ -88,11 +88,11 @@ bounded, plan-bound Tunnel ingress and Access application/policy mutations defin
 there, while preserving B1 one-action and stale-plan semantics. Arbitrary DNS
 update/delete, destructive resource deletion, token rotation, broad policy
 replacement/widening, wildcard/direct-17281 ingress, background reconciliation and
-Phase 6-C behavior remain unauthorized.
+Phase 6-C behavior was outside B2 and required its separate task.
 
 ### Phase 6-C — live closure and credential retirement
 
-Authorized by `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
+Closed under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
 
 Reconcile the real deployment to a deterministic no-op plan and prove that normal runtime,
 read-only planning and human/admin/machine acceptance have no dependency on B1/B2 provisioning
@@ -100,6 +100,13 @@ credentials. Keep the guarded B1/B2 apply paths as explicit future drift-repair 
 credentials remain transient-only. Then re-run the full permanent-Windows regressions and exact-
 final-commit Ubuntu/Windows CI. Phase 6-C must not add a new mutation class, generic credential
 manager, background reconciliation, or destructive token lifecycle behavior.
+
+The Phase 6-C implementation uses `scripts/windows/phase6c-credential-audit.ps1`
+and a pure policy module to record fixed, secret-free audit IDs. The permanent
+Windows chain in `scripts/windows/phase6c-acceptance.ps1` runs this audit
+before and after existing live acceptance. B1/B2 write and scope-read
+credentials remain transient-only; the guarded apply tools remain available
+for explicit future supported drift.
 
 ## Desired-state model
 

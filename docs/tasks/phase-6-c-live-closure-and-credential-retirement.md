@@ -1,6 +1,6 @@
 # Phase 6-C — live closure and credential retirement
 
-Status: **AUTHORIZED / NOT YET IMPLEMENTED**.
+Status: **CLOSED — permanent-Windows live acceptance and exact-commit Ubuntu/Windows CI passed**.
 
 ## Goal
 
