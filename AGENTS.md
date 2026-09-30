@@ -396,7 +396,9 @@ Follow `docs/roadmap.md`.
   and exact-commit Ubuntu/Windows CI on 2026-09-24
 - Phase 6-B2: separately authorized under `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; CLOSED on 2026-09-29 after permanent-Windows acceptance and exact-commit Ubuntu/Windows CI
 - Phase 6-C: CLOSED under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; bounded credential-dependency audit and full Phase 6 closure
-- Phase 6: CLOSED; later capabilities require separate reviewed tasks
+- Phase 6: CLOSED
+- Phase 7-A: AUTHORIZED / OPEN under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; read-only supervisor observation and bounded event journal only
+- Phase 7-B/7-C: NOT AUTHORIZED; no automatic recovery or notifications yet
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
@@ -570,7 +572,32 @@ commit is `3cc99033ad9dbac899584ce3b8e3e81053647a98`; permanent-Windows evidence
 is at `D:\code\research\fqgate-phase6b1-acceptance-evidence.json`.
 Phase 6-B2 and Phase 6-C are closed under their separate task packages. B1/B2
 guarded apply remains available only for explicit operator-invoked supported drift
-with fresh transient write credentials. No post-Phase-6 capability is authorized.
+with fresh transient write credentials. Phase 7-A is separately authorized for observation-only
+supervision and journaling; it grants no recovery, notification, update, Cloudflare mutation,
+autostart/service-installation or new remote-operation authority.
+
+## Active Phase 7-A task
+
+The active executable task package is:
+
+`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+
+Design:
+
+`docs/plans/phase-7-supervisor-recovery-audit-notifications.md`
+
+Coding-agent goal:
+
+`docs/prompts/phase-7-a-coding-agent-goal.md`
+
+Phase 7-A is observation-only. It may add a deterministic local supervisor state model, one-shot
+inspect/watch CLI and bounded redacted event journal. It must not restart Bridge/FQGate/cloudflared,
+install a service or Scheduled Task, trigger QR/login, apply/qualify/check updates automatically,
+call Phase 6 apply paths, send notifications, add a new Bridge HTTP route, or expand any
+remote-human/admin/machine permission. Use the existing permanent Windows checkout at
+`D:\\code\\research\\fqgate-remote-bridge`; automate all machine-verifiable checks and use
+fixtures rather than manufacturing production downtime. Phase 7-B recovery and Phase 7-C
+notifications remain unauthorized.
 
 ## Documentation rule
 
