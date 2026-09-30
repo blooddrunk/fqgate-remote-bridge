@@ -68,11 +68,14 @@ class SequenceHealthHttp implements HttpTransport {
 }
 
 class ContentRunner implements ProcessRunner {
+  runs = 0;
+
   async run(
     executablePath: string,
     _args: readonly string[],
     _options: ProcessRunOptions,
   ): Promise<ProcessRunResult> {
+    this.runs += 1;
     let content: string;
     try {
       content = await readFile(executablePath, "utf8");
@@ -201,6 +204,7 @@ async function createManager(options: {
   readonly bodies: Map<string, Uint8Array>;
   readonly process: FakeManagedProcess;
   readonly healthResponses: Array<HttpResponse | Error>;
+  readonly runner?: ContentRunner;
   readonly validatedVersions?: readonly string[];
   readonly runtimeOpenApiProbe?: FqgateActivationOpenApiProbe;
   readonly activationHealthTimeoutMs?: number;
@@ -211,7 +215,7 @@ async function createManager(options: {
     supportedRange: ">=1.0.0 <2.0.0",
     validatedVersions: options.validatedVersions ?? ["1.0.0", "1.0.1", "1.0.2"],
   });
-  const runner = new ContentRunner();
+  const runner = options.runner ?? new ContentRunner();
   const healthProbe = new FqgateHealthProbe({
     baseUrl: "http://127.0.0.1:17281",
     http: new SequenceHealthHttp(options.healthResponses),
@@ -641,12 +645,14 @@ describe("FQGate lifecycle transaction", () => {
     await writeFile(layout.currentExecutable, "1.0.5-modified");
     const process = new FakeManagedProcess();
     process.running = true;
+    const runner = new ContentRunner();
     const manager = await createManager({
       root,
       source: new MutableReleaseSource(releaseFor(pkg, "1.0.5")),
       bodies: new Map(),
       process,
       healthResponses: [readyHealth()],
+      runner,
       runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
     });
     await expect(
@@ -659,6 +665,7 @@ describe("FQGate lifecycle transaction", () => {
         },
       ]),
     ).rejects.toMatchObject({ code: ERROR_CODES.CANDIDATE_INVALID });
+    expect(runner.runs).toBe(0);
     expect((await manager.status()).installed?.compatibility?.validated).toBe(false);
     await rm(root, { recursive: true, force: true });
   });
