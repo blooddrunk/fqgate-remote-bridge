@@ -582,3 +582,7 @@ The design and closed task are recorded in
 `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
 `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`; final
 evidence is in `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`.
+
+## Phase 7-A local observer
+
+The Phase 7-A supervisor is a local CLI domain under `src/supervisor/`. It reads the fixed loopback Bridge status route, the existing typed FQGate lifecycle/health status, and the bounded Windows cloudflared service status. Its snapshot has four fixed normalized components: bridge, fqgate, session, and tunnel. A watch loop compares snapshots and records only initial observations, transitions, probe failures and recoveries. The journal lives under the configured install directory, outside the repository. There is no Bridge route, remote operation, recovery adapter or notification adapter for the supervisor.

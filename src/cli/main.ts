@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from "node:url";
+import { join } from "node:path";
 import { loadConfig } from "../config/config.js";
 import { selectWindowsX64Package } from "../fqgate/release/manifest.js";
 import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
@@ -38,6 +39,10 @@ import {
   validateCloudflareB2WriteCapabilities,
 } from "../cloudflare/b2-capabilities.js";
 import { runRequiredWindowsPhase5cRegression } from "../cloudflare/windows-regression.js";
+import { createObservationAdapters } from "../supervisor/adapters.js";
+import { EventJournal } from "../supervisor/journal.js";
+import { observe } from "../supervisor/model.js";
+import { watch, validateWatchOptions } from "../supervisor/watch.js";
 import {
   FetchCloudflareDnsApplyWriteTransport,
   getCloudflareDnsWriteToken,
@@ -65,6 +70,8 @@ interface ParsedArguments {
   readonly checkId?: string;
   readonly b2ProfilePath?: string;
   readonly expectedB2ProfileFingerprint?: string;
+  readonly intervalMs?: number;
+  readonly maxCycles?: number;
 }
 
 export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): Promise<number> {
@@ -83,11 +90,12 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
     if (
       args.positionals[0] !== "fqgate" &&
       args.positionals[0] !== "cloudflared" &&
-      args.positionals[0] !== "cloudflare"
+      args.positionals[0] !== "cloudflare" &&
+      args.positionals[0] !== "supervisor"
     ) {
       throw new BridgeError(
         ERROR_CODES.CONFIG_INVALID,
-        "Command must begin with fqgate, cloudflared, cloudflare, or version",
+        "Command must begin with fqgate, cloudflared, cloudflare, supervisor, or version",
       );
     }
 
@@ -117,6 +125,49 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
     }
 
     const config = await loadConfig(args.configPath);
+
+    if (args.positionals[0] === "supervisor") {
+      if (
+        args.dryRun ||
+        args.check ||
+        args.apply ||
+        args.desiredStatePath ||
+        args.expectedFingerprint ||
+        args.checkId ||
+        args.b2ProfilePath ||
+        args.expectedB2ProfileFingerprint ||
+        args.positionals.length !== 2
+      ) {
+        throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Unsupported supervisor arguments");
+      }
+      const app = createApplicationServices(config);
+      const adapters = createObservationAdapters({
+        lifecycle: app.lifecycle,
+        service: app.cloudflaredService,
+      });
+      if (command === "inspect") {
+        if (args.intervalMs !== undefined || args.maxCycles !== undefined) {
+          throw new BridgeError(
+            ERROR_CODES.CONFIG_INVALID,
+            "inspect does not accept watch options",
+          );
+        }
+        output((await observe(adapters)).snapshot, args.json, io);
+        return 0;
+      }
+      if (command === "watch") {
+        const options = {
+          intervalMs: args.intervalMs ?? 5_000,
+          ...(args.maxCycles === undefined ? {} : { maxCycles: args.maxCycles }),
+        };
+        validateWatchOptions(options);
+        const journal = new EventJournal(join(config.installDirectory, "supervisor"));
+        await watch(adapters, journal, options);
+        output({ cycles: options.maxCycles ?? null, ...(await journal.counts()) }, args.json, io);
+        return 0;
+      }
+      throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Unknown supervisor command");
+    }
 
     if (args.positionals[0] === "cloudflared") {
       return await runCloudflared(
@@ -629,6 +680,8 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
   let checkId: string | undefined;
   let b2ProfilePath: string | undefined;
   let expectedB2ProfileFingerprint: string | undefined;
+  let intervalMs: number | undefined;
+  let maxCycles: number | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -641,6 +694,20 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
       dryRun = true;
     } else if (argument === "--check") {
       check = true;
+    } else if (argument === "--interval-ms" || argument === "--max-cycles") {
+      const next = argv[index + 1];
+      if (next === undefined || !/^\d+$/.test(next))
+        throw new BridgeError(ERROR_CODES.CONFIG_INVALID, `${argument} requires an integer`);
+      if (argument === "--interval-ms") {
+        if (intervalMs !== undefined)
+          throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Duplicate --interval-ms");
+        intervalMs = Number(next);
+      } else {
+        if (maxCycles !== undefined)
+          throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Duplicate --max-cycles");
+        maxCycles = Number(next);
+      }
+      index += 1;
     } else if (argument === "--apply") {
       apply = true;
     } else if (argument === "--help") {
@@ -742,6 +809,8 @@ function parseArguments(argv: readonly string[]): ParsedArguments {
     ...(checkId === undefined ? {} : { checkId }),
     ...(b2ProfilePath === undefined ? {} : { b2ProfilePath }),
     ...(expectedB2ProfileFingerprint === undefined ? {} : { expectedB2ProfileFingerprint }),
+    ...(intervalMs === undefined ? {} : { intervalMs }),
+    ...(maxCycles === undefined ? {} : { maxCycles }),
   };
 }
 
@@ -801,6 +870,8 @@ function usage(): string {
     "fqgate-remote-bridge fqgate start|stop|restart [--json]",
     "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",
     "fqgate-remote-bridge cloudflared service install|start|stop|restart|status [--json]",
+    "fqgate-remote-bridge supervisor inspect [--config <file>] [--json]",
+    "fqgate-remote-bridge supervisor watch [--config <file>] [--interval-ms 1000..60000] [--max-cycles 1..1000] [--json]",
     "fqgate-remote-bridge cloudflare discover|plan --desired-state <repo-external-file> [--json]",
     "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <dns.context.record> [--json]",
     "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <B2-check> --b2-write-profile <repo-external-file> --expected-b2-profile-fingerprint <sha256> [--json]",
