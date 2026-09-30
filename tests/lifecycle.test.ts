@@ -662,4 +662,73 @@ describe("FQGate lifecycle transaction", () => {
     expect((await manager.status()).installed?.compatibility?.validated).toBe(false);
     await rm(root, { recursive: true, force: true });
   });
+
+  it("keeps the external artifact unvalidated when the official release changes during probing", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-drift-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const source = new MutableReleaseSource(releaseFor(pkg, "1.0.5"));
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const manager = await createManager({
+      root,
+      source,
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    await expect(
+      manager.qualifyCurrent([
+        {
+          operationId: "market.instruments.lookup",
+          run: async () => {
+            source.release = releaseFor(packageFor("1.0.6", "1.0.6"), "1.0.6");
+            return {
+              operationId: "market.instruments.lookup",
+              contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+              semanticProbeId: "market.instruments.lookup.exact-code-v1",
+            };
+          },
+        },
+      ]),
+    ).rejects.toMatchObject({ code: ERROR_CODES.ACTIVATION_FAILED });
+    expect((await manager.status()).installed?.compatibility?.validated).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rejects an unresolved transaction before qualifying current", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-transaction-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5");
+    await writeFile(layout.transactionFile, "{}");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const manager = await createManager({
+      root,
+      source: new MutableReleaseSource(releaseFor(pkg, "1.0.5")),
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    await expect(
+      manager.qualifyCurrent([
+        {
+          operationId: "market.instruments.lookup",
+          run: async () => {
+            throw new Error("must not run");
+          },
+        },
+      ]),
+    ).rejects.toMatchObject({ code: ERROR_CODES.ACTIVATION_FAILED });
+    expect(await readFile(layout.currentExecutable, "utf8")).toBe("1.0.5");
+    await rm(root, { recursive: true, force: true });
+  });
 });

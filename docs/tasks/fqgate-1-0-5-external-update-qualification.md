@@ -1,6 +1,6 @@
 # FQGate 1.0.5 external-update qualification
 
-Status: **AUTHORIZED / OPEN**. This is a separate local maintenance task; Phase 7-A remains observation-only.
+Status: **IMPLEMENTED / LIVE QUALIFIED; final CI and PR merge pending**. This is a separate local maintenance task; Phase 7-A remains observation-only.
 
 ## Incident and goal
 

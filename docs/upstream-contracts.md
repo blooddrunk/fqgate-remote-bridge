@@ -32,8 +32,9 @@ size: 23707648
 sha256: 2b9613dbf2d0f10b1672684f2e24ac8917d2d8d3fa9bd7fbbae04d57dd73d83c
 ```
 
-This release is installed after an upstream in-app update, but its Bridge
-compatibility remains unvalidated until the separate 1.0.5 task completes.
+This release was installed after an upstream in-app update. Its compatibility
+passed the separate permanent-Windows Bridge qualification on 2026-09-30;
+approval remains bound to the observed artifact hash and operation evidence.
 The prior official stable manifest observed on 2026-09-28 was:
 
 ```text

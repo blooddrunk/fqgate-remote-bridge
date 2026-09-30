@@ -399,7 +399,7 @@ Follow `docs/roadmap.md`.
 - Phase 6: CLOSED
 - Phase 7-A: AUTHORIZED / OPEN under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; read-only supervisor observation and bounded event journal only
 - Phase 7-B/7-C: NOT AUTHORIZED; no automatic recovery or notifications yet
-- Separate FQGate 1.0.5 external-update qualification: AUTHORIZED / OPEN under
+- Separate FQGate 1.0.5 external-update qualification: IMPLEMENTED / LIVE QUALIFIED, PR OPEN under
   `docs/tasks/fqgate-1-0-5-external-update-qualification.md`;
   CLI-only explicit local maintenance, independent of Phase 7-A observation
 
