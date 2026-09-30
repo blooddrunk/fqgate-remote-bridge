@@ -13,8 +13,7 @@ and recovery is proven before any outbound notification provider is allowed to r
 
 ## Phase 7-A — read-only supervisor observation and event journal
 
-Status: **AUTHORIZED / OPEN** under
-`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`.
+Status: **CLOSED**. Permanent-Windows P7A-01..P7A-13 acceptance and exact-commit Ubuntu/Windows CI passed.
 
 Deliver a deterministic supervisor state model, one-shot inspection, a bounded read-only watch
 loop, and a redacted local event journal. The first slice may observe only existing local runtime
