@@ -13,7 +13,7 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发；Phase 0–6-A 已完成。Phase 5 的最终交付是受策略约束的
+当前项目仍在持续开发；Phase 0–6 已完成。Phase 5 的最终交付是受策略约束的
 machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双平台 CI 闭包。
 
 | 能力                   | 当前状态           | 说明                                                                |
@@ -29,6 +29,8 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                         |
 | FQGate 1.0.4 更新      | CLOSED / 已验收    | 本机 Dashboard 资格验证、永久环境与真实远程回归                     |
 | Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
+| Phase 6-B1/B2          | CLOSED / 已验收    | 有界、显式、stale-plan guarded 的 DNS/Tunnel/Access 修复工具        |
+| Phase 6-C / Phase 6    | CLOSED / 已验收    | 真实 no-op plan 与写凭据零常驻依赖审计                              |
 | 验收凭据托管与目录退役 | CLOSED / 已验收    | 三项 Windows Vault 凭据、受保护的 Tunnel token 文件、旧目录清理     |
 | 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                              |
 
@@ -46,6 +48,7 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | Phase 5-A | 独立 remote-machine JWT/context、完整零权限 registry、Windows/CI/真实 service-token 验收 |
 | Phase 5-B | 永久 Windows 实时 contract census 与一个受限六位代码查询                                 |
 | Phase 5-C | registry-derived machine OpenAPI 与最终 Windows/远程/CI 闭包                             |
+| Phase 6   | Cloudflare 只读计划、有界显式修复、凭据依赖审计与永久 Windows 闭包                       |
 
 每个阶段的关闭证据仍保留在文档索引中；“已关闭”只表示该阶段的验收合同完成，不表示
 整个项目停止开发。
@@ -116,8 +119,9 @@ Runtime OpenAPI 中，就认为它可以远程调用。
 - machine service token、Access assertion、JWT、cookie、Tunnel token 不进入 Git、
   普通配置、日志、命令行参数、浏览器存储或测试证据。
 - 不添加交易、下单、撤单、资金划转、券商控制或任何金融状态变更能力。
-- Cloudflare Phase 6-A 只提供固定 API 的 GET-only discovery/plan；不创建、更新、删除
-  或取得 Tunnel token。任何 Cloudflare mutation 属于独立的 Phase 6-B。
+- Cloudflare Phase 6-A 只提供固定 API 的 GET-only discovery/plan。Phase 6-B1/B2
+  修复工具只在 operator 显式启动并提供 fresh transient write credential 时执行
+  受限动作；Phase 6-C 已证明正常 runtime 和验收不依赖这些写凭据。
 
 ## 2. 文档地图：遇到问题先看哪里
 
@@ -805,7 +809,7 @@ OpenAPI，以及永久 Windows、真实 service-token 和双平台 CI 闭包。
 尚未授权或未实现的工作包括：
 
 - 首批以外的行情 API；
-- Phase 6 Cloudflare provisioning automation；
+- 超出 Phase 6-B1/B2 已实现有界动作的 Cloudflare automation；
 - supervisor、notifications、automatic updates；
 - MCP、WebSocket、最终 packaging；
 - 任何交易或金融状态变更能力。
@@ -919,7 +923,7 @@ Cloudflare 资源。执行合同：
 - 只有自动化明确返回 `LOGIN_REQUIRED` 时才允许人工完成本地 FQGate QR；其他确实
   无法自动读取的项必须给出精确 Dashboard 路径、字段、期望值、原因和恢复自动化命令。
 
-Phase 6-B1 已于 2026-09-24 完成永久 Windows live acceptance 与精确提交双平台 CI；范围仍只包括 stale-plan 防护下的单条缺失 DNS CNAME 创建与同次调用精确回滚。Phase 6-B2 的有界 Tunnel/Access 也已通过永久 Windows 验收和精确提交双平台 CI。Phase 6-C 已单独授权，正在验证凭据退役和整个 Phase 6 的闭环。证据见[Phase 6-B1 实现交接](docs/status/phase-6-b1-implementation-handoff.md)。
+Phase 6-B1 已于 2026-09-24 完成永久 Windows live acceptance 与精确提交双平台 CI；范围仍只包括 stale-plan 防护下的单条缺失 DNS CNAME 创建与同次调用精确回滚。Phase 6-B2 的有界 Tunnel/Access 也已通过永久 Windows 验收和精确提交双平台 CI。Phase 6-C 已完成凭据退役审计，整个 Phase 6 闭环。证据见[Phase 6-C 实现交接](docs/status/phase-6-c-implementation-handoff.md)。
 Phase 6-A 最终实现提交 `9c6babb` 在永久 Windows 通过 14/14 项真实验收，
 其中既有 Phase 5-C 远程矩阵 21/21 通过；同一提交的 Ubuntu/Windows CI 通过。
 证据与运行 ID 见 [Phase 6-A 实现交接](docs/status/phase-6-a-implementation-handoff.md)。
@@ -958,7 +962,7 @@ reconcile 继续禁止。
 canary 后 Phase 6-A 14/14、Phase 5-C 21/21 和精确提交双平台 CI 全部通过。流程与
 完整证据见
 [Phase 6-B1 Windows 验收](docs/operations/windows-phase-6-b1-acceptance.md)
-与[实现交接](docs/status/phase-6-b1-implementation-handoff.md)。Phase 6-B2 的独立任务已闭环；Phase 6-C 已授权并正在验收。
+与[实现交接](docs/status/phase-6-b1-implementation-handoff.md)。Phase 6-B2 和 Phase 6-C 的独立任务均已闭环。
 
 ## Phase 6-B2 — 有界 Tunnel / Access 写入（CLOSED）
 
@@ -967,9 +971,9 @@ Phase 6-A 计划指纹，每次执行一项精确的 Tunnel ingress 或 Access �
 策略身份使用仓库外精确 profile 及其指纹；B2 写入令牌与 B1 DNS 令牌、6-A
 只读令牌分开。永久 Windows 验收使用
 [自动化脚本](docs/operations/windows-phase-6-b2-acceptance.md)；真实 Windows 验收和精确提交双平台 CI 均已通过。证据见
-[实现交接](docs/status/phase-6-b2-implementation-handoff.md)。Phase 6-C 已授权并正在验收。
+[实现交接](docs/status/phase-6-b2-implementation-handoff.md)。Phase 6-C 已完成零常驻写凭据验收。
 
-## Phase 6-C — live closure 与 provisioning 凭据退役（验收中）
+## Phase 6-C — live closure 与 provisioning 凭据退役（CLOSED）
 
 [任务合同](docs/tasks/phase-6-c-live-closure-and-credential-retirement.md) 要求永久 Windows
 真实计划全部 `in_sync`，并自动证明正常 runtime、只读计划与 human/admin/machine

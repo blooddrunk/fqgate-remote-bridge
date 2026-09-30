@@ -231,7 +231,7 @@ separate from the B1 DNS credential and Phase 6-A GET-only transport. The
 external policy profile binds exact human/admin selectors and the machine
 service token selector; a profile fingerprint, repeated discovery, raw identity
 checks and postcondition gate every write. Uncertain partial writes require
-manual inspection of the identified resource before retry. B2 closed after live acceptance and exact-commit CI; Phase 6-C remains unauthorized.
+manual inspection of the identified resource before retry. B2 closed after live acceptance and exact-commit CI; the separately authorized Phase 6-C closure added no write authority.
 
 Phase 6-A closed with hidden-entry live acceptance on implementation commit
 `9c6babb`. The post-Phase-6-A acceptance credential custody task is defined in
@@ -625,7 +625,7 @@ fingerprint, QR/session material or raw market value entered Git or evidence.
 
 ## Phase 6-C provisioning credential retirement boundary
 
-Phase 6-C is authorized for live closure validation. The Windows audit verifies
+Phase 6-C is closed. The Windows audit verifies
 that the B1 DNS-write, B2 Tunnel/Access-write and B2 token-scope-read credentials
 are absent from normal persistent environment, the three-target acceptance
 Vault, runtime service configuration and startup inputs. It compares pre/post

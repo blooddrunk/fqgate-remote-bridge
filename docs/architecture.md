@@ -417,8 +417,9 @@ acceptance and exact-commit Ubuntu/Windows CI on 2026-09-24; see
 route or broaden Phase 6-A's GET-only adapter. Phase 6-B2 has a separate
 fixed-endpoint Tunnel/Access write adapter and external exact-policy profile.
 It reuses the Phase 6-A plan fingerprint and one-action CLI path while leaving
-the read transport GET-only. Phase 6-C remains separate,
-unauthorized future tasks.
+the read transport GET-only. The separately authorized Phase 6-C audit closed
+Phase 6 without adding a runtime write-credential dependency or Cloudflare
+mutation. Later capabilities require new reviewed tasks.
 
 ### Post-Phase-6-A acceptance credential custody
 

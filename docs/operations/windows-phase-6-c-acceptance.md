@@ -1,9 +1,12 @@
 # Phase 6-C permanent Windows closure acceptance
 
-Status: implementation validation in progress. Executable scope:
+Status: closed after permanent-Windows live acceptance. Executable scope:
 `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
 
-Run only in the existing `D:\code\research\fqgate-remote-bridge` checkout on a
+Run from an **interactive Windows Terminal or PowerShell console**, not a
+noninteractive WSL child process. The headed browser harness waits for the
+operator's Access login/MFA and needs console input. Run only in the existing
+`D:\code\research\fqgate-remote-bridge` checkout on a
 clean `codex/phase-6-c` review commit or the final `main` commit. Preserve any
 operator changes. The script does not create a checkout or provision Cloudflare.
 
@@ -43,7 +46,7 @@ renew only that fixed target via the hidden-input flow in
 `docs/operations/windows-post-phase-6-a-credential-custody.md`, then rerun the
 same command. Never enroll B1/B2 provisioning credentials into the Vault.
 
-After the implementation and documentation are committed, run the GitHub Actions
-workflow for that exact final commit and record the run ID plus Ubuntu and
-Windows job IDs in the implementation handoff. Do not call Phase 6 CLOSED if
-any gate fails.
+The implementation commit's Ubuntu/Windows CI IDs are in
+`docs/status/phase-6-c-implementation-handoff.md`. Record any subsequent
+documentation-only exact-commit CI run in the external closure evidence. A
+failed gate requires a concrete repair and rerun; it never counts as closure.

@@ -1,7 +1,7 @@
 # Phase 6 — Cloudflare provisioning and drift-management design
 
 Date: 2026-09-22
-Status: **Phase 6-A/B1/B2 CLOSED; Phase 6-C AUTHORIZED / VALIDATING**
+Status: **Phase 6-A/B1/B2/C CLOSED; Phase 6 CLOSED**
 
 ## Purpose
 
@@ -88,11 +88,11 @@ bounded, plan-bound Tunnel ingress and Access application/policy mutations defin
 there, while preserving B1 one-action and stale-plan semantics. Arbitrary DNS
 update/delete, destructive resource deletion, token rotation, broad policy
 replacement/widening, wildcard/direct-17281 ingress, background reconciliation and
-Phase 6-C behavior remain unauthorized.
+Phase 6-C behavior was outside B2 and required its separate task.
 
 ### Phase 6-C — live closure and credential retirement
 
-Authorized by `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
+Closed under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
 
 Reconcile the real deployment to a deterministic no-op plan and prove that normal runtime,
 read-only planning and human/admin/machine acceptance have no dependency on B1/B2 provisioning

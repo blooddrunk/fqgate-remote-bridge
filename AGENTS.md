@@ -395,14 +395,16 @@ Follow `docs/roadmap.md`.
   create plus same-invocation rollback passed permanent-Windows live acceptance
   and exact-commit Ubuntu/Windows CI on 2026-09-24
 - Phase 6-B2: separately authorized under `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; CLOSED on 2026-09-29 after permanent-Windows acceptance and exact-commit Ubuntu/Windows CI
-- Phase 6-C: AUTHORIZED / OPEN under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; close Phase 6 without expanding the Cloudflare mutation surface
+- Phase 6-C: CLOSED under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; bounded credential-dependency audit and full Phase 6 closure
+- Phase 6: CLOSED; later capabilities require separate reviewed tasks
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
 `docs/operations/windows-phase-5-c-acceptance.md` before changing its surface.
-Phase 6-B1 and Phase 6-B2 are closed. Phase 6-C is now separately authorized by
-`docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; it must prove
-zero normal-runtime dependency on B1/B2 provisioning credentials without widening or deleting the guarded repair paths.
+Phase 6-B1, Phase 6-B2 and Phase 6-C are closed. The Phase 6-C audit proves
+zero normal-runtime dependency on B1/B2 provisioning credentials without widening
+or deleting the guarded repair paths. See
+`docs/status/phase-6-c-implementation-handoff.md` before changing this boundary.
 
 ## Closed Phase 6-A read-only discovery task
 
@@ -488,11 +490,10 @@ All machine-verifiable review and acceptance was automated. No production drift
 was fabricated. The reserved live canary passed create/read/delete/absence, and
 post-canary Phase 6-A/Phase 5-C checks passed 14/14 and 21/21. Closure evidence
 and exact CI IDs are in `docs/status/phase-6-b1-implementation-handoff.md`.
-Phase 6-B2 is closed under its separate bounded task package. Phase 6-C is
-authorized by `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
-and is under implementation. It adds no Cloudflare mutation or runtime
-credential dependency. Do not mark Phase 6 closed until its permanent-Windows
-and exact-final-commit CI evidence passes.
+Phase 6-B2 and Phase 6-C are closed under their separate bounded task packages.
+Phase 6-C added no Cloudflare mutation or runtime credential dependency.
+The permanent-Windows, exact-commit CI and credential-retirement evidence is in
+`docs/status/phase-6-c-implementation-handoff.md`.
 
 ## Closed post-Phase-5 maintenance task
 
@@ -567,8 +568,9 @@ Phase 6-B1 is closed under
 `docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`. The implementation
 commit is `3cc99033ad9dbac899584ce3b8e3e81053647a98`; permanent-Windows evidence
 is at `D:\code\research\fqgate-phase6b1-acceptance-evidence.json`.
-Phase 6-B2 is authorized only by its separate bounded task package. Phase 6-C
-remains unimplemented and unauthorized.
+Phase 6-B2 and Phase 6-C are closed under their separate task packages. B1/B2
+guarded apply remains available only for explicit operator-invoked supported drift
+with fresh transient write credentials. No post-Phase-6 capability is authorized.
 
 ## Documentation rule
 
