@@ -24,7 +24,8 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6-B2: **CLOSED** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
 - Phase 6-C: **CLOSED** — live all-`in_sync` plan, credential-dependency audit and remote/local regression; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
 - Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
-- Post-Phase-6 work: unauthorized unless a separate reviewed task exists
+- Phase 7-A: **AUTHORIZED / OPEN** — read-only supervisor observation and bounded event journal; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+- Phase 7-B/7-C: **NOT AUTHORIZED** — recovery and notifications require separate reviewed tasks
 
 Current deployed topology remains:
 
@@ -497,7 +498,23 @@ evidence and CI IDs are in `docs/status/phase-6-c-implementation-handoff.md`.
 
 ## Phase 7 — Supervisor, recovery, audit trail, notifications
 
-Goal: make the system dependable on an always-on Windows PC with bounded recovery, session/tunnel monitoring, redacted event journal, webhook notification provider, deduplication/cooldown, and recovery events.
+Design: `docs/plans/phase-7-supervisor-recovery-audit-notifications.md`.
+
+### Phase 7-A — read-only supervisor observation and event journal
+
+**AUTHORIZED / OPEN.** Executable task:
+`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`.
+Coding-agent handoff: `docs/prompts/phase-7-a-coding-agent-goal.md`.
+
+7-A may normalize existing Bridge/FQGate/session/cloudflared state and write a bounded redacted
+local event journal. It must not restart services/processes, apply updates, trigger login/QR,
+mutate Cloudflare, send notifications, add autostart/service installation, or change any remote
+operation/authorization surface.
+
+### Phase 7-B / 7-C
+
+**PLANNED / NOT AUTHORIZED.** Bounded recovery and notifications require separate reviewed tasks
+after 7-A closes.
 
 ## Phase 8 — Safe automatic updates
 
@@ -538,11 +555,19 @@ Closure evidence:
 
 Most recently closed Phase 6 task:
 
-`docs/tasks/phase-6-b1-stale-plan-guarded-dns-apply.md`
+`docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
 
-Historical Phase 6-B1 Codex handoff:
+Phase 6-C closure evidence:
 
-`docs/prompts/phase-6-b1-codex-goal.md`
+`docs/status/phase-6-c-implementation-handoff.md`
+
+Current authorized task:
+
+`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+
+Current coding-agent handoff:
+
+`docs/prompts/phase-7-a-coding-agent-goal.md`
 
 Phase 6-A historical implementation and evidence:
 
@@ -564,5 +589,5 @@ entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that in
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
 command. Phase 6-B2 now has its own narrow authorization in
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
-was followed by a separate Phase 6-C task. Phase 6 is now closed; any later
-capability needs a new reviewed task.
+was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A now has its own read-only reviewed task; Phase 7-B recovery,
+Phase 7-C notifications and every other later capability remain unauthorized.
