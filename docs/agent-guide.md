@@ -25,6 +25,9 @@ task package 和安全文档为准。
   永久 Windows 验收和精确提交双平台 CI 已通过，现已闭环。Phase 6-C 的
   写凭据依赖审计与整个 Phase 6 也已闭环；详见
   `docs/status/phase-6-c-implementation-handoff.md`。
+- Phase 7-A：**AUTHORIZED / OPEN**；仅授权只读 supervisor observation + bounded event journal，
+  任务见 `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`。7-B 自动恢复和
+  7-C 通知均未授权。
 
 稳定拓扑不变：
 
@@ -66,9 +69,9 @@ Phase 6-B1 已闭环；后续涉及 Cloudflare 写入边界时须阅读：
 20. docs/operations/windows-phase-6-b1-acceptance.md
 21. docs/status/phase-6-b1-implementation-handoff.md
 
-Codex 执行入口：
+当前 Coding Agent 执行入口：
 
-docs/prompts/phase-5-c-codex-goal.md
+docs/prompts/phase-7-a-coding-agent-goal.md
 
 ## Phase 5-C 的核心判断
 
@@ -169,8 +172,9 @@ health/session contract 判断登录状态并继续，不要求人工读 JSON �
   更新、删除、取得 Tunnel token，也不实现 generic REST proxy。已闭环的 Phase 6-B1
   仅增加独立 typed CNAME 写入边界；B2 按独立任务实施 Tunnel/Access 有界写入，
   C 已按独立任务完成凭据退役审计，不增加写入权限。
-- 不提前做 supervisor、notifications、automatic updates、MCP/WebSocket、
-  packaging 或 turtle-value-engine consumer integration。
+- Phase 7-A 只允许 supervisor 只读观测和有界事件日志；不得做自动恢复、通知、
+  Windows service/Scheduled Task/autostart、automatic updates、MCP/WebSocket、packaging
+  或 turtle-value-engine consumer integration。
 - secret/JWT/cookie/QR/Tunnel token/raw OpenAPI/raw market payload 不进入证据或
   持久化。
 
@@ -238,4 +242,5 @@ Manager，后续验收可显式选择 `Prompt` 或 `Vault`。LocalSystem 使用�
 token 已搬到受保护的 ProgramData 文件；在服务重启、回滚演练和真实远程回归
 通过后，旧 `fqgate-secrets` 目录以零消费者状态退役。证据见
 `docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`。
-Phase 6-B1、B2 和 C 均按独立任务验收并闭环。后续能力仍需新任务单独授权。
+Phase 6-B1、B2 和 C 均按独立任务验收并闭环。Phase 7-A 已单独授权为只读观测与
+事件日志基础；Phase 7-B 自动恢复、Phase 7-C 通知及其他后续能力仍需新任务单独授权。
