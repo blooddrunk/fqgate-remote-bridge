@@ -25,6 +25,9 @@ if ($currentPathExt -notmatch "(?i)(^|;)\.EXE(;|$)" -or $currentPathExt -notmatc
 $script:playwrightCachePath = Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "ms-playwright"
 $env:PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$env:GIT_CONFIG_COUNT = "1"
+$env:GIT_CONFIG_KEY_0 = "safe.directory"
+$env:GIT_CONFIG_VALUE_0 = "D:/code/research/fqgate-remote-bridge"
 $evidencePath = "D:\code\research\fqgate-phase6a-discovery-evidence.json"
 $records = [System.Collections.Generic.List[object]]::new()
 
@@ -426,6 +429,9 @@ try {
 finally {
     Restore-GeneratedRouteTree
     Write-Evidence
+    foreach ($key in @("GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0")) {
+        [Environment]::SetEnvironmentVariable($key, $null, "Process")
+    }
 }
 
 $failed = @($records | Where-Object { $_.result -eq "FAIL" -or $_.result -eq "MANUAL" }).Count
