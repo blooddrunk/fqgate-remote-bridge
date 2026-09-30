@@ -16,6 +16,8 @@ describe("Windows entry points", () => {
     expect(audit).toContain("persistentWriteAbsent");
     expect(audit).toContain("phase6c-audit-policy.mjs");
     expect(audit).toContain("cloudflare plan");
+    expect(audit).toContain("Test-IsolatedBridgeStartup");
+    expect(audit).toContain("OwningProcess -eq $process.Id");
     expect(audit).not.toContain("Read-Host -AsSecureString");
     expect(acceptance).toContain("P6C-PRE-AUDIT");
     expect(acceptance).toContain("P6C-POST-AUDIT");

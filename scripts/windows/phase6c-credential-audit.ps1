@@ -30,6 +30,37 @@ function Test-Http([string]$Url) {
     } catch { return $false }
 }
 
+function Test-IsolatedBridgeStartup([string]$Config) {
+    $port = 17284
+    if (@(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue).Count -ne 0) { return $false }
+    $start = [Diagnostics.ProcessStartInfo]::new()
+    $start.FileName = (Get-Command node.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $start.Arguments = '"' + (Join-Path $root 'scripts\start-bridge.mjs') + '"'
+    $start.WorkingDirectory = $root
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.EnvironmentVariables['FQGATE_REMOTE_BRIDGE_CONFIG'] = $Config
+    $start.EnvironmentVariables['BRIDGE_PORT'] = [string]$port
+    foreach ($key in $writeNames) { $start.EnvironmentVariables.Remove($key) }
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $start
+    try {
+        if (-not $process.Start()) { return $false }
+        for ($attempt=0; $attempt -lt 40; $attempt++) {
+            Start-Sleep -Milliseconds 250
+            if (Test-Http "http://127.0.0.1:$port/api/v1/version") {
+                $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue)
+                return $listeners.Count -eq 1 -and $listeners[0].LocalAddress -eq '127.0.0.1' -and $listeners[0].OwningProcess -eq $process.Id
+            }
+            if ($process.HasExited) { return $false }
+        }
+        return $false
+    } finally {
+        if (-not $process.HasExited) { $process.Kill(); $process.WaitForExit(10000) | Out-Null }
+        $process.Dispose()
+    }
+}
+
 function Invoke-Plan([string]$Token, [string]$Desired) {
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = (Get-Command node.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
@@ -160,7 +191,8 @@ public static class FQGatePhase6CVaultNames {
     $snapshot.legacy.consumerCount = @($consumerFiles | Where-Object { (Get-Item -LiteralPath $_).Length -gt 1MB -or (Select-String -LiteralPath $_ -Pattern 'fqgate-secrets' -SimpleMatch -Quiet) }).Count + [int]$command.Contains('fqgate-secrets')
 
     $snapshot.runtime.fqgate = Test-Http 'http://127.0.0.1:17281/v1/market/health'
-    $snapshot.runtime.bridge = Test-Http 'http://127.0.0.1:17282/api/v1/updates/status'
+    $snapshot.runtime.bridge = (Test-Http 'http://127.0.0.1:17282/api/v1/updates/status') -and
+        (Test-IsolatedBridgeStartup $config)
     $snapshot.runtime.listenersExact = $true
     foreach ($port in @(17281,17282)) {
         $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue)
