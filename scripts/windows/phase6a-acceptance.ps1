@@ -6,10 +6,12 @@ param(
     [switch]$RunQualityGates,
     [switch]$RunPhase5CRemoteRegression,
     [switch]$AllowPhase6B2ReviewBranch,
+    [switch]$AllowPhase6CReviewBranch,
     [ValidateSet("Prompt", "Vault")][string]$CredentialSource = "Prompt"
 )
 
 $ErrorActionPreference = "Stop"
+$reviewBranch = $AllowPhase6B2ReviewBranch -or $AllowPhase6CReviewBranch
 $expectedRoot = "D:\code\research\fqgate-remote-bridge"
 $standardPathExt = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC"
 $currentPathExt = [string]$env:PATHEXT
@@ -125,7 +127,7 @@ function Ensure-PlaywrightHeadlessShell {
         return
     }
     Write-Host "P6A-Q7-BROWSER REPAIR"
-    $install = if ($AllowPhase6B2ReviewBranch) {
+    $install = if ($reviewBranch) {
         Invoke-BoundedProcess -FileName $script:pnpmPath -Arguments @(
             "exec", "playwright", "install", "--force", "chromium"
         ) -Environment @{ PLAYWRIGHT_BROWSERS_PATH = $script:playwrightCachePath } -MaximumOutputBytes 1MB
@@ -292,7 +294,7 @@ try {
     if ([string]::IsNullOrWhiteSpace($script:nodePath)) { throw "P6A-W2 FAIL_NODE_REQUIRED" }
     if ([string]::IsNullOrWhiteSpace($script:gitPath)) { throw "P6A-W2 FAIL_GIT_REQUIRED" }
     if ([string]::IsNullOrWhiteSpace($script:corepackPath)) { throw "P6A-W2 FAIL_COREPACK_REQUIRED" }
-    if ($AllowPhase6B2ReviewBranch -and [string]::IsNullOrWhiteSpace($script:pnpmPath)) { throw "P6A-W2 FAIL_PNPM_REQUIRED" }
+    if ($reviewBranch -and [string]::IsNullOrWhiteSpace($script:pnpmPath)) { throw "P6A-W2 FAIL_PNPM_REQUIRED" }
     $resolvedDesiredState = (Resolve-Path -LiteralPath $DesiredStatePath).Path
     if (-not (Test-Path -LiteralPath $resolvedDesiredState -PathType Leaf)) { throw "P6A-W3 FAIL_DESIRED_STATE_REQUIRED" }
     $desiredText = Get-Content -LiteralPath $resolvedDesiredState -Raw
@@ -303,7 +305,7 @@ try {
     $script:commit = (& $script:gitPath -C $repositoryRoot rev-parse HEAD).Trim()
     $status = @(& $script:gitPath -C $repositoryRoot status --porcelain | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     $branch = (& $script:gitPath -C $repositoryRoot branch --show-current).Trim()
-    $allowedBranch = $branch -eq "main" -or ($AllowPhase6B2ReviewBranch -and $branch -eq "codex/phase-6-b2")
+    $allowedBranch = $branch -eq "main" -or ($AllowPhase6B2ReviewBranch -and $branch -eq "codex/phase-6-b2") -or ($AllowPhase6CReviewBranch -and $branch -eq "codex/phase-6-c")
     Add-Record "P6A-W4" $(if ($status.Count -eq 0 -and $allowedBranch -and $script:commit -match '^[0-9a-f]{40}$') { "PASS" } else { "FAIL" }) @{ branch = $branch; commit = $script:commit; workingTree = $(if ($status.Count -eq 0) { "clean" } else { "dirty" }) }
     if ($status.Count -eq 0) {
         $script:routeTreePath = Join-Path $repositoryRoot "src\routeTree.gen.ts"
@@ -315,7 +317,7 @@ try {
     Assert-LoopbackListener "P6A-W6" 17282
 
     if ($RunQualityGates) {
-        if ($AllowPhase6B2ReviewBranch) {
+        if ($reviewBranch) {
             $pnpmVersion = Invoke-BoundedProcess -FileName $script:pnpmPath -Arguments @("--version")
             if ($pnpmVersion.ExitCode -ne 0 -or $pnpmVersion.Stdout.Trim() -ne "11.23.0") { throw "P6A-Q0 FAIL_PNPM_VERSION" }
         }
@@ -333,7 +335,7 @@ try {
                 Ensure-PlaywrightHeadlessShell
             }
             try {
-                $gateResult = if ($AllowPhase6B2ReviewBranch) {
+                $gateResult = if ($reviewBranch) {
                     Invoke-BoundedProcess -FileName $script:pnpmPath -Arguments @($gate.args | Select-Object -Skip 1) -Environment $qualityGateEnvironment -MaximumOutputBytes 256KB
                 } else {
                     Invoke-BoundedProcess -FileName $script:corepackPath -Arguments $gate.args -Environment $qualityGateEnvironment -MaximumOutputBytes 256KB

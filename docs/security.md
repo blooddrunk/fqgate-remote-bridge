@@ -622,3 +622,20 @@ machine-derived local and remote totals. The existing Access application,
 hostname, AUD, service token, Tunnel and Bridge-only ingress were reused without
 Cloudflare mutation. No credential, assertion, cookie, raw OpenAPI, compatibility
 fingerprint, QR/session material or raw market value entered Git or evidence.
+
+## Phase 6-C provisioning credential retirement boundary
+
+Phase 6-C is authorized for live closure validation. The Windows audit verifies
+that the B1 DNS-write, B2 Tunnel/Access-write and B2 token-scope-read credentials
+are absent from normal persistent environment, the three-target acceptance
+Vault, runtime service configuration and startup inputs. It compares pre/post
+results around real read-only planning and human/admin/machine regression. The
+Cloudflare read acceptance credential and protected cloudflared runtime Tunnel
+token file remain separate and authorized. The audit reads only Credential
+Manager target names, never secret blobs. B1/B2 apply remains available only
+for explicit, plan-bound future repair with fresh transient credentials.
+
+Local absence cannot prove remote revocation. No exact retained B1/B2 remote
+token ID is known from authorized evidence, so Phase 6-C does not discover,
+guess or revoke one. The scope contract and evidence requirements are in
+`docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.

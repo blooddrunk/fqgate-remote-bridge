@@ -487,9 +487,11 @@ unauthorized.
 
 ## Phase 6-C — live reconciliation and credential retirement
 
-Planned only. A separate task must define no-op reconciliation on permanent
-Windows, removal of setup write credentials from runtime requirements, remote
-regressions and exact-final-commit Ubuntu/Windows CI.
+Authorized by `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
+The implementation adds a fixed-scope Windows credential-dependency audit and
+preserves B1/B2 guarded apply as explicit future drift repair. Closure requires
+the all-`in_sync` live plan, pre/post audit equality, local and remote
+regressions, exact listeners and exact-final-commit Ubuntu/Windows CI.
 
 ## Phase 7 — Supervisor, recovery, audit trail, notifications
 
@@ -521,7 +523,7 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 Phase 5, both post-Phase-5 FQGate 1.0.2 and 1.0.4 maintenance tracks, Phase
 6-A, credential custody and Phase 6-B1 are closed. The 1.0.4 local upgrade,
 real remote-human/admin/machine regressions and exact runtime-commit CI are
-recorded in its final handoff. Phase 6-B2 passed permanent-Windows acceptance and exact-commit Ubuntu/Windows CI; Phase 6-C remains planned and unauthorized.
+recorded in its final handoff. Phase 6-B2 passed permanent-Windows acceptance and exact-commit Ubuntu/Windows CI; Phase 6-C is authorized and undergoing live closure validation.
 
 Most recently closed FQGate maintenance task:
 

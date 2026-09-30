@@ -488,8 +488,11 @@ All machine-verifiable review and acceptance was automated. No production drift
 was fabricated. The reserved live canary passed create/read/delete/absence, and
 post-canary Phase 6-A/Phase 5-C checks passed 14/14 and 21/21. Closure evidence
 and exact CI IDs are in `docs/status/phase-6-b1-implementation-handoff.md`.
-Phase 6-B2 is authorized only by its separate bounded task package. Phase 6-C
-remains unimplemented and unauthorized.
+Phase 6-B2 is closed under its separate bounded task package. Phase 6-C is
+authorized by `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
+and is under implementation. It adds no Cloudflare mutation or runtime
+credential dependency. Do not mark Phase 6 closed until its permanent-Windows
+and exact-final-commit CI evidence passes.
 
 ## Closed post-Phase-5 maintenance task
 

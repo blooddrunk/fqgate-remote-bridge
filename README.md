@@ -919,7 +919,7 @@ Cloudflare 资源。执行合同：
 - 只有自动化明确返回 `LOGIN_REQUIRED` 时才允许人工完成本地 FQGate QR；其他确实
   无法自动读取的项必须给出精确 Dashboard 路径、字段、期望值、原因和恢复自动化命令。
 
-Phase 6-B1 已单独授权，并于 2026-09-24 完成永久 Windows live acceptance 与精确提交双平台 CI；范围仍只包括 stale-plan 防护下的单条缺失 DNS CNAME 创建与同次调用精确回滚。Phase 6-B2 已由独立任务授权，有界 Tunnel/Access 已通过永久 Windows 验收和精确提交双平台 CI；Phase 6-C 仍需另行授权。证据见[实现交接](docs/status/phase-6-b1-implementation-handoff.md)。
+Phase 6-B1 已于 2026-09-24 完成永久 Windows live acceptance 与精确提交双平台 CI；范围仍只包括 stale-plan 防护下的单条缺失 DNS CNAME 创建与同次调用精确回滚。Phase 6-B2 的有界 Tunnel/Access 也已通过永久 Windows 验收和精确提交双平台 CI。Phase 6-C 已单独授权，正在验证凭据退役和整个 Phase 6 的闭环。证据见[Phase 6-B1 实现交接](docs/status/phase-6-b1-implementation-handoff.md)。
 Phase 6-A 最终实现提交 `9c6babb` 在永久 Windows 通过 14/14 项真实验收，
 其中既有 Phase 5-C 远程矩阵 21/21 通过；同一提交的 Ubuntu/Windows CI 通过。
 证据与运行 ID 见 [Phase 6-A 实现交接](docs/status/phase-6-a-implementation-handoff.md)。
@@ -958,7 +958,7 @@ reconcile 继续禁止。
 canary 后 Phase 6-A 14/14、Phase 5-C 21/21 和精确提交双平台 CI 全部通过。流程与
 完整证据见
 [Phase 6-B1 Windows 验收](docs/operations/windows-phase-6-b1-acceptance.md)
-与[实现交接](docs/status/phase-6-b1-implementation-handoff.md)。Phase 6-B2 的独立任务已授权，现已闭环；Phase 6-C 未授权。
+与[实现交接](docs/status/phase-6-b1-implementation-handoff.md)。Phase 6-B2 的独立任务已闭环；Phase 6-C 已授权并正在验收。
 
 ## Phase 6-B2 — 有界 Tunnel / Access 写入（CLOSED）
 
@@ -967,4 +967,14 @@ Phase 6-A 计划指纹，每次执行一项精确的 Tunnel ingress 或 Access �
 策略身份使用仓库外精确 profile 及其指纹；B2 写入令牌与 B1 DNS 令牌、6-A
 只读令牌分开。永久 Windows 验收使用
 [自动化脚本](docs/operations/windows-phase-6-b2-acceptance.md)；真实 Windows 验收和精确提交双平台 CI 均已通过。证据见
-[实现交接](docs/status/phase-6-b2-implementation-handoff.md)。Phase 6-C 未授权。
+[实现交接](docs/status/phase-6-b2-implementation-handoff.md)。Phase 6-C 已授权并正在验收。
+
+## Phase 6-C — live closure 与 provisioning 凭据退役（验收中）
+
+[任务合同](docs/tasks/phase-6-c-live-closure-and-credential-retirement.md) 要求永久 Windows
+真实计划全部 `in_sync`，并自动证明正常 runtime、只读计划与 human/admin/machine
+远程验收均不依赖 B1/B2 写凭据。审计只检查固定 Vault target 名称和必要的非秘密元数据，
+不会读取或输出凭据值。B1/B2 guarded apply 仍保留给未来由 operator 明确启动的受限修复。
+完整自动命令与仅有的人工认证边界见
+[Windows Phase 6-C 验收](docs/operations/windows-phase-6-c-acceptance.md)；结果见
+[实现交接](docs/status/phase-6-c-implementation-handoff.md)。

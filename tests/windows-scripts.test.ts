@@ -2,6 +2,27 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("Windows entry points", () => {
+  it("provides a fixed-scope Phase 6-C audit and full acceptance chain", () => {
+    const audit = readFileSync(
+      new URL("../scripts/windows/phase6c-credential-audit.ps1", import.meta.url),
+      "utf8",
+    );
+    const acceptance = readFileSync(
+      new URL("../scripts/windows/phase6c-acceptance.ps1", import.meta.url),
+      "utf8",
+    );
+    expect(audit).toContain("D:\\code\\research\\fqgate-remote-bridge");
+    expect(audit).toContain("CredEnumerateW");
+    expect(audit).toContain("persistentWriteAbsent");
+    expect(audit).toContain("phase6c-audit-policy.mjs");
+    expect(audit).toContain("cloudflare plan");
+    expect(audit).not.toContain("Read-Host -AsSecureString");
+    expect(acceptance).toContain("P6C-PRE-AUDIT");
+    expect(acceptance).toContain("P6C-POST-AUDIT");
+    expect(acceptance).toContain("P6C-PRE-POST-EQUAL");
+    expect(acceptance).toContain("RunAuthenticatedBrowserMatrix");
+    expect(acceptance).not.toContain("CLOUDFLARE_B2_WRITE_TOKEN =");
+  });
   it("isolates Playwright from the permanent production Bridge listener", () => {
     const config = readFileSync(new URL("../playwright.config.ts", import.meta.url), "utf8");
     expect(config).toContain("const e2ePort = 17283");
