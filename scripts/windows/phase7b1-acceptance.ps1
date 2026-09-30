@@ -47,8 +47,10 @@ function Invoke-Supervisor([string[]]$Arguments) {
 function Listener([int]$Port) {
     $items = @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)
     if ($items.Count -ne 1 -or $items[0].LocalAddress -ne '127.0.0.1') { throw "listener-$Port" }
-    $process = Get-Process -Id $items[0].OwningProcess -ErrorAction Stop
-    return [ordered]@{ pid=[int]$process.Id; start=$process.StartTime.ToUniversalTime().ToString('o') }
+    $pidValue = [int]$items[0].OwningProcess
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$pidValue" -ErrorAction Stop
+    if ($null -eq $process -or $null -eq $process.CreationDate) { throw "process-identity-$Port" }
+    return [ordered]@{ pid=$pidValue; start=$process.CreationDate.ToUniversalTime().ToString('o') }
 }
 function RuntimeIdentity {
     $settings = Get-Content -LiteralPath $config -Raw | ConvertFrom-Json -ErrorAction Stop
@@ -57,11 +59,13 @@ function RuntimeIdentity {
     if ($serviceName -notmatch '^[A-Za-z0-9._-]{1,80}$') { throw 'service-name-invalid' }
     $service = Get-CimInstance Win32_Service -Filter "Name='$serviceName'" -ErrorAction Stop
     if ($null -eq $service -or $service.State -ne 'Running' -or $service.ProcessId -le 0) { throw 'tunnel-service-not-running' }
-    $tunnelProcess = Get-Process -Id $service.ProcessId -ErrorAction Stop
+    $tunnelPid = [int]$service.ProcessId
+    $tunnelProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$tunnelPid" -ErrorAction Stop
+    if ($null -eq $tunnelProcess -or $null -eq $tunnelProcess.CreationDate) { throw 'tunnel-identity-unknown' }
     return [ordered]@{
         bridge=(Listener 17282)
         fqgate=(Listener 17281)
-        tunnel=[ordered]@{ pid=[int]$tunnelProcess.Id; start=$tunnelProcess.StartTime.ToUniversalTime().ToString('o') }
+        tunnel=[ordered]@{ pid=$tunnelPid; start=$tunnelProcess.CreationDate.ToUniversalTime().ToString('o') }
     }
 }
 

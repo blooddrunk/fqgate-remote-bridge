@@ -14,4 +14,28 @@ Closure evidence pending:
 - permanent-Windows P7B1-01..P7B1-15 results and external evidence path;
 - exact-final-commit Ubuntu and Windows CI run/job IDs.
 
+First permanent-Windows attempt on 2026-09-30 stopped at `P7B1-02-BASELINE` with
+`listener-17282`; a read-only listener query found neither `127.0.0.1:17281` nor
+`127.0.0.1:17282` listening. The healthy runtime prerequisite cannot be inferred or
+created by B1 planning. In a separate native Windows PowerShell window, the operator
+may run:
+
+```powershell
+Set-Location D:\code\research\fqgate-remote-bridge
+.\scripts\windows\start-dashboard.ps1 -ConfigPath D:\code\research\fqgate-acceptance-config.json -SkipInstall -SkipBuild -NoBrowser
+```
+
+Leave it running. Expected result: exactly one IPv4 loopback listener on each port.
+Do not install/update FQGate, change Cloudflare, or perform QR login to force a pass.
+Resume with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:\code\research\fqgate-remote-bridge\scripts\windows\phase7b1-acceptance.ps1 -ConfigPath D:\code\research\fqgate-acceptance-config.json
+```
+
+No live closure is claimed from the first attempt.
+The next attempt confirmed both listeners but found that the LocalSystem cloudflared
+process did not expose `Get-Process.StartTime` to this user. The acceptance script now
+uses read-only `Win32_Process.CreationDate` for all three before/after identities.
+
 Phase 7-B2 actuation/startup integration and Phase 7-C notifications remain unauthorized.

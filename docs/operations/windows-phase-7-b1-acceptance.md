@@ -7,10 +7,10 @@ Set-Location D:\code\research\fqgate-remote-bridge
 git status --short --branch
 git fetch origin
 git pull --ff-only
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\windows\phase7b1-acceptance.ps1 -ConfigPath D:\code\research\fqgate-bridge-config.json
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\windows\phase7b1-acceptance.ps1 -ConfigPath D:\code\research\fqgate-acceptance-config.json
 ```
 
-Replace the example config path with the existing local config path. The script refuses a dirty or different checkout. It records fixed P7B1-01 through P7B1-15 checks and bounded secret-free evidence at `D:\code\research\fqgate-phase7b1-acceptance-evidence.json`.
+The script refuses a dirty or different checkout. It records fixed P7B1-01 through P7B1-15 checks and bounded secret-free evidence at `D:\code\research\fqgate-phase7b1-acceptance-evidence.json`.
 
 The checks cover frozen install, typecheck, lint, tests, build, format, Playwright E2E, live inspect, healthy-only recovery plan, history schema/size/path, Phase 7-A watch/journal, unchanged remote route/policy source, exact loopback listeners, and unchanged Bridge/FQGate/cloudflared PID and start time across the run. The script never executes a modeled restart action.
 
