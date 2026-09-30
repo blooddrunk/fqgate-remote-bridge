@@ -37,5 +37,10 @@ No live closure is claimed from the first attempt.
 The next attempt confirmed both listeners but found that the LocalSystem cloudflared
 process did not expose `Get-Process.StartTime` to this user. The acceptance script now
 uses read-only `Win32_Process.CreationDate` for all three before/after identities.
+The subsequent run passed baseline and frozen install, then stopped at
+`P7B1-04-TYPECHECK`: a nested `pnpm` call resolved the unrelated globally installed
+12.6.0 when the outer command used Corepack. The gate now invokes the installed
+`pnpm.cmd` directly from the repository; its project-aware version switch reports
+the pinned 11.23.0, including nested script invocations.
 
 Phase 7-B2 actuation/startup integration and Phase 7-C notifications remain unauthorized.

@@ -34,7 +34,7 @@ function Gate([string]$Id,[scriptblock]$Action) {
     }
 }
 function Invoke-Quality([string]$Id,[string[]]$Arguments) {
-    try { & $corepack pnpm @Arguments }
+    try { & $pnpm @Arguments }
     finally { [IO.File]::WriteAllBytes($routeTreePath,$routeTreeBaseline) }
     if ($LASTEXITCODE -ne 0) { throw "${Id}_FAILED" }
     Record $Id 'PASS'
@@ -75,7 +75,7 @@ try {
     $git = if ($null -ne $gitCommand) { $gitCommand.Source } else { 'C:\Program Files\Git\cmd\git.exe' }
     if (-not (Test-Path -LiteralPath $git)) { throw 'git-not-found' }
     $node = (Get-Command node.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
-    $corepack = (Get-Command corepack.cmd -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $pnpm = (Get-Command pnpm.cmd -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     Gate 'P7B1-01-CHECKOUT' {
         if ($root -ne $expectedRoot) { throw 'wrong-checkout' }
         $script:commit = (& $git -C $root rev-parse HEAD).Trim()
@@ -85,7 +85,7 @@ try {
         if ($config.StartsWith($root,[StringComparison]::OrdinalIgnoreCase)) { throw 'config-inside-repo' }
     }
     Gate 'P7B1-02-BASELINE' { $script:before = RuntimeIdentity }
-    $versions = [ordered]@{ node=(& $node --version).Trim(); pnpm=(& $corepack pnpm --version).Trim() }
+    $versions = [ordered]@{ node=(& $node --version).Trim(); pnpm=(& $pnpm --version).Trim() }
     if ($versions.pnpm -ne '11.23.0') { throw 'pinned-pnpm-unavailable' }
     $routeTreePath = Join-Path $root 'src\routeTree.gen.ts'
     $routeTreeBaseline = [IO.File]::ReadAllBytes($routeTreePath)
