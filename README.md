@@ -32,7 +32,8 @@ machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双�
 | Phase 6-A Cloudflare   | CLOSED / 已验收       | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare |
 | Phase 6-B1/B2          | CLOSED / 已验收       | 有界、显式、stale-plan guarded 的 DNS/Tunnel/Access 修复工具        |
 | Phase 6-C / Phase 6    | CLOSED / 已验收       | 真实 no-op plan 与写凭据零常驻依赖审计                              |
-| Phase 7-A supervisor   | OPEN / 实施中         | 本机只读观测与有界事件日志；不执行恢复或通知                        |
+| Phase 7-A supervisor   | CLOSED / 已验收       | 本机只读观测与有界事件日志                                          |
+| Phase 7-B1 recovery    | 实施中                | 仅本机决策、计划和有界历史；不执行重启或通知                        |
 | 验收凭据托管与目录退役 | CLOSED / 已验收       | 三项 Windows Vault 凭据、受保护的 Tunnel token 文件、旧目录清理     |
 | 交易、下单、撤单、转账 | 永不由本项目提供      | 这是不可突破的安全边界                                              |
 

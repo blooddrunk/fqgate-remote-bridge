@@ -609,6 +609,12 @@ remote-human/admin/machine permission. Use the existing permanent Windows checko
 fixtures rather than manufacturing production downtime. Phase 7-B2 recovery actuation and
 Phase 7-C notifications remain unauthorized.
 
+The B1 implementation uses `supervisor recovery-plan --config <file> --json`,
+`src/supervisor/recovery.ts`, and a 4-KiB bounded recovery file under the existing
+repo-external supervisor directory. Candidate restart IDs are plan data only.
+Permanent-Windows P7B1 acceptance and exact-final-commit CI must pass before
+changing B1 from OPEN to CLOSED.
+
 ## Documentation rule
 
 When implementation changes the security boundary, request-context model, Cloudflare assumptions, admin JWT validation, confirmation model, mobile operator workflow, runtime topology, Windows/token behavior, or phase completion state, update the corresponding source-of-truth documentation in the same change.

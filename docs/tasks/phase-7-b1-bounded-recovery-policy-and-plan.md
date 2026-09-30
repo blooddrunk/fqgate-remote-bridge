@@ -2,6 +2,11 @@
 
 Status: **AUTHORIZED / OPEN**.
 
+Implementation note: the policy, local CLI, bounded history and deterministic tests are
+implemented on `codex/phase-7-b1`. Closure still requires permanent-Windows P7B1
+acceptance and exact-final-commit Ubuntu/Windows CI. The CLI leaves unknown Bridge
+and tunnel identity forbidden until a separately reviewed read-only identity proof exists.
+
 ## Goal
 
 Define and implement the decision layer for bounded supervisor recovery without adding any recovery actuator yet.

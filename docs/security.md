@@ -651,3 +651,7 @@ guess or revoke one. The scope contract and evidence requirements are in
 ## Phase 7-A journal boundary
 
 The local supervisor journal builds records only from fixed component/state/reason enums and a bounded timestamp. It never serializes raw probe results, errors, HTTP bodies, health diagnostics, session data, token files or environment values. Records are limited to 512 bytes, with at most four 64-KiB journal files. The state directory must be outside the repository and reject link/reparse path components; the watcher takes one exclusive lock per directory. Observation grants no authority to restart, update, log in, change Cloudflare or send notifications.
+
+## Phase 7-B1 planning boundary
+
+Recovery planning models only `bridge.restart`, `fqgate.restart` and `tunnel.restart` as identifiers. They are never executed. Eligibility requires consecutive failures, a clear transaction gate, qualified FQGate, known identity for the affected component, an unexpired cooldown and remaining attempt budget. Incompatible FQGate, login-required, missing tunnel, unknown state or probe failure forbids every candidate. The current CLI deliberately treats Bridge and tunnel identity as unknown until a separately reviewed read-only identity proof exists, so it cannot emit an eligible plan for those components. The bounded recovery file uses schema allowlists, a 4-KiB cap, repo-external path/link checks, and the Phase 7-A single-writer lock. Corrupt history cannot grant eligibility. No remote operation or permission is added.
