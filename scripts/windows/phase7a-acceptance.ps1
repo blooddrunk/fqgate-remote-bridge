@@ -30,7 +30,8 @@ function Gate([string]$Id,[scriptblock]$Action) {
     }
 }
 function Invoke-Quality([string]$Id,[string[]]$Arguments) {
-    & $pnpm @Arguments
+    try { & $pnpm @Arguments }
+    finally { [IO.File]::WriteAllBytes($routeTreePath,$routeTreeBaseline) }
     if ($LASTEXITCODE -ne 0) { throw "$($Id)_FAILED" }
     Record $Id 'PASS'
 }
@@ -55,6 +56,8 @@ try {
         if ($config.StartsWith($root,[StringComparison]::OrdinalIgnoreCase)) { throw 'config-inside-repo' }
     }
     $versions = [ordered]@{ node=(& $node --version).Trim(); pnpm=(& $pnpm --version).Trim() }
+    $routeTreePath = Join-Path $root 'src\routeTree.gen.ts'
+    $routeTreeBaseline = [IO.File]::ReadAllBytes($routeTreePath)
     Invoke-Quality 'P7A-02-INSTALL' @('install','--frozen-lockfile')
     Invoke-Quality 'P7A-03-TYPECHECK' @('typecheck')
     Invoke-Quality 'P7A-04-LINT' @('lint')

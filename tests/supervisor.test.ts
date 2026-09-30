@@ -122,7 +122,11 @@ describe("Phase 7-A supervisor", () => {
       ),
     ).toThrow();
     await expect(new EventJournal(join(process.cwd(), "bad-state")).prepare()).rejects.toThrow();
-    await symlink(process.cwd(), join(dir, "link"), "dir");
+    await symlink(
+      process.cwd(),
+      join(dir, "link"),
+      process.platform === "win32" ? "junction" : "dir",
+    );
     await expect(new EventJournal(join(dir, "link", "state")).prepare()).rejects.toThrow();
   });
 
