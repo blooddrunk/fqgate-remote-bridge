@@ -25,9 +25,9 @@ task package 和安全文档为准。
   永久 Windows 验收和精确提交双平台 CI 已通过，现已闭环。Phase 6-C 的
   写凭据依赖审计与整个 Phase 6 也已闭环；详见
   `docs/status/phase-6-c-implementation-handoff.md`。
-- Phase 7-A：**AUTHORIZED / OPEN**；仅授权只读 supervisor observation + bounded event journal，
-  任务见 `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`。7-B 自动恢复和
-  7-C 通知均未授权。
+- Phase 7-A：**CLOSED**；只读 supervisor observation + bounded event journal 已验收。
+  Phase 7-B1 本机 recovery policy + dry-run plan 已闭环，任务见
+  `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`。7-B2 自动恢复和 7-C 通知均未授权。
 
 稳定拓扑不变：
 
@@ -242,5 +242,6 @@ Manager，后续验收可显式选择 `Prompt` 或 `Vault`。LocalSystem 使用�
 token 已搬到受保护的 ProgramData 文件；在服务重启、回滚演练和真实远程回归
 通过后，旧 `fqgate-secrets` 目录以零消费者状态退役。证据见
 `docs/status/post-phase-6-a-credential-custody-implementation-handoff.md`。
-Phase 6-B1、B2 和 C 均按独立任务验收并闭环。Phase 7-A 已单独授权为只读观测与
-事件日志基础；Phase 7-B 自动恢复、Phase 7-C 通知及其他后续能力仍需新任务单独授权。
+Phase 6-B1、B2 和 C 均按独立任务验收并闭环。Phase 7-A 只读观测与事件日志已闭环。
+Phase 7-B1 本机只读决策与计划已闭环；Phase 7-B2 自动恢复、Phase 7-C 通知及
+其他后续能力仍需新任务单独授权。

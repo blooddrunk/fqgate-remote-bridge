@@ -26,7 +26,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
 - Phase 7-A: **CLOSED** — read-only supervisor observation and bounded event journal passed permanent-Windows P7A-01..P7A-13 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
 - FQGate 1.0.5 external-update qualification: **LIVE QUALIFIED / MERGE IN PROGRESS** — official artifact-bound CLI-only qualification passed permanent-Windows local/remote regressions; separate task in `docs/tasks/fqgate-1-0-5-external-update-qualification.md`
-- Phase 7-B1: **AUTHORIZED / OPEN** — deterministic bounded recovery policy and dry-run plan only; executable contract in `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
+- Phase 7-B1: **CLOSED** — deterministic bounded recovery policy and dry-run plan passed permanent-Windows P7B1-01..P7B1-15 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
 - Phase 7-B2/7-C: **NOT AUTHORIZED** — recovery actuation/startup integration and notifications require separate reviewed tasks
 
 Current deployed topology remains:
@@ -504,7 +504,7 @@ Design: `docs/plans/phase-7-supervisor-recovery-audit-notifications.md`.
 
 ### Phase 7-A — read-only supervisor observation and event journal
 
-**AUTHORIZED / OPEN.** Executable task:
+**CLOSED.** Executable task:
 `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`.
 Coding-agent handoff: `docs/prompts/phase-7-a-coding-agent-goal.md`.
 
@@ -513,10 +513,17 @@ local event journal. It must not restart services/processes, apply updates, trig
 mutate Cloudflare, send notifications, add autostart/service installation, or change any remote
 operation/authorization surface.
 
-### Phase 7-B / 7-C
+### Phase 7-B1 — bounded recovery decision and plan
 
-**PLANNED / NOT AUTHORIZED.** Bounded recovery and notifications require separate reviewed tasks
-after 7-A closes.
+**CLOSED.** Executable task:
+`docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`. The local CLI only evaluates
+fixed candidate restart IDs and persists bounded decision history. Permanent-Windows
+acceptance and exact-final-commit Ubuntu/Windows CI are recorded in the repo-external
+evidence referenced by `docs/status/phase-7-b1-implementation-handoff.md`.
+
+### Phase 7-B2 / 7-C
+
+**NOT AUTHORIZED.** Recovery actuation/startup integration and notifications require separate tasks.
 
 ## Phase 8 — Safe automatic updates
 
@@ -591,5 +598,6 @@ entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that in
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
 command. Phase 6-B2 now has its own narrow authorization in
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
-was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A now has its own read-only reviewed task; Phase 7-B recovery,
-Phase 7-C notifications and every other later capability remain unauthorized.
+was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A observation is
+closed and Phase 7-B1 planning has also closed. Phase 7-B2 actuation, Phase 7-C
+notifications and every other later capability remain unauthorized.

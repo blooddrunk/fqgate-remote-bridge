@@ -1,6 +1,13 @@
 # Phase 7-B1 — bounded recovery policy and dry-run plan
 
-Status: **AUTHORIZED / OPEN**.
+Status: **CLOSED**.
+
+Closure note: the policy, local CLI, bounded history and deterministic tests are
+implemented on `codex/phase-7-b1`. Permanent-Windows P7B1 acceptance and
+exact-final-commit Ubuntu/Windows CI are recorded in the repo-external evidence
+referenced by `docs/status/phase-7-b1-implementation-handoff.md`. The CLI leaves
+unknown Bridge and tunnel identity forbidden until a separately reviewed
+read-only identity proof exists.
 
 ## Goal
 
