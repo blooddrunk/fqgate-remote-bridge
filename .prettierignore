@@ -4,3 +4,4 @@ dist/
 coverage/
 pnpm-lock.yaml
 src/routeTree.gen.ts
+docs/status/post-phase-5-fqgate-1-0-4-closure-attempt.operator-before-sync.md

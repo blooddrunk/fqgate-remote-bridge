@@ -639,3 +639,7 @@ Local absence cannot prove remote revocation. No exact retained B1/B2 remote
 token ID is known from authorized evidence, so Phase 6-C does not discover,
 guess or revoke one. The scope contract and evidence requirements are in
 `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`.
+
+## Phase 7-A journal boundary
+
+The local supervisor journal builds records only from fixed component/state/reason enums and a bounded timestamp. It never serializes raw probe results, errors, HTTP bodies, health diagnostics, session data, token files or environment values. Records are limited to 512 bytes, with at most four 64-KiB journal files. The state directory must be outside the repository and reject link/reparse path components; the watcher takes one exclusive lock per directory. Observation grants no authority to restart, update, log in, change Cloudflare or send notifications.

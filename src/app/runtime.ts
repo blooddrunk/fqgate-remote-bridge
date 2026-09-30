@@ -19,6 +19,7 @@ import { OfficialCloudflaredReleaseSource } from "../cloudflared/release/source.
 import { PosixTokenFileAcl, ProtectedTokenFileStore } from "../cloudflared/token-file.js";
 import { WindowsTokenFileAcl } from "../cloudflared/windows/acl.js";
 import { WindowsCloudflaredServiceController } from "../cloudflared/windows/service.js";
+import type { CloudflaredServiceController } from "../cloudflared/windows/service.js";
 import { FqgateInstrumentLookup } from "../fqgate/market/lookup.js";
 import { legacyLookupQualificationEvidence } from "../fqgate/market/compatibility.js";
 
@@ -28,6 +29,7 @@ export interface ApplicationServices {
   readonly openApi: FqgateOpenApiService;
   readonly update: FqgateUpdateService;
   readonly cloudflared: CloudflaredManager;
+  readonly cloudflaredService?: CloudflaredServiceController;
 }
 
 export function createApplicationServices(config: AppConfig): ApplicationServices {
@@ -128,6 +130,7 @@ export function createApplicationServices(config: AppConfig): ApplicationService
       qualificationProbes: [instrumentLookup.createQualificationProbe()],
     }),
     cloudflared,
+    ...(cloudflaredService === undefined ? {} : { cloudflaredService }),
   };
 }
 
