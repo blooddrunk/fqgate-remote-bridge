@@ -24,8 +24,11 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6-B2: **CLOSED** — bounded Tunnel ingress and Access application/policy provisioning; executable contract in `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`
 - Phase 6-C: **CLOSED** — live all-`in_sync` plan, credential-dependency audit and remote/local regression; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
 - Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
-- Phase 7-A: **AUTHORIZED / OPEN** — read-only supervisor observation and bounded event journal; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
-- Phase 7-B/7-C: **NOT AUTHORIZED** — recovery and notifications require separate reviewed tasks
+- Phase 7-A: **CLOSED** — read-only supervisor observation and bounded event journal passed permanent-Windows P7A-01..P7A-13 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+- FQGate 1.0.5 external-update qualification: **LIVE QUALIFIED / MERGE IN PROGRESS** — official artifact-bound CLI-only qualification passed permanent-Windows local/remote regressions; separate task in `docs/tasks/fqgate-1-0-5-external-update-qualification.md`
+- Phase 7-B1: **CLOSED** — deterministic bounded recovery policy and dry-run plan passed permanent-Windows P7B1-01..P7B1-15 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
+- Phase 7-B1-R1: **INTEGRATION HARDENING** — reconstructs the 1.0.5/B1 stack on latest `origin/main` and validates persisted decision semantics; adds no actuator
+- Phase 7-B2/7-C: **NOT AUTHORIZED** — recovery actuation/startup integration and notifications require separate reviewed tasks
 
 Current deployed topology remains:
 
@@ -502,7 +505,7 @@ Design: `docs/plans/phase-7-supervisor-recovery-audit-notifications.md`.
 
 ### Phase 7-A — read-only supervisor observation and event journal
 
-**AUTHORIZED / OPEN.** Executable task:
+**CLOSED.** Executable task:
 `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`.
 Coding-agent handoff: `docs/prompts/phase-7-a-coding-agent-goal.md`.
 
@@ -511,10 +514,25 @@ local event journal. It must not restart services/processes, apply updates, trig
 mutate Cloudflare, send notifications, add autostart/service installation, or change any remote
 operation/authorization surface.
 
-### Phase 7-B / 7-C
+### Phase 7-B1 — bounded recovery decision and plan
 
-**PLANNED / NOT AUTHORIZED.** Bounded recovery and notifications require separate reviewed tasks
-after 7-A closes.
+**CLOSED.** Executable task:
+`docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`. The local CLI only evaluates
+fixed candidate restart IDs and persists bounded decision history. Permanent-Windows
+acceptance and exact-final-commit Ubuntu/Windows CI are recorded in the repo-external
+evidence referenced by `docs/status/phase-7-b1-implementation-handoff.md`.
+
+### Phase 7-B1-R1 — latest-main integration and decision hardening
+
+**IN PROGRESS.** The FQGate 1.0.5 local qualification path and the
+planning-only B1 implementation are being reconstructed on latest
+`origin/main`. RecoveryStore validates persisted decision/reason/action/history
+combinations and fails closed on corruption. The exact acceptance contract is
+`docs/tasks/phase-7-b1-r1-integration-hardening.md`.
+
+### Phase 7-B2 / 7-C
+
+**NOT AUTHORIZED.** Recovery actuation/startup integration and notifications require separate tasks.
 
 ## Phase 8 — Safe automatic updates
 
@@ -539,35 +557,33 @@ Goal: versioned Windows release artifact, install/uninstall/reconfigure flow, st
 
 ## Current development handoff
 
-Phase 5, both post-Phase-5 FQGate 1.0.2 and 1.0.4 maintenance tracks, Phase
-6-A, credential custody and Phase 6-B1 are closed. The 1.0.4 local upgrade,
-real remote-human/admin/machine regressions and exact runtime-commit CI are
-recorded in its final handoff. Phase 6-B2 and Phase 6-C passed permanent-Windows
-acceptance and exact-commit Ubuntu/Windows CI; Phase 6 is closed.
+Phase 5, the FQGate 1.0.2/1.0.4 qualification tracks, all of Phase 6, Phase
+7-A and Phase 7-B1 are closed. FQGate 1.0.5 passed its permanent-Windows
+qualification and remote regressions; its CLI-only path and the B1 planning
+layer are being integrated on a clean branch from current `origin/main`. The
+recovery store requires explicit, evaluator-reachable decision semantics.
+Phase 7-B2 and Phase 7-C remain unauthorized.
 
-Most recently closed FQGate maintenance task:
-
-`docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`
-
-Closure evidence:
+Most recent closed FQGate maintenance handoff:
 
 `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`
 
-Most recently closed Phase 6 task:
+FQGate 1.0.5 qualification task and live evidence:
 
-`docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
+- `docs/tasks/fqgate-1-0-5-external-update-qualification.md`
+- `docs/status/fqgate-1-0-5-external-update-qualification-handoff.md`
 
-Phase 6-C closure evidence:
+Most recent closed Phase 7 handoff:
 
-`docs/status/phase-6-c-implementation-handoff.md`
+`docs/status/phase-7-b1-implementation-handoff.md`
 
-Current authorized task:
+Current authorized integration task:
 
-`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+`docs/tasks/phase-7-b1-r1-integration-hardening.md`
 
-Current coding-agent handoff:
+Current implementation handoff:
 
-`docs/prompts/phase-7-a-coding-agent-goal.md`
+`docs/status/phase-7-b1-r1-implementation-handoff.md`
 
 Phase 6-A historical implementation and evidence:
 
@@ -589,5 +605,8 @@ entry, exact `LOGIN_REQUIRED` QR boundary, or a `MANUAL_REQUIRED` result that in
 exact Dashboard path, field, expected value, reason automation cannot prove it, and resume
 command. Phase 6-B2 now has its own narrow authorization in
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
-was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A now has its own read-only reviewed task; Phase 7-B recovery,
-Phase 7-C notifications and every other later capability remain unauthorized.
+was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A observation is
+closed and Phase 7-B1 planning has also closed. R1 integrates the existing
+planning-only code and hardens its persisted decision format. Phase 7-B2
+actuation, Phase 7-C notifications and every other later capability remain
+unauthorized.
