@@ -140,6 +140,14 @@ context. It re-fetches the fixed official release and verifies the installed
 baseline before invoking the existing bounded qualification transaction. It
 does not add a remote-admin or remote-machine permission.
 
+The CLI-only `fqgate qualify-current` handles an external FQGate self-update
+that already changed the managed file. It requires the exact official stable
+version/size/SHA-256, one IPv4 loopback listener owned by that executable,
+bounded health/OpenAPI/semantic probes, and a final identity recheck. Only then
+does it persist qualification evidence. Probe failure leaves the artifact
+unvalidated. This path makes no binary change, so it does not promise binary
+rollback; it never runs automatically or creates a Bridge route.
+
 ## Release source / supply-chain policy
 
 ### FQGate

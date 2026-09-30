@@ -200,6 +200,19 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
           args.json,
           io,
         );
+      case "qualify-current":
+        if (args.positionals.length !== 2 || args.dryRun || args.check || args.apply) {
+          throw new BridgeError(
+            ERROR_CODES.CONFIG_INVALID,
+            "qualify-current accepts only --config and --json",
+          );
+        }
+        output(
+          await manager.qualifyCurrent([application.instrumentLookup.createQualificationProbe()]),
+          args.json,
+          io,
+        );
+        return 0;
       case "update":
         return await runUpdate(manager, args.check, args.apply, args.dryRun, args.json, io);
       case "start":
@@ -866,6 +879,7 @@ function usage(): string {
     "fqgate-remote-bridge fqgate health [--json]",
     "fqgate-remote-bridge fqgate install [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate qualify [--dry-run] [--json]",
+    "fqgate-remote-bridge fqgate qualify-current [--config <file>] [--json]",
     "fqgate-remote-bridge fqgate update --check|--apply [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate start|stop|restart [--json]",
     "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",
