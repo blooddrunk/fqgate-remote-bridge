@@ -75,6 +75,8 @@ function validateDecisionSet(decisions: readonly RecoveryDecision[]): void {
 
   const fqgate = decisions[1];
   const tunnel = decisions[2];
+  if (fqgate === undefined || tunnel === undefined)
+    throw new Error("Invalid recovery decision set");
   const allForbiddenFor = (reason: RecoveryDecision["reason"]): boolean =>
     decisions.every((decision) => decision.decision === "forbidden" && decision.reason === reason);
 
