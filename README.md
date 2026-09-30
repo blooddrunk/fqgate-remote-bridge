@@ -13,28 +13,30 @@ Tunnel 把流量安全地送到 Bridge。
 
 ## 先看结论：现在能做什么
 
-当前项目仍在持续开发；Phase 0–6 已完成。Phase 5 的最终交付是受策略约束的
-machine OpenAPI，以及永久 Windows、真实 Cloudflare service-token 和双平台 CI 闭包。
+当前项目仍在持续开发；Phase 0–6、Phase 7-A 与 Phase 7-B1 已关闭。
+B1-R1 已完成基于最新主线的集成和持久化决策加固验收，交付于待合并的 PR #14。
+Phase 7-B2 和 Phase 7-C 仍未授权。
 
-| 能力                   | 当前状态            | 说明                                                                    |
-| ---------------------- | ------------------- | ----------------------------------------------------------------------- |
-| FQGate 本机运行        | 可用                | 仅 127.0.0.1:17281                                                      |
-| Bridge Dashboard/API   | 可用                | 仅 127.0.0.1:17282                                                      |
-| 本地维护               | 可用                | 生命周期、更新和 OpenAPI refresh 保持本地边界                           |
-| remote-human           | 可用                | Dashboard、status、QR、只读更新状态、API catalog                        |
-| remote-admin           | 可用                | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制                     |
-| remote-machine         | 独立认证、受限查询  | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝                   |
-| Phase 5-B 行情 API     | CLOSED / 已验收     | 已从永久 Windows 实时证据选择一个六位代码查询                           |
-| Phase 5-C machine docs | CLOSED / 已验收     | registry-derived 文档与最终远程闭包通过                                 |
-| Post-Phase-5 兼容维护  | CLOSED / 已验收     | 1.0.2 候选资格、lookup 证据化与永久环境刷新                             |
-| FQGate 1.0.4 更新      | CLOSED / 已验收     | 本机 Dashboard 资格验证、永久环境与真实远程回归                         |
-| FQGate 1.0.5 现场状态  | 当前已安装 / 待验证 | 上游应用内更新后已观测到官方 1.0.5；Bridge 仍判为 supported_unvalidated |
-| Phase 6-A Cloudflare   | CLOSED / 已验收     | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare     |
-| Phase 6-B1/B2          | CLOSED / 已验收     | 有界、显式、stale-plan guarded 的 DNS/Tunnel/Access 修复工具            |
-| Phase 6-C / Phase 6    | CLOSED / 已验收     | 真实 no-op plan 与写凭据零常驻依赖审计                                  |
-| Phase 7-A supervisor   | OPEN / 实施中       | 本机只读观测与有界事件日志；不执行恢复或通知                            |
-| 验收凭据托管与目录退役 | CLOSED / 已验收     | 三项 Windows Vault 凭据、受保护的 Tunnel token 文件、旧目录清理         |
-| 交易、下单、撤单、转账 | 永不由本项目提供    | 这是不可突破的安全边界                                                  |
+| 能力                   | 当前状态           | 说明                                                                   |
+| ---------------------- | ------------------ | ---------------------------------------------------------------------- |
+| FQGate 本机运行        | 可用               | 仅 127.0.0.1:17281                                                     |
+| Bridge Dashboard/API   | 可用               | 仅 127.0.0.1:17282                                                     |
+| 本地维护               | 可用               | 生命周期、更新和 OpenAPI refresh 保持本地边界                          |
+| remote-human           | 可用               | Dashboard、status、QR、只读更新状态、API catalog                       |
+| remote-admin           | 可用               | 独立 hostname/AUD；仅有限维护操作，并有额外确认机制                    |
+| remote-machine         | 独立认证、受限查询 | 仅允许查询与 machine OpenAPI；所有旧 operation 仍拒绝                  |
+| Phase 5-B 行情 API     | CLOSED / 已验收    | 已从永久 Windows 实时证据选择一个六位代码查询                          |
+| Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                                |
+| Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                            |
+| FQGate 1.0.4 更新      | CLOSED / 已验收    | 本机 Dashboard 资格验证、永久环境与真实远程回归                        |
+| FQGate 1.0.5 更新      | LIVE QUALIFIED     | `qualify-current` 仅本地显式 CLI；B1-R1 集成验收已通过，PR #14 待合并  |
+| Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare    |
+| Phase 6-B1/B2          | CLOSED / 已验收    | 有界、显式、stale-plan guarded 的 DNS/Tunnel/Access 修复工具           |
+| Phase 6-C / Phase 6    | CLOSED / 已验收    | 真实 no-op plan 与写凭据零常驻依赖审计                                 |
+| Phase 7-A supervisor   | CLOSED / 已验收    | 本机只读观测与有界事件日志                                             |
+| Phase 7-B1 / B1-R1     | B1 / R1 CLOSED     | 仅本机决策、计划和有界历史；严格校验 decision/action；不执行重启或通知 |
+| 验收凭据托管与目录退役 | CLOSED / 已验收    | 三项 Windows Vault 凭据、受保护的 Tunnel token 文件、旧目录清理        |
+| 交易、下单、撤单、转账 | 永不由本项目提供   | 这是不可突破的安全边界                                                 |
 
 如果只想在 Windows 本机试运行，请按“本地部署”章节操作；如果要发布到公网，
 再继续完成“Cloudflare 人工配置”和“远程验收”。

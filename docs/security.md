@@ -140,6 +140,14 @@ context. It re-fetches the fixed official release and verifies the installed
 baseline before invoking the existing bounded qualification transaction. It
 does not add a remote-admin or remote-machine permission.
 
+The CLI-only `fqgate qualify-current` handles an external FQGate self-update
+that already changed the managed file. It requires the exact official stable
+version/size/SHA-256, one IPv4 loopback listener owned by that executable,
+bounded health/OpenAPI/semantic probes, and a final identity recheck. Only then
+does it persist qualification evidence. Probe failure leaves the artifact
+unvalidated. This path makes no binary change, so it does not promise binary
+rollback; it never runs automatically or creates a Bridge route.
+
 ## Release source / supply-chain policy
 
 ### FQGate
@@ -643,3 +651,24 @@ guess or revoke one. The scope contract and evidence requirements are in
 ## Phase 7-A journal boundary
 
 The local supervisor journal builds records only from fixed component/state/reason enums and a bounded timestamp. It never serializes raw probe results, errors, HTTP bodies, health diagnostics, session data, token files or environment values. Records are limited to 512 bytes, with at most four 64-KiB journal files. The state directory must be outside the repository and reject link/reparse path components; the watcher takes one exclusive lock per directory. Observation grants no authority to restart, update, log in, change Cloudflare or send notifications.
+
+## Phase 7-B1 planning boundary
+
+Recovery planning models only `bridge.restart`, `fqgate.restart` and `tunnel.restart` as identifiers. They are never executed. Eligibility requires consecutive failures, a clear transaction gate, qualified FQGate, known identity for the affected component, an unexpired cooldown and remaining attempt budget. Incompatible FQGate, login-required, missing tunnel, unknown state or probe failure forbids every candidate. The current CLI deliberately treats Bridge and tunnel identity as unknown until a separately reviewed read-only identity proof exists, so it cannot emit an eligible plan for those components. The bounded recovery file uses schema allowlists, a 4-KiB cap, repo-external path/link checks, and the Phase 7-A single-writer lock. Corrupt history cannot grant eligibility. No remote operation or permission is added.
+
+When Bridge, FQGate and tunnel are all ready, an unknown session label can return
+`no_action` because there is no recovery candidate. It never counts toward a
+failure threshold or permits a restart. Any failure alongside an unknown session
+remains forbidden.
+
+Persisted recovery decisions are checked against an explicit reason/decision/
+action allowlist before they can be read or written. `no_action` and `forbidden`
+never contain an action. `eligible` contains exactly its component's allowlisted
+action. `suppressed` carries that candidate identifier for `threshold` or
+`cooldown`, and only cooldown has a canonical `notBefore`. `exhausted` carries
+the candidate identifier only with `attempt_limit`. State, consecutive-failure
+and attempt counters must agree with the fixed history entry; global safety
+reasons must agree across the full decision set. If persisted state is malformed,
+the CLI returns action-free `forbidden/history_invalid` decisions and does not
+write the rejected state or call any actuator. `history_invalid` is not accepted
+as a persisted evaluator decision.

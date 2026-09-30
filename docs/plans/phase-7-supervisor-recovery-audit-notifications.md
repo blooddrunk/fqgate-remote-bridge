@@ -1,6 +1,6 @@
 # Phase 7 — supervisor, recovery, audit trail and notifications
 
-Status: **PLANNED**. Phase 7-A is separately authorized; Phase 7-B/7-C are not authorized yet.
+Status: **ACTIVE**. Phase 7-A and Phase 7-B1 are closed. Phase 7-B2/7-C are not authorized yet.
 
 ## Goal
 
@@ -13,8 +13,7 @@ and recovery is proven before any outbound notification provider is allowed to r
 
 ## Phase 7-A — read-only supervisor observation and event journal
 
-Status: **AUTHORIZED / OPEN** under
-`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`.
+Status: **CLOSED**. Permanent-Windows P7A-01..P7A-13 acceptance and exact-commit Ubuntu/Windows CI passed.
 
 Deliver a deterministic supervisor state model, one-shot inspection, a bounded read-only watch
 loop, and a redacted local event journal. The first slice may observe only existing local runtime
@@ -34,16 +33,33 @@ Later Phase 7 slices may extend the model only through separately reviewed tasks
 
 ## Phase 7-B — bounded recovery
 
+Phase 7-B is split so policy can be proven before actuation.
+
+### Phase 7-B1 — recovery policy and dry-run plan
+
+Status: **CLOSED** under
+`docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`.
+
+B1 defines fixed-schema decisions, cooldowns, attempt ceilings, stable-state reset rules and
+per-action allowlists. It may model only `bridge.restart`, `fqgate.restart` and
+`tunnel.restart` as candidate action IDs. It must not execute them. Live Windows acceptance must
+prove a healthy deployment yields only `no_action` and that no process/service was restarted.
+
+The B1-R1 integration hardening requires the persisted store to accept only evaluator-reachable
+reason/decision/action combinations, validate cooldown-only `notBefore`, and reject inconsistent
+history/counter data. Corrupt input returns an action-free forbidden result and cannot reach an
+actuator. This does not grant any Phase 7-B2 authority.
+
+### Phase 7-B2 — recovery actuation and startup integration
+
 Status: **PLANNED / NOT AUTHORIZED**.
 
-After 7-A proves stable observation and journaling, define an explicit recovery policy with
-cooldowns, attempt ceilings, stable-state requirements, and per-action allowlists. Recovery must be
-limited to already-supported local lifecycle/service operations. It must never perform Cloudflare
-provisioning, update apply, QR/login automation, trading/financial mutation, or generic
-process/service control.
+Only after B1 closes may a separate reviewed task bind a subset of B1 decisions to existing local
+lifecycle/service operations. B2 must preserve cooldown/attempt budgets, require stable identity,
+and keep Cloudflare provisioning, update apply, QR/login automation, trading/financial mutation and
+generic process/service control forbidden.
 
-The Windows launch/startup model for a long-running supervisor is also deferred to the reviewed
-7-B task; Phase 7-A does not install a service or Scheduled Task.
+The Windows launch/startup model for a long-running supervisor is deferred to B2.
 
 ## Phase 7-C — notifications and Phase 7 closure
 

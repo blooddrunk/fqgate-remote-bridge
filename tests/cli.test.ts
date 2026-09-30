@@ -118,4 +118,25 @@ describe("local CLI", () => {
       error: { code: "CLOUDFLARE_APPLY_REJECTED" },
     });
   });
+
+  it.each([
+    "--apply",
+    "--execute",
+    "--force",
+    "--dry-run",
+    "--service",
+    "--action",
+    "--url",
+    "--interval-ms",
+  ])("rejects recovery-plan mutation or unrelated option %s", async (option) => {
+    const capture = ioCapture();
+    const args = ["supervisor", "recovery-plan", "--config", "nonexistent.json", "--json", option];
+    if (option === "--interval-ms") args.push("1000");
+    const code = await runCli(args, {
+      stdout: (line) => capture.stdout.push(line),
+      stderr: (line) => capture.stderr.push(line),
+    });
+    expect(code).not.toBe(0);
+    expect(capture.stdout).toEqual([]);
+  });
 });
