@@ -306,10 +306,7 @@ export class FqgateLifecycleManager {
       const freshRelease = await this.releaseSource.getStableRelease();
       const freshPkg = selectWindowsX64Package(freshRelease);
       const freshDigest = await sha256File(this.layout.currentExecutable);
-      if (
-        freshDigest.size !== freshPkg.size ||
-        freshDigest.sha256 !== freshPkg.sha256
-      ) {
+      if (freshDigest.size !== freshPkg.size || freshDigest.sha256 !== freshPkg.sha256) {
         throw new BridgeError(
           ERROR_CODES.ACTIVATION_FAILED,
           "FQGate release, artifact or listener changed during qualification",
