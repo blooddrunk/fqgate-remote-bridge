@@ -1,6 +1,6 @@
 # Phase 7 — supervisor, recovery, audit trail and notifications
 
-Status: **ACTIVE**. Phase 7-A is closed. Phase 7-B1 is separately authorized; Phase 7-B2/7-C are not authorized yet.
+Status: **ACTIVE**. Phase 7-A and Phase 7-B1 are closed. Phase 7-B2/7-C are not authorized yet.
 
 ## Goal
 
@@ -37,7 +37,7 @@ Phase 7-B is split so policy can be proven before actuation.
 
 ### Phase 7-B1 — recovery policy and dry-run plan
 
-Status: **AUTHORIZED / OPEN** under
+Status: **CLOSED** under
 `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`.
 
 B1 defines fixed-schema decisions, cooldowns, attempt ceilings, stable-state reset rules and

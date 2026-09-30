@@ -398,7 +398,7 @@ Follow `docs/roadmap.md`.
 - Phase 6-C: CLOSED under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; bounded credential-dependency audit and full Phase 6 closure
 - Phase 6: CLOSED
 - Phase 7-A: CLOSED under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; permanent-Windows P7A-01..P7A-13 and exact-commit CI passed
-- Phase 7-B1: AUTHORIZED / OPEN under `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`; deterministic policy and dry-run planning only, no actuator
+- Phase 7-B1: CLOSED under `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`; deterministic policy and dry-run planning only, no actuator
 - Phase 7-B2/7-C: NOT AUTHORIZED; no automatic recovery actuation/startup integration or notifications yet
 - Separate FQGate 1.0.5 external-update qualification: LIVE QUALIFIED / merge in progress under
   `docs/tasks/fqgate-1-0-5-external-update-qualification.md`;
@@ -577,18 +577,18 @@ is at `D:\code\research\fqgate-phase6b1-acceptance-evidence.json`.
 Phase 6-B2 and Phase 6-C are closed under their separate task packages. B1/B2
 guarded apply remains available only for explicit operator-invoked supported drift
 with fresh transient write credentials. Phase 7-A is closed as observation-only
-supervision and journaling. Phase 7-B1 is separately authorized only for deterministic
+supervision and journaling. Phase 7-B1 is separately closed after deterministic
 recovery-policy evaluation and dry-run planning; it grants no recovery actuation,
 notification, update, Cloudflare mutation, autostart/service-installation or new
 remote-operation authority.
 
-## Closed Phase 7-A and active Phase 7-B1 task
+## Closed Phase 7-A and Phase 7-B1
 
 Phase 7-A closure evidence is in:
 
 `docs/status/phase-7-a-implementation-handoff.md`
 
-The active executable task package is:
+The Phase 7-B1 closure task package is:
 
 `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
 
@@ -612,8 +612,9 @@ Phase 7-C notifications remain unauthorized.
 The B1 implementation uses `supervisor recovery-plan --config <file> --json`,
 `src/supervisor/recovery.ts`, and a 4-KiB bounded recovery file under the existing
 repo-external supervisor directory. Candidate restart IDs are plan data only.
-Permanent-Windows P7B1 acceptance and exact-final-commit CI must pass before
-changing B1 from OPEN to CLOSED.
+Permanent-Windows P7B1-01..P7B1-15 acceptance and exact-final-commit CI evidence
+are recorded outside Git at `D:\code\research\fqgate-phase7b1-acceptance-evidence.json`.
+See `docs/status/phase-7-b1-implementation-handoff.md`.
 
 ## Documentation rule
 

@@ -26,7 +26,7 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
 - Phase 7-A: **CLOSED** — read-only supervisor observation and bounded event journal passed permanent-Windows P7A-01..P7A-13 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
 - FQGate 1.0.5 external-update qualification: **LIVE QUALIFIED / MERGE IN PROGRESS** — official artifact-bound CLI-only qualification passed permanent-Windows local/remote regressions; separate task in `docs/tasks/fqgate-1-0-5-external-update-qualification.md`
-- Phase 7-B1: **AUTHORIZED / OPEN** — deterministic bounded recovery policy and dry-run plan only; executable contract in `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
+- Phase 7-B1: **CLOSED** — deterministic bounded recovery policy and dry-run plan passed permanent-Windows P7B1-01..P7B1-15 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
 - Phase 7-B2/7-C: **NOT AUTHORIZED** — recovery actuation/startup integration and notifications require separate reviewed tasks
 
 Current deployed topology remains:
@@ -515,10 +515,11 @@ operation/authorization surface.
 
 ### Phase 7-B1 — bounded recovery decision and plan
 
-**AUTHORIZED / IMPLEMENTED; ACCEPTANCE OPEN.** Executable task:
+**CLOSED.** Executable task:
 `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`. The local CLI only evaluates
-fixed candidate restart IDs and persists bounded decision history. Permanent-Windows acceptance
-and exact-final-commit Ubuntu/Windows CI are required before closure.
+fixed candidate restart IDs and persists bounded decision history. Permanent-Windows
+acceptance and exact-final-commit Ubuntu/Windows CI are recorded in the repo-external
+evidence referenced by `docs/status/phase-7-b1-implementation-handoff.md`.
 
 ### Phase 7-B2 / 7-C
 
@@ -598,5 +599,5 @@ exact Dashboard path, field, expected value, reason automation cannot prove it, 
 command. Phase 6-B2 now has its own narrow authorization in
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
 was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A observation is
-closed and Phase 7-B1 planning is separately authorized. Phase 7-B2 actuation, Phase 7-C
+closed and Phase 7-B1 planning has also closed. Phase 7-B2 actuation, Phase 7-C
 notifications and every other later capability remain unauthorized.

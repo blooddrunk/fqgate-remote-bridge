@@ -1,6 +1,6 @@
 # Phase 7-B1 implementation handoff
 
-Status: **implementation in progress; closure not yet claimed**.
+Status: **CLOSED** after permanent-Windows acceptance and exact-final-commit Ubuntu/Windows CI.
 
 The branch starts from FQGate 1.0.5 qualification commit `60ac0f64db2ce44f7629495e1a95af01a104c4d0`, which contains the Phase 7-A closure and the authorized B1 task. The B1 implementation adds a pure versioned recovery policy, fixed candidate action identifiers, bounded config, repo-external history and local-only `supervisor recovery-plan` command. Restart actions remain identifiers only. Existing Bridge routes and remote permissions are unchanged.
 
@@ -8,11 +8,15 @@ The policy defaults to three consecutive failures, five-minute cooldown, two att
 
 Deterministic tests cover healthy, suppressed, eligible, exhausted and forbidden decisions, fake-clock thresholds/reset, history bounds/path safety, CLI option rejection and no actuator calls. The permanent-Windows gate is `scripts/windows/phase7b1-acceptance.ps1`; its procedure is `docs/operations/windows-phase-7-b1-acceptance.md`.
 
-Closure evidence pending:
-
-- exact implementation commit;
-- permanent-Windows P7B1-01..P7B1-15 results and external evidence path;
-- exact-final-commit Ubuntu and Windows CI run/job IDs.
+Implementation commit `3b5fa29a21b36284fa123329099b00d3e6840e72` passed
+permanent-Windows P7B1-01..P7B1-15 acceptance and Ubuntu/Windows CI run
+`36684164720` (Ubuntu job `109786062414`; Windows job `109786062116`).
+The final documentation commit is rechecked at the same permanent-Windows path.
+Its exact commit, P7B1 results and final Ubuntu/Windows CI run/job IDs are in
+the bounded repo-external record
+`D:\code\research\fqgate-phase7b1-acceptance-evidence.json`.
+The live plan contained only three `no_action` decisions; before/after Bridge,
+FQGate and cloudflared PID/creation time matched. No restart was performed.
 
 First permanent-Windows attempt on 2026-09-30 stopped at `P7B1-02-BASELINE` with
 `listener-17282`; a read-only listener query found neither `127.0.0.1:17281` nor
