@@ -1,6 +1,6 @@
 # Phase 7 — supervisor, recovery, audit trail and notifications
 
-Status: **PLANNED**. Phase 7-A is separately authorized; Phase 7-B/7-C are not authorized yet.
+Status: **ACTIVE**. Phase 7-A is closed. Phase 7-B1 is separately authorized; Phase 7-B2/7-C are not authorized yet.
 
 ## Goal
 
