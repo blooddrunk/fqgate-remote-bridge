@@ -244,6 +244,22 @@ export class FqgateLifecycleManager {
       const release = await this.releaseSource.getStableRelease();
       const pkg = selectWindowsX64Package(release);
       this.policy.assertSupported(release.version);
+      if (!(await pathExists(this.layout.currentExecutable))) {
+        throw new BridgeError(
+          ERROR_CODES.CANDIDATE_INVALID,
+          "Managed current FQGate does not match the official stable artifact",
+        );
+      }
+      // Hash the externally updated file before candidate inspection executes
+      // `fqgate.exe --version`. An untrusted or partially replaced current
+      // file must never be executed merely to discover that its digest is bad.
+      const currentDigest = await sha256File(this.layout.currentExecutable);
+      if (currentDigest.size !== pkg.size || currentDigest.sha256 !== pkg.sha256) {
+        throw new BridgeError(
+          ERROR_CODES.CANDIDATE_INVALID,
+          "Managed current FQGate does not match the official stable artifact",
+        );
+      }
       const current = await this.inspectArtifact(this.layout.currentExecutable);
       if (
         current === undefined ||
@@ -289,6 +305,16 @@ export class FqgateLifecycleManager {
       const qualification = await runQualificationProbes(probes, this.now());
       const freshRelease = await this.releaseSource.getStableRelease();
       const freshPkg = selectWindowsX64Package(freshRelease);
+      const freshDigest = await sha256File(this.layout.currentExecutable);
+      if (
+        freshDigest.size !== freshPkg.size ||
+        freshDigest.sha256 !== freshPkg.sha256
+      ) {
+        throw new BridgeError(
+          ERROR_CODES.ACTIVATION_FAILED,
+          "FQGate release, artifact or listener changed during qualification",
+        );
+      }
       const freshCurrent = await this.inspectArtifact(this.layout.currentExecutable);
       const freshProcess = await this.processController.adoptCurrent(
         this.layout.currentExecutable,
