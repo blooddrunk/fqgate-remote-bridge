@@ -5,7 +5,7 @@ This document records upstream behavior that the project may rely on. It is a co
 Baseline date: **2026-09-17**
 
 Historical 1.0.2 maintenance observation: **2026-09-21**. Current stable release
-observation: **2026-09-28**. The Phase 5-B and 1.0.2 contracts below remain
+observation: **2026-09-30**. The Phase 5-B and 1.0.2 contracts below remain
 historical; the separate 1.0.4 maintenance task closed on 2026-09-29.
 
 ## FQGate release source
@@ -22,7 +22,20 @@ Observed stable version at the current baseline:
 1.0.0
 ```
 
-The current official stable manifest observed on 2026-09-28 is:
+The current official stable manifest observed on 2026-09-30 is:
+
+```text
+version: 1.0.5
+publishedAt: 2026-09-29T16:31:18Z
+Windows x86_64: FQGate-1.0.5-windows-x64-UNSIGNED.exe
+size: 23707648
+sha256: 2b9613dbf2d0f10b1672684f2e24ac8917d2d8d3fa9bd7fbbae04d57dd73d83c
+```
+
+This release was installed after an upstream in-app update. Its compatibility
+passed the separate permanent-Windows Bridge qualification on 2026-09-30;
+approval remains bound to the observed artifact hash and operation evidence.
+The prior official stable manifest observed on 2026-09-28 was:
 
 ```text
 version: 1.0.4
@@ -32,8 +45,8 @@ size: 23201792
 sha256: 6816b8e9225db3ffee464c8f61173eea02ae66663ba2b137e9aa39c4d6bc9290
 ```
 
-This is release identity evidence, not compatibility approval. The active
-1.0.4 task must qualify the artifact before activation.
+These are release identity facts, not automatic compatibility approval. The
+1.0.4 task qualified its own artifact before activation.
 
 The previously observed 1.0.2 package was:
 

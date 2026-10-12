@@ -2,6 +2,7 @@
 
 import { pathToFileURL } from "node:url";
 import { join } from "node:path";
+import { lstat } from "node:fs/promises";
 import { loadConfig } from "../config/config.js";
 import { selectWindowsX64Package } from "../fqgate/release/manifest.js";
 import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
@@ -43,6 +44,14 @@ import { createObservationAdapters } from "../supervisor/adapters.js";
 import { EventJournal } from "../supervisor/journal.js";
 import { observe } from "../supervisor/model.js";
 import { watch, validateWatchOptions } from "../supervisor/watch.js";
+import { createFqgateLayout } from "../fqgate/install/layout.js";
+import {
+  DEFAULT_RECOVERY_CONFIG,
+  emptyRecoveryHistory,
+  evaluateRecovery,
+  forbiddenHistory,
+} from "../supervisor/recovery.js";
+import { RecoveryStore } from "../supervisor/recovery-store.js";
 import {
   FetchCloudflareDnsApplyWriteTransport,
   getCloudflareDnsWriteToken,
@@ -124,8 +133,6 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
       );
     }
 
-    const config = await loadConfig(args.configPath);
-
     if (args.positionals[0] === "supervisor") {
       if (
         args.dryRun ||
@@ -140,9 +147,33 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
       ) {
         throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Unsupported supervisor arguments");
       }
+      if (
+        command === "recovery-plan" &&
+        (!args.json ||
+          !args.configPath ||
+          args.intervalMs !== undefined ||
+          args.maxCycles !== undefined)
+      ) {
+        throw new BridgeError(
+          ERROR_CODES.CONFIG_INVALID,
+          "recovery-plan requires --config and --json only",
+        );
+      }
+    }
+
+    const config = await loadConfig(args.configPath);
+
+    if (args.positionals[0] === "supervisor") {
       const app = createApplicationServices(config);
+      let observedFqgate: FqgateStatus | undefined;
       const adapters = createObservationAdapters({
-        lifecycle: app.lifecycle,
+        lifecycle: {
+          status: async () => {
+            const status = await app.lifecycle.status();
+            observedFqgate = status;
+            return status;
+          },
+        },
         service: app.cloudflaredService,
       });
       if (command === "inspect") {
@@ -165,6 +196,58 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
         await watch(adapters, journal, options);
         output({ cycles: options.maxCycles ?? null, ...(await journal.counts()) }, args.json, io);
         return 0;
+      }
+      if (command === "recovery-plan") {
+        const store = new RecoveryStore(join(config.installDirectory, "supervisor"));
+        const release = await store.acquire();
+        try {
+          const observation = await observe(adapters);
+          let prior;
+          try {
+            prior = await store.read();
+          } catch {
+            output(
+              { schemaVersion: 1, decisions: forbiddenHistory(observation.snapshot) },
+              true,
+              io,
+            );
+            return 0;
+          }
+          const layout = createFqgateLayout(config.installDirectory);
+          const transactionPaths = [layout.transactionFile, layout.lockFile];
+          let transaction: "clear" | "unresolved" | "unknown" = "clear";
+          for (const path of transactionPaths) {
+            try {
+              await lstat(path);
+              transaction = "unresolved";
+            } catch (error) {
+              if ((error as NodeJS.ErrnoException).code !== "ENOENT") transaction = "unknown";
+            }
+          }
+          const now = Date.now();
+          const result = evaluateRecovery({
+            observation,
+            safety: {
+              bridgeIdentity: "unknown",
+              fqgateIdentity: observedFqgate?.process.state === "running" ? "verified" : "unknown",
+              fqgateQualified: observedFqgate?.installed?.compatibility?.validated === true,
+              fqgateTransaction: transaction,
+              tunnelIdentity: "unknown",
+            },
+            history: prior?.history ?? emptyRecoveryHistory(observation.snapshot),
+            config: config.recoveryPolicy ?? DEFAULT_RECOVERY_CONFIG,
+            now,
+          });
+          await store.write({
+            schemaVersion: 1,
+            history: result.history,
+            decisions: result.decisions,
+          });
+          output({ schemaVersion: 1, decisions: result.decisions }, true, io);
+          return 0;
+        } finally {
+          await release();
+        }
       }
       throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Unknown supervisor command");
     }
@@ -200,6 +283,19 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
           args.json,
           io,
         );
+      case "qualify-current":
+        if (args.positionals.length !== 2 || args.dryRun || args.check || args.apply) {
+          throw new BridgeError(
+            ERROR_CODES.CONFIG_INVALID,
+            "qualify-current accepts only --config and --json",
+          );
+        }
+        output(
+          await manager.qualifyCurrent([application.instrumentLookup.createQualificationProbe()]),
+          args.json,
+          io,
+        );
+        return 0;
       case "update":
         return await runUpdate(manager, args.check, args.apply, args.dryRun, args.json, io);
       case "start":
@@ -866,12 +962,14 @@ function usage(): string {
     "fqgate-remote-bridge fqgate health [--json]",
     "fqgate-remote-bridge fqgate install [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate qualify [--dry-run] [--json]",
+    "fqgate-remote-bridge fqgate qualify-current [--config <file>] [--json]",
     "fqgate-remote-bridge fqgate update --check|--apply [--dry-run] [--json]",
     "fqgate-remote-bridge fqgate start|stop|restart [--json]",
     "fqgate-remote-bridge cloudflared release|install|status [--dry-run] [--json]",
     "fqgate-remote-bridge cloudflared service install|start|stop|restart|status [--json]",
     "fqgate-remote-bridge supervisor inspect [--config <file>] [--json]",
     "fqgate-remote-bridge supervisor watch [--config <file>] [--interval-ms 1000..60000] [--max-cycles 1..1000] [--json]",
+    "fqgate-remote-bridge supervisor recovery-plan --config <file> --json",
     "fqgate-remote-bridge cloudflare discover|plan --desired-state <repo-external-file> [--json]",
     "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <dns.context.record> [--json]",
     "fqgate-remote-bridge cloudflare apply --desired-state <repo-external-file> --expected-fingerprint <sha256> --check-id <B2-check> --b2-write-profile <repo-external-file> --expected-b2-profile-fingerprint <sha256> [--json]",

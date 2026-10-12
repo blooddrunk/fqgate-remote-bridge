@@ -5,6 +5,8 @@ import { isAbsolute, join, relative, resolve, win32 } from "node:path";
 import { BridgeError, ERROR_CODES } from "../shared/errors.js";
 import type { LogLevel } from "../shared/logger.js";
 import { parseVersion, parseVersionRange } from "../shared/semver.js";
+import { DEFAULT_RECOVERY_CONFIG, validateRecoveryConfig } from "../supervisor/recovery.js";
+import type { RecoveryConfig } from "../supervisor/recovery.js";
 
 export const DEFAULT_MANIFEST_URL =
   "https://raw.githubusercontent.com/fqgate/FQGate-releases/main/releases/stable.json";
@@ -64,6 +66,7 @@ export interface AppConfig {
   readonly remoteAccess: RemoteAccessConfig;
   readonly cloudflared: CloudflaredConfig;
   readonly logLevel: LogLevel;
+  readonly recoveryPolicy?: RecoveryConfig;
 }
 
 const DEFAULT_COMPATIBILITY: CompatibilityConfig = {
@@ -417,6 +420,7 @@ export function parseConfig(
       "remoteAccess",
       "cloudflared",
       "logLevel",
+      "recoveryPolicy",
     ]),
     "config",
   );
@@ -703,6 +707,19 @@ export function parseConfig(
     );
   }
 
+  let recoveryPolicy: RecoveryConfig | undefined;
+  if (input.recoveryPolicy !== undefined) {
+    if (!isRecord(input.recoveryPolicy))
+      throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "recoveryPolicy must be an object");
+    const raw = input.recoveryPolicy;
+    const proposed = { ...DEFAULT_RECOVERY_CONFIG, ...raw } as RecoveryConfig;
+    try {
+      recoveryPolicy = validateRecoveryConfig(proposed);
+    } catch {
+      throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "Invalid recoveryPolicy bounds or keys");
+    }
+  }
+
   return {
     manifestUrl,
     installDirectory,
@@ -717,6 +734,7 @@ export function parseConfig(
     remoteAccess,
     cloudflared,
     logLevel,
+    ...(recoveryPolicy === undefined ? {} : { recoveryPolicy }),
   };
 }
 

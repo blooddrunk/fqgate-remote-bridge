@@ -64,6 +64,17 @@ describe("configuration", () => {
     expect(() => validateLoopbackBaseUrl("http://10.0.0.5:17281")).toThrowError(BridgeError);
   });
 
+  it("bounds the optional recovery policy without accepting commands or paths", () => {
+    expect(
+      parseConfig({ recoveryPolicy: { consecutiveFailures: 4 } }).recoveryPolicy
+        ?.consecutiveFailures,
+    ).toBe(4);
+    expect(() => parseConfig({ recoveryPolicy: { consecutiveFailures: 1 } })).toThrowError(
+      BridgeError,
+    );
+    expect(() => parseConfig({ recoveryPolicy: { command: "restart" } })).toThrowError(BridgeError);
+  });
+
   it("constrains remote access to one DNS hostname and a protected token path", () => {
     const config = parseConfig(
       {

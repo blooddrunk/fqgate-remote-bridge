@@ -68,11 +68,14 @@ class SequenceHealthHttp implements HttpTransport {
 }
 
 class ContentRunner implements ProcessRunner {
+  runs = 0;
+
   async run(
     executablePath: string,
     _args: readonly string[],
     _options: ProcessRunOptions,
   ): Promise<ProcessRunResult> {
+    this.runs += 1;
     let content: string;
     try {
       content = await readFile(executablePath, "utf8");
@@ -99,6 +102,10 @@ class FakeManagedProcess implements ManagedProcessController {
     return this.running
       ? { state: "running", pid: 111, expectedPath: executablePath, actualPath: executablePath }
       : { state: "not_running", expectedPath: executablePath };
+  }
+
+  async adoptCurrent(executablePath: string, recordPath: string): Promise<ManagedProcessSnapshot> {
+    return this.status(executablePath, recordPath);
   }
 
   async start(
@@ -197,6 +204,7 @@ async function createManager(options: {
   readonly bodies: Map<string, Uint8Array>;
   readonly process: FakeManagedProcess;
   readonly healthResponses: Array<HttpResponse | Error>;
+  readonly runner?: ContentRunner;
   readonly validatedVersions?: readonly string[];
   readonly runtimeOpenApiProbe?: FqgateActivationOpenApiProbe;
   readonly activationHealthTimeoutMs?: number;
@@ -207,7 +215,7 @@ async function createManager(options: {
     supportedRange: ">=1.0.0 <2.0.0",
     validatedVersions: options.validatedVersions ?? ["1.0.0", "1.0.1", "1.0.2"],
   });
-  const runner = new ContentRunner();
+  const runner = options.runner ?? new ContentRunner();
   const healthProbe = new FqgateHealthProbe({
     baseUrl: "http://127.0.0.1:17281",
     http: new SequenceHealthHttp(options.healthResponses),
@@ -559,6 +567,175 @@ describe("FQGate lifecycle transaction", () => {
       unknown
     >;
     expect(state.lastActivation).toBe("rolled_back");
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("qualifies an externally updated official current artifact without replacing it", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-qualification-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const manager = await createManager({
+      root,
+      source: new MutableReleaseSource(releaseFor(pkg, "1.0.5")),
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    const probe: CandidateQualificationProbe = {
+      operationId: "market.instruments.lookup",
+      run: async () => ({
+        operationId: "market.instruments.lookup",
+        contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+        semanticProbeId: "market.instruments.lookup.exact-code-v1",
+      }),
+    };
+    const result = await manager.qualifyCurrent([probe]);
+    expect(result.status.lifecycle).toBe("ready");
+    expect(result.status.installed?.qualification?.operations).toHaveLength(1);
+    expect(process.starts).toBe(0);
+    expect(process.stops).toBe(0);
+    expect(await readFile(layout.currentExecutable, "utf8")).toBe("1.0.5");
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("leaves externally updated current unvalidated on semantic failure", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-failure-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const manager = await createManager({
+      root,
+      source: new MutableReleaseSource(releaseFor(pkg, "1.0.5")),
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    await expect(
+      manager.qualifyCurrent([
+        {
+          operationId: "market.instruments.lookup",
+          run: async () => {
+            throw new BridgeError(ERROR_CODES.COMPATIBILITY_PROBE_FAILED, "fixture failure");
+          },
+        },
+      ]),
+    ).rejects.toMatchObject({ code: ERROR_CODES.COMPATIBILITY_PROBE_FAILED });
+    expect((await manager.status()).installed?.compatibility?.validated).toBe(false);
+    expect(await readFile(layout.currentExecutable, "utf8")).toBe("1.0.5");
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rejects an external artifact with a different hash before adopting it", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-hash-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5-modified");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const runner = new ContentRunner();
+    const manager = await createManager({
+      root,
+      source: new MutableReleaseSource(releaseFor(pkg, "1.0.5")),
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runner,
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    await expect(
+      manager.qualifyCurrent([
+        {
+          operationId: "market.instruments.lookup",
+          run: async () => {
+            throw new Error("must not run");
+          },
+        },
+      ]),
+    ).rejects.toMatchObject({ code: ERROR_CODES.CANDIDATE_INVALID });
+    expect(runner.runs).toBe(0);
+    expect((await manager.status()).installed?.compatibility?.validated).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("keeps the external artifact unvalidated when the official release changes during probing", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-drift-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const source = new MutableReleaseSource(releaseFor(pkg, "1.0.5"));
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const manager = await createManager({
+      root,
+      source,
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    await expect(
+      manager.qualifyCurrent([
+        {
+          operationId: "market.instruments.lookup",
+          run: async () => {
+            source.release = releaseFor(packageFor("1.0.6", "1.0.6"), "1.0.6");
+            return {
+              operationId: "market.instruments.lookup",
+              contractFingerprint: LOOKUP_CONTRACT_FINGERPRINT,
+              semanticProbeId: "market.instruments.lookup.exact-code-v1",
+            };
+          },
+        },
+      ]),
+    ).rejects.toMatchObject({ code: ERROR_CODES.ACTIVATION_FAILED });
+    expect((await manager.status()).installed?.compatibility?.validated).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rejects an unresolved transaction before qualifying current", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-current-transaction-"));
+    const pkg = packageFor("1.0.5", "1.0.5");
+    const layout = createFqgateLayout(root);
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(layout.currentDirectory, { recursive: true });
+    await writeFile(layout.currentExecutable, "1.0.5");
+    await writeFile(layout.transactionFile, "{}");
+    const process = new FakeManagedProcess();
+    process.running = true;
+    const manager = await createManager({
+      root,
+      source: new MutableReleaseSource(releaseFor(pkg, "1.0.5")),
+      bodies: new Map(),
+      process,
+      healthResponses: [readyHealth()],
+      runtimeOpenApiProbe: new FakeActivationOpenApiProbe(),
+    });
+    await expect(
+      manager.qualifyCurrent([
+        {
+          operationId: "market.instruments.lookup",
+          run: async () => {
+            throw new Error("must not run");
+          },
+        },
+      ]),
+    ).rejects.toMatchObject({ code: ERROR_CODES.ACTIVATION_FAILED });
+    expect(await readFile(layout.currentExecutable, "utf8")).toBe("1.0.5");
     await rm(root, { recursive: true, force: true });
   });
 });

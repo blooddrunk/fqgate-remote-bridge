@@ -397,8 +397,13 @@ Follow `docs/roadmap.md`.
 - Phase 6-B2: separately authorized under `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; CLOSED on 2026-09-29 after permanent-Windows acceptance and exact-commit Ubuntu/Windows CI
 - Phase 6-C: CLOSED under `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`; bounded credential-dependency audit and full Phase 6 closure
 - Phase 6: CLOSED
-- Phase 7-A: AUTHORIZED / OPEN under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; read-only supervisor observation and bounded event journal only
-- Phase 7-B/7-C: NOT AUTHORIZED; no automatic recovery or notifications yet
+- Phase 7-A: CLOSED under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; permanent-Windows P7A-01..P7A-13 and exact-commit CI passed
+- Phase 7-B1: CLOSED under `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`; deterministic policy and dry-run planning only, no actuator
+- Phase 7-B1-R1: CLOSED under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main integration and RecoveryStore decision hardening accepted in PR #14, no actuator; merge remains separate
+- Phase 7-B2/7-C: NOT AUTHORIZED; no automatic recovery actuation/startup integration or notifications yet
+- FQGate 1.0.5 external-update qualification: LIVE QUALIFIED; CLI-only implementation is integrated under
+  `docs/tasks/fqgate-1-0-5-external-update-qualification.md`;
+  explicit local maintenance, independent of supervisor recovery authority
 
 Phase 5 is closed. Read `docs/tasks/phase-5-c-filtered-machine-openapi-and-remote-closure.md`,
 `docs/status/phase-5-c-implementation-handoff.md`, and
@@ -572,15 +577,21 @@ commit is `3cc99033ad9dbac899584ce3b8e3e81053647a98`; permanent-Windows evidence
 is at `D:\code\research\fqgate-phase6b1-acceptance-evidence.json`.
 Phase 6-B2 and Phase 6-C are closed under their separate task packages. B1/B2
 guarded apply remains available only for explicit operator-invoked supported drift
-with fresh transient write credentials. Phase 7-A is separately authorized for observation-only
-supervision and journaling; it grants no recovery, notification, update, Cloudflare mutation,
-autostart/service-installation or new remote-operation authority.
+with fresh transient write credentials. Phase 7-A is closed as observation-only
+supervision and journaling. Phase 7-B1 is separately closed after deterministic
+recovery-policy evaluation and dry-run planning; it grants no recovery actuation,
+notification, update, Cloudflare mutation, autostart/service-installation or new
+remote-operation authority.
 
-## Active Phase 7-A task
+## Closed Phase 7-A and Phase 7-B1
 
-The active executable task package is:
+Phase 7-A closure evidence is in:
 
-`docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
+`docs/status/phase-7-a-implementation-handoff.md`
+
+The Phase 7-B1 closure task package is:
+
+`docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
 
 Design:
 
@@ -588,16 +599,32 @@ Design:
 
 Coding-agent goal:
 
-`docs/prompts/phase-7-a-coding-agent-goal.md`
+`docs/prompts/phase-7-b1-coding-agent-goal.md`
 
-Phase 7-A is observation-only. It may add a deterministic local supervisor state model, one-shot
-inspect/watch CLI and bounded redacted event journal. It must not restart Bridge/FQGate/cloudflared,
+Phase 7-B1 may add only a deterministic recovery-policy model, bounded recovery-history
+metadata and a local dry-run recovery plan. It must not restart Bridge/FQGate/cloudflared,
 install a service or Scheduled Task, trigger QR/login, apply/qualify/check updates automatically,
 call Phase 6 apply paths, send notifications, add a new Bridge HTTP route, or expand any
 remote-human/admin/machine permission. Use the existing permanent Windows checkout at
 `D:\\code\\research\\fqgate-remote-bridge`; automate all machine-verifiable checks and use
-fixtures rather than manufacturing production downtime. Phase 7-B recovery and Phase 7-C
-notifications remain unauthorized.
+fixtures rather than manufacturing production downtime. Phase 7-B2 recovery actuation and
+Phase 7-C notifications remain unauthorized.
+
+The B1 implementation uses `supervisor recovery-plan --config <file> --json`,
+`src/supervisor/recovery.ts`, and a 4-KiB bounded recovery file under the existing
+repo-external supervisor directory. Candidate restart IDs are plan data only.
+Permanent-Windows P7B1-01..P7B1-15 acceptance and exact-final-commit CI evidence
+are recorded outside Git at `D:\code\research\fqgate-phase7b1-acceptance-evidence.json`.
+See `docs/status/phase-7-b1-implementation-handoff.md`.
+
+The R1 integration task reconstructs the FQGate 1.0.5 qualification and B1
+planning changes on latest `origin/main`, where Phase 7-A is already
+squash-merged. It did not replay equivalent Phase 7-A content or change any
+Bridge route, operation registry, remote permission, or actuator boundary.
+RecoveryStore accepts only explicit evaluator-reachable reason/decision/action
+combinations; `history_invalid` is a transient action-free denial, never stored.
+See `docs/tasks/phase-7-b1-r1-integration-hardening.md` and
+`docs/status/phase-7-b1-r1-implementation-handoff.md`.
 
 ## Documentation rule
 

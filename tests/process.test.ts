@@ -9,6 +9,9 @@ import type {
   ProcessInspector,
   ProcessLaunchResult,
   ProcessLauncher,
+  ProcessRunOptions,
+  ProcessRunResult,
+  ProcessRunner,
   ProcessTerminator,
 } from "../src/fqgate/process/types.js";
 
@@ -50,7 +53,60 @@ class FakeTerminator implements ProcessTerminator {
   }
 }
 
+class FakeListenerRunner implements ProcessRunner {
+  exitCode = 0;
+  stdout = '{"Pid":4321}';
+
+  async run(
+    _executablePath: string,
+    _args: readonly string[],
+    _options: ProcessRunOptions,
+  ): Promise<ProcessRunResult> {
+    return {
+      exitCode: this.exitCode,
+      stdout: this.stdout,
+      stderr: "",
+      timedOut: false,
+      truncated: false,
+    };
+  }
+}
+
 describe("managed process control", () => {
+  it("adopts only a verified managed Windows loopback listener", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-adopt-"));
+    const executable = join(root, "current", "fqgate.exe");
+    const record = join(root, "process.json");
+    const inspector = new FakeInspector();
+    inspector.running = true;
+    inspector.actualPath = executable;
+    const runner = new FakeListenerRunner();
+    const controller = new NativeManagedProcessController({ platform: "win32", inspector, runner });
+    expect(await controller.adoptCurrent(executable, record)).toMatchObject({
+      state: "running",
+      pid: 4321,
+    });
+    inspector.actualPath = join(root, "other", "fqgate.exe");
+    await expect(controller.adoptCurrent(executable, record)).rejects.toMatchObject({
+      code: ERROR_CODES.PROCESS_IDENTITY_MISMATCH,
+    });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rejects an ambiguous or non-loopback Windows listener", async () => {
+    const root = await mkdtemp(join(tmpdir(), "fqgate-adopt-deny-"));
+    const executable = join(root, "current", "fqgate.exe");
+    const inspector = new FakeInspector();
+    inspector.running = true;
+    inspector.actualPath = executable;
+    const runner = new FakeListenerRunner();
+    runner.exitCode = 4;
+    const controller = new NativeManagedProcessController({ platform: "win32", inspector, runner });
+    await expect(
+      controller.adoptCurrent(executable, join(root, "process.json")),
+    ).rejects.toMatchObject({ code: ERROR_CODES.PROCESS_IDENTITY_MISMATCH });
+    await rm(root, { recursive: true, force: true });
+  });
   it("starts and stops only the process recorded for the managed executable", async () => {
     const root = await mkdtemp(join(tmpdir(), "fqgate-process-"));
     const executable = join(root, "current", "fqgate.exe");

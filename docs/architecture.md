@@ -119,6 +119,13 @@ Responsibilities:
 - expose one transaction interface reused by CLI and Dashboard through the
   framework-agnostic update application service.
 
+When FQGate's own updater has already replaced the managed file, the separate
+explicit local `fqgate qualify-current` CLI may qualify that exact official
+current artifact in place. It verifies the loopback listener's owning process,
+health, required OpenAPI and the fixed lookup semantic contract before writing
+artifact-bound evidence. It does not replace or restart the binary and cannot
+claim an absent previous executable as rollback material.
+
 Phase 0/1 implemented the lifecycle boundary. Phase 3 extends the same boundary rather than reimplementing updater logic in web routes.
 
 #### Release-source registry
@@ -586,3 +593,16 @@ evidence is in `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`
 ## Phase 7-A local observer
 
 The Phase 7-A supervisor is a local CLI domain under `src/supervisor/`. It reads the fixed loopback Bridge status route, the existing typed FQGate lifecycle/health status, and the bounded Windows cloudflared service status. Its snapshot has four fixed normalized components: bridge, fqgate, session, and tunnel. A watch loop compares snapshots and records only initial observations, transitions, probe failures and recoveries. The journal lives under the configured install directory, outside the repository. There is no Bridge route, remote operation, recovery adapter or notification adapter for the supervisor.
+
+## Phase 7-B1 local recovery plan
+
+`supervisor recovery-plan --config <file> --json` reuses Phase 7-A observation and the journal directory lock. The pure versioned policy evaluates only normalized states, fixed safety gates, bounded history and a fakeable clock. The CLI derives transaction and qualification gates from the existing local FQGate state; unknown process or service identity cannot become eligible. The recovery file holds three fixed component entries and three fixed-schema decisions under the repo-external supervisor directory. Candidate restart IDs are data only: no actuator, Bridge route, startup task or notification provider is added.
+
+The persisted decision validator accepts only evaluator-reachable combinations:
+`no_action` has no action; `forbidden` has no action; `eligible` carries exactly
+its component's action; `suppressed` carries that action for `threshold` or
+`cooldown`, with `notBefore` only for cooldown; and `exhausted` carries that
+action only for `attempt_limit`. Decisions must match the persisted component
+state and counters. `history_invalid` is returned only as a fail-closed response
+when stored data is rejected; it is never written back as a decision. No
+candidate identifier is executed.
