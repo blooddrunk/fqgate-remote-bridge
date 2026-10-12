@@ -3,6 +3,9 @@
 import { pathToFileURL } from "node:url";
 import { join } from "node:path";
 import { lstat } from "node:fs/promises";
+import { inspectV2 } from "../fqgate/release/v2-inspection.js";
+import { auditV2Archive } from "../fqgate/release/v2-archive.js";
+import { FetchHttpTransport } from "../fqgate/release/http.js";
 import { loadConfig } from "../config/config.js";
 import { selectWindowsX64Package } from "../fqgate/release/manifest.js";
 import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
@@ -159,6 +162,23 @@ export async function runCli(argv: readonly string[], io: CliIo = DEFAULT_IO): P
           "recovery-plan requires --config and --json only",
         );
       }
+    }
+
+    if (args.positionals[0] === "fqgate" && ["inspect-v2", "audit-v2"].includes(command)) {
+      if (
+        args.positionals.length !== 2 ||
+        argv.some((arg) => arg.startsWith("--") && arg !== "--json")
+      ) {
+        throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "v2 observation accepts only --json");
+      }
+      const http = new FetchHttpTransport();
+      output(
+        await (command === "inspect-v2" ? inspectV2(http) : auditV2Archive(http)),
+        args.json,
+        io,
+      );
+      // A report is available, but qualification is always blocked.
+      return 1;
     }
 
     const config = await loadConfig(args.configPath);
@@ -957,6 +977,7 @@ function exitCodeFor(code: string): number {
 function usage(): string {
   return [
     "fqgate-remote-bridge version",
+    "fqgate-remote-bridge fqgate inspect-v2|audit-v2 [--json] (observation only; qualification BLOCKED)",
     "fqgate-remote-bridge fqgate release [--json]",
     "fqgate-remote-bridge fqgate status [--json]",
     "fqgate-remote-bridge fqgate health [--json]",

@@ -613,3 +613,11 @@ closed and Phase 7-B1 planning has also closed. R1 integration and persisted
 decision hardening are accepted in PR #14, pending merge. Phase 7-B2
 actuation, Phase 7-C notifications and every other later capability remain
 unauthorized.
+
+## Separate FQGate v2 compatibility investigation — 2026-10-12
+
+PR #14 is merged at `40ad339d863391e8a746252581adbcee600a3fa0`.
+The v2 task delivers local read-only unauthenticated discovery and non-executing
+ZIP audit only. Full v2 qualification/activation remains BLOCKED; this does not
+start Phase 7-B2, 7-C or automatic updates. See
+`docs/tasks/fqgate-v2-compatibility-and-qualification.md` and its handoff.

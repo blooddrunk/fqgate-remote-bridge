@@ -606,3 +606,16 @@ action only for `attempt_limit`. Decisions must match the persisted component
 state and counters. `history_invalid` is returned only as a fail-closed response
 when stored data is rejected; it is never written back as a decision. No
 candidate identifier is executed.
+
+## Independent FQGate v2 observation
+
+`fqgate inspect-v2` and `fqgate audit-v2` invoke independent release inspection
+before application/configuration construction. No lifecycle, process controller,
+update service, operation registry, Dashboard or supervisor consumes their output.
+Reports carry `UNAUTHENTICATED_OBSERVATION`, `signatureVerified: false`,
+`qualification: BLOCKED`, `installAllowed: false`, `runtimeQualified: false`.
+Exit 1 indicates blocked qualification even when observation succeeds.
+ZIP audit creates/removes an OS temporary directory and never extracts or executes.
+No FqgateRelease or qualification evidence can be returned from these paths.
+See `docs/plans/fqgate-v2-observation-and-qualification.md` for boundaries and
+`docs/status/fqgate-v2-implementation-handoff.md` for verified scope and blockers.

@@ -672,3 +672,21 @@ reasons must agree across the full decision set. If persisted state is malformed
 the CLI returns action-free `forbidden/history_invalid` decisions and does not
 write the rejected state or call any actuator. `history_invalid` is not accepted
 as a persisted evaluator decision.
+
+## FQGate v2 inspection is not publisher verification
+
+Hash-linked envelopes, GitHub asset digests and plausible 64-byte signatures do
+not establish publisher signing trust. Without authenticated keys and signing
+specification, v2 installation and runtime qualification remain blocked.
+No supportedRange/validatedVersions expansion or v1 lifecycle ZIP fallback.
+Inspection accepts bounded fixed-source GETs with metadata redirects denied;
+archive redirects allow one fixed GitHub CDN hop and enforce exact size/hash.
+ZIP contents are never materialized: bounded lazy streams reject unsafe Windows
+names, duplicate/case aliases, file-parent collisions, symlinks/special files,
+encryption, unsupported compression, overlap/header mismatch, CRC/size mismatch,
+count/size overflows, missing updater and invalid required PE headers. A passing
+structural audit does not verify updater identity, signatures or rollback.
+Temporary archive cleanup is required before a successful report. Crash leftovers
+remain isolated untrusted ZIP files; no installation success marker is written.
+Full directory staging/activation/crash recovery/rollback are unimplemented and
+must be separately satisfied before any future v2 activation.

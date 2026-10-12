@@ -986,3 +986,19 @@ Phase 6-A 计划指纹，每次执行一项精确的 Tunnel ingress 或 Access �
 完整自动命令与仅有的人工认证边界见
 [Windows Phase 6-C 验收](docs/operations/windows-phase-6-c-acceptance.md)；结果见
 [实现交接](docs/status/phase-6-c-implementation-handoff.md)。
+
+### FQGate 2.x：只读调查，尚不能升级
+
+2026-10-12 核查的最新正式版为 2.0.4；旧版 manifest 仍指向 1.0.5。
+Bridge 目前仅提供本机显式只读调查：
+
+```powershell
+node .\dist\cli\main.js fqgate inspect-v2 --json
+node .\dist\cli\main.js fqgate audit-v2 --json
+```
+
+第二条下载到临时目录进行非执行式 ZIP 检查并清理；两条均以 exit 1 和
+`qualification: BLOCKED` 表示没有安装资格。它们不升级、不运行 updater，
+也不批准 v2 行情能力。不要修改 supportedRange、复制单个 EXE 或使用
+`qualify-current` 绕过门禁。签名信任根、目录事务及真实 v2 Windows 合同尚未建立。
+详见 [验收/操作边界](docs/operations/windows-fqgate-v2-qualification.md)。

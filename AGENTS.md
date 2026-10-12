@@ -650,3 +650,12 @@ contains exactly the lookup and its own docs route. The final permanent-Windows,
 real service-token, and exact-commit CI evidence passed on 2026-09-21.
 See `docs/status/phase-5-c-implementation-handoff.md` and
 `docs/operations/windows-phase-5-c-acceptance.md` for the closure evidence.
+
+## FQGate v2 compatibility investigation
+
+The task at `docs/tasks/fqgate-v2-compatibility-and-qualification.md` permits
+independent read-only discovery and non-executing ZIP audit. Full v2 runtime
+qualification/installation remains blocked on publisher trust, directory
+transaction and actual Windows contracts. No production update/restart is
+authorized. Read `docs/status/fqgate-v2-implementation-handoff.md`; do not turn
+an unauthenticated observation into FqgateRelease or qualification evidence.

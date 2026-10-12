@@ -489,3 +489,53 @@ remote regression gates on 2026-09-29. Design and closed task:
 `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
 `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.
 Final evidence: `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`.
+
+## FQGate v2 observation — 2026-10-12
+
+Latest GitHub stable is `fqgate-v2.0.4`, published `2026-10-11T05:05:34Z`.
+The v1 `releases/stable.json` still declares 1.0.5. Independent v2 metadata
+at upstream commit `edb17da7fca0952534a65f4cfb98a62b6a017d43` declares
+refreshSequence 8, stable sequence 7 and release 2.0.4. Earlier pointers use
+`update-release-signing-v1`; current pointers/releases use
+`update-release-signing-v2`, freshness uses `update-freshness-signing-v2`.
+
+Observed envelopes contain `keyId`, `signature`, `signed`. Both latter fields
+use unpadded base64url; signature decodes to 64 bytes, signed decodes to UTF-8
+JSON. No published algorithm, authenticated public key distribution, rotation,
+revocation or exact signing/canonicalization specification was found in the
+release repository or the current agent repository. A 64-byte signature is not
+proof of Ed25519. Agent MCP Apps Ed25519 tooling concerns a separate artifact;
+its keys cannot establish FQGate executable release trust.
+
+Freshness claims a sequence-specific stable path and SHA-256 of its exact
+**envelope bytes**. Stable claims a version-specific release path and SHA-256
+of its envelope bytes. Release declares artifact bytes/hash/URLs/ZIP layout.
+Observed payload JSON is compact and sorted; inspection verifies no signature
+and does not reserialize payloads for cryptographic verification. Sequence
+consistency within one observation does not prevent replay; authenticated
+persistent high-water marks and equivocation/freshness policy are unimplemented.
+
+Windows ZIP: `FQGate-2.0.4-windows-x64.zip`, 28,455,842 bytes,
+SHA-256 `a075ec17e6c0644c7a4f02f06979afcfcdfb8f9455f2237787260f2d93ac1179`.
+GitHub asset digest agrees with the release claim. installMode is
+`replaceApplication`, required root entries are `FQGate.exe` and
+`fqgate-updater.exe`. Official instructions require retaining the full directory.
+Updater process-switch, crash and rollback semantics are undocumented here and
+not executed. This package cannot use v1 replaceExecutable.
+
+Gitee URLs are present at `qicuo/fqgate-releases`; upstream documents Gitee-first
+checks with GitHub fallback. Bridge has not authenticated mirror equivalence
+and registers no Gitee adapter. ZIP audit permits only the fixed GitHub URL
+and one redirect to `release-assets.githubusercontent.com`.
+
+Release notes document per-source concurrency 4, queue 128, shared queue/query
+time budget (default 30s), spacing 50ms and sustained same-content limits across
+5/10/20s windows. L2 displacement can retain L1 connectivity. These are publisher
+claims, not verified numeric wire codes or Bridge runtime contracts. Bridge's
+existing five-second lookup budget and deny-by-default operation registry remain
+unchanged. No v2 live OpenAPI/session/lookup compatibility evidence is admitted.
+
+Machine-readable distinctions and evidence: `docs/compatibility/fqgate-v1-v2.json`.
+Task/design/handoff: `docs/tasks/fqgate-v2-compatibility-and-qualification.md`,
+`docs/plans/fqgate-v2-observation-and-qualification.md`,
+`docs/status/fqgate-v2-implementation-handoff.md`.

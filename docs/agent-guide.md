@@ -253,3 +253,10 @@ Phase 7-B1 本机只读决策与计划已闭环；Phase 7-B2 自动恢复、Phas
 RecoveryStore 持久化格式只接受 evaluator 可产生的 decision/reason/action 组合；
 损坏记录会被拒绝并产生无 action 的 `forbidden/history_invalid` 结果，不会调用 actuator。
 `bridge.restart`、`fqgate.restart` 和 `tunnel.restart` 始终只是计划标识。
+
+FQGate v2 investigation is a separate observation-only track. Read
+`docs/tasks/fqgate-v2-compatibility-and-qualification.md` and
+`docs/status/fqgate-v2-implementation-handoff.md` before changing its boundary.
+`inspect-v2`/`audit-v2` report unauthenticated metadata and never qualify/install.
+Production changes, supported-range expansion and Phase 7-B2/7-C remain outside
+this authorization.
