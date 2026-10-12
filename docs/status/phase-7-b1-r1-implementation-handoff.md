@@ -40,6 +40,16 @@ withheld the elevated FQGate process image path. After the operator approved
 UAC, the same gate passed from native elevated PowerShell. No process was
 restarted, adopted or stopped to obtain a healthy state.
 
+On 2026-10-12 the final-commit rerun stopped at `P7B1-02-BASELINE`
+with zero listeners on 17281 and 17282. Read-only inspection returned
+`bridge=unavailable`, `fqgate=stopped`, `session=unknown`, `tunnel=running`.
+The operator separately authorized one explicit local startup using the existing
+`fqgate start` CLI and `scripts/start-bridge.mjs`, followed by the same acceptance.
+This instance-specific operator action grants no supervisor actuation or startup
+integration authority. Its bounded receipt is
+`D:\code\research\fqgate-phase7b1-r1-startup-evidence.json`.
+The acceptance identity baseline is taken after this separately authorized startup.
+
 The exact final integration commit and P7B1 gate results are recorded in
 `D:\code\research\fqgate-phase7b1-acceptance-evidence.json`.
 The final commit, Windows evidence digest, and successful GitHub Actions run
