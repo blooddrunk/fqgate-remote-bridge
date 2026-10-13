@@ -7,8 +7,19 @@ export const LOOKUP_UPSTREAM_PATH = "/v1/market/catalog/search-symbols";
 
 /** Hash only this operation and its transitive local schema references. */
 export function lookupContractFingerprint(document: unknown): string {
+  return operationContractFingerprint(document, [[LOOKUP_UPSTREAM_PATH, "post"]]);
+}
+
+export function operationContractFingerprint(
+  document: unknown,
+  contracts: readonly (readonly [string, string])[],
+): string {
   const root = record(document);
-  const operation = record(record(record(root.paths)[LOOKUP_UPSTREAM_PATH]).post);
+  const operations = contracts.map(([path, method]) => ({
+    path,
+    method,
+    operation: record(record(record(root.paths)[path])[method]),
+  }));
   const schemas = record(record(root.components).schemas);
   const references: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
   let nodes = 0;
@@ -36,8 +47,15 @@ export function lookupContractFingerprint(document: unknown): string {
     }
     for (const item of Object.values(object)) visit(item, depth + 1);
   }
-  visit(operation, 0);
-  return fingerprintJson({ operation, references });
+  for (const entry of operations) visit(entry.operation, 0);
+  // Preserve the closed v1 fingerprint exactly.
+  if (
+    contracts.length === 1 &&
+    contracts[0]?.[0] === LOOKUP_UPSTREAM_PATH &&
+    contracts[0]?.[1] === "post"
+  )
+    return fingerprintJson({ operation: operations[0]!.operation, references });
+  return fingerprintJson({ operations, references });
 }
 
 export async function fetchLookupContract(http: HttpTransport): Promise<string> {
