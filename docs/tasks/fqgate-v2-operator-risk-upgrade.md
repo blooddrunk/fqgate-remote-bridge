@@ -16,8 +16,10 @@ R2 authenticated kernel or bootstrap its security ledger from observed counters.
 
 Authorized work: non-executing full-directory staging, isolated Windows runtime
 preparation/qualification, directory backup/rollback engineering, and a manual
-production upgrade after real runtime, identity, loopback, data-preservation,
-compatibility and rollback checks pass. Existing known v1 availability restoration
+personal-environment replacement with verified artifact/version/ownership,
+loopback/startup and a temporary fallback. The user permits direct replacement
+before final login and Bridge qualification; keep runtime qualification false
+until the remaining checks actually pass. Existing known v1 availability restoration
 remains authorized. No cloudflared/Cloudflare write, credential/permission change,
 unknown-process termination, production fault injection, Supervisor actuator,
 automatic update or supportedRange/validatedVersions expansion is implied.

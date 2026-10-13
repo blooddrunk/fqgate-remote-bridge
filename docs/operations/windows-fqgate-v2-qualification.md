@@ -212,3 +212,11 @@ saved login available；固定 canonical search HTTP 200/code 0/one exact match�
 多个 connected source 时自动选择必须拒绝；不公开实例 ID/账号/QR/session。
 失败保留脱敏 receipt，不自动终止 App/回退、不修改 Cloudflare、权限或范围。
 旧版/config 只作临时回退；验证完成后可按用户许可删除，无永久保留要求。
+
+今后需要显式启动已安装的同一 2.0.5，可使用以下本机入口；它校验 exact EXE
+哈希和本次 operator exception，遇到已有受管进程保持运行，不做重启。旧版
+`fqgate start` 仍按未扩展的兼容范围拒绝 v2，不能修改其安全语义来绕过。
+
+```powershell
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r3-evidence\run-start-held.ps1
+```
