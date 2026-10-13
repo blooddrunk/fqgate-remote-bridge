@@ -78,4 +78,4 @@ removed; no unrelated operator state, credentials, OS policy or services changed
 Signed trust/authenticated replay, full native power-loss/crash rollback,
 queue/L2 qualification, v2 Bridge adapter and real remote matrix remain separate
 BLOCKED/NOT_EXECUTED gates. App startup/login/search PASS does not waive them.
-PR #15 / Issue #16 remain OPEN under the original full-qualified merge contract.
+Historical 2026-10-13 update: PR #15 was scope-limited and squash-merged as **non-activating research code** at `30de05d5694648ce2dc82ca71c6b9e478ff5817e` after final-head Ubuntu/Windows CI 38361551963. Issue #16 was closed as `not_planned` to remove separate issue tracking. **Neither action closes any original cryptographic, anti-replay, rollback, v2 Bridge compatibility, real remote, queue/L2 or Access transport gate.**
