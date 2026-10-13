@@ -170,7 +170,7 @@
     "contract": "https://github.com/blooddrunk/fqgate-remote-bridge/issues/16",
     "date": "2026-10-13",
     "observationSchemaVersion": 2,
-    "windowsFixtureBehaviorCases": 39,
+    "windowsFixtureBehaviorCases": 40,
     "unitIntegrationTests": 388,
     "linuxPlaywrightTests": 15,
     "permanentCheckoutCommit": "54d9e7a067d87407a63173b8084f177bbb395162",

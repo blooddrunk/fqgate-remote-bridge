@@ -103,6 +103,15 @@ try {
     & $node $helper $repo $cfg | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'Valid config denied' }
   }
+  Run-Case 'config helper rejects unrelated code repository before import' {
+    $foreign=Join-Path $root 'foreign'
+    [void](New-Item -ItemType Directory -Path (Join-Path $foreign 'dist\config') -Force)
+    $marker=Join-Path $root 'import-marker'
+    $module="import {writeFileSync} from 'node:fs'; writeFileSync(" + ($marker | ConvertTo-Json -Compress) + ",'must never execute');"
+    [IO.File]::WriteAllText((Join-Path $foreign 'dist\config\config.js'),$module)
+    & $node (Join-Path $PSScriptRoot 'fqgate-v2-config.mjs') $foreign (Join-Path $root 'config.json') | Out-Null
+    if ($LASTEXITCODE -ne 2 -or (Test-Path $marker)) { throw 'Foreign config module executed' }
+  }
   foreach ($code in @(0,2,23)) {
     Run-Case "CLI unexpected exit $code" {
       $ops=New-Operations; $ops.Observe={ @{ exitCode=$code; stdout=((New-Report) | ConvertTo-Json -Depth 10) } }

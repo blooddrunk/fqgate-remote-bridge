@@ -1,10 +1,21 @@
 // Read-only validation using the existing application schema; no services are constructed.
-import { pathToFileURL } from "node:url";
-import { resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, resolve } from "node:path";
 import process from "node:process";
 try {
+  const repository = resolve(process.argv[2]);
+  const ownRepository = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+  const normalize = (path) => (process.platform === "win32" ? path.toLowerCase() : path);
+  if (
+    normalize(repository) !== normalize(ownRepository) &&
+    !(
+      process.platform === "win32" &&
+      normalize(repository) === normalize(resolve("D:/code/research/fqgate-remote-bridge"))
+    )
+  )
+    throw new Error();
   const { loadConfig } = await import(
-    pathToFileURL(resolve(process.argv[2], "dist/config/config.js")).href
+    pathToFileURL(resolve(repository, "dist/config/config.js")).href
   );
   const config = await loadConfig(process.argv[3]);
   if (config.fqgateBaseUrl !== "http://127.0.0.1:17281") throw new Error();

@@ -182,7 +182,7 @@ Changes:
 - Before/after snapshots also run when CLI JSON is malformed or the child exits
   unexpectedly. Schema 2 evidence projects safe fields and rejects unexpected
   verification/installation/runtime flags. Raw output/errors/config are discarded.
-- Windows CI now executes 39 behavioral fixtures, including native child exception,
+- Windows CI now executes 40 behavioral fixtures, including native child exception,
   all missing/non-loopback bindings, unreadable/mismatched identity, invalid config,
   old coherent replay, malformed/future metadata, wrong exits, incomplete cleanup,
   secret-field omission, changed/deleted/created/unreadable files and preserved locks.
@@ -192,8 +192,8 @@ Changes:
 
 Local Linux frozen install/typecheck/lint/test/build/format and Playwright passed:
 26 suites / 388 tests (62 v2) and 15 browser tests. Native Windows PowerShell 5.1
-passed all 39 behavior cases using a Git-external fixture directory. Windows CI
-runs the same cases with pwsh. Final commit/run/job identities and exit codes are
+passed all 40 behavior cases using a Git-external fixture directory. Windows CI
+runs the same cases with pwsh. The schema helper imports only its own repository or the fixed permanent checkout, and rejects unrelated code roots before import. Final commit/run/job identities and exit codes are
 bound in `D:\code\research\fqgate-v2-r1-evidence\delivery.json`, after final CI;
 this document does not predeclare that future CI result.
 
