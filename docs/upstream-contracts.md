@@ -539,3 +539,16 @@ Machine-readable distinctions and evidence: `docs/compatibility/fqgate-v1-v2.jso
 Task/design/handoff: `docs/tasks/fqgate-v2-compatibility-and-qualification.md`,
 `docs/plans/fqgate-v2-observation-and-qualification.md`,
 `docs/status/fqgate-v2-implementation-handoff.md`.
+
+### Latest-source refresh — 2026-10-13
+
+Latest official GitHub stable is now `fqgate-v2.0.5`, published
+`2026-10-12T05:22:42Z`; the prior 2.0.4 observations are historical, not rewritten.
+Upstream snapshot `1b56f62816b8347b871bc5a3f927148fae212eb9` declares freshness
+sequence 9 and release sequence 8. Envelope schema/key IDs, required Windows
+entries and replaceApplication mode match the observed 2.0.4 layout. Windows
+asset `FQGate-2.0.5-windows-x64.zip` is 29,236,811 bytes, SHA-256
+`c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba`.
+Its notes describe CNEquity/calendar, third-party Python installation and legacy
+source fallback improvements. None is exposed or executed by the Bridge.
+Publisher trust and actual v2 runtime acceptance remain blocked.

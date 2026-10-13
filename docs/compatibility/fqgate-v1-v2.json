@@ -8,16 +8,17 @@
   "sources": [
     "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.4",
     "https://github.com/fqgate/FQGate-releases/blob/edb17da7fca0952534a65f4cfb98a62b6a017d43/使用说明.md",
-    "https://github.com/fqgate/FQGate-releases/tree/edb17da7fca0952534a65f4cfb98a62b6a017d43/releases/v2"
+    "https://github.com/fqgate/FQGate-releases/tree/edb17da7fca0952534a65f4cfb98a62b6a017d43/releases/v2",
+    "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.5"
   ],
   "rows": [
     {
       "id": "release-discovery",
       "v1": "v1 stable schema 1 / 1.0.5",
-      "v2": "v2 envelope chain / 2.0.4",
+      "v2": "Historical 2.0.4 plus current 2.0.5 envelope chain",
       "upstreamEvidence": "CONFIRMED",
       "automatedEvidence": "PASS",
-      "windowsEvidence": "PENDING",
+      "windowsEvidence": "PASS_UNAUTHENTICATED_METADATA",
       "limitation": "Structural observation only"
     },
     {
@@ -26,7 +27,7 @@
       "v2": "keyId/signature/signed, no authenticated keys or specification",
       "upstreamEvidence": "BLOCKED",
       "automatedEvidence": "FAIL_CLOSED",
-      "windowsEvidence": "NOT_EXECUTED",
+      "windowsEvidence": "BLOCKED_TRUST_ROOT",
       "limitation": "No signature verification or trusted installation"
     },
     {
@@ -44,8 +45,8 @@
       "v2": "replaceApplication ZIP, required FQGate.exe and fqgate-updater.exe",
       "upstreamEvidence": "CONFIRMED",
       "automatedEvidence": "PASS",
-      "windowsEvidence": "PENDING",
-      "limitation": "Audit only; no extraction/execution"
+      "windowsEvidence": "PASS_NONEXECUTING_2_0_5_AUDIT",
+      "limitation": "Audit only; no extraction/execution; 9 entries / 60709870 bytes; cleanup REMOVED"
     },
     {
       "id": "zip-security",
@@ -53,8 +54,8 @@
       "v2": "Bounded non-executing archive audit",
       "upstreamEvidence": "OBSERVED",
       "automatedEvidence": "PASS",
-      "windowsEvidence": "PENDING",
-      "limitation": "Does not prove directory installation safety"
+      "windowsEvidence": "PASS_NONEXECUTING_2_0_5_AUDIT",
+      "limitation": "Does not prove directory installation safety; 9 entries / 60709870 bytes; cleanup REMOVED"
     },
     {
       "id": "gitee-equivalence",
@@ -134,8 +135,8 @@
       "v2": "No changes authorized",
       "upstreamEvidence": "UNCHANGED",
       "automatedEvidence": "REGRESSION_PASS",
-      "windowsEvidence": "PENDING",
-      "limitation": "No HTTP route or supported-range expansion"
+      "windowsEvidence": "PARTIAL_FQGATE_LOOPBACK_ONLY",
+      "limitation": "No HTTP route or supported-range expansion; 17282 absent, managed process path unverified"
     },
     {
       "id": "supervisor",
@@ -146,5 +147,23 @@
       "windowsEvidence": "NOT_EXECUTED",
       "limitation": "No recovery actuation or downtime manufacture"
     }
-  ]
+  ],
+  "latestCheckedDate": "2026-10-13",
+  "latestObserved": {
+    "version": "2.0.5",
+    "publishedAt": "2026-10-12T05:22:42Z",
+    "upstreamCommit": "1b56f62816b8347b871bc5a3f927148fae212eb9",
+    "refreshSequence": 9,
+    "sequence": 8,
+    "windowsBytes": 29236811,
+    "windowsSha256": "c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba",
+    "signatureVerified": false,
+    "installAllowed": false,
+    "runtimeQualified": false
+  },
+  "evidencePaths": {
+    "windowsObservation": "D:/code/research/fqgate-v2-observation-evidence.json",
+    "currentV1Runtime": "D:/code/research/fqgate-v2-current-runtime-evidence.json",
+    "deliveryReceipt": "D:/code/research/fqgate-v2-delivery-evidence.json"
+  }
 }

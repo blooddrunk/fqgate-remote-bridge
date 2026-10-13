@@ -1,0 +1,68 @@
+{
+  "assets": [
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-macos-arm64.release.json",
+      "digest": "sha256:0c6b0da8b98137593043f15b48c439b54d88cad8ec0da1dad559dd0945d11d0e",
+      "name": "FQGate-2.0.5-macos-arm64.release.json",
+      "size": 951
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-macos-arm64.zip",
+      "digest": "sha256:41a8c467f22052d25b818c53685d33703afd5a4b0c3d42d0aa16338dd60c6c01",
+      "name": "FQGate-2.0.5-macos-arm64.zip",
+      "size": 25993152
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-macos-arm64.zip.sha256",
+      "digest": "sha256:39fafa896f07784b43be0490ebea27975ed0380f00220654ae77aface0cf2431",
+      "name": "FQGate-2.0.5-macos-arm64.zip.sha256",
+      "size": 95
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-macos-x86_64.release.json",
+      "digest": "sha256:4db78ba9b9da6a62761ea1d1bff076b30738abbf5f9f1d653350f77bd4eabb7d",
+      "name": "FQGate-2.0.5-macos-x86_64.release.json",
+      "size": 953
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-macos-x86_64.zip",
+      "digest": "sha256:cfa30da4b55155acb2350f42dd98fd004cef527e09de5c953613ed0450a638f4",
+      "name": "FQGate-2.0.5-macos-x86_64.zip",
+      "size": 27223859
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-macos-x86_64.zip.sha256",
+      "digest": "sha256:3f36e5ef2cf0c9ed9f7953bebb9d19ad830837e1dddeff97350795508ad131d9",
+      "name": "FQGate-2.0.5-macos-x86_64.zip.sha256",
+      "size": 96
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-release-request.json",
+      "digest": "sha256:4ac031a3301456342e116ac3b08a94e54987ba5479d0302d8caa0f63786a1569",
+      "name": "FQGate-2.0.5-release-request.json",
+      "size": 1196
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-windows-x64.release.json",
+      "digest": "sha256:322ce9a00e8d884501ad1080e071b3ad59af2f5d1d5f94a444ee46f773fb88bd",
+      "name": "FQGate-2.0.5-windows-x64.release.json",
+      "size": 943
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-windows-x64.zip",
+      "digest": "sha256:c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba",
+      "name": "FQGate-2.0.5-windows-x64.zip",
+      "size": 29236811
+    },
+    {
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.5/FQGate-2.0.5-windows-x64.zip.sha256",
+      "digest": "sha256:3d46ca07e3e0e0b4d31249db24b3dc79cd00fbe9c0ae54f4f68b4b3806466a9b",
+      "name": "FQGate-2.0.5-windows-x64.zip.sha256",
+      "size": 96
+    }
+  ],
+  "draft": false,
+  "html_url": "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.5",
+  "prerelease": false,
+  "tag_name": "fqgate-v2.0.5"
+}

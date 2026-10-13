@@ -132,6 +132,31 @@ afterEach(async () => {
 });
 
 describe("v2 unauthenticated observation", () => {
+  it("observes the newer 2.0.5 snapshot without broadening qualification", async () => {
+    const docs = ["freshness", "stable", "release", "github"].map((name) =>
+      fixture(`latest/${name}`),
+    );
+    const http = {
+      request: async (url: string) => {
+        const index = url.endsWith("freshness.json")
+          ? 0
+          : url.endsWith("stable.json")
+            ? 1
+            : url.endsWith("release.json")
+              ? 2
+              : 3;
+        return { status: 200, headers: {}, body: docs[index]! };
+      },
+    };
+    expect(await inspectV2(http)).toMatchObject({
+      version: "2.0.5",
+      sequence: 8,
+      refreshSequence: 9,
+      qualification: "BLOCKED",
+      installAllowed: false,
+      signatureVerified: false,
+    });
+  });
   it("observes the real snapshot without qualifying it", async () => {
     const http = transport();
     const result = await inspectV2(http);
