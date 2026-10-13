@@ -73,7 +73,7 @@
       "upstreamEvidence": "UNCONFIRMED",
       "automatedEvidence": "PASS_INERT_KERNEL_FAKE_AUTHORITY_RUNTIME",
       "windowsEvidence": "PASS_INERT_KERNEL_NATIVE_V2_UNQUALIFIED",
-      "limitation": "69 fake-port directory/replay tests on Linux/native Windows; real issuer/bootstrap/extraction/process and power-loss acceptance missing"
+      "limitation": "75 fake-port directory/replay tests on Linux/native Windows; real issuer/bootstrap/extraction/process and power-loss acceptance missing"
     },
     {
       "id": "updater-process-switch",
@@ -218,10 +218,10 @@
     "authority": "User continuation: v2 engineering; upgrade only after prerequisite gates pass",
     "kernelConnectedToProduction": false,
     "defaultAuthority": "REFUSES_ACTIVATION_AND_RECOVERY",
-    "directoryKernelTests": 69,
-    "unitIntegrationTests": 457,
+    "directoryKernelTests": 75,
+    "unitIntegrationTests": 463,
     "linuxPlaywrightTests": 15,
-    "nativeWindowsInertKernel": "PASS_69_FAKE_AUTHORITY_RUNTIME_ONLY",
+    "nativeWindowsInertKernel": "PASS_75_FAKE_AUTHORITY_RUNTIME_ONLY",
     "permanentCheckoutCommit": "54d9e7a067d87407a63173b8084f177bbb395162",
     "productionStartup": {
       "version": "1.0.5",

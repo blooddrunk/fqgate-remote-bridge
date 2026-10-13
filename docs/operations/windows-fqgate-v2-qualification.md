@@ -180,7 +180,7 @@ pnpm test:e2e
 pnpm exec vitest run tests/fqgate-v2-transaction.test.ts
 ```
 
-69 项目录/防重放测试使用假信任与假进程端口、惰性文本文件；不执行 FQGate。
+75 项目录/防重放测试使用假信任与假进程端口、惰性文本文件；不执行 FQGate。
 缺少可信签名/bootstrap/revocation/expiry 适配器和真实 Windows v2 runtime 时，
 没有可安全复制执行的 v2 upgrade/start 命令。发行者规范的检索及协议请求由 agent
 处理；公开向发行者发送 Issue 仍需人类明确授权，不要求用户找密钥或手工越过 Gate。

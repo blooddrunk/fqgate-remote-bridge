@@ -40,6 +40,8 @@ export interface AuthenticatedRelease {
   readonly version: string;
   readonly sequence: number;
   readonly refreshSequence: number;
+  readonly freshnessHash: string;
+  readonly stableHash: string;
   readonly releaseHash: string;
   readonly artifactHash: string;
   readonly treeHash: string;
@@ -55,10 +57,10 @@ export interface ReleaseAuthority {
   authenticate(): Promise<AuthenticatedRelease>;
   authorizeBaseline(treeHash: string, ledger: ReplayLedger): Promise<void>;
 }
-export const unavailableV2Authority: ReleaseAuthority = {
+export const unavailableV2Authority: ReleaseAuthority = Object.freeze({
   authenticate: async () => deny("BLOCKED_UPSTREAM_SIGNING_CONTRACT"),
   authorizeBaseline: async () => deny("BASELINE_TRUST_REQUIRED"),
-};
+});
 export type RuntimeIdentity =
   | { readonly kind: "stopped" | "unknown" | "foreign" }
   | { readonly kind: "managed"; readonly identity: string };
@@ -110,12 +112,14 @@ interface Journal {
   candidate: AuthenticatedRelease;
 }
 function claims(v: unknown): AuthenticatedRelease {
-  const r = obj(v);
+  const r = { ...obj(v) };
   keys(r, [
     "policyHash",
     "version",
     "sequence",
     "refreshSequence",
+    "freshnessHash",
+    "stableHash",
     "releaseHash",
     "artifactHash",
     "treeHash",
@@ -127,19 +131,23 @@ function claims(v: unknown): AuthenticatedRelease {
     !counter(r.refreshSequence) ||
     r.sequence === 0 ||
     r.refreshSequence === 0 ||
-    [r.policyHash, r.releaseHash, r.artifactHash, r.treeHash].some((v) => !digest(v))
+    [r.policyHash, r.freshnessHash, r.stableHash, r.releaseHash, r.artifactHash, r.treeHash].some(
+      (v) => !digest(v),
+    )
   )
     deny("STATE_INVALID");
-  return r as unknown as AuthenticatedRelease;
+  return Object.freeze({ ...r }) as unknown as AuthenticatedRelease;
 }
 export function validateReplayLedger(value: unknown): ReplayLedger {
-  const r = obj(value);
+  const r = { ...obj(value) };
   keys(r, [
     "schemaVersion",
     "policyHash",
     "version",
     "sequence",
     "refreshSequence",
+    "freshnessHash",
+    "stableHash",
     "releaseHash",
     "artifactHash",
     "treeHash",
@@ -150,9 +158,15 @@ export function validateReplayLedger(value: unknown): ReplayLedger {
     !counter(r.sequence) ||
     !counter(r.refreshSequence) ||
     typeof r.version !== "string" ||
-    [r.policyHash, r.releaseHash, r.artifactHash, r.treeHash, r.previousTreeHash].some(
-      (v) => !digest(v),
-    )
+    [
+      r.policyHash,
+      r.freshnessHash,
+      r.stableHash,
+      r.releaseHash,
+      r.artifactHash,
+      r.treeHash,
+      r.previousTreeHash,
+    ].some((v) => !digest(v))
   )
     deny("STATE_INVALID");
   const bootstrap =
@@ -160,6 +174,8 @@ export function validateReplayLedger(value: unknown): ReplayLedger {
     r.sequence === 0 &&
     r.refreshSequence === 0 &&
     r.releaseHash === ZERO &&
+    r.freshnessHash === ZERO &&
+    r.stableHash === ZERO &&
     r.previousTreeHash === ZERO;
   if (!bootstrap) {
     claims(
@@ -168,15 +184,15 @@ export function validateReplayLedger(value: unknown): ReplayLedger {
       ),
     );
   }
-  return r as unknown as ReplayLedger;
+  return Object.freeze({ ...r }) as unknown as ReplayLedger;
 }
 export function advanceReplayLedger(
-  ledger: ReplayLedger,
-  release: AuthenticatedRelease,
+  inputLedger: ReplayLedger,
+  inputRelease: AuthenticatedRelease,
   baselineHash: string,
 ): ReplayLedger {
-  validateReplayLedger(ledger);
-  claims(release);
+  const ledger = validateReplayLedger(inputLedger);
+  const release = claims(inputRelease);
   if (release.policyHash !== ledger.policyHash) deny("TRUST_POLICY_CHANGED");
   if (release.sequence <= ledger.sequence || release.refreshSequence <= ledger.refreshSequence)
     deny("REPLAY_OR_EQUIVOCATION");
@@ -280,7 +296,7 @@ export async function payloadTreeHash(directory: string): Promise<string> {
   return hash(JSON.stringify(entries));
 }
 function validateJournal(v: unknown): Journal {
-  const r = obj(v);
+  const r = { ...obj(v) };
   keys(r, ["schemaVersion", "id", "owner", "phase", "baselineHash", "candidate"]);
   if (
     r.schemaVersion !== 1 ||
@@ -414,6 +430,18 @@ export class V2DirectoryTransaction {
         (await payloadTreeHash(this.slot("previous"))) !== baseline
       )
         deny("PAYLOAD_CHANGED");
+      let fresh: AuthenticatedRelease;
+      try {
+        fresh = claims(await this.authority.authenticate());
+      } catch {
+        deny("AUTHORITY_RECHECK_FAILED");
+      }
+      if (
+        (Object.keys(verified) as (keyof AuthenticatedRelease)[]).some(
+          (k) => fresh[k] !== verified[k],
+        )
+      )
+        deny("AUTHORITY_CHANGED_DURING_ACTIVATION");
       if (JSON.stringify(await this.ledger()) !== JSON.stringify(ledger))
         deny("LEDGER_CHANGED_DURING_ACTIVATION");
       await save(this.slot("security.json"), next);

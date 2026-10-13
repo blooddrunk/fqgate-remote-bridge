@@ -17,7 +17,7 @@ text files exercise complete application-directory renames, retained verified
 baseline, exclusive writer/recovery guards, flushed atomic journal/security
 writes, baseline recovery, unknown/foreign process denial, corruption and replay.
 
-69 tests pass on Linux and native Windows using Git-external inert fixtures.
+75 tests pass on Linux and native Windows using Git-external inert fixtures.
 They cover every fixed runtime gate failure, five crash checkpoints, refusal to
 clear live/unproven owner locks, changed baseline/candidate, failed baseline
 health, strict journal/ledger fields and unreachable phases, conservative
@@ -33,7 +33,7 @@ bootstrap ledger/provider is required. Its tests implement Bridge invariants,
 not invented publisher signature/expiry/rotation rules. Authenticated end-to-end
 anti-replay therefore remains BLOCKED despite kernel tests passing.
 
-Local full checks passed frozen install, typecheck, lint, 27 suites / 457 tests,
+Local full checks passed frozen install, typecheck, lint, 27 suites / 463 tests,
 build, format and 15 Linux Playwright. Exact-final-head Ubuntu/Windows CI is
 recorded in the external R2 receipt and PR after completion. v1 lifecycle,
 compatibility range/validatedVersions, operation registry and Supervisor remain

@@ -10,6 +10,7 @@ import {
   V2DirectoryTransaction,
   V2FixtureCrash,
   V2_RUNTIME_GATES,
+  unavailableV2Authority,
   type AuthenticatedRelease,
   type Checkpoint,
   type DirectoryRuntime,
@@ -45,6 +46,8 @@ async function fixture() {
     version: "1.0.5",
     sequence: 0,
     refreshSequence: 0,
+    freshnessHash: hash("0"),
+    stableHash: hash("0"),
     releaseHash: hash("0"),
     artifactHash: hash("b"),
     treeHash: baseline,
@@ -55,6 +58,8 @@ async function fixture() {
     version: "2.0.5",
     sequence: 8,
     refreshSequence: 9,
+    freshnessHash: hash("1"),
+    stableHash: hash("2"),
     releaseHash: hash("c"),
     artifactHash: hash("d"),
     treeHash: candidate,
@@ -106,6 +111,7 @@ afterEach(async () => {
 });
 describe("unconnected v2 directory kernel, inert files and FAKE authority/runtime only", () => {
   it("default missing authority refuses before filesystem or process mutation", async () => {
+    expect(Object.isFrozen(unavailableV2Authority)).toBe(true);
     const f = await fixture(),
       before = await readFile(join(f.root, "security.json"));
     await expect(new V2DirectoryTransaction(f.root, f.runtime).upgrade()).rejects.toMatchObject({
@@ -387,6 +393,49 @@ describe("unconnected v2 directory kernel, inert files and FAKE authority/runtim
       reason: "COMMITTED_RUNTIME_NOT_CONFIRMED",
     });
   });
+  it("authenticated snapshot is immutable and changing authority cannot change journal facts", async () => {
+    const f = await fixture();
+    vi.mocked(f.runtime.qualify).mockImplementation(async (_d, verified) => {
+      expect(Object.isFrozen(verified)).toBe(true);
+      (f.release as { version: string }).version = "2.0.6";
+      return Object.fromEntries(V2_RUNTIME_GATES.map((g) => [g, true])) as Record<
+        (typeof V2_RUNTIME_GATES)[number],
+        boolean
+      >;
+    });
+    await expect(f.transaction().upgrade()).rejects.toMatchObject({
+      reason: "AUTHORITY_CHANGED_DURING_ACTIVATION",
+    });
+    expect(JSON.parse(await readFile(join(f.root, "security.json"), "utf8"))).toEqual(f.initial);
+    expect(
+      JSON.parse(await readFile(join(f.root, "transaction.json"), "utf8")).candidate.version,
+    ).toBe("2.0.5");
+  });
+  it.each(["freshnessHash", "stableHash"] as const)(
+    "same counters with changed %s cannot commit under an earlier proof",
+    async (field) => {
+      const f = await fixture();
+      vi.mocked(f.authority.authenticate)
+        .mockResolvedValueOnce(f.release)
+        .mockResolvedValueOnce({ ...f.release, [field]: hash("7") });
+      await expect(f.transaction().upgrade()).rejects.toMatchObject({
+        reason: "AUTHORITY_CHANGED_DURING_ACTIVATION",
+      });
+      expect(await payloadTreeHash(join(f.root, "current"))).toBe(f.baseline);
+      expect(JSON.parse(await readFile(join(f.root, "security.json"), "utf8"))).toEqual(f.initial);
+    },
+  );
+  it("expired/revoked authority at commit recheck restores baseline and never advances ledger", async () => {
+    const f = await fixture();
+    vi.mocked(f.authority.authenticate)
+      .mockResolvedValueOnce(f.release)
+      .mockRejectedValueOnce(new Error("fixture revocation"));
+    await expect(f.transaction().upgrade()).rejects.toMatchObject({
+      reason: "AUTHORITY_RECHECK_FAILED",
+    });
+    expect(await payloadTreeHash(join(f.root, "current"))).toBe(f.baseline);
+    expect(JSON.parse(await readFile(join(f.root, "security.json"), "utf8"))).toEqual(f.initial);
+  });
   it("refuses a fabricated closed journal phase instead of replaying an actuator", async () => {
     const f = await fixture();
     await expect(
@@ -447,13 +496,19 @@ describe("unconnected v2 directory kernel, inert files and FAKE authority/runtim
   });
 });
 describe("strict persistent replay-state and payload negatives; no publisher verifier claimed", () => {
-  it.each(["sequence", "refreshSequence", "version", "policyHash", "releaseHash", "treeHash"])(
-    "rejects invalid ledger %s",
-    async (field) => {
-      const f = await fixture();
-      expect(() => validateReplayLedger({ ...f.initial, [field]: "invalid" })).toThrow();
-    },
-  );
+  it.each([
+    "sequence",
+    "refreshSequence",
+    "version",
+    "policyHash",
+    "freshnessHash",
+    "stableHash",
+    "releaseHash",
+    "treeHash",
+  ])("rejects invalid ledger %s", async (field) => {
+    const f = await fixture();
+    expect(() => validateReplayLedger({ ...f.initial, [field]: "invalid" })).toThrow();
+  });
   it.each([null, [], {}, { schemaVersion: 1 }, { schemaVersion: 1, sequence: Infinity }])(
     "rejects malformed ledger",
     (value) => {

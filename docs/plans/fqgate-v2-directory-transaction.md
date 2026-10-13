@@ -35,3 +35,10 @@ recognizes only hash-proven reachable slot arrangements, resumes rollback and
 preserves committed high-water marks. No age-based lock clearing or automatic
 recovery timer exists. Full Windows power-loss durability still requires separate
 native acceptance; passing synthetic checkpoints does not prove it.
+
+Authenticated facts and ledger snapshots are cloned and frozen. Default refusing
+ports are frozen as well. Full freshness/stable/release envelope identities are
+included in the retained facts; authority is rechecked after runtime qualification
+and before security commit. Changed/expired/revoked authority or same-counter
+changed envelope identity causes rollback without advancing state. These calls
+still require a real independent publisher verifier; fake tests do not supply it.
