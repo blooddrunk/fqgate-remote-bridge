@@ -660,11 +660,11 @@ transaction and actual Windows contracts. No production update/restart is
 authorized. Read `docs/status/fqgate-v2-implementation-handoff.md`; do not turn
 an unauthenticated observation into FqgateRelease or qualification evidence.
 
-FQGate v2-R1 is authorized by Issue #16 for observation/test/evidence hardening
+FQGate v2-R1 was historically tracked by Issue #16 for observation/test/evidence hardening
 only. The permanent Windows checkout is read-only in R1; no branch synchronization,
 process/service mutation, lock removal or v2 execution. Windows fixture behavior
 must run in CI; algorithm/key/rotation/revocation/anti-replay cannot be inferred
-from envelopes. PR #15 remains open while any mandatory full-v2 gate is blocked.
+from envelopes. PR #15 has been squash-merged as code-only research; full v2 qualification remains BLOCKED. Issue #16 was closed as not planned for tracking, not as technical completion.
 
 The user's 2026-10-13 continuation authorizes v2 safety engineering before a
 prerequisite-gated upgrade/start. Read
@@ -684,7 +684,7 @@ installer bypass, fake authority/bootstrap, compatibility-range expansion,
 Cloudflare writes, OS feature/reboot changes or automatic recovery authority.
 Stage the exact official artifact, use an independent Windows VM/Sandbox without
 production credentials, prove real runtime/data/rollback safety before activation,
-and preserve v1/checkout/operator state. Original full-qualified PR merge gates
+and preserve v1/checkout/operator state. Original full-qualified v2 activation gates
 remain blocked. Do not ask the user to approve the signature exception again.
 
 R3 context correction: the user clarified this is a personal experimental project
@@ -692,3 +692,12 @@ with no production users. A VM/Sandbox is optional. Proceed with the authorized
 exact-package local trial while preserving v1/config/profile data; record shared
 host/user execution and retain unverified signature status. No feature/reboot or
 permissions change is implied.
+
+
+## Personal research workflow (2026-10-13)
+
+PR #12 and #13 were closed as superseded by merged #14. PR #15 was scope-limited to read-only inspection, Windows fixtures and the **unconnected** directory/replay kernel, then squash-merged at `30de05d5694648ce2dc82ca71c6b9e478ff5817e`; its final-head Ubuntu and Windows checks passed in CI run 38361551963. Issue #16 was closed as `not_planned` for issue-based tracking, not because the publisher trust, rollback, v2 Bridge compatibility, real remote acceptance or L2/queue qualification are complete.
+
+This repository is a **single-owner personal research project**. Default next-task delivery: maintain one focused implementation goal in repo docs/agent handoff; implement on a short-lived branch and use CI and deterministic tests first. Do not create GitHub Issues, separate planning PRs, or multiple bookkeeping stages unless explicitly requested. A PR is optional when genuinely useful for code review and test visibility; prefer a single implementation PR over plan-only PRs. Never fabricate acceptance or weaken loopback, Access, machine permissions, v1 support or rollback semantics to achieve a green result. Human-only QR/MFA or privileged Windows interaction must be isolated to clear, copyable steps, with expected output, stop conditions and precise rerun command. Record redacted receipts outside Git.
+
+Immediate next technical priority: **bounded 2.0.5 Bridge read-only lookup compatibility** via real v2 canonical endpoints and a verified source-instance selection, with v1 unchanged. Separate local protocol success from Cloudflare/Access 502 or timeout and from cryptographic issuer trust; no generic remote instance selector, installer/auto-update path, Phase 7-B2/C actuator or automatic restart. Full reverse directory and power-loss recovery remain unqualified.
