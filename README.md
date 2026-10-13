@@ -64,8 +64,8 @@ Phase 7-B2 和 Phase 7-C 仍未授权。
 source，保留原有证券查询及 local/remote_machine 权限。v1 生命周期范围不变；
 v2 的 QR、更新、签名信任和真实回滚不因此获得资格。
 [当前交接](docs/status/fqgate-2-0-5-readonly-implementation-handoff.md)：
-新 adapter 与进程内 handler 6/6 已通过；现有 Bridge 仍为旧构建 5/6，待仅重启
-Bridge 的授权。远程矩阵仍为 3/22（11 个 502、8 个超时），不能标为阶段闭环。
+新 adapter 已部署：经操作者授权仅重启 Bridge，本地 socket 验收 6/6 全部通过；
+FQGate、cloudflared、配置和登录状态保持不变。远程验收仍受 502/超时阻断，不能标为阶段闭环。
 
 ## 1. 用人话理解系统
 

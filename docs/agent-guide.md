@@ -277,6 +277,6 @@ rollback remain unproven; separate operation compatibility never marks them PASS
 
 Implementation/evidence: `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.
 PR #17 is draft/unmerged. New native adapter and in-process production handler
-pass, but the existing Bridge socket remains old (5/6) pending explicit Bridge-only
-restart permission; remote matrix is 3/22 with 502/timeouts. This is OPEN, not
+pass. After explicit operator approval, only Bridge was restarted and the
+deployed socket passed 6/6; remote matrix remains blocked by 502/timeouts. This is OPEN, not
 full v2 or remote closure. Final exact-head CI is retained in external delivery.

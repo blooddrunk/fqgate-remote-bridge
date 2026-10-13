@@ -1,6 +1,6 @@
 # FQGate 2.0.5 read-only compatibility and recovery readiness
 
-Date: 2026-10-13. **Implementation verified; deployment and remote recovery OPEN.**
+Date: 2026-10-13. **Implementation and deployed local acceptance verified; remote recovery OPEN.**
 Task: `docs/tasks/fqgate-2-0-5-readonly-compatibility.md`.
 Implementation PR: [#17](https://github.com/blooddrunk/fqgate-remote-bridge/pull/17),
 draft and unmerged. No Issue or planning-only PR was created.
@@ -58,9 +58,8 @@ failed only formatting of AGENTS/roadmap. This implementation fixes those files.
 Final runtime implementation `1830d90703d351752b9fc564181fb47c5dc41fdd` passed all
 seven requested Linux checks, 29 suites / 535 tests and 15 browser tests. The
 permanent Windows checkout passed frozen install, pinned pnpm 11.23.0,
-typecheck, lint, 535 tests, build:cli, format and 15 browser tests. Full build
-on that installed Windows checkout is NOT_EXECUTED pending the Bridge-only
-deployment permission; the exact implementation Windows CI full build passed.
+typecheck, lint, 535 tests, build:cli, format and 15 browser tests. Full production build on that installed Windows checkout passed during the
+explicitly authorized Bridge-only deployment; exit 0, pinned pnpm 11.23.0.
 Initial tooling/version failures and the hidden-directory rejection are retained
 as separate failed-attempt receipts, excluded from PASS totals.
 
@@ -82,31 +81,27 @@ A real v1 runtime switch was NOT_EXECUTED to preserve the running 2.0.5.
 
 ## Actual Windows local results
 
-The existing Bridge PID 57956 was never restarted. FQGate PID 30424 remains
-on 127.0.0.1:17281; cloudflared service PID 6908 remains running.
-The old Bridge's precise build SHA is unavailable; checkout SHA is not used as
-proof of the already-running bundle's identity.
+The operator explicitly approved restarting only Bridge. On 2026-10-13 at
+13:32:14Z, the deployment replaced the identity-checked old Bridge PID 57956
+with PID 5860, build `3f78bb9948d95bf7ffb21809bba2baab283e7fed`.
+The native full build and socket matrix both exited 0. FQGate PID 30424 remains
+on 127.0.0.1:17281; cloudflared PID 6908 remains running with unchanged creation
+time. Config, current/previous payload, state and process-file hashes are unchanged.
+Bridge remains solely on 127.0.0.1:17282. No QR/login approval was needed.
 
-The standalone new adapter passed an exact real query with unchanged native
-identity (measured duration is retained in native-readonly-probe.log; includes an extra post-query identity proof). The
-actual compiled production `getBridgeHttpHandler` also passed all six checks
-in-process against real FQGate, with no mocks/listener replacement. These are
-separate results from the still-old 17282 HTTP socket matrix:
+| Gate                          | Expected                 | Deployed 17282 socket |
+| ----------------------------- | ------------------------ | --------------------- |
+| P5C-L2 machine OpenAPI        | 200, 2 paths / 5 schemas | PASS / 200            |
+| P5C-L3 exact lookup           | 200, one exact result    | PASS / 200            |
+| P5C-L4 extra input field      | 400 REQUEST_INVALID      | PASS / 400            |
+| P5C-L5 oversized body         | 413 REQUEST_TOO_LARGE    | PASS / 413            |
+| P5C-L6 raw upstream path      | 404, no proxy            | PASS / 404            |
+| P5C-L7 unknown/forwarded Host | 421 HOST_NOT_ALLOWED     | PASS / 421            |
 
-| Gate                          | Expected                 | Existing 17282 socket          | New production handler, in-process |
-| ----------------------------- | ------------------------ | ------------------------------ | ---------------------------------- |
-| P5C-L2 machine OpenAPI        | 200, 2 paths / 5 schemas | PASS / 200                     | PASS / 200                         |
-| P5C-L3 exact lookup           | 200, one exact result    | FAIL / 503 FQGATE_INCOMPATIBLE | PASS / 200                         |
-| P5C-L4 extra input field      | 400 REQUEST_INVALID      | PASS / 400                     | PASS / 400                         |
-| P5C-L5 oversized body         | 413 REQUEST_TOO_LARGE    | PASS / 413                     | PASS / 413                         |
-| P5C-L6 raw upstream path      | 404, no proxy            | PASS / 404                     | PASS / 404                         |
-| P5C-L7 unknown/forwarded Host | 421 HOST_NOT_ALLOWED     | PASS / 421                     | PASS / 421                         |
+Deployed local acceptance: **6/6**, 13:32:16Z–13:32:22Z. The earlier old-socket
+5/6 and separate in-process 6/6 receipts remain historical evidence.
 
-Existing socket: **5/6**, exit 1. New in-process handler: **6/6**, exit 0;
-this does not mark deployed local acceptance PASS. Native QR/login was not
-requested because the selected source is already connected.
-
-## Actual remote matrix — 2026-10-13T10:53:08Z to 10:58:01Z
+## Actual remote matrix — 2026-10-13T13:32:46Z to 13:37:41Z
 
 Existing `phase5c-matrix.mjs` with current-user Vault and the existing ingress
 binding completed **3/22**, exit 1. No updates.apply or Cloudflare mutation.
@@ -116,24 +111,24 @@ All tests were executed; none is counted PASS for a transport failure.
 | ------------------------- | ------ | --------------- |
 | R1 no-token challenge     | PASS   | 401             |
 | R2 machine OpenAPI        | FAIL   | REQUEST_TIMEOUT |
-| R3 instrument lookup      | FAIL   | HTTP 502        |
-| R4 malformed input        | FAIL   | HTTP 502        |
-| R5 oversized input        | FAIL   | HTTP 502        |
-| R6 raw upstream path      | FAIL   | REQUEST_TIMEOUT |
-| deny bridge.version       | FAIL   | HTTP 502        |
-| deny bridge.capabilities  | FAIL   | HTTP 502        |
-| deny bridge.status        | FAIL   | REQUEST_TIMEOUT |
-| deny session.qr.begin     | FAIL   | HTTP 502        |
-| deny session.qr.poll      | FAIL   | REQUEST_TIMEOUT |
-| deny updates.status       | FAIL   | HTTP 502        |
-| deny updates.check        | FAIL   | REQUEST_TIMEOUT |
-| deny updates.plan         | FAIL   | HTTP 502        |
-| deny updates.qualify      | FAIL   | REQUEST_TIMEOUT |
-| deny openapi.catalog      | FAIL   | HTTP 502        |
-| deny openapi.refresh      | FAIL   | HTTP 502        |
-| page /                    | FAIL   | REQUEST_TIMEOUT |
-| page /assets/probe.js     | FAIL   | HTTP 502        |
-| page /api/v1/unregistered | FAIL   | REQUEST_TIMEOUT |
+| R3 instrument lookup      | FAIL   | REMOTE_HTTP_502 |
+| R4 malformed input        | FAIL   | REQUEST_TIMEOUT |
+| R5 oversized input        | FAIL   | REMOTE_HTTP_502 |
+| R6 raw upstream path      | FAIL   | REMOTE_HTTP_502 |
+| deny bridge.version       | FAIL   | REMOTE_HTTP_502 |
+| deny bridge.capabilities  | FAIL   | REQUEST_TIMEOUT |
+| deny bridge.status        | FAIL   | REMOTE_HTTP_502 |
+| deny session.qr.begin     | FAIL   | REQUEST_TIMEOUT |
+| deny session.qr.poll      | FAIL   | REMOTE_HTTP_502 |
+| deny updates.status       | FAIL   | REQUEST_TIMEOUT |
+| deny updates.check        | FAIL   | REMOTE_HTTP_502 |
+| deny updates.plan         | FAIL   | REMOTE_HTTP_502 |
+| deny updates.qualify      | FAIL   | REMOTE_HTTP_502 |
+| deny openapi.catalog      | FAIL   | REMOTE_HTTP_502 |
+| deny openapi.refresh      | FAIL   | REQUEST_TIMEOUT |
+| page /                    | FAIL   | REMOTE_HTTP_502 |
+| page /assets/probe.js     | FAIL   | REMOTE_HTTP_502 |
+| page /api/v1/unregistered | FAIL   | REMOTE_HTTP_502 |
 | human hostname isolation  | PASS   | 302             |
 | admin hostname isolation  | PASS   | 302             |
 
@@ -141,18 +136,18 @@ Layered observations:
 
 - FQGate and Bridge each have exactly one expected IPv4 loopback listener;
   FQGate native path/PID/creation and payload verification pass.
-- Real canonical upstream search and the new local handler pass. Old deployed
-  lookup rejects incompatibility; application permission fixtures pass.
-- cloudflared service is running; existing local metrics returned 200, two HA
-  connections and zero reported request errors. Its LocalSystem executable path
+- Real canonical upstream search and the deployed local socket pass 6/6;
+  application permission fixtures pass.
+- cloudflared service is running; post-deployment local metrics returned 200, one HA
+  connection (earlier observation: two) and zero reported request errors. Its LocalSystem executable path
   is unreadable at current privileges, so independent native path identity is
   BLOCKED, not silently accepted.
 - Existing read-only Cloudflare plan passed 46/46, zero drift/conflicts/writes,
   with exact Bridge-only ingress and distinct human/admin/machine resources.
 - Windows Node requests to the configured fixed Access cert endpoint timed out
-  after 10010/10007 ms for admin/machine. That authentication transport
+  after 10006/10012 ms for admin/machine. That authentication transport
   prerequisite is BLOCKED. No JWT/AUD/issuer/Origin/policy check is weakened.
-- Remote responses contain 11 HTTP 502 and eight request timeouts without a
+- Remote responses contain 13 HTTP 502 and six request timeouts without a
   normalized Bridge result. Certificate unavailability is established, but
   these observations do not prove it is the exclusive cause of every 502.
   Real authorized machine success and remote denial behavior remain unverified.
@@ -176,7 +171,8 @@ corruption/replay and link/path cases. Real power-loss/rollback and full separat
 v2 data backup/reverse transaction are NOT_EXECUTED. Publisher signature and
 end-to-end authenticated replay are BLOCKED; signatureVerified remains false.
 The exact operator risk exception is not general installation authority.
-No application/service restart, directory switch or automatic recovery occurred.
+Only the explicitly authorized Bridge restart occurred; no FQGate/cloudflared
+restart, directory switch or automatic recovery occurred.
 
 ## Evidence and continuation
 
@@ -194,22 +190,13 @@ node scripts/windows/fqgate205-readonly-probe.mjs --config D:\code\research\fqga
 node scripts/windows/phase5c-matrix.mjs --local
 ```
 
-The only pending deployment approval is a Bridge-only restart. The operator
-objective explicitly says not to restart existing processes without authority.
-A hash-verified backup of the existing Bridge bundle/dist/launcher is prepared
-outside Git (275 files / 3452002 bytes); FQGate/session/config are excluded.
-The exact PID/creation/launcher-checked deployment command is prepared but has
-not run:
-
-```powershell
-powershell.exe -NoProfile -File D:\code\research\fqgate-205-readonly-evidence\deploy-bridge.ps1
-```
-
-After approval the agent builds/starts only Bridge, repeats the socket 6-case
-matrix and verifies FQGate/cloudflared identities and config are unchanged.
-If the expected old Bridge PID/creation/path/listener/launch receipt or backup
-hash differs, stop before killing anything. Unknown processes are never killed.
-Any actual deployment failure preserves backup and its explicit failure receipt.
+The authorized Bridge-only deployment completed successfully. The verified
+backup of the preceding Bridge bundle/dist/launcher remains outside Git
+(275 files / 3452002 bytes). `bridge-deployment.json` records the exact checked
+identity, successful native full build, new PID and successful six-case socket
+matrix. `readiness.json` records unchanged FQGate/cloudflared identities and
+configuration/payload/state. The one-use deployment helper targets the old PID;
+do not rerun it against the new process.
 
 For optional cloudflared native identity closure, an elevated Windows PowerShell
 may run the existing read-only collector; ordinary privileges cannot read that
@@ -232,5 +219,5 @@ Expected certificate result is bounded HTTP 200 with a public key set; expected
 remote result is 22/22. The helper `.mjs` is already available; its thin `.ps1`
 wrapper is supplied with delivery. Do not alter Access policies, permissions,
 issuer/JWK URLs or OS environment to manufacture those results. Next functional
-adapter work after deployment/transport is v2 QR/session; signed installation
+adapter work after transport is v2 QR/session; signed installation
 and real rollback require their own evidence. No Issue is created.
