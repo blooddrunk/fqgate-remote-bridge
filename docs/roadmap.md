@@ -645,3 +645,13 @@ with no production users. A VM/Sandbox is optional. Proceed with the authorized
 exact-package local trial while preserving v1/config/profile data; record shared
 host/user execution and retain unverified signature status. No feature/reboot or
 permissions change is implied.
+
+
+## 2026-10-13 personal research merge and next slice
+
+- PR #12 and #13 closed as superseded; PR #14 already integrated their implementation and hardened recovery policy.
+- PR #15 **squash-merged** at `30de05d5694648ce2dc82ca71c6b9e478ff5817e`, after exact-head CI 38361551963 passed Ubuntu/Windows. Merge covers **only** the v2 read-only observation, non-executing ZIP audit, Windows behavior fixtures and unconnected research directory/replay kernel. It does not make 2.0.5 compatible with the Bridge.
+- Issue #16 closed as **not_planned for issue tracking**, not as satisfied acceptance. Do not create new issues for ordinary next-phase research tasks; track goal and automated receipts directly in repository handoffs.
+- Actual manual 2.0.5 installation / QR login / canonical v2 lookup were previously recorded as locally successful by the operator-side R3 handoff, but **Bridge local matrix 5/6**, **real remote matrix 3/22**, **Access transport timeout**, and **full reverse/power-loss rollback** remain unresolved. Publisher verification/anti-replay and L2/queue remain independent BLOCKED/NOT_EXECUTED gates; do not falsify or silently waive them.
+- **Next narrow priority:** implement a version- and exact-artifact-bound **read-only v2 adapter** for the existing Bridge lookup privilege, using a deterministic locally verified selection of the single connected source; fail closed on 0 or multiple connected sources. Preserve v1 path, market schema, local + remote_machine allowlist and machine OpenAPI. First test fixture matrices and Windows native local lookup, then diagnose remote 502/timeouts separately. No Cloudflare mutation, remote arbitrary instance selector, automatic installer/restart, version gate bypass, or Phase 7-B2/C.
+- Workflow: one implementation goal and (if valuable) one code PR, automatic deterministic / Windows / remote verification prioritized. User intervention only for genuine interactive login/MFA or Windows elevation, with exact steps, expected results and resume instructions. Secrets remain outside Git.
