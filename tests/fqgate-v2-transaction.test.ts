@@ -630,6 +630,18 @@ describe("strict persistent replay-state and payload negatives; no publisher ver
     await link(join(f.root, "candidate", "FQGate.exe"), join(f.root, "candidate", "alias.exe"));
     await expect(payloadTreeHash(join(f.root, "candidate"))).rejects.toThrow();
   });
+  it("hashes the exact official root plugin directory and rejects other hidden/nested names", async () => {
+    const f = await fixture();
+    const directory = join(f.root, "candidate", ".fqgate-plugin-package");
+    await mkdir(directory);
+    await writeFile(join(directory, "fixture.dll"), "inert plugin fixture, never executed");
+    expect(await payloadTreeHash(join(f.root, "candidate"))).not.toBe(f.candidate);
+    await mkdir(join(directory, ".fqgate-plugin-package"));
+    await expect(payloadTreeHash(join(f.root, "candidate"))).rejects.toThrow();
+    await rm(join(directory, ".fqgate-plugin-package"), { recursive: true });
+    await mkdir(join(f.root, "candidate", ".other"));
+    await expect(payloadTreeHash(join(f.root, "candidate"))).rejects.toThrow();
+  });
   it("rejects directory links/junctions without following them", async () => {
     const f = await fixture();
     await symlink(join(f.root, "current"), join(f.root, "candidate", "linked"), "junction");
