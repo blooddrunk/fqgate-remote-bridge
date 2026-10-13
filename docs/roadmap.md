@@ -626,3 +626,10 @@ FQGate v2-R1 (Issue #16 / PR #15) hardens read-only observation, fixture-driven
 Windows gates and redacted evidence. Full v2 remains BLOCKED on publisher trust,
 authenticated replay defense, directory transaction, isolated runtime and permanent
 Windows acceptance. No later phase or production availability repair is authorized.
+
+FQGate v2 R2 safety engineering is separately authorized by the user's
+prerequisite-gated upgrade/start continuation. An unconnected directory/replay
+kernel passes inert Linux/native-Windows fixtures; default trust authority denies
+real activation and recovery. Known v1 baseline startup/local diagnosis passed,
+but real remote transport and full v2 issuer/bootstrap/native-runtime/directory
+qualification remain blocked. See `docs/status/fqgate-v2-safe-upgrade-engineering-handoff.md`.

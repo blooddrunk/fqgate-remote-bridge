@@ -35,9 +35,9 @@
       "v1": "Existing local transaction and artifact evidence",
       "v2": "refreshSequence 8 / release sequence 7",
       "upstreamEvidence": "OBSERVED",
-      "automatedEvidence": "CONSISTENCY_ONLY",
+      "automatedEvidence": "INSPECTOR_CONSISTENCY_ONLY_INERT_REPLAY_KERNEL_PASS",
       "windowsEvidence": "NOT_EXECUTED",
-      "limitation": "Persistent authenticated anti-replay missing"
+      "limitation": "Conservative monotonic kernel implemented; independently authenticated publisher/bootstrap/revocation/expiry integration missing"
     },
     {
       "id": "windows-package",
@@ -71,9 +71,9 @@
       "v1": "Existing EXE staging/rollback",
       "v2": "Full-directory staging/activation/rollback needed",
       "upstreamEvidence": "UNCONFIRMED",
-      "automatedEvidence": "NOT_IMPLEMENTED",
-      "windowsEvidence": "NOT_EXECUTED",
-      "limitation": "Installation remains blocked"
+      "automatedEvidence": "PASS_INERT_KERNEL_FAKE_AUTHORITY_RUNTIME",
+      "windowsEvidence": "PASS_INERT_KERNEL_NATIVE_V2_UNQUALIFIED",
+      "limitation": "69 fake-port directory/replay tests on Linux/native Windows; real issuer/bootstrap/extraction/process and power-loss acceptance missing"
     },
     {
       "id": "updater-process-switch",
@@ -135,8 +135,8 @@
       "v2": "No changes authorized",
       "upstreamEvidence": "UNCHANGED",
       "automatedEvidence": "REGRESSION_PASS",
-      "windowsEvidence": "PARTIAL_FQGATE_LOOPBACK_ONLY",
-      "limitation": "No HTTP route or supported-range expansion; 17282 absent, managed process path unverified"
+      "windowsEvidence": "PASS_V1_LOCAL_LOOPBACK_AND_MATRIX_REMOTE_BLOCKED",
+      "limitation": "Restored exact loopback and managed 1.0.5, local matrix 6/6; authenticated remote transport 3/22 with TLS/cert timeout"
     },
     {
       "id": "supervisor",
@@ -212,5 +212,49 @@
       "productionProcessMutation": false,
       "limitation": "Earlier listener/runtime success is historical; no automatic recovery authorized"
     }
+  },
+  "r2": {
+    "contract": "docs/tasks/fqgate-v2-safe-upgrade-engineering.md",
+    "authority": "User continuation: v2 engineering; upgrade only after prerequisite gates pass",
+    "kernelConnectedToProduction": false,
+    "defaultAuthority": "REFUSES_ACTIVATION_AND_RECOVERY",
+    "directoryKernelTests": 69,
+    "unitIntegrationTests": 457,
+    "linuxPlaywrightTests": 15,
+    "nativeWindowsInertKernel": "PASS_69_FAKE_AUTHORITY_RUNTIME_ONLY",
+    "permanentCheckoutCommit": "54d9e7a067d87407a63173b8084f177bbb395162",
+    "productionStartup": {
+      "version": "1.0.5",
+      "fqgatePid": 30084,
+      "bridgePid": 57956,
+      "listeners": "EXACT_IPV4_LOOPBACK",
+      "fqgateManagedPath": "MATCH",
+      "currentFileUnchanged": true,
+      "localPhase5C": "PASS_6_OF_6",
+      "previousPresent": false
+    },
+    "remote": {
+      "phase5C": "BLOCKED_3_OF_22_502_TIMEOUT",
+      "readOnlyCloudflarePlan": "PASS_46_OF_46_ZERO_DRIFT",
+      "connector": "RUNNING_HEALTHY",
+      "accessCertTransport": "BLOCKED_IPV4_TLS_TIMEOUT_BOTH_RESOLVED_ADDRESSES",
+      "systemDnsMatchesHttpsResolver": true,
+      "verificationBypass": false
+    },
+    "v2WindowsPeAuthenticode": {
+      "FQGate.exe": "NotSigned",
+      "fqgate-updater.exe": "NotSigned",
+      "probe": "non-executing two-PE quarantine inspection; removed",
+      "archiveSha256": "c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba"
+    },
+    "fullV2Gates": {
+      "publisherSignature": "BLOCKED",
+      "authenticatedBootstrapReplayPolicy": "BLOCKED",
+      "nativeDirectoryCrashPowerLossRollback": "BLOCKED",
+      "v2Runtime": "BLOCKED",
+      "productionUpgrade": "NOT_EXECUTED"
+    },
+    "issuerResearchOwner": "Agent; publisher request prepared; public sending requires explicit communication authorization",
+    "evidenceDirectory": "D:/code/research/fqgate-v2-r2-evidence"
   }
 }

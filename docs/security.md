@@ -699,3 +699,14 @@ process paths, missing previous, and uncleared transactions block acceptance.
 A previous file's presence is not verified rollback evidence. Historical coherent
 metadata cannot pass the independent freshness/anti-replay gate; the upstream
 expiry and authenticated persisted-sequence contract remains unresolved.
+
+R2's directory kernel cannot consume unauthenticated v2 inspection as activation
+proof. Default candidate and baseline authorities refuse activation/recovery.
+Trusted bootstrap is never inferred from a missing ledger; conservative counters,
+policy/version/tree identities and strict owner-exit booleans are enforced. Runtime
+rollback never resets authenticated high-water marks. Fixed directory slots,
+link/hardlink/repository guards and preserved failure locks constrain offline
+transactions. No native v2 adapter or permission/range override exists. Inert
+Windows test success is not real signed application, power-loss or session/data
+qualification. Non-executing two-PE Authenticode inspection found both unsigned
+and removed quarantine; it does not establish envelope trust.

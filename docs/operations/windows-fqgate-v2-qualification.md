@@ -134,3 +134,53 @@ Get-NetTCPConnection -State Listen -ErrorAction Stop | Where-Object { $_.LocalPo
 的恢复窗口，不得执行 v2、假造 previous、清 lock/state。停止可用性验收，保留
 earlier/current 两份 JSON 和 final listener receipt；获单独恢复授权并完成修复后
 重跑 observer，publisher/transaction/runtime 阻断仍不能因此解除。
+
+## R2：已授权的生产基线启动与工程验证
+
+用户已授权进程启动，并选择“前置 Gate 通过后再升级到 v2”。本轮已经用现有
+命令启动已验证 1.0.5 和 Bridge，未执行 v2。对应可复制命令：
+
+```powershell
+Set-Location D:\code\research\fqgate-remote-bridge
+node .\dist\cli\main.js fqgate start --config D:\code\research\fqgate-acceptance-config.json --json
+$env:FQGATE_REMOTE_BRIDGE_CONFIG = 'D:\code\research\fqgate-acceptance-config.json'
+$env:BRIDGE_PORT = '17282'
+Start-Process -FilePath 'C:\Program Files\nodejs\node.exe' -ArgumentList 'scripts/start-bridge.mjs' -WorkingDirectory (Get-Location)
+node .\scripts\windows\phase5c-matrix.mjs --local
+```
+
+不要重复启动已经监听的 Bridge。启动前必须核对官方 current 文件哈希、无
+未完成 transaction/lock，并检查两个端口是否已有未知 owner；发现未知身份则
+停止，不终止/接管它。本次结果为 FQGate managed/ready，两个端口均为 127.0.0.1，
+local matrix 6/6。previous 仍缺失，不能声称已建立生产回滚。
+
+Git 外自动 wrapper（自动核对上述前提；重跑遇到已有监听会停止而非创建第二进程）：
+
+```powershell
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r2-evidence\restore-v1-baseline.ps1
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r2-evidence\diagnose-existing-runtime.ps1
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r2-evidence\cloudflare-read-diagnostics.ps1
+```
+
+后两个命令直接读取已有 current-user Vault，在子进程环境中临时传递凭据；
+不要求用户提供签名材料，不输出凭据，不写 Cloudflare。当前 real remote matrix
+3/22（授权请求 502/timeout），Cloudflare read-only plan 46/46。失败时保留逐项
+JSON，停止远程验收；不得因 local PASS 而忽略远程失败，也不得关闭 Access/JWT。
+
+新目录核心仅能由自动测试验证，未接入生产 CLI。Linux/Windows CI 的关键命令：
+
+```text
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+pnpm format:check
+pnpm test:e2e
+pnpm exec vitest run tests/fqgate-v2-transaction.test.ts
+```
+
+69 项目录/防重放测试使用假信任与假进程端口、惰性文本文件；不执行 FQGate。
+缺少可信签名/bootstrap/revocation/expiry 适配器和真实 Windows v2 runtime 时，
+没有可安全复制执行的 v2 upgrade/start 命令。发行者规范的检索及协议请求由 agent
+处理；公开向发行者发送 Issue 仍需人类明确授权，不要求用户找密钥或手工越过 Gate。

@@ -619,3 +619,13 @@ ZIP audit creates/removes an OS temporary directory and never extracts or execut
 No FqgateRelease or qualification evidence can be returned from these paths.
 See `docs/plans/fqgate-v2-observation-and-qualification.md` for boundaries and
 `docs/status/fqgate-v2-implementation-handoff.md` for verified scope and blockers.
+
+## Unconnected v2 directory/replay kernel
+
+The R2 domain under `src/fqgate/v2` is separate from v1 lifecycle and application
+construction. Trusted candidate/baseline authority and runtime ports are required;
+missing authority fails closed, and no production adapter/CLI/HTTP route is
+connected. Inert fake-port tests cover full directory renames, journal/recovery,
+strict high-water state and rollback. Native issuer/bootstrap/extraction/profile/
+power-loss/runtime qualification are still prerequisites to any future wiring.
+See `docs/plans/fqgate-v2-directory-transaction.md` for the explicit boundary.

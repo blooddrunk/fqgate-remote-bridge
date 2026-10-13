@@ -583,3 +583,21 @@ state. This is an observed unauthenticated publisher report, not an implementati
 specification or permission to bypass Bridge gates. The same pinned
 [publication intent](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json)
 is the exact source; R1 preserves the stronger blocked boundary.
+
+### R2 expanded public search
+
+Publisher public org inventory contains FQGate-releases, FQGate-agent and
+fqgate.github.io. The first two pinned R1 heads remain unchanged. Examined
+[official site index](https://github.com/fqgate/fqgate.github.io/blob/c23706cedf9a70584abfafa79f8486900af9e2c5/index.html)
+and [static API document](https://github.com/fqgate/fqgate.github.io/blob/c23706cedf9a70584abfafa79f8486900af9e2c5/api/openapi.json).
+The static document declares OpenAPI 3.1.0 / application version 0.1.2, and has
+required health/QR/lookup paths. It is historical static reference, not a running
+2.0.5 census or release signing/trust specification. Current v2 signature and
+qualified runtime outputs therefore remain false. Research is the agent's task;
+operator key guessing/manual attestation cannot close those gates.
+
+The R2 remote diagnosis also uses the official, fixed GET-only
+[List Cloudflare Tunnel connections API](https://developers.cloudflare.com/api/resources/zero_trust/subresources/tunnels/subresources/cloudflared/subresources/connections/methods/get/)
+with the existing Tunnel Read credential. This diagnostic is external tooling,
+not a new Bridge/Cloudflare proxy or a mutation method. Evidence projects counts/
+architecture/status only; no raw API replies or origin IPs are persisted.

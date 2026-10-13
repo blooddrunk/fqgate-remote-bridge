@@ -665,3 +665,11 @@ only. The permanent Windows checkout is read-only in R1; no branch synchronizati
 process/service mutation, lock removal or v2 execution. Windows fixture behavior
 must run in CI; algorithm/key/rotation/revocation/anti-replay cannot be inferred
 from envelopes. PR #15 remains open while any mandatory full-v2 gate is blocked.
+
+The user's 2026-10-13 continuation authorizes v2 safety engineering before a
+prerequisite-gated upgrade/start. Read
+`docs/tasks/fqgate-v2-safe-upgrade-engineering.md` and
+`docs/plans/fqgate-v2-directory-transaction.md`. R2 may implement/test a separate
+unconnected directory/replay kernel using fake ports and inert files. It does not
+establish publisher trust, enable a native v2 adapter or authorize execution before
+all prerequisite gates pass. Do not transfer issuer research to the operator.
