@@ -1,6 +1,6 @@
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
 import { fingerprintJson, parseOpenApiDocument } from "../openapi/catalog.js";
-import { decodeResponseText, type HttpTransport } from "../release/http.js";
+import { type HttpTransport } from "../release/http.js";
 import { operationContractFingerprint } from "./contract.js";
 import {
   parseInstrumentLookupRequest,
@@ -84,7 +84,7 @@ export class FqgateV2InstrumentLookup implements InstrumentLookupPort {
       if (response.body.byteLength > maxBytes) fail();
       let value;
       try {
-        value = object(JSON.parse(decodeResponseText(response)));
+        value = object(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(response.body)));
       } catch {
         fail();
       }
@@ -134,9 +134,8 @@ export class FqgateV2InstrumentLookup implements InstrumentLookupPort {
           !/^[A-Za-z0-9_+=.-]{1,128}$/.test(s.instanceId) ||
           [".", ".."].includes(s.instanceId) ||
           ids.has(s.instanceId) ||
-          !["connected", "disconnected", "unknown", "not_applicable"].includes(
-            String(session.state),
-          )
+          typeof session.state !== "string" ||
+          !["connected", "disconnected", "unknown", "not_applicable"].includes(session.state)
         )
           fail();
         ids.add(s.instanceId);
@@ -188,8 +187,10 @@ export class FqgateV2InstrumentLookup implements InstrumentLookupPort {
       data.items.length > 16 ||
       data.row_count !== data.items.length ||
       coverage.returned_count !== data.items.length ||
-      !["complete", "partial", "unknown"].includes(String(coverage.status)) ||
-      !["present", "empty", "empty_indeterminate"].includes(String(data.data_state)) ||
+      typeof coverage.status !== "string" ||
+      !["complete", "partial", "unknown"].includes(coverage.status) ||
+      typeof data.data_state !== "string" ||
+      !["present", "empty", "empty_indeterminate"].includes(data.data_state) ||
       data.items.length > 0 !== (data.data_state === "present")
     )
       fail();
@@ -200,15 +201,16 @@ export class FqgateV2InstrumentLookup implements InstrumentLookupPort {
         if (
           !text(security.code, 16) ||
           !/^[A-Za-z0-9]{1,16}$/.test(security.code) ||
-          !["XSHG", "XSHE", "XBEI"].includes(String(security.market)) ||
+          typeof security.market !== "string" ||
+          !["XSHG", "XSHE", "XBEI"].includes(security.market) ||
           !text(item.name, 128)
         )
           fail();
         return {
           code: security.code,
-          market: String(security.market),
+          market: security.market,
           name: item.name,
-          instrumentId: `${String(security.market)}:${security.code}`,
+          instrumentId: `${security.market}:${security.code}`,
         };
       })
       .filter((item) => item.code === request.code);

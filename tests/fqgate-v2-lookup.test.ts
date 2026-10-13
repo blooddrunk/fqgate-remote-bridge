@@ -237,6 +237,47 @@ describe("exact 2.0.5 read-only lookup", () => {
       });
     },
   );
+  it.each(["market", "coverage", "empty-state"])(
+    "rejects coercible array enum %s",
+    async (kind) => {
+      const f = fixture();
+      const d = f.f.result.data;
+      if (kind === "market")
+        (d.items[0]!.security as unknown as Record<string, unknown>).market = ["XSHG"];
+      if (kind === "coverage")
+        (d.coverage as unknown as Record<string, unknown>).status = ["complete"];
+      if (kind === "empty-state") {
+        d.items = [];
+        d.row_count = 0;
+        d.coverage.returned_count = 0;
+        (d as unknown as Record<string, unknown>).data_state = ["empty"];
+      }
+      await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+        code: "UPSTREAM_RESPONSE_INVALID",
+      });
+    },
+  );
+  it("rejects coercible source session states before querying", async () => {
+    const f = fixture();
+    (f.f.sources[0]!.session as unknown as Record<string, unknown>).state = ["disconnected"];
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+      code: "UPSTREAM_RESPONSE_INVALID",
+    });
+    expect(f.request.mock.calls.some(([u]) => u.includes("search?"))).toBe(false);
+  });
+  it("rejects malformed UTF-8 rather than publishing replacement characters", async () => {
+    const f = fixture();
+    const json = JSON.stringify(f.f.result);
+    const [before, after] = json.split("Fixture");
+    f.f.bytes = Buffer.concat([
+      Buffer.from(before!),
+      Buffer.from([0xc3, 0x28]),
+      Buffer.from(after!),
+    ]);
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+      code: "UPSTREAM_RESPONSE_INVALID",
+    });
+  });
   it("fails before querying on protocol drift", async () => {
     const f = fixture();
     vi.mocked(contract.operationContractFingerprint).mockReturnValue("b".repeat(64));
