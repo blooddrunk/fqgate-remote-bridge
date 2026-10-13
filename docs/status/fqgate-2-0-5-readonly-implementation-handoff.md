@@ -33,6 +33,8 @@ The existing inert directory hash scanner now accepts only the official root
 `.fqgate-plugin-package` directory; other hidden/nested names and links still
 fail. The transaction/authority kernel remains unconnected to an installer.
 New fixtures prove profile/data separation and repeat-safe failed recovery.
+Strict enum types and fatal UTF-8 decoding reject coercible arrays and malformed
+text rather than normalizing an unverified response.
 The remote matrix now emits bounded `REQUEST_TIMEOUT` / `REMOTE_HTTP_502`
 classification without exception text, headers, credentials or raw bodies.
 
@@ -53,20 +55,22 @@ Issue #16 are closed. #15's merge CI passed; latest main CI
 [38381910281](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38381910281)
 failed only formatting of AGENTS/roadmap. This implementation fixes those files.
 
-Runtime implementation `029776bdcbf73a395da3f145e314637660dea651` passed all
-seven requested Linux checks, 29 suites / 530 tests and 15 browser tests. The
+Final runtime implementation `1830d90703d351752b9fc564181fb47c5dc41fdd` passed all
+seven requested Linux checks, 29 suites / 535 tests and 15 browser tests. The
 permanent Windows checkout passed frozen install, pinned pnpm 11.23.0,
-typecheck, lint, 530 tests, build:cli, format and 15 browser tests. Full build
+typecheck, lint, 535 tests, build:cli, format and 15 browser tests. Full build
 on that installed Windows checkout is NOT_EXECUTED pending the Bridge-only
 deployment permission; the exact implementation Windows CI full build passed.
 Initial tooling/version failures and the hidden-directory rejection are retained
 as separate failed-attempt receipts, excluded from PASS totals.
 
-The runtime implementation passed Ubuntu/Windows
+The initial runtime implementation passed Ubuntu/Windows
 [CI 38384495297](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38384495297).
 The subsequent matrix-classification commit
 `0d8d387f6e5a7bd94d600800f0580a2ed9a94f33` passed Ubuntu/Windows
 [CI 38386272352](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38386272352).
+The strict-decoder runtime commit passed Ubuntu/Windows
+[CI 38388074453](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38388074453).
 The final documentation commit must also pass exact-head CI. Its SHA/job URLs
 are recorded in the external delivery receipt, avoiding a self-referential
 commit/CI claim in this file.
@@ -84,7 +88,7 @@ The old Bridge's precise build SHA is unavailable; checkout SHA is not used as
 proof of the already-running bundle's identity.
 
 The standalone new adapter passed an exact real query with unchanged native
-identity (reported 5716 ms includes an extra post-query identity proof). The
+identity (measured duration is retained in native-readonly-probe.log; includes an extra post-query identity proof). The
 actual compiled production `getBridgeHttpHandler` also passed all six checks
 in-process against real FQGate, with no mocks/listener replacement. These are
 separate results from the still-old 17282 HTTP socket matrix:
