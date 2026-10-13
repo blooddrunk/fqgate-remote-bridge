@@ -629,3 +629,16 @@ connected. Inert fake-port tests cover full directory renames, journal/recovery,
 strict high-water state and rollback. Native issuer/bootstrap/extraction/profile/
 power-loss/runtime qualification are still prerequisites to any future wiring.
 See `docs/plans/fqgate-v2-directory-transaction.md` for the explicit boundary.
+
+R3's user-approved unsigned-risk manual attempt is a separate operator workflow,
+not an authenticated ReleaseAuthority adapter or v1 installer fallback. Staging
+an exact audited ZIP does not enable execution/installation APIs. A Windows
+VM/Sandbox must separate candidate profile data and production processes before
+runtime qualification; production activation needs reviewed native layout,
+compatibility and rollback proof. See `docs/tasks/fqgate-v2-operator-risk-upgrade.md`.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

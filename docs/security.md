@@ -710,3 +710,18 @@ transactions. No native v2 adapter or permission/range override exists. Inert
 Windows test success is not real signed application, power-loss or session/data
 qualification. Non-executing two-PE Authenticode inspection found both unsigned
 and removed quarantine; it does not establish envelope trust.
+
+R3 records an explicit user exception for one manual 2.0.5 upgrade attempt despite
+unverified publisher signatures. `signatureVerified` remains false and the full
+signed qualification contract remains BLOCKED. Exception-only staging/runtime
+preparation is separate from R2 ReleaseAuthority and cannot initialize its trusted
+ledger or grant automatic/remote installation. Independent Windows isolation,
+real data-preserving rollback and exact native runtime identity remain required;
+no host-user trial, unknown process kill, policy/range widening or fabricated PASS.
+See `docs/tasks/fqgate-v2-operator-risk-upgrade.md`.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

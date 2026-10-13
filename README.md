@@ -1002,3 +1002,9 @@ node .\dist\cli\main.js fqgate audit-v2 --json
 也不批准 v2 行情能力。不要修改 supportedRange、复制单个 EXE 或使用
 `qualify-current` 绕过门禁。签名信任根、目录事务及真实 v2 Windows 合同尚未建立。
 详见 [验收/操作边界](docs/operations/windows-fqgate-v2-qualification.md)。
+
+2026-10-13 R3: user-approved personal-experiment manual installation of official
+FQGate 2.0.5 completed with signatures explicitly unverified; real canonical
+login/search passed. The Bridge's v1 compatibility/permissions remain unchanged,
+so App upgrade is not Bridge v2 qualification or PR merge closure. See
+`docs/status/fqgate-v2-operator-risk-upgrade-handoff.md`.

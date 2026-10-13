@@ -633,3 +633,15 @@ kernel passes inert Linux/native-Windows fixtures; default trust authority denie
 real activation and recovery. Known v1 baseline startup/local diagnosis passed,
 but real remote transport and full v2 issuer/bootstrap/native-runtime/directory
 qualification remain blocked. See `docs/status/fqgate-v2-safe-upgrade-engineering-handoff.md`.
+
+FQGate v2 R3: the user accepts absent signing evidence for one manual upgrade
+attempt. Prepare the exact 2.0.5 package and independent Windows environment;
+actual runtime/rollback/compatibility remain prerequisites. This is not signed
+qualification, PR merge closure, range expansion or Phase 7-B2/7-C authority.
+Contract: `docs/tasks/fqgate-v2-operator-risk-upgrade.md`.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

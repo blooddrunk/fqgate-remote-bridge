@@ -184,3 +184,31 @@ pnpm exec vitest run tests/fqgate-v2-transaction.test.ts
 缺少可信签名/bootstrap/revocation/expiry 适配器和真实 Windows v2 runtime 时，
 没有可安全复制执行的 v2 upgrade/start 命令。发行者规范的检索及协议请求由 agent
 处理；公开向发行者发送 Issue 仍需人类明确授权，不要求用户找密钥或手工越过 Gate。
+
+## R3：个人实验环境、明确接受签名风险后的手动升级
+
+用户明确接受本次 2.0.5 缺少签名依据的现实；没有生产用户，不要求 Sandbox。
+2.0.5 已整目录安装并保持运行；用户物理扫码后唯一 connected 数据连接的
+账户状态和精确证券查询通过。原始签名/完整 runtime 资格仍未通过，Bridge 的
+v1 范围/协议适配器未扩展，因此不能声称 Bridge 的 v2 门禁全通过。
+详见 `docs/status/fqgate-v2-operator-risk-upgrade-handoff.md`。
+
+已执行一次的安装入口（现在不要重跑，不会复用旧资格伪造 PASS）：
+
+```powershell
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r3-evidence\run-install-and-hold.ps1
+```
+
+目前应使用只读复验，不关闭正在使用的 App：
+
+```powershell
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r3-evidence\read-current-state.ps1
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r3-evidence\run-held-verification.ps1
+```
+
+预期：实际 2.0.5、两个 loopback listener 与路径 MATCH；唯一 connected source，
+saved login available；固定 canonical search HTTP 200/code 0/one exact match。
+不能使用旧 `/v1/market/health` 的 disconnected 代表 v2 已登录连接的状态。
+多个 connected source 时自动选择必须拒绝；不公开实例 ID/账号/QR/session。
+失败保留脱敏 receipt，不自动终止 App/回退、不修改 Cloudflare、权限或范围。
+旧版/config 只作临时回退；验证完成后可按用户许可删除，无永久保留要求。

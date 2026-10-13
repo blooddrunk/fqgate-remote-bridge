@@ -7,7 +7,7 @@
   "v2RuntimeQualified": false,
   "sources": [
     "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.4",
-    "https://github.com/fqgate/FQGate-releases/blob/edb17da7fca0952534a65f4cfb98a62b6a017d43/使用说明.md",
+    "https://github.com/fqgate/FQGate-releases/blob/edb17da7fca0952534a65f4cfb98a62b6a017d43/\u4f7f\u7528\u8bf4\u660e.md",
     "https://github.com/fqgate/FQGate-releases/tree/edb17da7fca0952534a65f4cfb98a62b6a017d43/releases/v2",
     "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.5"
   ],
@@ -256,5 +256,34 @@
     },
     "issuerResearchOwner": "Agent; publisher request prepared; public sending requires explicit communication authorization",
     "evidenceDirectory": "D:/code/research/fqgate-v2-r2-evidence"
+  },
+  "r3": {
+    "contract": "docs/tasks/fqgate-v2-operator-risk-upgrade.md",
+    "context": "Personal experimental project; no production users",
+    "signatureVerified": false,
+    "publisherTrust": "UNVERIFIED_OPERATOR_RISK_ACCEPTED",
+    "manualAppUpgrade": "PASS_2_0_5_INSTALLED_AND_HELD",
+    "fullRuntimeQualified": false,
+    "currentExeSha256": "d0a104f6d25b98b971999a585080ccbe0c9bc9470ca86a602d937f6d23816847",
+    "currentExeBytes": 53590016,
+    "sourceCount": 2,
+    "connectedSourceCount": 1,
+    "selectedSession": "PASS_CONNECTED_SAVED_LOGIN_AVAILABLE",
+    "canonicalLookup": "PASS_HTTP_200_CODE_0_ONE_EXACT_MATCH",
+    "legacyAliases": "DISCONNECTED_OTHER_SOURCE_409_CODE_3001",
+    "actualOpenapiVersion": "2.0",
+    "bridgeAdapter": "BLOCKED_V1_ONLY_RANGE_AND_CONTRACT",
+    "compatibilityRangeExpanded": false,
+    "automaticRollbackAfterProbe": false,
+    "v1Retention": "TEMPORARY_ONLY_UNTIL_VALIDATION",
+    "remaining": [
+      "SIGNED_PUBLISHER_TRUST",
+      "AUTHENTICATED_REPLAY",
+      "NATIVE_POWER_LOSS_ROLLBACK",
+      "QUEUE_L2_QUALIFICATION",
+      "BRIDGE_V2_ADAPTER",
+      "REAL_REMOTE_ACCEPTANCE"
+    ],
+    "evidenceDirectory": "D:/code/research/fqgate-v2-r3-evidence"
   }
 }

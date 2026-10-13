@@ -673,3 +673,22 @@ prerequisite-gated upgrade/start. Read
 unconnected directory/replay kernel using fake ports and inert files. It does not
 establish publisher trust, enable a native v2 adapter or authorize execution before
 all prerequisite gates pass. Do not transfer issuer research to the operator.
+
+## FQGate v2 R3 operator risk acceptance
+
+The user's latest 2026-10-13 direction explicitly accepts missing publisher
+signature evidence for a manually controlled v2 upgrade attempt. Follow
+`docs/tasks/fqgate-v2-operator-risk-upgrade.md`. This overrides the earlier
+signature prerequisite for that attempt; it grants no signature PASS, generic
+installer bypass, fake authority/bootstrap, compatibility-range expansion,
+Cloudflare writes, OS feature/reboot changes or automatic recovery authority.
+Stage the exact official artifact, use an independent Windows VM/Sandbox without
+production credentials, prove real runtime/data/rollback safety before activation,
+and preserve v1/checkout/operator state. Original full-qualified PR merge gates
+remain blocked. Do not ask the user to approve the signature exception again.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.
