@@ -690,3 +690,12 @@ Temporary archive cleanup is required before a successful report. Crash leftover
 remain isolated untrusted ZIP files; no installation success marker is written.
 Full directory staging/activation/crash recovery/rollback are unimplemented and
 must be separately satisfied before any future v2 activation.
+
+R1 Windows observation validates configuration with the existing schema before
+resolving production paths, and compares six fixed production file snapshots
+before/after the CLI, including CLI failure. Evidence uses an allowlist projection,
+not raw CLI JSON. Missing/IPv6/wildcard/duplicate listeners, unreadable/mismatched
+process paths, missing previous, and uncleared transactions block acceptance.
+A previous file's presence is not verified rollback evidence. Historical coherent
+metadata cannot pass the independent freshness/anti-replay gate; the upstream
+expiry and authenticated persisted-sequence contract remains unresolved.

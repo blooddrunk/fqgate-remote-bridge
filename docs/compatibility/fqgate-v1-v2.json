@@ -165,5 +165,42 @@
     "windowsObservation": "D:/code/research/fqgate-v2-observation-evidence.json",
     "currentV1Runtime": "D:/code/research/fqgate-v2-current-runtime-evidence.json",
     "deliveryReceipt": "D:/code/research/fqgate-v2-delivery-evidence.json"
+  },
+  "r1": {
+    "contract": "https://github.com/blooddrunk/fqgate-remote-bridge/issues/16",
+    "date": "2026-10-13",
+    "observationSchemaVersion": 2,
+    "windowsFixtureBehaviorCases": 39,
+    "unitIntegrationTests": 388,
+    "linuxPlaywrightTests": 15,
+    "permanentCheckoutCommit": "54d9e7a067d87407a63173b8084f177bbb395162",
+    "permanentCheckoutMutated": false,
+    "scriptSourceIdentity": "Repo-external sourceHashes in windows-observation-final.json; not a final-head production deployment",
+    "gates": {
+      "config": "PASS",
+      "fqgateIpv4Loopback": "PASS",
+      "bridgeIpv4Loopback": "BLOCKED",
+      "managedProcessPath": "BLOCKED",
+      "previousPresent": "BLOCKED",
+      "transactionClear": "PASS",
+      "archiveAudit": "PASS",
+      "zipCleanup": "PASS",
+      "productionFixedFilesUnchanged": "PASS",
+      "currentV1Artifact": "PASS",
+      "publisherSignature": "BLOCKED",
+      "authenticatedPersistentAntiReplay": "BLOCKED",
+      "directoryRollback": "BLOCKED",
+      "realV2Runtime": "BLOCKED",
+      "productionUpgrade": "NOT_EXECUTED"
+    },
+    "evidenceDirectory": "D:/code/research/fqgate-v2-r1-evidence",
+    "publicationIntent": {
+      "source": "https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json",
+      "trust": "UNAUTHENTICATED_OBSERVATION",
+      "publicationMode": "manual-recovery",
+      "automaticAllowed": false,
+      "requiresManualUpgrade": true,
+      "limitation": "Publisher simulation does not authorize manual installation; no inferred client signing or replay specification"
+    }
   }
 }

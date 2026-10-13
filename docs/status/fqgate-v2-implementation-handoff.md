@@ -160,3 +160,78 @@ The follow-up local suite is 26 files / 385 tests, including 59 v2 tests, and 15
 browser E2E PASS. Final exact-head CI and Windows receipt are recorded externally
 and in PR #15 after the freshness follow-up. The implementation itself is unchanged
 from the original green head; the follow-up adds only public fixtures/test/docs.
+
+## v2-R1 remediation — 2026-10-13
+
+Contract: [Issue #16](https://github.com/blooddrunk/fqgate-remote-bridge/issues/16).
+Reviewed all PR changes from main `40ad339d863391e8a746252581adbcee600a3fa0`;
+PR #15 original head `54d9e7a067d87407a63173b8084f177bbb395162` is based on that
+main and has no merge conflict. No formal review or inline review thread existed
+at takeover; the existing PR comment explicitly deferred merge for unresolved
+qualification gates. Current README/roadmap/AGENTS/agent guide now reconcile
+already-merged PR #14. Historical acceptance documents remain historical.
+
+Changes:
+
+- Native Windows collectors and pure injectable gates share an orchestration
+  module. The production script has no fixture switch and no actuator.
+- Existing config schema is checked without creating application services. Bad
+  config yields explicit blocked evidence; production paths are not inspected.
+- Exact single IPv4 listener, owner identity, nonempty previous, clear transaction,
+  blocked CLI report, ZIP cleanup and fixed-file invariance are separate gates.
+- Before/after snapshots also run when CLI JSON is malformed or the child exits
+  unexpectedly. Schema 2 evidence projects safe fields and rejects unexpected
+  verification/installation/runtime flags. Raw output/errors/config are discarded.
+- Windows CI now executes 39 behavioral fixtures, including native child exception,
+  all missing/non-loopback bindings, unreadable/mismatched identity, invalid config,
+  old coherent replay, malformed/future metadata, wrong exits, incomplete cleanup,
+  secret-field omission, changed/deleted/created/unreadable files and preserved locks.
+- Three actual ZIP audit tests additionally hash all six inert baseline files after
+  successful audit, invalid ZIP and moving metadata. Existing archive cleanup tests
+  run on both CI platforms. No fixture executes FQGate or uses production services.
+
+Local Linux frozen install/typecheck/lint/test/build/format and Playwright passed:
+26 suites / 388 tests (62 v2) and 15 browser tests. Native Windows PowerShell 5.1
+passed all 39 behavior cases using a Git-external fixture directory. Windows CI
+runs the same cases with pwsh. Final commit/run/job identities and exit codes are
+bound in `D:\code\research\fqgate-v2-r1-evidence\delivery.json`, after final CI;
+this document does not predeclare that future CI result.
+
+Current permanent Windows observations, collected using the final script source
+copied outside Git and the existing checkout/CLI at `54d9e7a`:
+
+| Gate                                                                 | Result       | Actual evidence                                                                                                    |
+| -------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Config / clean unchanged permanent checkout                          | PASS         | Existing schema accepted; no branch/file/operator-state replacement                                                |
+| FQGate listener                                                      | PASS         | Single 127.0.0.1:17281 / PID 30284                                                                                 |
+| Bridge listener                                                      | BLOCKED      | No 17282 listener; no start/restart attempted                                                                      |
+| Managed process path                                                 | BLOCKED      | CIM ExecutablePath unreadable; no adoption/termination                                                             |
+| Previous rollback artifact                                           | BLOCKED      | previous/fqgate.exe absent; no fabrication                                                                         |
+| Transaction clear                                                    | PASS         | No install.lock or transaction.json                                                                                |
+| Production fixed-file invariance                                     | PASS         | Six file presence/readability/size/hash snapshots agree                                                            |
+| Current v1 artifact                                                  | PASS         | 23707648 bytes; SHA256 2b9613dbf2d0f10b1672684f2e24ac8917d2d8d3fa9bd7fbbae04d57dd73d83c                            |
+| Public 2.0.5 ZIP observation / cleanup                               | PASS         | 9 entries / 60709870 uncompressed bytes, required PE headers PASS / REMOVED                                        |
+| v1 health/OpenAPI/lookup diagnostics                                 | PASS         | HTTP 200/code 0; network ready; OpenAPI 3.1.0 / 95 operations, fixed required/lookup paths; one exact lookup match |
+| Signature / durable replay / v2 directory rollback / real v2 runtime | BLOCKED      | No independent issuer contract or implemented qualified transaction/runtime                                        |
+| Production upgrade / v2 execution / remote acceptance                | NOT_EXECUTED | R1 read-only scope; Bridge absent and no credentials requested                                                     |
+
+The native core JS module hashes match the local built modules; new head only
+changes observation tooling/test/docs. Source hashes, production checkout SHA and
+final PR SHA remain distinct evidence fields. This is not a claim that the new head
+was checked out in production. Snapshot agreement also cannot prove absence of a
+transient change between samples or certify future rollback.
+
+Pinned official signing-search URLs and public response hashes are in the
+upstream ledger and external upstream receipt. In addition to absent verifiable
+root/algorithm/input/rotation/revocation, 2.0.5 publication intent reports
+manual-recovery, automaticAllowed false and requires_manual_upgrade true. Its
+simulation explicitly delegates trust and does not authorize manual installation.
+No deterministic release verifier or durable security state is invented.
+
+Exact human-only steps, privileges, expected outputs, prohibited mutations and
+stop/resume commands are in the R1 section of the Windows runbook. Elevation may
+resolve path visibility; availability/previous remediation require separate
+approval, and issuer trust requires publisher evidence rather than operator
+attestation. v2 directory/runtime work has no safe executable command in R1.
+PR #15 remains OPEN while any mandatory gate is unresolved. No Phase 7-B2/7-C,
+automatic update, permission expansion, Cloudflare write or v1 transaction change.

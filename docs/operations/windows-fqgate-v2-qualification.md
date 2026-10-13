@@ -67,3 +67,54 @@ Copy-Item -LiteralPath $fqgateDir -Destination $backup -Recurse -ErrorAction Sto
    时停止操作、保留备份/脱敏证据和原始 1.0.5 运行状态；恢复必须由单独
    审核的目录事务完成。上面只读验收命令可随时重跑以恢复证据采集，不能恢复
    安装资格。不得手写 state、强杀进程或误称不存在的 previous 为可用回滚。
+
+## v2-R1：逐项阻断与恢复自动验证
+
+本轮不修改永久工作树。最终审查脚本的相同字节副本位于 Git 外
+`D:\code\research\fqgate-v2-r1-evidence\observer-code`；它固定读取现有永久
+工作树及其已构建 CLI。新脚本与旧 checkout 的 SHA 分开记录，不能称为新 head
+已部署。无需改 execution policy。普通 Windows PowerShell 可直接复制：
+
+```powershell
+powershell -NoProfile -NonInteractive -File D:\code\research\fqgate-v2-r1-evidence\observer-code\fqgate-v2-observation.ps1 -AuditArchive -EvidencePath D:\code\research\fqgate-v2-r1-evidence\windows-observation-resume.json
+```
+
+预期 exit 1（qualification 始终 BLOCKED）；schemaVersion 2，全部 Gate
+逐项 `PASS/BLOCKED/NOT_EXECUTED`。只有合法 report 且 exit 1 才算观测成功。
+配置读取/校验失败、CLI 异常或 ZIP 清理失败都不得成为 PASS。输出只包含有界
+分类/哈希，任何 raw stdout/stderr/config 都不保存。证据里 snapshot 比较仅证明
+固定文件在两次取样时相同，不证明两次之间没有瞬时修改或未来回滚可用。
+
+| 阻断             | 无法自动完成的原因 / 所需身份                                                                         | 准确只读命令与通过条件                                                                                                                                                                      | 禁止 / 失败时停止 / 恢复自动化                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 17281 路径不可读 | 当前 Windows 身份不能读进程路径；需要操作者 UAC 同意进入 Administrator PowerShell                     | 执行下方 identity 命令，单一 127.0.0.1 owner 且本地输出 MATCH                                                                                                                               | UNREADABLE/MISMATCH 即停止，不接管/终止进程，不公开路径；保留 PID/分类，重跑上方 observer                                                      |
+| 17282 缺失       | 只读诊断不能创造服务可用性；恢复启动需要另行授权并审查身份/状态                                       | `Get-NetTCPConnection -State Listen -LocalPort 17281,17282 -ErrorAction SilentlyContinue \| Select LocalAddress,LocalPort,OwningProcess`；每个 port 恰好一个 127.0.0.1 才通过 listener Gate | 本任务不得 start/stop/restart；缺失则停止 availability 验收，保留分类证据；获单独修复后重跑 observer                                           |
+| previous 缺失    | 未保留 rollback artifact；文件存在也不能证明可用回滚                                                  | `Test-Path -LiteralPath (Join-Path $fqgateDir 'previous\fqgate.exe') -PathType Leaf`；False = BLOCKED。变量由下方合法配置读取建立                                                           | 不复制 current 冒充 previous，不手写 state、不清 lock；先另立 v1 rollback 资格任务，失败保留现状；修复后重跑 observer，仍需事务验收            |
+| 签名信任         | 已检查公开来源不提供完整 application ZIP 验签合同；需要发布者可验证规范和独立认证公钥渠道             | `node D:\code\research\fqgate-remote-bridge\dist\cli\main.js fqgate inspect-v2 --json` 只恢复观察；没有可解除 trust Gate 的现成命令                                                         | 不从 signature 长度推断算法，不 TOFU、不使用 MCP Apps key；无证明即停止。拿到规范后先实现离线负向 tests，再运行 CI；不得执行 ZIP               |
+| 防重放/目录事务  | 需要签名与客户端序列/时间/撤销规范，以及另行批准实现 crash recovery/rollback；目前没有安全 actuator   | 当前仅可运行上方 observer 与 CI fixtures；不存在安全 activation/rollback 命令                                                                                                               | 不清 security state、锁或 history，不修改 v1 replaceExecutable。需新任务先实施独立目录事务，fixtures 通过后才讨论 runtime 授权；失败保持 1.0.5 |
+| 真实 v2 runtime  | 无可信 artifact，且 R1 未授权隔离执行；需要单独批准 Windows x64 测试机、独立数据目录，无生产凭据/路由 | 当前 `NOT_EXECUTED`；不能提供尚未实现的启动/安装命令。未来规范确定后另行编写可复制的隔离 runbook                                                                                            | 不执行 v2 EXE/updater，不用生产 token/session，不做 QR/queue/L2 故障注入；失败停止隔离验收并保留脱敏证据，不切生产                             |
+
+提升权限后的只读 identity 判定（配置内容/真实路径仅在本机使用，不上传）：
+
+```powershell
+Set-Location D:\code\research\fqgate-remote-bridge
+$config = Get-Content D:\code\research\fqgate-acceptance-config.json -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+$fqgateDir = Join-Path $config.installDirectory 'fqgate'
+$owners = @(Get-NetTCPConnection -State Listen -LocalPort 17281 -ErrorAction Stop)
+if ($owners.Count -ne 1 -or $owners[0].LocalAddress -ne '127.0.0.1') { throw 'BLOCKED_LISTENER' }
+$ownerPid = $owners[0].OwningProcess
+$owner = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerPid" -ErrorAction Stop
+$identity = 'UNREADABLE'
+if ($owner.ExecutablePath) {
+  $identity = if ([IO.Path]::GetFullPath($owner.ExecutablePath) -ieq [IO.Path]::GetFullPath((Join-Path $fqgateDir 'current\fqgate.exe'))) { 'MATCH' } else { 'MISMATCH' }
+}
+[pscustomobject]@{ PID=$ownerPid; Identity=$identity }
+if ($identity -ne 'MATCH') { throw 'BLOCKED_IDENTITY_STOP' }
+# 然后在同一个已提升 PowerShell 中重跑上方 observer；不启动任何生产服务。
+```
+
+若 evidence 写入失败，停止，不宣布验收完成；保存 shell exit code 与有界错误分类，
+选择可写的现有 Git 外证据目录后重跑。若审计子进程异常退出，cleanup Gate 不能
+推定 PASS；只列出 `%TEMP%\fqgate-v2-audit-*` 是否残留，未确认无活跃审计前不要
+删除。任何允许的未来清理也不得指向安装目录。CI fixture 在新随机 temp 目录内
+写入惰性文本文件、模拟失败后删除自身 fixture，绝不向生产伪造 listener/fault。

@@ -88,4 +88,6 @@ jobs:
             node "$env:GITHUB_WORKSPACE\dist\cli\main.js" fqgate $command --apply --json
             if ($LASTEXITCODE -ne 2) { throw 'v2 observation accepted a mutation flag' }
           }
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate-v2-observation.ps1"
+          if ($LASTEXITCODE -ne 0) { throw 'v2 observation behavior fixtures failed' }
           exit 0

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { crc32 } from "node:zlib";
@@ -499,6 +499,41 @@ function archiveTransport(bytes: Buffer, moving = false) {
   };
 }
 describe("isolated audit cleanup", () => {
+  it.each(["success", "invalid ZIP", "moving metadata"])(
+    "leaves all six production-baseline fixture files unchanged on %s",
+    async (outcome) => {
+      const baseline = await mkdtemp(join(tmpdir(), "v2-baseline-fixture-"));
+      directories.push(baseline);
+      await mkdir(join(baseline, "current"));
+      await mkdir(join(baseline, "previous"));
+      const names = [
+        "current/fqgate.exe",
+        "previous/fqgate.exe",
+        "state.json",
+        "process.json",
+        "install.lock",
+        "transaction.json",
+      ];
+      for (const name of names) await writeFile(join(baseline, name), `inert fixture ${name}`);
+      const snapshot = async () =>
+        Promise.all(
+          names.map(async (name) => {
+            const bytes = await readFile(join(baseline, name));
+            return { name, bytes: bytes.length, sha256: sha256(bytes) };
+          }),
+        );
+      const before = await snapshot();
+      const operation = auditV2Archive(
+        archiveTransport(
+          zip(outcome === "invalid ZIP" ? [required[0]!] : required),
+          outcome === "moving metadata",
+        ),
+      );
+      if (outcome === "success") await operation;
+      else await expect(operation).rejects.toThrow();
+      expect(await snapshot()).toEqual(before);
+    },
+  );
   it("cleans up after successful audit and still blocks installation", async () => {
     const before = (await readdir(tmpdir())).filter((n) => n.startsWith("fqgate-v2-audit-"));
     expect(await auditV2Archive(archiveTransport(zip(required)))).toMatchObject({

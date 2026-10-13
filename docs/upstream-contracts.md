@@ -552,3 +552,34 @@ asset `FQGate-2.0.5-windows-x64.zip` is 29,236,811 bytes, SHA-256
 Its notes describe CNEquity/calendar, third-party Python installation and legacy
 source fallback improvements. None is exposed or executed by the Bridge.
 Publisher trust and actual v2 runtime acceptance remain blocked.
+
+### R1 signing-contract search — 2026-10-13
+
+Live refresh still selects 2.0.5. Examined immutable publisher sources:
+
+- [Release repository tree at 1b56f62](https://api.github.com/repos/fqgate/FQGate-releases/git/trees/1b56f62816b8347b871bc5a3f927148fae212eb9?recursive=1).
+- [README](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/README.md) and [operator guide](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/使用说明.md).
+- [Freshness envelope](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/freshness.json), [stable envelope](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/8/stable.json), [release envelope](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/2.0.5/release.json).
+- [Publication intent](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json), [reservation](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/reservation.json), [recovery approval](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/recovery-approval.json) and [in-flight publication](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/in-flight.json).
+- [Agent MCP Apps verifier](https://github.com/fqgate/FQGate-agent/blob/7ae0f216e5ca5d98a0808b7dae7b20da5d97f097/mcp-apps/scripts/verify-mcp-apps-release.mjs) and [release script](https://github.com/fqgate/FQGate-agent/blob/7ae0f216e5ca5d98a0808b7dae7b20da5d97f097/mcp-apps/scripts/release-mcp-apps.mjs).
+
+These sources do not establish a release signing algorithm/input specification,
+independently authenticated key root, rotation/revocation, or authenticated
+persistent sequence/expiry rules for FQGate application ZIPs. Publication intent
+is not a client verification contract; MCP Apps signatures concern different
+artifacts. Observed decoded payload bytes/hash links are not proof of the bytes
+actually signed. No release verifier is invented. The search scope is these
+public sources, not a claim that private or unpublished specifications cannot
+exist. Public response byte counts/hashes are retained outside Git in
+`D:\code\research\fqgate-v2-r1-evidence\upstream-receipt.json`.
+
+The decoded 2.0.5 publication intent additionally reports schemaVersion 2,
+`publicationMode: manual-recovery`, `automaticAllowed: false` and
+`requires_manual_upgrade: true`. Its transition simulation describes sequence
+high-water comparisons but delegates signature trust to its caller. It explicitly
+does not validate HTTP time, packaged validity, installation or real platform
+startup, and does not authorize manual installation or removal of client security
+state. This is an observed unauthenticated publisher report, not an implementation
+specification or permission to bypass Bridge gates. The same pinned
+[publication intent](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json)
+is the exact source; R1 preserves the stronger blocked boundary.

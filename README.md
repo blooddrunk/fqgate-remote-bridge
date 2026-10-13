@@ -14,7 +14,7 @@ Tunnel 把流量安全地送到 Bridge。
 ## 先看结论：现在能做什么
 
 当前项目仍在持续开发；Phase 0–6、Phase 7-A 与 Phase 7-B1 已关闭。
-B1-R1 已完成基于最新主线的集成和持久化决策加固验收，交付于待合并的 PR #14。
+B1-R1 已完成基于最新主线的集成和持久化决策加固验收，已在 PR #14 合并。
 Phase 7-B2 和 Phase 7-C 仍未授权。
 
 | 能力                   | 当前状态           | 说明                                                                   |
@@ -29,7 +29,7 @@ Phase 7-B2 和 Phase 7-C 仍未授权。
 | Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                                |
 | Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                            |
 | FQGate 1.0.4 更新      | CLOSED / 已验收    | 本机 Dashboard 资格验证、永久环境与真实远程回归                        |
-| FQGate 1.0.5 更新      | LIVE QUALIFIED     | `qualify-current` 仅本地显式 CLI；B1-R1 集成验收已通过，PR #14 待合并  |
+| FQGate 1.0.5 更新      | LIVE QUALIFIED     | `qualify-current` 仅本地显式 CLI；B1-R1 集成验收已通过，PR #14 已合并  |
 | Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare    |
 | Phase 6-B1/B2          | CLOSED / 已验收    | 有界、显式、stale-plan guarded 的 DNS/Tunnel/Access 修复工具           |
 | Phase 6-C / Phase 6    | CLOSED / 已验收    | 真实 no-op plan 与写凭据零常驻依赖审计                                 |

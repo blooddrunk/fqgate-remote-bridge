@@ -399,7 +399,7 @@ Follow `docs/roadmap.md`.
 - Phase 6: CLOSED
 - Phase 7-A: CLOSED under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; permanent-Windows P7A-01..P7A-13 and exact-commit CI passed
 - Phase 7-B1: CLOSED under `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`; deterministic policy and dry-run planning only, no actuator
-- Phase 7-B1-R1: CLOSED under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main integration and RecoveryStore decision hardening accepted in PR #14, no actuator; merge remains separate
+- Phase 7-B1-R1: CLOSED under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main integration and RecoveryStore decision hardening accepted in PR #14, no actuator; merged at `40ad339d863391e8a746252581adbcee600a3fa0`
 - Phase 7-B2/7-C: NOT AUTHORIZED; no automatic recovery actuation/startup integration or notifications yet
 - FQGate 1.0.5 external-update qualification: LIVE QUALIFIED; CLI-only implementation is integrated under
   `docs/tasks/fqgate-1-0-5-external-update-qualification.md`;
@@ -659,3 +659,9 @@ qualification/installation remains blocked on publisher trust, directory
 transaction and actual Windows contracts. No production update/restart is
 authorized. Read `docs/status/fqgate-v2-implementation-handoff.md`; do not turn
 an unauthenticated observation into FqgateRelease or qualification evidence.
+
+FQGate v2-R1 is authorized by Issue #16 for observation/test/evidence hardening
+only. The permanent Windows checkout is read-only in R1; no branch synchronization,
+process/service mutation, lock removal or v2 execution. Windows fixture behavior
+must run in CI; algorithm/key/rotation/revocation/anti-replay cannot be inferred
+from envelopes. PR #15 remains open while any mandatory full-v2 gate is blocked.

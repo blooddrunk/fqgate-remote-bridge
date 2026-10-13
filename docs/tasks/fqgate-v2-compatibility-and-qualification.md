@@ -22,3 +22,20 @@ must reject malformed/hash-inconsistent metadata, unsafe paths and redirects,
 archive attacks and ambiguous packages; structurally plausible signatures must
 never authorize installation. Existing policy, loopback, lifecycle/rollback,
 market gating and non-actuating supervisor tests remain mandatory.
+
+## v2-R1 remediation — 2026-10-13
+
+[Issue #16](https://github.com/blooddrunk/fqgate-remote-bridge/issues/16) is the
+R1 contract for PR #15. Extend observation automation using injected Windows
+fixtures, never production fault injection. Validate config with the existing
+application schema without constructing services. Snapshot the six fixed v1
+files before and after observation, including abnormal CLI completion. Project
+CLI output to an allowlist; never save raw output/error/config. A coherent old
+unauthenticated sequence remains BLOCKED for freshness/anti-replay, even if the
+observation/ZIP gates pass. No time-expiry policy may be invented for upstream.
+
+Required remaining gates: independently authenticated signing contract and trust
+root, persisted authenticated replay protection, directory crash recovery/rollback,
+isolated real v2 runtime and permanent-Windows listener/managed-path/previous
+acceptance. Green Windows fixtures do not substitute for those gates. PR #15
+must stay OPEN until the existing full qualification contract is satisfied.
