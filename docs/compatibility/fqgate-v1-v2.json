@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-10-12",
+  "upstreamCommit": "edb17da7fca0952534a65f4cfb98a62b6a017d43",
+  "baseCommit": "40ad339d863391e8a746252581adbcee600a3fa0",
+  "v2InstallAllowed": false,
+  "v2RuntimeQualified": false,
+  "sources": [
+    "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.4",
+    "https://github.com/fqgate/FQGate-releases/blob/edb17da7fca0952534a65f4cfb98a62b6a017d43/\u4f7f\u7528\u8bf4\u660e.md",
+    "https://github.com/fqgate/FQGate-releases/tree/edb17da7fca0952534a65f4cfb98a62b6a017d43/releases/v2",
+    "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.5"
+  ],
+  "rows": [
+    {
+      "id": "release-discovery",
+      "v1": "v1 stable schema 1 / 1.0.5",
+      "v2": "Historical 2.0.4 plus current 2.0.5 envelope chain",
+      "upstreamEvidence": "CONFIRMED",
+      "automatedEvidence": "PASS",
+      "windowsEvidence": "PASS_UNAUTHENTICATED_METADATA",
+      "limitation": "Structural observation only"
+    },
+    {
+      "id": "publisher-signature",
+      "v1": "Unsigned EXE, fixed source and hash",
+      "v2": "keyId/signature/signed, no authenticated keys or specification",
+      "upstreamEvidence": "BLOCKED",
+      "automatedEvidence": "FAIL_CLOSED",
+      "windowsEvidence": "BLOCKED_TRUST_ROOT",
+      "limitation": "No signature verification or trusted installation"
+    },
+    {
+      "id": "rollback-sequence",
+      "v1": "Existing local transaction and artifact evidence",
+      "v2": "refreshSequence 8 / release sequence 7",
+      "upstreamEvidence": "OBSERVED",
+      "automatedEvidence": "INSPECTOR_CONSISTENCY_ONLY_INERT_REPLAY_KERNEL_PASS",
+      "windowsEvidence": "NOT_EXECUTED",
+      "limitation": "Conservative monotonic kernel implemented; independently authenticated publisher/bootstrap/revocation/expiry integration missing"
+    },
+    {
+      "id": "windows-package",
+      "v1": "replaceExecutable EXE",
+      "v2": "replaceApplication ZIP, required FQGate.exe and fqgate-updater.exe",
+      "upstreamEvidence": "CONFIRMED",
+      "automatedEvidence": "PASS",
+      "windowsEvidence": "PASS_NONEXECUTING_2_0_5_AUDIT",
+      "limitation": "Audit only; no extraction/execution; 9 entries / 60709870 bytes; cleanup REMOVED"
+    },
+    {
+      "id": "zip-security",
+      "v1": "Not applicable",
+      "v2": "Bounded non-executing archive audit",
+      "upstreamEvidence": "OBSERVED",
+      "automatedEvidence": "PASS",
+      "windowsEvidence": "PASS_NONEXECUTING_2_0_5_AUDIT",
+      "limitation": "Does not prove directory installation safety; 9 entries / 60709870 bytes; cleanup REMOVED"
+    },
+    {
+      "id": "gitee-equivalence",
+      "v1": "Not registered",
+      "v2": "Declared qicuo mirror; upstream prefers Gitee",
+      "upstreamEvidence": "UNVERIFIED",
+      "automatedEvidence": "DENIED",
+      "windowsEvidence": "NOT_EXECUTED",
+      "limitation": "No new mirror trust adapter"
+    },
+    {
+      "id": "directory-transaction",
+      "v1": "Existing EXE staging/rollback",
+      "v2": "Full-directory staging/activation/rollback needed",
+      "upstreamEvidence": "UNCONFIRMED",
+      "automatedEvidence": "PASS_INERT_KERNEL_FAKE_AUTHORITY_RUNTIME",
+      "windowsEvidence": "PASS_INERT_KERNEL_NATIVE_V2_UNQUALIFIED",
+      "limitation": "75 fake-port directory/replay tests on Linux/native Windows; real issuer/bootstrap/extraction/process and power-loss acceptance missing"
+    },
+    {
+      "id": "updater-process-switch",
+      "v1": "Bridge managed process identity",
+      "v2": "fqgate-updater.exe required but transaction semantics unknown",
+      "upstreamEvidence": "UNCONFIRMED",
+      "automatedEvidence": "NOT_EXECUTED",
+      "windowsEvidence": "NOT_EXECUTED",
+      "limitation": "No binary execution"
+    },
+    {
+      "id": "version-process-listener",
+      "v1": "Existing --version and identity gates",
+      "v2": "v2 identity/arguments not qualified",
+      "upstreamEvidence": "UNCONFIRMED",
+      "automatedEvidence": "V1_REGRESSION_PASS",
+      "windowsEvidence": "BLOCKED",
+      "limitation": "No authorized isolated v2 Windows runtime"
+    },
+    {
+      "id": "health-session",
+      "v1": "Existing bounded envelope/health/QR",
+      "v2": "v2 wire contract unproven",
+      "upstreamEvidence": "UNCONFIRMED",
+      "automatedEvidence": "V1_REGRESSION_PASS",
+      "windowsEvidence": "BLOCKED",
+      "limitation": "No relaxed decoder"
+    },
+    {
+      "id": "openapi-lookup",
+      "v1": "Artifact-bound approved contract and fixed semantic probe",
+      "v2": "v2 runtime OpenAPI unobserved",
+      "upstreamEvidence": "UNCONFIRMED",
+      "automatedEvidence": "V2_DENIED",
+      "windowsEvidence": "BLOCKED",
+      "limitation": "No new fingerprint/permission approval"
+    },
+    {
+      "id": "queue-rate-timeout",
+      "v1": "5s Bridge lookup budget and bounded errors",
+      "v2": "Publisher describes concurrency 4, queue128, default30s and repeat limits",
+      "upstreamEvidence": "DOCUMENTED",
+      "automatedEvidence": "GENERIC_FAIL_CLOSED_PASS",
+      "windowsEvidence": "BLOCKED",
+      "limitation": "Wire codes and load semantics unproven; no load on production"
+    },
+    {
+      "id": "l2-degradation",
+      "v1": "L2 false does not invalidate healthy L1",
+      "v2": "Publisher describes retain L1 after L2 displacement",
+      "upstreamEvidence": "DOCUMENTED",
+      "automatedEvidence": "GENERIC_HEALTH_PASS",
+      "windowsEvidence": "BLOCKED",
+      "limitation": "Actual v2 runtime not demonstrated"
+    },
+    {
+      "id": "bridge-policy-loopback",
+      "v1": "Closed registry contexts and IPv4 loopback",
+      "v2": "No changes authorized",
+      "upstreamEvidence": "UNCHANGED",
+      "automatedEvidence": "REGRESSION_PASS",
+      "windowsEvidence": "PASS_V1_LOCAL_LOOPBACK_AND_MATRIX_REMOTE_BLOCKED",
+      "limitation": "Restored exact loopback and managed 1.0.5, local matrix 6/6; authenticated remote transport 3/22 with TLS/cert timeout"
+    },
+    {
+      "id": "supervisor",
+      "v1": "Planning only, no actuator",
+      "v2": "No changes authorized",
+      "upstreamEvidence": "UNCHANGED",
+      "automatedEvidence": "REGRESSION_PASS",
+      "windowsEvidence": "NOT_EXECUTED",
+      "limitation": "No recovery actuation or downtime manufacture"
+    }
+  ],
+  "latestCheckedDate": "2026-10-13",
+  "latestObserved": {
+    "version": "2.0.5",
+    "publishedAt": "2026-10-12T05:22:42Z",
+    "upstreamCommit": "1b56f62816b8347b871bc5a3f927148fae212eb9",
+    "refreshSequence": 9,
+    "sequence": 8,
+    "windowsBytes": 29236811,
+    "windowsSha256": "c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba",
+    "signatureVerified": false,
+    "installAllowed": false,
+    "runtimeQualified": false
+  },
+  "evidencePaths": {
+    "windowsObservation": "D:/code/research/fqgate-v2-observation-evidence.json",
+    "currentV1Runtime": "D:/code/research/fqgate-v2-current-runtime-evidence.json",
+    "deliveryReceipt": "D:/code/research/fqgate-v2-delivery-evidence.json"
+  },
+  "r1": {
+    "contract": "https://github.com/blooddrunk/fqgate-remote-bridge/issues/16",
+    "date": "2026-10-13",
+    "observationSchemaVersion": 2,
+    "windowsFixtureBehaviorCases": 40,
+    "unitIntegrationTests": 388,
+    "linuxPlaywrightTests": 15,
+    "permanentCheckoutCommit": "54d9e7a067d87407a63173b8084f177bbb395162",
+    "permanentCheckoutMutated": false,
+    "scriptSourceIdentity": "Repo-external sourceHashes in windows-observation-final.json; not a final-head production deployment",
+    "gates": {
+      "config": "PASS",
+      "fqgateIpv4Loopback": "BLOCKED",
+      "bridgeIpv4Loopback": "BLOCKED",
+      "managedProcessPath": "BLOCKED",
+      "previousPresent": "BLOCKED",
+      "transactionClear": "PASS",
+      "archiveAudit": "PASS",
+      "zipCleanup": "PASS",
+      "productionFixedFilesUnchanged": "PASS",
+      "currentV1Artifact": "PASS",
+      "publisherSignature": "BLOCKED",
+      "authenticatedPersistentAntiReplay": "BLOCKED",
+      "directoryRollback": "BLOCKED",
+      "realV2Runtime": "BLOCKED",
+      "productionUpgrade": "NOT_EXECUTED"
+    },
+    "evidenceDirectory": "D:/code/research/fqgate-v2-r1-evidence",
+    "publicationIntent": {
+      "source": "https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json",
+      "trust": "UNAUTHENTICATED_OBSERVATION",
+      "publicationMode": "manual-recovery",
+      "automaticAllowed": false,
+      "requiresManualUpgrade": true,
+      "limitation": "Publisher simulation does not authorize manual installation; no inferred client signing or replay specification"
+    },
+    "lateReadOnlyObservation": {
+      "checkedAt": "2026-10-13T01:55:09Z",
+      "listeners17281And17282": 0,
+      "earlierPid30284Present": false,
+      "healthOpenapiLookup": "UNAVAILABLE_OR_INVALID",
+      "earlierSuccessAt": "2026-10-13T01:43:46Z",
+      "cause": "NOT_ESTABLISHED_BY_READONLY_OBSERVATION",
+      "productionProcessMutation": false,
+      "limitation": "Earlier listener/runtime success is historical; no automatic recovery authorized"
+    }
+  },
+  "r2": {
+    "contract": "docs/tasks/fqgate-v2-safe-upgrade-engineering.md",
+    "authority": "User continuation: v2 engineering; upgrade only after prerequisite gates pass",
+    "kernelConnectedToProduction": false,
+    "defaultAuthority": "REFUSES_ACTIVATION_AND_RECOVERY",
+    "directoryKernelTests": 75,
+    "unitIntegrationTests": 463,
+    "linuxPlaywrightTests": 15,
+    "nativeWindowsInertKernel": "PASS_75_FAKE_AUTHORITY_RUNTIME_ONLY",
+    "permanentCheckoutCommit": "54d9e7a067d87407a63173b8084f177bbb395162",
+    "productionStartup": {
+      "version": "1.0.5",
+      "fqgatePid": 30084,
+      "bridgePid": 57956,
+      "listeners": "EXACT_IPV4_LOOPBACK",
+      "fqgateManagedPath": "MATCH",
+      "currentFileUnchanged": true,
+      "localPhase5C": "PASS_6_OF_6",
+      "previousPresent": false
+    },
+    "remote": {
+      "phase5C": "BLOCKED_3_OF_22_502_TIMEOUT",
+      "readOnlyCloudflarePlan": "PASS_46_OF_46_ZERO_DRIFT",
+      "connector": "RUNNING_HEALTHY",
+      "accessCertTransport": "BLOCKED_IPV4_TLS_TIMEOUT_BOTH_RESOLVED_ADDRESSES",
+      "systemDnsMatchesHttpsResolver": true,
+      "verificationBypass": false
+    },
+    "v2WindowsPeAuthenticode": {
+      "FQGate.exe": "NotSigned",
+      "fqgate-updater.exe": "NotSigned",
+      "probe": "non-executing two-PE quarantine inspection; removed",
+      "archiveSha256": "c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba"
+    },
+    "fullV2Gates": {
+      "publisherSignature": "BLOCKED",
+      "authenticatedBootstrapReplayPolicy": "BLOCKED",
+      "nativeDirectoryCrashPowerLossRollback": "BLOCKED",
+      "v2Runtime": "BLOCKED",
+      "productionUpgrade": "NOT_EXECUTED"
+    },
+    "issuerResearchOwner": "Agent; publisher request prepared; public sending requires explicit communication authorization",
+    "evidenceDirectory": "D:/code/research/fqgate-v2-r2-evidence"
+  },
+  "r3": {
+    "contract": "docs/tasks/fqgate-v2-operator-risk-upgrade.md",
+    "context": "Personal experimental project; no production users",
+    "signatureVerified": false,
+    "publisherTrust": "UNVERIFIED_OPERATOR_RISK_ACCEPTED",
+    "manualAppUpgrade": "PASS_2_0_5_INSTALLED_AND_HELD",
+    "fullRuntimeQualified": false,
+    "currentExeSha256": "d0a104f6d25b98b971999a585080ccbe0c9bc9470ca86a602d937f6d23816847",
+    "currentExeBytes": 53590016,
+    "sourceCount": 2,
+    "connectedSourceCount": 1,
+    "selectedSession": "PASS_CONNECTED_SAVED_LOGIN_AVAILABLE",
+    "canonicalLookup": "PASS_HTTP_200_CODE_0_ONE_EXACT_MATCH",
+    "legacyAliases": "DISCONNECTED_OTHER_SOURCE_409_CODE_3001",
+    "actualOpenapiVersion": "2.0",
+    "bridgeAdapter": "BLOCKED_V1_ONLY_RANGE_AND_CONTRACT",
+    "compatibilityRangeExpanded": false,
+    "automaticRollbackAfterProbe": false,
+    "v1Retention": "TEMPORARY_ONLY_UNTIL_VALIDATION",
+    "remaining": [
+      "SIGNED_PUBLISHER_TRUST",
+      "AUTHENTICATED_REPLAY",
+      "NATIVE_POWER_LOSS_ROLLBACK",
+      "QUEUE_L2_QUALIFICATION",
+      "BRIDGE_V2_ADAPTER",
+      "REAL_REMOTE_ACCEPTANCE"
+    ],
+    "evidenceDirectory": "D:/code/research/fqgate-v2-r3-evidence"
+  }
+}

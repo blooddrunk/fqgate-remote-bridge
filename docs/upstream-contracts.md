@@ -489,3 +489,115 @@ remote regression gates on 2026-09-29. Design and closed task:
 `docs/plans/post-phase-5-fqgate-1-0-4-local-qualification.md` and
 `docs/tasks/post-phase-5-fqgate-1-0-4-dashboard-qualification.md`.
 Final evidence: `docs/status/post-phase-5-fqgate-1-0-4-implementation-handoff.md`.
+
+## FQGate v2 observation — 2026-10-12
+
+Latest GitHub stable is `fqgate-v2.0.4`, published `2026-10-11T05:05:34Z`.
+The v1 `releases/stable.json` still declares 1.0.5. Independent v2 metadata
+at upstream commit `edb17da7fca0952534a65f4cfb98a62b6a017d43` declares
+refreshSequence 8, stable sequence 7 and release 2.0.4. Earlier pointers use
+`update-release-signing-v1`; current pointers/releases use
+`update-release-signing-v2`, freshness uses `update-freshness-signing-v2`.
+
+Observed envelopes contain `keyId`, `signature`, `signed`. Both latter fields
+use unpadded base64url; signature decodes to 64 bytes, signed decodes to UTF-8
+JSON. No published algorithm, authenticated public key distribution, rotation,
+revocation or exact signing/canonicalization specification was found in the
+release repository or the current agent repository. A 64-byte signature is not
+proof of Ed25519. Agent MCP Apps Ed25519 tooling concerns a separate artifact;
+its keys cannot establish FQGate executable release trust.
+
+Freshness claims a sequence-specific stable path and SHA-256 of its exact
+**envelope bytes**. Stable claims a version-specific release path and SHA-256
+of its envelope bytes. Release declares artifact bytes/hash/URLs/ZIP layout.
+Observed payload JSON is compact and sorted; inspection verifies no signature
+and does not reserialize payloads for cryptographic verification. Sequence
+consistency within one observation does not prevent replay; authenticated
+persistent high-water marks and equivocation/freshness policy are unimplemented.
+
+Windows ZIP: `FQGate-2.0.4-windows-x64.zip`, 28,455,842 bytes,
+SHA-256 `a075ec17e6c0644c7a4f02f06979afcfcdfb8f9455f2237787260f2d93ac1179`.
+GitHub asset digest agrees with the release claim. installMode is
+`replaceApplication`, required root entries are `FQGate.exe` and
+`fqgate-updater.exe`. Official instructions require retaining the full directory.
+Updater process-switch, crash and rollback semantics are undocumented here and
+not executed. This package cannot use v1 replaceExecutable.
+
+Gitee URLs are present at `qicuo/fqgate-releases`; upstream documents Gitee-first
+checks with GitHub fallback. Bridge has not authenticated mirror equivalence
+and registers no Gitee adapter. ZIP audit permits only the fixed GitHub URL
+and one redirect to `release-assets.githubusercontent.com`.
+
+Release notes document per-source concurrency 4, queue 128, shared queue/query
+time budget (default 30s), spacing 50ms and sustained same-content limits across
+5/10/20s windows. L2 displacement can retain L1 connectivity. These are publisher
+claims, not verified numeric wire codes or Bridge runtime contracts. Bridge's
+existing five-second lookup budget and deny-by-default operation registry remain
+unchanged. No v2 live OpenAPI/session/lookup compatibility evidence is admitted.
+
+Machine-readable distinctions and evidence: `docs/compatibility/fqgate-v1-v2.json`.
+Task/design/handoff: `docs/tasks/fqgate-v2-compatibility-and-qualification.md`,
+`docs/plans/fqgate-v2-observation-and-qualification.md`,
+`docs/status/fqgate-v2-implementation-handoff.md`.
+
+### Latest-source refresh — 2026-10-13
+
+Latest official GitHub stable is now `fqgate-v2.0.5`, published
+`2026-10-12T05:22:42Z`; the prior 2.0.4 observations are historical, not rewritten.
+Upstream snapshot `1b56f62816b8347b871bc5a3f927148fae212eb9` declares freshness
+sequence 9 and release sequence 8. Envelope schema/key IDs, required Windows
+entries and replaceApplication mode match the observed 2.0.4 layout. Windows
+asset `FQGate-2.0.5-windows-x64.zip` is 29,236,811 bytes, SHA-256
+`c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba`.
+Its notes describe CNEquity/calendar, third-party Python installation and legacy
+source fallback improvements. None is exposed or executed by the Bridge.
+Publisher trust and actual v2 runtime acceptance remain blocked.
+
+### R1 signing-contract search — 2026-10-13
+
+Live refresh still selects 2.0.5. Examined immutable publisher sources:
+
+- [Release repository tree at 1b56f62](https://api.github.com/repos/fqgate/FQGate-releases/git/trees/1b56f62816b8347b871bc5a3f927148fae212eb9?recursive=1).
+- [README](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/README.md) and [operator guide](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/使用说明.md).
+- [Freshness envelope](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/freshness.json), [stable envelope](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/8/stable.json), [release envelope](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/2.0.5/release.json).
+- [Publication intent](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json), [reservation](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/reservation.json), [recovery approval](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/recovery-approval.json) and [in-flight publication](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/in-flight.json).
+- [Agent MCP Apps verifier](https://github.com/fqgate/FQGate-agent/blob/7ae0f216e5ca5d98a0808b7dae7b20da5d97f097/mcp-apps/scripts/verify-mcp-apps-release.mjs) and [release script](https://github.com/fqgate/FQGate-agent/blob/7ae0f216e5ca5d98a0808b7dae7b20da5d97f097/mcp-apps/scripts/release-mcp-apps.mjs).
+
+These sources do not establish a release signing algorithm/input specification,
+independently authenticated key root, rotation/revocation, or authenticated
+persistent sequence/expiry rules for FQGate application ZIPs. Publication intent
+is not a client verification contract; MCP Apps signatures concern different
+artifacts. Observed decoded payload bytes/hash links are not proof of the bytes
+actually signed. No release verifier is invented. The search scope is these
+public sources, not a claim that private or unpublished specifications cannot
+exist. Public response byte counts/hashes are retained outside Git in
+`D:\code\research\fqgate-v2-r1-evidence\upstream-receipt.json`.
+
+The decoded 2.0.5 publication intent additionally reports schemaVersion 2,
+`publicationMode: manual-recovery`, `automaticAllowed: false` and
+`requires_manual_upgrade: true`. Its transition simulation describes sequence
+high-water comparisons but delegates signature trust to its caller. It explicitly
+does not validate HTTP time, packaged validity, installation or real platform
+startup, and does not authorize manual installation or removal of client security
+state. This is an observed unauthenticated publisher report, not an implementation
+specification or permission to bypass Bridge gates. The same pinned
+[publication intent](https://github.com/fqgate/FQGate-releases/blob/1b56f62816b8347b871bc5a3f927148fae212eb9/releases/v2/publications/2.0.5/intent.json)
+is the exact source; R1 preserves the stronger blocked boundary.
+
+### R2 expanded public search
+
+Publisher public org inventory contains FQGate-releases, FQGate-agent and
+fqgate.github.io. The first two pinned R1 heads remain unchanged. Examined
+[official site index](https://github.com/fqgate/fqgate.github.io/blob/c23706cedf9a70584abfafa79f8486900af9e2c5/index.html)
+and [static API document](https://github.com/fqgate/fqgate.github.io/blob/c23706cedf9a70584abfafa79f8486900af9e2c5/api/openapi.json).
+The static document declares OpenAPI 3.1.0 / application version 0.1.2, and has
+required health/QR/lookup paths. It is historical static reference, not a running
+2.0.5 census or release signing/trust specification. Current v2 signature and
+qualified runtime outputs therefore remain false. Research is the agent's task;
+operator key guessing/manual attestation cannot close those gates.
+
+The R2 remote diagnosis also uses the official, fixed GET-only
+[List Cloudflare Tunnel connections API](https://developers.cloudflare.com/api/resources/zero_trust/subresources/tunnels/subresources/cloudflared/subresources/connections/methods/get/)
+with the existing Tunnel Read credential. This diagnostic is external tooling,
+not a new Bridge/Cloudflare proxy or a mutation method. Evidence projects counts/
+architecture/status only; no raw API replies or origin IPs are persisted.

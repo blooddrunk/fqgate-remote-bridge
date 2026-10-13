@@ -399,7 +399,7 @@ Follow `docs/roadmap.md`.
 - Phase 6: CLOSED
 - Phase 7-A: CLOSED under `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`; permanent-Windows P7A-01..P7A-13 and exact-commit CI passed
 - Phase 7-B1: CLOSED under `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`; deterministic policy and dry-run planning only, no actuator
-- Phase 7-B1-R1: CLOSED under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main integration and RecoveryStore decision hardening accepted in PR #14, no actuator; merge remains separate
+- Phase 7-B1-R1: CLOSED under `docs/tasks/phase-7-b1-r1-integration-hardening.md`; latest-main integration and RecoveryStore decision hardening accepted in PR #14, no actuator; merged at `40ad339d863391e8a746252581adbcee600a3fa0`
 - Phase 7-B2/7-C: NOT AUTHORIZED; no automatic recovery actuation/startup integration or notifications yet
 - FQGate 1.0.5 external-update qualification: LIVE QUALIFIED; CLI-only implementation is integrated under
   `docs/tasks/fqgate-1-0-5-external-update-qualification.md`;
@@ -650,3 +650,45 @@ contains exactly the lookup and its own docs route. The final permanent-Windows,
 real service-token, and exact-commit CI evidence passed on 2026-09-21.
 See `docs/status/phase-5-c-implementation-handoff.md` and
 `docs/operations/windows-phase-5-c-acceptance.md` for the closure evidence.
+
+## FQGate v2 compatibility investigation
+
+The task at `docs/tasks/fqgate-v2-compatibility-and-qualification.md` permits
+independent read-only discovery and non-executing ZIP audit. Full v2 runtime
+qualification/installation remains blocked on publisher trust, directory
+transaction and actual Windows contracts. No production update/restart is
+authorized. Read `docs/status/fqgate-v2-implementation-handoff.md`; do not turn
+an unauthenticated observation into FqgateRelease or qualification evidence.
+
+FQGate v2-R1 is authorized by Issue #16 for observation/test/evidence hardening
+only. The permanent Windows checkout is read-only in R1; no branch synchronization,
+process/service mutation, lock removal or v2 execution. Windows fixture behavior
+must run in CI; algorithm/key/rotation/revocation/anti-replay cannot be inferred
+from envelopes. PR #15 remains open while any mandatory full-v2 gate is blocked.
+
+The user's 2026-10-13 continuation authorizes v2 safety engineering before a
+prerequisite-gated upgrade/start. Read
+`docs/tasks/fqgate-v2-safe-upgrade-engineering.md` and
+`docs/plans/fqgate-v2-directory-transaction.md`. R2 may implement/test a separate
+unconnected directory/replay kernel using fake ports and inert files. It does not
+establish publisher trust, enable a native v2 adapter or authorize execution before
+all prerequisite gates pass. Do not transfer issuer research to the operator.
+
+## FQGate v2 R3 operator risk acceptance
+
+The user's latest 2026-10-13 direction explicitly accepts missing publisher
+signature evidence for a manually controlled v2 upgrade attempt. Follow
+`docs/tasks/fqgate-v2-operator-risk-upgrade.md`. This overrides the earlier
+signature prerequisite for that attempt; it grants no signature PASS, generic
+installer bypass, fake authority/bootstrap, compatibility-range expansion,
+Cloudflare writes, OS feature/reboot changes or automatic recovery authority.
+Stage the exact official artifact, use an independent Windows VM/Sandbox without
+production credentials, prove real runtime/data/rollback safety before activation,
+and preserve v1/checkout/operator state. Original full-qualified PR merge gates
+remain blocked. Do not ask the user to approve the signature exception again.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

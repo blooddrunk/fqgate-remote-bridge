@@ -28,7 +28,7 @@ task package 和安全文档为准。
 - Phase 7-A：**CLOSED**；只读 supervisor observation + bounded event journal 已验收。
   Phase 7-B1 本机 recovery policy + dry-run plan 已闭环，任务见
   `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`。7-B2 自动恢复和 7-C 通知均未授权。
-- Phase 7-B1-R1：**CLOSED**；集成验收已通过，PR #14 待合并。1.0.5/B1 从最新主线重建，RecoveryStore
+- Phase 7-B1-R1：**CLOSED**；集成验收已通过，PR #14 已合并。1.0.5/B1 从最新主线重建，RecoveryStore
   严格校验 decision/action 与历史语义；没有增加 actuator。详见
   `docs/tasks/phase-7-b1-r1-integration-hardening.md` 与
   `docs/status/phase-7-b1-r1-implementation-handoff.md`。
@@ -253,3 +253,10 @@ Phase 7-B1 本机只读决策与计划已闭环；Phase 7-B2 自动恢复、Phas
 RecoveryStore 持久化格式只接受 evaluator 可产生的 decision/reason/action 组合；
 损坏记录会被拒绝并产生无 action 的 `forbidden/history_invalid` 结果，不会调用 actuator。
 `bridge.restart`、`fqgate.restart` 和 `tunnel.restart` 始终只是计划标识。
+
+FQGate v2 investigation is a separate observation-only track. Read
+`docs/tasks/fqgate-v2-compatibility-and-qualification.md` and
+`docs/status/fqgate-v2-implementation-handoff.md` before changing its boundary.
+`inspect-v2`/`audit-v2` report unauthenticated metadata and never qualify/install.
+Production changes, supported-range expansion and Phase 7-B2/7-C remain outside
+this authorization.

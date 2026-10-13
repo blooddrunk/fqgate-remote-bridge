@@ -672,3 +672,56 @@ reasons must agree across the full decision set. If persisted state is malformed
 the CLI returns action-free `forbidden/history_invalid` decisions and does not
 write the rejected state or call any actuator. `history_invalid` is not accepted
 as a persisted evaluator decision.
+
+## FQGate v2 inspection is not publisher verification
+
+Hash-linked envelopes, GitHub asset digests and plausible 64-byte signatures do
+not establish publisher signing trust. Without authenticated keys and signing
+specification, v2 installation and runtime qualification remain blocked.
+No supportedRange/validatedVersions expansion or v1 lifecycle ZIP fallback.
+Inspection accepts bounded fixed-source GETs with metadata redirects denied;
+archive redirects allow one fixed GitHub CDN hop and enforce exact size/hash.
+ZIP contents are never materialized: bounded lazy streams reject unsafe Windows
+names, duplicate/case aliases, file-parent collisions, symlinks/special files,
+encryption, unsupported compression, overlap/header mismatch, CRC/size mismatch,
+count/size overflows, missing updater and invalid required PE headers. A passing
+structural audit does not verify updater identity, signatures or rollback.
+Temporary archive cleanup is required before a successful report. Crash leftovers
+remain isolated untrusted ZIP files; no installation success marker is written.
+Full directory staging/activation/crash recovery/rollback are unimplemented and
+must be separately satisfied before any future v2 activation.
+
+R1 Windows observation validates configuration with the existing schema before
+resolving production paths, and compares six fixed production file snapshots
+before/after the CLI, including CLI failure. Evidence uses an allowlist projection,
+not raw CLI JSON. Missing/IPv6/wildcard/duplicate listeners, unreadable/mismatched
+process paths, missing previous, and uncleared transactions block acceptance.
+A previous file's presence is not verified rollback evidence. Historical coherent
+metadata cannot pass the independent freshness/anti-replay gate; the upstream
+expiry and authenticated persisted-sequence contract remains unresolved.
+
+R2's directory kernel cannot consume unauthenticated v2 inspection as activation
+proof. Default candidate and baseline authorities refuse activation/recovery.
+Trusted bootstrap is never inferred from a missing ledger; conservative counters,
+policy/version/tree identities and strict owner-exit booleans are enforced. Runtime
+rollback never resets authenticated high-water marks. Fixed directory slots,
+link/hardlink/repository guards and preserved failure locks constrain offline
+transactions. No native v2 adapter or permission/range override exists. Inert
+Windows test success is not real signed application, power-loss or session/data
+qualification. Non-executing two-PE Authenticode inspection found both unsigned
+and removed quarantine; it does not establish envelope trust.
+
+R3 records an explicit user exception for one manual 2.0.5 upgrade attempt despite
+unverified publisher signatures. `signatureVerified` remains false and the full
+signed qualification contract remains BLOCKED. Exception-only staging/runtime
+preparation is separate from R2 ReleaseAuthority and cannot initialize its trusted
+ledger or grant automatic/remote installation. Independent Windows isolation,
+real data-preserving rollback and exact native runtime identity remain required;
+no host-user trial, unknown process kill, policy/range widening or fabricated PASS.
+See `docs/tasks/fqgate-v2-operator-risk-upgrade.md`.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

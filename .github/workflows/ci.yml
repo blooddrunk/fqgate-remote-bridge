@@ -75,3 +75,19 @@ jobs:
         run: |
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-acceptance-credential-vault.ps1"
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\smoke-acceptance-credential-vault.ps1"
+
+      - name: Windows v2 observation boundary smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("$env:GITHUB_WORKSPACE\scripts\windows\fqgate-v2-observation.ps1", [ref]$tokens, [ref]$errors)
+          if ($errors.Count -ne 0) { throw 'v2 observation PowerShell parse failed' }
+          foreach ($command in @('inspect-v2', 'audit-v2')) {
+            node "$env:GITHUB_WORKSPACE\dist\cli\main.js" fqgate $command --apply --json
+            if ($LASTEXITCODE -ne 2) { throw 'v2 observation accepted a mutation flag' }
+          }
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate-v2-observation.ps1"
+          if ($LASTEXITCODE -ne 0) { throw 'v2 observation behavior fixtures failed' }
+          exit 0

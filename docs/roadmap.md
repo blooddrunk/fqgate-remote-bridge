@@ -25,9 +25,9 @@ This roadmap is ordered to reduce risk before Internet exposure. The repository 
 - Phase 6-C: **CLOSED** — live all-`in_sync` plan, credential-dependency audit and remote/local regression; executable contract in `docs/tasks/phase-6-c-live-closure-and-credential-retirement.md`
 - Phase 6: **CLOSED** — no provisioning credential required for normal runtime or acceptance
 - Phase 7-A: **CLOSED** — read-only supervisor observation and bounded event journal passed permanent-Windows P7A-01..P7A-13 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-a-supervisor-observation-and-event-journal.md`
-- FQGate 1.0.5 external-update qualification: **LIVE QUALIFIED / MERGE IN PROGRESS** — official artifact-bound CLI-only qualification passed permanent-Windows local/remote regressions; separate task in `docs/tasks/fqgate-1-0-5-external-update-qualification.md`
+- FQGate 1.0.5 external-update qualification: **LIVE QUALIFIED / INTEGRATED** — official artifact-bound CLI-only qualification passed permanent-Windows local/remote regressions; separate task in `docs/tasks/fqgate-1-0-5-external-update-qualification.md`
 - Phase 7-B1: **CLOSED** — deterministic bounded recovery policy and dry-run plan passed permanent-Windows P7B1-01..P7B1-15 acceptance and exact-commit Ubuntu/Windows CI; executable contract in `docs/tasks/phase-7-b1-bounded-recovery-policy-and-plan.md`
-- Phase 7-B1-R1: **CLOSED** — latest-main 1.0.5/B1 integration, persisted decision hardening, permanent-Windows acceptance and exact-commit CI passed; PR #14 awaits merge; adds no actuator
+- Phase 7-B1-R1: **CLOSED** — latest-main 1.0.5/B1 integration, persisted decision hardening, permanent-Windows acceptance and exact-commit CI passed; PR #14 merged at `40ad339d863391e8a746252581adbcee600a3fa0`; adds no actuator
 - Phase 7-B2/7-C: **NOT AUTHORIZED** — recovery actuation/startup integration and notifications require separate reviewed tasks
 
 Current deployed topology remains:
@@ -528,7 +528,7 @@ evidence referenced by `docs/status/phase-7-b1-implementation-handoff.md`.
 implementation have been reconstructed on current `origin/main` in PR #14.
 RecoveryStore validates persisted decision/reason/action/history combinations
 and fails closed on corruption. Permanent-Windows P7B1-01..P7B1-15 and exact
-final-commit Ubuntu/Windows CI passed. The PR remains open pending merge.
+final-commit Ubuntu/Windows CI passed. PR #14 merged at `40ad339d863391e8a746252581adbcee600a3fa0`.
 See `docs/tasks/phase-7-b1-r1-integration-hardening.md` and
 `docs/status/phase-7-b1-r1-implementation-handoff.md` for the contract and evidence.
 
@@ -563,7 +563,7 @@ Phase 5, the FQGate 1.0.2/1.0.4 qualification tracks, all of Phase 6, Phase
 7-A and Phase 7-B1 are closed. FQGate 1.0.5 passed its permanent-Windows
 qualification and remote regressions; its CLI-only path and the B1 planning
 layer have been integrated and accepted in PR #14 from current `origin/main`.
-The PR awaits merge. The
+PR #14 is merged. The
 recovery store requires explicit, evaluator-reachable decision semantics.
 Phase 7-B2 and Phase 7-C remain unauthorized.
 
@@ -610,6 +610,38 @@ command. Phase 6-B2 now has its own narrow authorization in
 `docs/tasks/phase-6-b2-bounded-tunnel-access-provisioning.md`; that authorization
 was followed by a separate Phase 6-C task. Phase 6 is now closed. Phase 7-A observation is
 closed and Phase 7-B1 planning has also closed. R1 integration and persisted
-decision hardening are accepted in PR #14, pending merge. Phase 7-B2
+decision hardening are accepted and merged in PR #14. Phase 7-B2
 actuation, Phase 7-C notifications and every other later capability remain
 unauthorized.
+
+## Separate FQGate v2 compatibility investigation — 2026-10-12
+
+PR #14 is merged at `40ad339d863391e8a746252581adbcee600a3fa0`.
+The v2 task delivers local read-only unauthenticated discovery and non-executing
+ZIP audit only. Full v2 qualification/activation remains BLOCKED; this does not
+start Phase 7-B2, 7-C or automatic updates. See
+`docs/tasks/fqgate-v2-compatibility-and-qualification.md` and its handoff.
+
+FQGate v2-R1 (Issue #16 / PR #15) hardens read-only observation, fixture-driven
+Windows gates and redacted evidence. Full v2 remains BLOCKED on publisher trust,
+authenticated replay defense, directory transaction, isolated runtime and permanent
+Windows acceptance. No later phase or production availability repair is authorized.
+
+FQGate v2 R2 safety engineering is separately authorized by the user's
+prerequisite-gated upgrade/start continuation. An unconnected directory/replay
+kernel passes inert Linux/native-Windows fixtures; default trust authority denies
+real activation and recovery. Known v1 baseline startup/local diagnosis passed,
+but real remote transport and full v2 issuer/bootstrap/native-runtime/directory
+qualification remain blocked. See `docs/status/fqgate-v2-safe-upgrade-engineering-handoff.md`.
+
+FQGate v2 R3: the user accepts absent signing evidence for one manual upgrade
+attempt. Prepare the exact 2.0.5 package and independent Windows environment;
+actual runtime/rollback/compatibility remain prerequisites. This is not signed
+qualification, PR merge closure, range expansion or Phase 7-B2/7-C authority.
+Contract: `docs/tasks/fqgate-v2-operator-risk-upgrade.md`.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

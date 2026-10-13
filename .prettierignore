@@ -5,3 +5,10 @@ coverage/
 pnpm-lock.yaml
 src/routeTree.gen.ts
 docs/status/post-phase-5-fqgate-1-0-4-closure-attempt.operator-before-sync.md
+# Exact-byte upstream envelope fixtures are linked by SHA-256.
+tests/fixtures/fqgate-v2/freshness.json
+tests/fixtures/fqgate-v2/stable.json
+tests/fixtures/fqgate-v2/release.json
+tests/fixtures/fqgate-v2/latest/freshness.json
+tests/fixtures/fqgate-v2/latest/stable.json
+tests/fixtures/fqgate-v2/latest/release.json

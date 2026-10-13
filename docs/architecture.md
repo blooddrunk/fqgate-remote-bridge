@@ -606,3 +606,39 @@ action only for `attempt_limit`. Decisions must match the persisted component
 state and counters. `history_invalid` is returned only as a fail-closed response
 when stored data is rejected; it is never written back as a decision. No
 candidate identifier is executed.
+
+## Independent FQGate v2 observation
+
+`fqgate inspect-v2` and `fqgate audit-v2` invoke independent release inspection
+before application/configuration construction. No lifecycle, process controller,
+update service, operation registry, Dashboard or supervisor consumes their output.
+Reports carry `UNAUTHENTICATED_OBSERVATION`, `signatureVerified: false`,
+`qualification: BLOCKED`, `installAllowed: false`, `runtimeQualified: false`.
+Exit 1 indicates blocked qualification even when observation succeeds.
+ZIP audit creates/removes an OS temporary directory and never extracts or executes.
+No FqgateRelease or qualification evidence can be returned from these paths.
+See `docs/plans/fqgate-v2-observation-and-qualification.md` for boundaries and
+`docs/status/fqgate-v2-implementation-handoff.md` for verified scope and blockers.
+
+## Unconnected v2 directory/replay kernel
+
+The R2 domain under `src/fqgate/v2` is separate from v1 lifecycle and application
+construction. Trusted candidate/baseline authority and runtime ports are required;
+missing authority fails closed, and no production adapter/CLI/HTTP route is
+connected. Inert fake-port tests cover full directory renames, journal/recovery,
+strict high-water state and rollback. Native issuer/bootstrap/extraction/profile/
+power-loss/runtime qualification are still prerequisites to any future wiring.
+See `docs/plans/fqgate-v2-directory-transaction.md` for the explicit boundary.
+
+R3's user-approved unsigned-risk manual attempt is a separate operator workflow,
+not an authenticated ReleaseAuthority adapter or v1 installer fallback. Staging
+an exact audited ZIP does not enable execution/installation APIs. A Windows
+VM/Sandbox must separate candidate profile data and production processes before
+runtime qualification; production activation needs reviewed native layout,
+compatibility and rollback proof. See `docs/tasks/fqgate-v2-operator-risk-upgrade.md`.
+
+R3 context correction: the user clarified this is a personal experimental project
+with no production users. A VM/Sandbox is optional. Proceed with the authorized
+exact-package local trial while preserving v1/config/profile data; record shared
+host/user execution and retain unverified signature status. No feature/reboot or
+permissions change is implied.

@@ -14,7 +14,7 @@ Tunnel 把流量安全地送到 Bridge。
 ## 先看结论：现在能做什么
 
 当前项目仍在持续开发；Phase 0–6、Phase 7-A 与 Phase 7-B1 已关闭。
-B1-R1 已完成基于最新主线的集成和持久化决策加固验收，交付于待合并的 PR #14。
+B1-R1 已完成基于最新主线的集成和持久化决策加固验收，已在 PR #14 合并。
 Phase 7-B2 和 Phase 7-C 仍未授权。
 
 | 能力                   | 当前状态           | 说明                                                                   |
@@ -29,7 +29,7 @@ Phase 7-B2 和 Phase 7-C 仍未授权。
 | Phase 5-C machine docs | CLOSED / 已验收    | registry-derived 文档与最终远程闭包通过                                |
 | Post-Phase-5 兼容维护  | CLOSED / 已验收    | 1.0.2 候选资格、lookup 证据化与永久环境刷新                            |
 | FQGate 1.0.4 更新      | CLOSED / 已验收    | 本机 Dashboard 资格验证、永久环境与真实远程回归                        |
-| FQGate 1.0.5 更新      | LIVE QUALIFIED     | `qualify-current` 仅本地显式 CLI；B1-R1 集成验收已通过，PR #14 待合并  |
+| FQGate 1.0.5 更新      | LIVE QUALIFIED     | `qualify-current` 仅本地显式 CLI；B1-R1 集成验收已通过，PR #14 已合并  |
 | Phase 6-A Cloudflare   | CLOSED / 已验收    | 只读 discovery、reconciliation、secret-free plan；不修改 Cloudflare    |
 | Phase 6-B1/B2          | CLOSED / 已验收    | 有界、显式、stale-plan guarded 的 DNS/Tunnel/Access 修复工具           |
 | Phase 6-C / Phase 6    | CLOSED / 已验收    | 真实 no-op plan 与写凭据零常驻依赖审计                                 |
@@ -986,3 +986,25 @@ Phase 6-A 计划指纹，每次执行一项精确的 Tunnel ingress 或 Access �
 完整自动命令与仅有的人工认证边界见
 [Windows Phase 6-C 验收](docs/operations/windows-phase-6-c-acceptance.md)；结果见
 [实现交接](docs/status/phase-6-c-implementation-handoff.md)。
+
+### FQGate 2.x：只读调查，尚不能升级
+
+2026-10-13 复查的最新正式版为 2.0.5；已保留 2.0.4 历史快照，旧版 manifest 仍指向 1.0.5。
+Bridge 目前仅提供本机显式只读调查：
+
+```powershell
+node .\dist\cli\main.js fqgate inspect-v2 --json
+node .\dist\cli\main.js fqgate audit-v2 --json
+```
+
+第二条下载到临时目录进行非执行式 ZIP 检查并清理；两条均以 exit 1 和
+`qualification: BLOCKED` 表示没有安装资格。它们不升级、不运行 updater，
+也不批准 v2 行情能力。不要修改 supportedRange、复制单个 EXE 或使用
+`qualify-current` 绕过门禁。签名信任根、目录事务及真实 v2 Windows 合同尚未建立。
+详见 [验收/操作边界](docs/operations/windows-fqgate-v2-qualification.md)。
+
+2026-10-13 R3: user-approved personal-experiment manual installation of official
+FQGate 2.0.5 completed with signatures explicitly unverified; real canonical
+login/search passed. The Bridge's v1 compatibility/permissions remain unchanged,
+so App upgrade is not Bridge v2 qualification or PR merge closure. See
+`docs/status/fqgate-v2-operator-risk-upgrade-handoff.md`.
