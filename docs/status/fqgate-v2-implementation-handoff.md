@@ -197,7 +197,7 @@ runs the same cases with pwsh. The schema helper imports only its own repository
 bound in `D:\code\research\fqgate-v2-r1-evidence\delivery.json`, after final CI;
 this document does not predeclare that future CI result.
 
-Current permanent Windows observations, collected using the final script source
+Earlier permanent Windows observations (01:43 UTC), collected using the R1 script source
 copied outside Git and the existing checkout/CLI at `54d9e7a`:
 
 | Gate                                                                 | Result       | Actual evidence                                                                                                    |
@@ -235,3 +235,26 @@ approval, and issuer trust requires publisher evidence rather than operator
 attestation. v2 directory/runtime work has no safe executable command in R1.
 PR #15 remains OPEN while any mandatory gate is unresolved. No Phase 7-B2/7-C,
 automatic update, permission expansion, Cloudflare write or v1 transaction change.
+
+### Final read-only availability refresh — 2026-10-13 01:55 UTC
+
+Production state changed during delivery. The last native observation (01:50 UTC)
+found neither 17281 nor 17282. A further explicit all-listeners CIM check at
+01:55 UTC confirmed zero expected listeners and that PID 30284 no longer exists.
+The existing bounded health/OpenAPI/lookup diagnostic script now reports
+UNAVAILABLE_OR_INVALID for all three. Current availability and managed-process
+gates are **BLOCKED**. The preceding successful 01:43 results above are historical
+observations, not final acceptance. No cause of process exit has been established
+by these read-only checks, and no start/stop/restart/adoption was performed.
+
+Final archive/cleanup, config, transaction-clear, fixed-file invariance and
+unchanged permanent checkout gates still pass; current file remains official
+1.0.5. Missing previous and all full-v2 gates remain blocked. Earlier/current
+runtime receipts are both retained outside Git as
+`current-v1-runtime-earlier.json`, `current-v1-runtime.json`, and
+`late-runtime-state.json`; final listener evidence is
+`windows-observation-final.json`. The delivery receipt records their separate
+UTC timestamps. Runtime recovery requires separate explicit operator approval;
+R1 cannot manufacture availability. Re-run the runbook's observer and exact PID/
+listener checks after an independently approved recovery; do not clear state/locks
+or use v2 as a recovery shortcut.

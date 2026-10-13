@@ -118,3 +118,19 @@ if ($identity -ne 'MATCH') { throw 'BLOCKED_IDENTITY_STOP' }
 推定 PASS；只列出 `%TEMP%\fqgate-v2-audit-*` 是否残留，未确认无活跃审计前不要
 删除。任何允许的未来清理也不得指向安装目录。CI fixture 在新随机 temp 目录内
 写入惰性文本文件、模拟失败后删除自身 fixture，绝不向生产伪造 listener/fault。
+
+最后复核（2026-10-13 01:55 UTC）发现 17281 与 17282 均无监听，原 PID 30284
+已不存在。此前 17281/health/lookup PASS 是较早观测；当前 availability BLOCKED。
+用以下命令只读恢复证据采集，不能恢复服务：
+
+```powershell
+Get-NetTCPConnection -State Listen -ErrorAction Stop | Where-Object { $_.LocalPort -in @(17281,17282) } | Select LocalAddress,LocalPort,OwningProcess
+@(Get-CimInstance Win32_Process -Filter 'ProcessId=30284' -ErrorAction Stop).Count
+```
+
+当前预期无 listener 输出、PID count 0。不要固定用旧 PID 作为未来 owner；恢复后
+必须重新读取实际 owning PID，并按上方 identity procedure 判定。进程退出原因
+尚未由只读证据建立。本轮不得启动/重启 FQGate 或 Bridge；须另行批准基于 v1
+的恢复窗口，不得执行 v2、假造 previous、清 lock/state。停止可用性验收，保留
+earlier/current 两份 JSON 和 final listener receipt；获单独恢复授权并完成修复后
+重跑 observer，publisher/transaction/runtime 阻断仍不能因此解除。

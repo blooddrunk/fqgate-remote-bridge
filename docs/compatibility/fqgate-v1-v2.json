@@ -178,7 +178,7 @@
     "scriptSourceIdentity": "Repo-external sourceHashes in windows-observation-final.json; not a final-head production deployment",
     "gates": {
       "config": "PASS",
-      "fqgateIpv4Loopback": "PASS",
+      "fqgateIpv4Loopback": "BLOCKED",
       "bridgeIpv4Loopback": "BLOCKED",
       "managedProcessPath": "BLOCKED",
       "previousPresent": "BLOCKED",
@@ -201,6 +201,16 @@
       "automaticAllowed": false,
       "requiresManualUpgrade": true,
       "limitation": "Publisher simulation does not authorize manual installation; no inferred client signing or replay specification"
+    },
+    "lateReadOnlyObservation": {
+      "checkedAt": "2026-10-13T01:55:09Z",
+      "listeners17281And17282": 0,
+      "earlierPid30284Present": false,
+      "healthOpenapiLookup": "UNAVAILABLE_OR_INVALID",
+      "earlierSuccessAt": "2026-10-13T01:43:46Z",
+      "cause": "NOT_ESTABLISHED_BY_READONLY_OBSERVATION",
+      "productionProcessMutation": false,
+      "limitation": "Earlier listener/runtime success is historical; no automatic recovery authorized"
     }
   }
 }
