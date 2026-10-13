@@ -1,0 +1,232 @@
+# FQGate 2.0.5 read-only compatibility and recovery readiness
+
+Date: 2026-10-13. **Implementation verified; deployment and remote recovery OPEN.**
+Task: `docs/tasks/fqgate-2-0-5-readonly-compatibility.md`.
+Implementation PR: [#17](https://github.com/blooddrunk/fqgate-remote-bridge/pull/17),
+draft and unmerged. No Issue or planning-only PR was created.
+
+## Delivered behavior
+
+The existing six-digit `market.instruments.lookup` now selects an independent
+exact Windows 2.0.5 adapter when managed installation state selects v2. The
+original v1 adapter/qualification probe, global supportedRange/validatedVersions,
+registry, routes, human/admin/machine permissions and Access verifiers are
+preserved. Unknown v2 artifacts/versions do not inherit v1 qualification.
+
+The adapter verifies the full pinned nine-file payload, native recorded PID,
+executable path/creation time and sole IPv4 listener. It checks the actual
+canonical version/health and reviewed five-operation OpenAPI fingerprint,
+discovers exactly one connected ready tonghuashun source, independently checks
+that source's account snapshot, and sends fixed canonical search with a
+server-owned instance header. It rechecks source/worker identity, account,
+version, contract, process and payload before returning. Observed drift discards
+the result. It cannot prove an undetectable disconnect/reconnect between samples.
+
+The HTTP flow shares 5000 ms; both native identity subprocesses separately allow
+5000 ms, and filesystem scans have count/size limits. Search permits 64 KiB and
+16 items, validates envelope/row count/data state/coverage, and returns exact
+code matches only. It never retries or guesses a default source. v2's
+`instrumentId` is explicitly `market:code` (e.g. `XSHG:600000`); v1 identifiers
+are unchanged. No source/account selector or raw proxy is public.
+
+The existing inert directory hash scanner now accepts only the official root
+`.fqgate-plugin-package` directory; other hidden/nested names and links still
+fail. The transaction/authority kernel remains unconnected to an installer.
+New fixtures prove profile/data separation and repeat-safe failed recovery.
+The remote matrix now emits bounded `REQUEST_TIMEOUT` / `REMOTE_HTTP_502`
+classification without exception text, headers, credentials or raw bodies.
+
+Primary files:
+
+- `src/fqgate/market/v2.ts`, `v2-identity.ts`, `lookup.ts`, `contract.ts`;
+- `src/app/runtime.ts`, `src/fqgate/v2/directory-transaction.ts`;
+- `tests/fqgate-v2-lookup.test.ts`, `fqgate-v2-identity.test.ts`,
+  `fqgate-v2-transaction.test.ts`;
+- `scripts/windows/fqgate205-readonly-probe.mjs`, `phase5c-matrix.mjs`;
+- AGENTS, README, roadmap, architecture, security, upstream contracts and agent guide.
+
+## Source and code verification
+
+Fetched main was and remains `b7a497ec020d5f4c78c87560264488a67169b5a9`.
+PR #15 is merged at `30de05d5694648ce2dc82ca71c6b9e478ff5817e`; #12/#13 and
+Issue #16 are closed. #15's merge CI passed; latest main CI
+[38381910281](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38381910281)
+failed only formatting of AGENTS/roadmap. This implementation fixes those files.
+
+Runtime implementation `029776bdcbf73a395da3f145e314637660dea651` passed all
+seven requested Linux checks, 29 suites / 530 tests and 15 browser tests. The
+permanent Windows checkout passed frozen install, pinned pnpm 11.23.0,
+typecheck, lint, 530 tests, build:cli, format and 15 browser tests. Full build
+on that installed Windows checkout is NOT_EXECUTED pending the Bridge-only
+deployment permission; the exact implementation Windows CI full build passed.
+Initial tooling/version failures and the hidden-directory rejection are retained
+as separate failed-attempt receipts, excluded from PASS totals.
+
+The runtime implementation passed Ubuntu/Windows
+[CI 38384495297](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38384495297).
+The subsequent matrix-classification commit
+`0d8d387f6e5a7bd94d600800f0580a2ed9a94f33` passed Ubuntu/Windows
+[CI 38386272352](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38386272352).
+The final documentation commit must also pass exact-head CI. Its SHA/job URLs
+are recorded in the external delivery receipt, avoiding a self-referential
+commit/CI claim in this file.
+
+v1 deterministic regressions passed on Linux/native Windows: Phase 5-A 22,
+5-B 44, 5-C 5, lifecycle 15, health 9, candidate 9 and config/compatibility 18
+(122 tests in these named suites). The full remaining baseline also passed.
+A real v1 runtime switch was NOT_EXECUTED to preserve the running 2.0.5.
+
+## Actual Windows local results
+
+The existing Bridge PID 57956 was never restarted. FQGate PID 30424 remains
+on 127.0.0.1:17281; cloudflared service PID 6908 remains running.
+The old Bridge's precise build SHA is unavailable; checkout SHA is not used as
+proof of the already-running bundle's identity.
+
+The standalone new adapter passed an exact real query with unchanged native
+identity (reported 5716 ms includes an extra post-query identity proof). The
+actual compiled production `getBridgeHttpHandler` also passed all six checks
+in-process against real FQGate, with no mocks/listener replacement. These are
+separate results from the still-old 17282 HTTP socket matrix:
+
+| Gate                          | Expected                 | Existing 17282 socket          | New production handler, in-process |
+| ----------------------------- | ------------------------ | ------------------------------ | ---------------------------------- |
+| P5C-L2 machine OpenAPI        | 200, 2 paths / 5 schemas | PASS / 200                     | PASS / 200                         |
+| P5C-L3 exact lookup           | 200, one exact result    | FAIL / 503 FQGATE_INCOMPATIBLE | PASS / 200                         |
+| P5C-L4 extra input field      | 400 REQUEST_INVALID      | PASS / 400                     | PASS / 400                         |
+| P5C-L5 oversized body         | 413 REQUEST_TOO_LARGE    | PASS / 413                     | PASS / 413                         |
+| P5C-L6 raw upstream path      | 404, no proxy            | PASS / 404                     | PASS / 404                         |
+| P5C-L7 unknown/forwarded Host | 421 HOST_NOT_ALLOWED     | PASS / 421                     | PASS / 421                         |
+
+Existing socket: **5/6**, exit 1. New in-process handler: **6/6**, exit 0;
+this does not mark deployed local acceptance PASS. Native QR/login was not
+requested because the selected source is already connected.
+
+## Actual remote matrix — 2026-10-13T10:53:08Z to 10:58:01Z
+
+Existing `phase5c-matrix.mjs` with current-user Vault and the existing ingress
+binding completed **3/22**, exit 1. No updates.apply or Cloudflare mutation.
+All tests were executed; none is counted PASS for a transport failure.
+
+| Gate                      | Result | Actual          |
+| ------------------------- | ------ | --------------- |
+| R1 no-token challenge     | PASS   | 401             |
+| R2 machine OpenAPI        | FAIL   | REQUEST_TIMEOUT |
+| R3 instrument lookup      | FAIL   | HTTP 502        |
+| R4 malformed input        | FAIL   | HTTP 502        |
+| R5 oversized input        | FAIL   | HTTP 502        |
+| R6 raw upstream path      | FAIL   | REQUEST_TIMEOUT |
+| deny bridge.version       | FAIL   | HTTP 502        |
+| deny bridge.capabilities  | FAIL   | HTTP 502        |
+| deny bridge.status        | FAIL   | REQUEST_TIMEOUT |
+| deny session.qr.begin     | FAIL   | HTTP 502        |
+| deny session.qr.poll      | FAIL   | REQUEST_TIMEOUT |
+| deny updates.status       | FAIL   | HTTP 502        |
+| deny updates.check        | FAIL   | REQUEST_TIMEOUT |
+| deny updates.plan         | FAIL   | HTTP 502        |
+| deny updates.qualify      | FAIL   | REQUEST_TIMEOUT |
+| deny openapi.catalog      | FAIL   | HTTP 502        |
+| deny openapi.refresh      | FAIL   | HTTP 502        |
+| page /                    | FAIL   | REQUEST_TIMEOUT |
+| page /assets/probe.js     | FAIL   | HTTP 502        |
+| page /api/v1/unregistered | FAIL   | REQUEST_TIMEOUT |
+| human hostname isolation  | PASS   | 302             |
+| admin hostname isolation  | PASS   | 302             |
+
+Layered observations:
+
+- FQGate and Bridge each have exactly one expected IPv4 loopback listener;
+  FQGate native path/PID/creation and payload verification pass.
+- Real canonical upstream search and the new local handler pass. Old deployed
+  lookup rejects incompatibility; application permission fixtures pass.
+- cloudflared service is running; existing local metrics returned 200, two HA
+  connections and zero reported request errors. Its LocalSystem executable path
+  is unreadable at current privileges, so independent native path identity is
+  BLOCKED, not silently accepted.
+- Existing read-only Cloudflare plan passed 46/46, zero drift/conflicts/writes,
+  with exact Bridge-only ingress and distinct human/admin/machine resources.
+- Windows Node requests to the configured fixed Access cert endpoint timed out
+  after 10010/10007 ms for admin/machine. That authentication transport
+  prerequisite is BLOCKED. No JWT/AUD/issuer/Origin/policy check is weakened.
+- Remote responses contain 11 HTTP 502 and eight request timeouts without a
+  normalized Bridge result. Certificate unavailability is established, but
+  these observations do not prove it is the exclusive cause of every 502.
+  Real authorized machine success and remote denial behavior remain unverified.
+
+## Artifact and recovery readiness
+
+Fresh native official non-executing audit passed 2026-10-13T10:54:47Z:
+2.0.5 ZIP 29236811 bytes, SHA-256
+`c64571e331ac7c23f425e4f5c9434cea850897bbb65a8888ebb3236f777df5ba`,
+nine entries / 60709870 uncompressed bytes, temporary ZIP cleanup REMOVED.
+Current nine-file tree matches
+`9b9eb7f886b9ecb07bff1f1c04ab0ab5851f1182cdf92d01a5e4ea90ac15c99f`.
+The configured WebView2 profile exists outside current payload. Transaction and
+recovery locks are absent. Previous 1.0.5 EXE remains 23707648 bytes / SHA-256
+`2b9613dbf2d0f10b1672684f2e24ac8917d2d8d3fa9bd7fbbae04d57dd73d83c`.
+This previous executable does not establish a complete data-preserving rollback.
+
+78 inert transaction tests pass on both platforms, including five crash points,
+failed rollback/retained guards, repeated recovery, profile/data separation,
+corruption/replay and link/path cases. Real power-loss/rollback and full separate
+v2 data backup/reverse transaction are NOT_EXECUTED. Publisher signature and
+end-to-end authenticated replay are BLOCKED; signatureVerified remains false.
+The exact operator risk exception is not general installation authority.
+No application/service restart, directory switch or automatic recovery occurred.
+
+## Evidence and continuation
+
+All receipts/logs/command records live outside Git under
+`D:\code\research\fqgate-205-readonly-evidence`. `delivery.json` binds per-gate
+UTC, command/environment, code/CI SHA, exit/count/expected/actual/reason and
+file SHA-256. Earlier failed attempts remain distinct. Runtime OpenAPI is
+retained only as path/type metadata and a hash; no raw document, market payload,
+account/source ID, credentials, JWT or QR is persisted.
+
+Repeat the native adapter proof from the permanent checkout:
+
+```powershell
+node scripts/windows/fqgate205-readonly-probe.mjs --config D:\code\research\fqgate-acceptance-config.json
+node scripts/windows/phase5c-matrix.mjs --local
+```
+
+The only pending deployment approval is a Bridge-only restart. The operator
+objective explicitly says not to restart existing processes without authority.
+A hash-verified backup of the existing Bridge bundle/dist/launcher is prepared
+outside Git (275 files / 3452002 bytes); FQGate/session/config are excluded.
+The exact PID/creation/launcher-checked deployment command is prepared but has
+not run:
+
+```powershell
+powershell.exe -NoProfile -File D:\code\research\fqgate-205-readonly-evidence\deploy-bridge.ps1
+```
+
+After approval the agent builds/starts only Bridge, repeats the socket 6-case
+matrix and verifies FQGate/cloudflared identities and config are unchanged.
+If the expected old Bridge PID/creation/path/listener/launch receipt or backup
+hash differs, stop before killing anything. Unknown processes are never killed.
+Any actual deployment failure preserves backup and its explicit failure receipt.
+
+For optional cloudflared native identity closure, an elevated Windows PowerShell
+may run the existing read-only collector; ordinary privileges cannot read that
+LocalSystem executable path:
+
+```powershell
+powershell.exe -NoProfile -File D:\code\research\fqgate-205-readonly-evidence\readiness.ps1
+```
+
+No elevation is required for the successful FQGate/adapter proof. No MFA or QR
+is currently needed. The most useful next work is restore the Windows-to-fixed
+Access-cert HTTPS/TLS path under explicit operator network authority, then run:
+
+```powershell
+powershell.exe -NoProfile -File D:\code\research\fqgate-205-readonly-evidence\access-cert-probe.ps1
+powershell.exe -NoProfile -File D:\code\research\fqgate-205-readonly-evidence\remote-matrix.ps1
+```
+
+Expected certificate result is bounded HTTP 200 with a public key set; expected
+remote result is 22/22. The helper `.mjs` is already available; its thin `.ps1`
+wrapper is supplied with delivery. Do not alter Access policies, permissions,
+issuer/JWK URLs or OS environment to manufacture those results. Next functional
+adapter work after deployment/transport is v2 QR/session; signed installation
+and real rollback require their own evidence. No Issue is created.

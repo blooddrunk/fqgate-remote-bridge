@@ -62,7 +62,10 @@ Phase 7-B2 和 Phase 7-C 仍未授权。
 当前授权任务见 [2.0.5 只读兼容与恢复准备](docs/tasks/fqgate-2-0-5-readonly-compatibility.md)。
 独立 adapter 仅支持已观察的精确 Windows 2.0.5 payload，自动绑定唯一 connected
 source，保留原有证券查询及 local/remote_machine 权限。v1 生命周期范围不变；
-v2 的 QR、更新、签名信任和真实回滚不因此获得资格。最终实时验收结果见交接文档。
+v2 的 QR、更新、签名信任和真实回滚不因此获得资格。
+[当前交接](docs/status/fqgate-2-0-5-readonly-implementation-handoff.md)：
+新 adapter 与进程内 handler 6/6 已通过；现有 Bridge 仍为旧构建 5/6，待仅重启
+Bridge 的授权。远程矩阵仍为 3/22（11 个 502、8 个超时），不能标为阶段闭环。
 
 ## 1. 用人话理解系统
 
