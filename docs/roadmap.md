@@ -646,12 +646,34 @@ exact-package local trial while preserving v1/config/profile data; record shared
 host/user execution and retain unverified signature status. No feature/reboot or
 permissions change is implied.
 
-
 ## 2026-10-13 personal research merge and next slice
 
 - PR #12 and #13 closed as superseded; PR #14 already integrated their implementation and hardened recovery policy.
 - PR #15 **squash-merged** at `30de05d5694648ce2dc82ca71c6b9e478ff5817e`, after exact-head CI 38361551963 passed Ubuntu/Windows. Merge covers **only** the v2 read-only observation, non-executing ZIP audit, Windows behavior fixtures and unconnected research directory/replay kernel. It does not make 2.0.5 compatible with the Bridge.
 - Issue #16 closed as **not_planned for issue tracking**, not as satisfied acceptance. Do not create new issues for ordinary next-phase research tasks; track goal and automated receipts directly in repository handoffs.
-- Actual manual 2.0.5 installation / QR login / canonical v2 lookup were previously recorded as locally successful by the operator-side R3 handoff, but **Bridge local matrix 5/6**, **real remote matrix 3/22**, **Access transport timeout**, and **full reverse/power-loss rollback** remain unresolved. Publisher verification/anti-replay and L2/queue remain independent BLOCKED/NOT_EXECUTED gates; do not falsify or silently waive them.
-- **Next narrow priority:** implement a version- and exact-artifact-bound **read-only v2 adapter** for the existing Bridge lookup privilege, using a deterministic locally verified selection of the single connected source; fail closed on 0 or multiple connected sources. Preserve v1 path, market schema, local + remote_machine allowlist and machine OpenAPI. First test fixture matrices and Windows native local lookup, then diagnose remote 502/timeouts separately. No Cloudflare mutation, remote arbitrary instance selector, automatic installer/restart, version gate bypass, or Phase 7-B2/C.
+- Actual manual 2.0.5 installation / QR login / canonical v2 lookup were previously recorded as locally successful by the operator-side R3 handoff, at that historical handoff. Its **Bridge local matrix 5/6**, **real remote matrix 3/22** and **Access transport timeout** were subsequently resolved by the bounded continuation below; **full reverse/power-loss rollback** remains unqualified. Publisher verification/anti-replay and L2/queue remain independent BLOCKED/NOT_EXECUTED gates; do not falsify or silently waive them.
+- **Historical priority, now implemented and live-accepted below:** a version- and exact-artifact-bound **read-only v2 adapter** for the existing Bridge lookup privilege, using a deterministic locally verified selection of the single connected source; fail closed on 0 or multiple connected sources. Preserve v1 path, market schema, local + remote_machine allowlist and machine OpenAPI. First test fixture matrices and Windows native local lookup, then diagnose remote 502/timeouts separately. No Cloudflare mutation, remote arbitrary instance selector, automatic installer/restart, version gate bypass, or Phase 7-B2/C.
 - Workflow: one implementation goal and (if valuable) one code PR, automatic deterministic / Windows / remote verification prioritized. User intervention only for genuine interactive login/MFA or Windows elevation, with exact steps, expected results and resume instructions. Secrets remain outside Git.
+
+## Active FQGate 2.0.5 read-only continuation
+
+The operator objective on 2026-10-13 authorizes a version/artifact-specific
+adapter for the existing lookup, v1 preservation, native local/remote diagnosis
+and fixture-based recovery readiness. Contract:
+`docs/tasks/fqgate-2-0-5-readonly-compatibility.md`. This supersedes the earlier
+observation-only restriction for this bounded read-only adapter. It grants no
+new operation/remote permission, v2 installation/qualification, automatic restart,
+Cloudflare write, Phase 7-B2/7-C or global supportedRange/validatedVersions change.
+PR #15 is merged; Issue #16 is closed without resolving its technical gates.
+Do not create Issues or planning-only PRs. Preserve the running manual 2.0.5,
+operator configuration and permanent Windows checkout. Signature/replay and real
+rollback remain unproven; separate operation compatibility never marks them PASS.
+
+Implementation/evidence: `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.
+The bounded adapter has passed native Windows local 6/6 and real Vault-backed
+remote 22/22 on 2026-10-14. Separate operator authorizations covered Bridge-only
+recovery, one exact Access-team-domain daed premium rule/reload and backed-up
+FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
+new remote privilege or startup actuator was added. Signature/replay and full v2
+version rollback remain unqualified. Final source/PR/CI state is retained in the
+external delivery receipt.

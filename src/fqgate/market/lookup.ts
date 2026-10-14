@@ -70,11 +70,19 @@ export class FqgateInstrumentLookup implements InstrumentLookupPort {
       readonly http: HttpTransport;
       readonly runtime: () => Promise<LookupRuntime>;
       readonly contract?: () => Promise<string>;
+      readonly v2?: InstrumentLookupPort;
+      readonly selectV2?: () => Promise<boolean>;
     },
   ) {}
 
   async lookup(input: unknown): Promise<InstrumentLookupResponse> {
     const request = parseInstrumentLookupRequest(input);
+    if (await this.options.selectV2?.()) {
+      if (this.options.v2 === undefined) {
+        throw new BridgeError(ERROR_CODES.FQGATE_INCOMPATIBLE, "FQGate v2 adapter is unavailable");
+      }
+      return this.options.v2.lookup(request);
+    }
     const runtime = await this.options.runtime();
     assertRuntime(runtime, true);
     const fingerprint = await this.approvedContractFingerprint();

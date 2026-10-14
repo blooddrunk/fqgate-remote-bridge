@@ -57,6 +57,17 @@ Phase 7-B2 和 Phase 7-C 仍未授权。
 每个阶段的关闭证据仍保留在文档索引中；“已关闭”只表示该阶段的验收合同完成，不表示
 整个项目停止开发。
 
+### FQGate 2.0.5 只读适配
+
+当前授权任务见 [2.0.5 只读兼容与恢复准备](docs/tasks/fqgate-2-0-5-readonly-compatibility.md)。
+独立 adapter 仅支持已观察的精确 Windows 2.0.5 payload，自动绑定唯一 connected
+source，保留原有证券查询及 local/remote_machine 权限。v1 生命周期范围不变；
+v2 的 QR、更新、签名信任和真实回滚不因此获得资格。
+[当前交接](docs/status/fqgate-2-0-5-readonly-implementation-handoff.md)：
+2026-10-14 已恢复真实只读查询：Windows 本地 6/6、远程 22/22 全部通过。
+经独立授权完成 Bridge 恢复、精确 Access 域名分流和保留双份备份的 FQGate profile/进程记录修复；
+没有扩大权限、配置自动启动或解除 v2 安装及签名门禁。
+
 ## 1. 用人话理解系统
 
 ### 1.1 四层结构

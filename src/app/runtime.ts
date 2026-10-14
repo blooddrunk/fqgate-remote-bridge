@@ -22,6 +22,9 @@ import { WindowsCloudflaredServiceController } from "../cloudflared/windows/serv
 import type { CloudflaredServiceController } from "../cloudflared/windows/service.js";
 import { FqgateInstrumentLookup } from "../fqgate/market/lookup.js";
 import { legacyLookupQualificationEvidence } from "../fqgate/market/compatibility.js";
+import { FqgateV2InstrumentLookup } from "../fqgate/market/v2.js";
+import { verifyV2LookupIdentity } from "../fqgate/market/v2-identity.js";
+import { readFqgateState } from "../fqgate/install/state.js";
 
 export interface ApplicationServices {
   readonly lifecycle: FqgateLifecycleManager;
@@ -73,6 +76,11 @@ export function createApplicationServices(config: AppConfig): ApplicationService
   });
   const instrumentLookup = new FqgateInstrumentLookup({
     http,
+    selectV2: async () => (await readFqgateState(layout)).active?.version.startsWith("2.") === true,
+    v2: new FqgateV2InstrumentLookup({
+      http,
+      identity: () => verifyV2LookupIdentity(layout, runner),
+    }),
     runtime: async () => {
       const status = await lifecycle.status();
       const compatibility = status.compatibility ?? status.installed?.compatibility;

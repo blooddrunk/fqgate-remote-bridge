@@ -642,3 +642,37 @@ with no production users. A VM/Sandbox is optional. Proceed with the authorized
 exact-package local trial while preserving v1/config/profile data; record shared
 host/user execution and retain unverified signature status. No feature/reboot or
 permissions change is implied.
+
+## Exact FQGate 2.0.5 read-only adapter — 2026-10-13
+
+The explicitly authorized adapter maps the existing local + remote_machine
+lookup to fixed canonical GET `/v2/instruments/search?query=<six-digit-code>`.
+It checks GET system version/health, bounded source inventory and the selected
+source's read-only account snapshot. Selection requires exactly one connected
+`tonghuashun` source with ready worker, safe unique ID, instance number, PID and
+restart counter; zero or multiple connected sources fail closed. No caller can
+select a source/account or access these upstream paths directly through Bridge.
+
+The exact nine-file Windows 2.0.5 payload is pinned to tree SHA-256
+`9b9eb7f886b9ecb07bff1f1c04ab0ab5851f1182cdf92d01a5e4ea90ac15c99f`.
+The five selected GET contracts and transitive schemas are pinned to
+`3d9ca6c84a7b0cb75c3caae5eaf39cf4bb047a4c40d013202984bcad12b0ebe6`.
+Native identity proves recorded PID, current executable path, creation time and
+sole IPv4 127.0.0.1:17281 listener. The query rechecks payload/process, version,
+contract and source/account before returning; observed changes discard results.
+This cannot detect an unobservable disconnect/reconnect between samples.
+
+HTTP work shares 5000 ms with upstream timeout headers, no retry/fallback;
+identity subprocesses each allow at most 5000 ms, with bounded filesystem scans.
+Search remains 65536 bytes / 16 items, strict envelope/row count/data-state/
+coverage and exact-code filtering. Public response fields are unchanged; v2
+instrumentId is the canonical `market:code` identity (e.g. `XSHG:600000`), while
+v1 keeps its existing identifier. No source/account/session data is returned.
+
+The permanent Windows census reconfirmed application version 2.0.5, service
+availability, one connected source out of two, and exact-code search success.
+This read-only compatibility boundary is independent of the unchanged v1
+lifecycle range; Dashboard lifecycle/QR/update qualification can still report
+v2 incompatible. It grants no install/restart/rollback authority. Missing publisher
+signature and authenticated replay remain BLOCKED; fixture recovery is not proof
+of real power-loss rollback. See the active task and implementation handoff.

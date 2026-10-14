@@ -260,3 +260,26 @@ FQGate v2 investigation is a separate observation-only track. Read
 `inspect-v2`/`audit-v2` report unauthenticated metadata and never qualify/install.
 Production changes, supported-range expansion and Phase 7-B2/7-C remain outside
 this authorization.
+
+## Active FQGate 2.0.5 read-only continuation
+
+The operator objective on 2026-10-13 authorizes a version/artifact-specific
+adapter for the existing lookup, v1 preservation, native local/remote diagnosis
+and fixture-based recovery readiness. Contract:
+`docs/tasks/fqgate-2-0-5-readonly-compatibility.md`. This supersedes the earlier
+observation-only restriction for this bounded read-only adapter. It grants no
+new operation/remote permission, v2 installation/qualification, automatic restart,
+Cloudflare write, Phase 7-B2/7-C or global supportedRange/validatedVersions change.
+PR #15 is merged; Issue #16 is closed without resolving its technical gates.
+Do not create Issues or planning-only PRs. Preserve the running manual 2.0.5,
+operator configuration and permanent Windows checkout. Signature/replay and real
+rollback remain unproven; separate operation compatibility never marks them PASS.
+
+Implementation/evidence: `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.
+The bounded adapter has passed native Windows local 6/6 and real Vault-backed
+remote 22/22 on 2026-10-14. Separate operator authorizations covered Bridge-only
+recovery, one exact Access-team-domain daed premium rule/reload and backed-up
+FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
+new remote privilege or startup actuator was added. Signature/replay and full v2
+version rollback remain unqualified. Final source/PR/CI state is retained in the
+external delivery receipt.

@@ -120,6 +120,7 @@ async function check(id, origin, path, method, body, expected, headers = credent
   let schemaCount;
   let count;
   let pass = false;
+  let failure;
   let attempts = 0;
   const maximumAttempts = !local && expected === "document" ? 2 : 1;
   while (attempts < maximumAttempts && !pass) {
@@ -154,8 +155,13 @@ async function check(id, origin, path, method, body, expected, headers = credent
       else
         pass =
           status === expected.status && (expected.code === undefined || code === expected.code);
-    } catch {
+      if (!pass) failure = status === 502 ? "REMOTE_HTTP_502" : "UNEXPECTED_STATUS_OR_SHAPE";
+    } catch (error) {
       // Never emit exception text, response bodies, headers, or credentials.
+      failure =
+        error?.code === "DOWNLOAD_FAILED" && /timed out/.test(error.message)
+          ? "REQUEST_TIMEOUT"
+          : "TRANSPORT_FAILURE";
     }
     const retryColdJwkFetch =
       !pass && attempts < maximumAttempts && status === 403 && code === "ACCESS_ASSERTION_INVALID";
@@ -166,6 +172,7 @@ async function check(id, origin, path, method, body, expected, headers = credent
     status,
     code,
     attempts,
+    ...(pass ? {} : { failure }),
     ...(routeCount === undefined ? {} : { routeCount }),
     ...(schemaCount === undefined ? {} : { schemaCount }),
     ...(count === undefined ? {} : { count }),

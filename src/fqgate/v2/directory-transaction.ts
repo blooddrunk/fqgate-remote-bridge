@@ -272,12 +272,15 @@ export async function payloadTreeHash(directory: string): Promise<string> {
     for (const entry of await readdir(join(directory, relative), { withFileTypes: true })) {
       count++;
       if (count > 512) deny("UNSAFE_PAYLOAD_TREE");
-      assertPayloadComponent(entry.name);
       const rel = relative ? `${relative}/${entry.name}` : entry.name;
       if (rel.length > 240 || aliases.has(rel.toLowerCase())) deny("UNSAFE_PAYLOAD_TREE");
       aliases.add(rel.toLowerCase());
       const st = await lstat(join(directory, rel));
       if (st.isSymbolicLink()) deny("LINK_OR_SPECIAL_FILE");
+      // Exact root directory observed in the official 2.0.5 Windows ZIP.
+      // This does not allow arbitrary hidden names or the same name nested below root.
+      if (!(relative === "" && entry.name === ".fqgate-plugin-package" && st.isDirectory()))
+        assertPayloadComponent(entry.name);
       if (st.isDirectory()) {
         await scan(rel);
         continue;

@@ -455,6 +455,54 @@ describe("unconnected v2 directory kernel, inert files and FAKE authority/runtim
     });
     expect(f.runtime.stop).not.toHaveBeenCalled();
   });
+  it("keeps runtime data and WebView2 profile separate through simulated directory rollback", async () => {
+    const f = await fixture();
+    for (const directory of ["data", "WebView2"]) {
+      await mkdir(join(f.root, directory));
+      await writeFile(join(f.root, directory, "fixture.txt"), "inert runtime/profile fixture");
+    }
+    await expect(
+      f
+        .transaction(async (phase) => {
+          if (phase === "candidate-active") throw new V2FixtureCrash();
+        })
+        .upgrade(),
+    ).rejects.toThrow();
+    await f.transaction().recover();
+    for (const directory of ["data", "WebView2"])
+      expect(await readFile(join(f.root, directory, "fixture.txt"), "utf8")).toBe(
+        "inert runtime/profile fixture",
+      );
+    expect(await payloadTreeHash(join(f.root, "current"))).toBe(f.baseline);
+    const stops = vi.mocked(f.runtime.stop).mock.calls.length,
+      starts = vi.mocked(f.runtime.start).mock.calls.length;
+    await expect(f.transaction().recover()).rejects.toThrow();
+    expect(f.runtime.stop).toHaveBeenCalledTimes(stops);
+    expect(f.runtime.start).toHaveBeenCalledTimes(starts);
+  });
+  it("repeated recovery after failed rollback preserves guard, slots and immutable evidence", async () => {
+    const f = await fixture();
+    await expect(
+      f
+        .transaction(async (phase) => {
+          if (phase === "candidate-active") throw new V2FixtureCrash();
+        })
+        .upgrade(),
+    ).rejects.toThrow();
+    vi.mocked(f.runtime.baselineHealthy).mockResolvedValue(false);
+    await expect(f.transaction().recover()).rejects.toThrow();
+    const files = ["transaction.json", "transaction.lock", "recovery.lock", "security.json"];
+    const before = await Promise.all(files.map((name) => readFile(join(f.root, name), "utf8")));
+    const stops = vi.mocked(f.runtime.stop).mock.calls.length,
+      starts = vi.mocked(f.runtime.start).mock.calls.length;
+    await expect(f.transaction().recover()).rejects.toThrow();
+    expect(await Promise.all(files.map((name) => readFile(join(f.root, name), "utf8")))).toEqual(
+      before,
+    );
+    expect(f.runtime.stop).toHaveBeenCalledTimes(stops);
+    expect(f.runtime.start).toHaveBeenCalledTimes(starts);
+    expect(await payloadTreeHash(join(f.root, "current"))).toBe(f.baseline);
+  });
   it("never resets high-water on interrupted post-ledger rollback", async () => {
     const f = await fixture();
     await expect(
@@ -580,6 +628,18 @@ describe("strict persistent replay-state and payload negatives; no publisher ver
   it("rejects hard-linked payload files", async () => {
     const f = await fixture();
     await link(join(f.root, "candidate", "FQGate.exe"), join(f.root, "candidate", "alias.exe"));
+    await expect(payloadTreeHash(join(f.root, "candidate"))).rejects.toThrow();
+  });
+  it("hashes the exact official root plugin directory and rejects other hidden/nested names", async () => {
+    const f = await fixture();
+    const directory = join(f.root, "candidate", ".fqgate-plugin-package");
+    await mkdir(directory);
+    await writeFile(join(directory, "fixture.dll"), "inert plugin fixture, never executed");
+    expect(await payloadTreeHash(join(f.root, "candidate"))).not.toBe(f.candidate);
+    await mkdir(join(directory, ".fqgate-plugin-package"));
+    await expect(payloadTreeHash(join(f.root, "candidate"))).rejects.toThrow();
+    await rm(join(directory, ".fqgate-plugin-package"), { recursive: true });
+    await mkdir(join(f.root, "candidate", ".other"));
     await expect(payloadTreeHash(join(f.root, "candidate"))).rejects.toThrow();
   });
   it("rejects directory links/junctions without following them", async () => {

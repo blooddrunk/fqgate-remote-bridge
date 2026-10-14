@@ -693,11 +693,33 @@ exact-package local trial while preserving v1/config/profile data; record shared
 host/user execution and retain unverified signature status. No feature/reboot or
 permissions change is implied.
 
-
 ## Personal research workflow (2026-10-13)
 
 PR #12 and #13 were closed as superseded by merged #14. PR #15 was scope-limited to read-only inspection, Windows fixtures and the **unconnected** directory/replay kernel, then squash-merged at `30de05d5694648ce2dc82ca71c6b9e478ff5817e`; its final-head Ubuntu and Windows checks passed in CI run 38361551963. Issue #16 was closed as `not_planned` for issue-based tracking, not because the publisher trust, rollback, v2 Bridge compatibility, real remote acceptance or L2/queue qualification are complete.
 
 This repository is a **single-owner personal research project**. Default next-task delivery: maintain one focused implementation goal in repo docs/agent handoff; implement on a short-lived branch and use CI and deterministic tests first. Do not create GitHub Issues, separate planning PRs, or multiple bookkeeping stages unless explicitly requested. A PR is optional when genuinely useful for code review and test visibility; prefer a single implementation PR over plan-only PRs. Never fabricate acceptance or weaken loopback, Access, machine permissions, v1 support or rollback semantics to achieve a green result. Human-only QR/MFA or privileged Windows interaction must be isolated to clear, copyable steps, with expected output, stop conditions and precise rerun command. Record redacted receipts outside Git.
 
-Immediate next technical priority: **bounded 2.0.5 Bridge read-only lookup compatibility** via real v2 canonical endpoints and a verified source-instance selection, with v1 unchanged. Separate local protocol success from Cloudflare/Access 502 or timeout and from cryptographic issuer trust; no generic remote instance selector, installer/auto-update path, Phase 7-B2/C actuator or automatic restart. Full reverse directory and power-loss recovery remain unqualified.
+The bounded **2.0.5 Bridge read-only lookup compatibility** is implemented and locally/remotely accepted under the continuation below, with v1 unchanged. Further v2 QR/session or installation work requires its own bounded authorization; read-only acceptance does not establish cryptographic issuer trust; no generic remote instance selector, installer/auto-update path, Phase 7-B2/C actuator or automatic restart. Full reverse directory and power-loss recovery remain unqualified.
+
+## Active FQGate 2.0.5 read-only continuation
+
+The operator objective on 2026-10-13 authorizes a version/artifact-specific
+adapter for the existing lookup, v1 preservation, native local/remote diagnosis
+and fixture-based recovery readiness. Contract:
+`docs/tasks/fqgate-2-0-5-readonly-compatibility.md`. This supersedes the earlier
+observation-only restriction for this bounded read-only adapter. It grants no
+new operation/remote permission, v2 installation/qualification, automatic restart,
+Cloudflare write, Phase 7-B2/7-C or global supportedRange/validatedVersions change.
+PR #15 is merged; Issue #16 is closed without resolving its technical gates.
+Do not create Issues or planning-only PRs. Preserve the running manual 2.0.5,
+operator configuration and permanent Windows checkout. Signature/replay and real
+rollback remain unproven; separate operation compatibility never marks them PASS.
+
+Implementation/evidence: `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.
+The bounded adapter has passed native Windows local 6/6 and real Vault-backed
+remote 22/22 on 2026-10-14. Separate operator authorizations covered Bridge-only
+recovery, one exact Access-team-domain daed premium rule/reload and backed-up
+FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
+new remote privilege or startup actuator was added. Signature/replay and full v2
+version rollback remain unqualified. Final source/PR/CI state is retained in the
+external delivery receipt.
