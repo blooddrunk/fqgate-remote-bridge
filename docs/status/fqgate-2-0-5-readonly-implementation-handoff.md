@@ -51,7 +51,9 @@ Primary files:
 
 ## Source and code verification
 
-Fetched main was and remains `b7a497ec020d5f4c78c87560264488a67169b5a9`.
+Baseline main when this work began was
+`b7a497ec020d5f4c78c87560264488a67169b5a9`. The final merged main and exact
+CI/PR state are recorded in the external delivery receipt.
 PR #15 is merged at `30de05d5694648ce2dc82ca71c6b9e478ff5817e`; #12/#13 and
 Issue #16 are closed. #15's merge CI passed; latest main CI
 [38381910281](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38381910281)
