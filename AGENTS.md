@@ -699,7 +699,7 @@ PR #12 and #13 were closed as superseded by merged #14. PR #15 was scope-limited
 
 This repository is a **single-owner personal research project**. Default next-task delivery: maintain one focused implementation goal in repo docs/agent handoff; implement on a short-lived branch and use CI and deterministic tests first. Do not create GitHub Issues, separate planning PRs, or multiple bookkeeping stages unless explicitly requested. A PR is optional when genuinely useful for code review and test visibility; prefer a single implementation PR over plan-only PRs. Never fabricate acceptance or weaken loopback, Access, machine permissions, v1 support or rollback semantics to achieve a green result. Human-only QR/MFA or privileged Windows interaction must be isolated to clear, copyable steps, with expected output, stop conditions and precise rerun command. Record redacted receipts outside Git.
 
-Immediate next technical priority: **bounded 2.0.5 Bridge read-only lookup compatibility** via real v2 canonical endpoints and a verified source-instance selection, with v1 unchanged. Separate local protocol success from Cloudflare/Access 502 or timeout and from cryptographic issuer trust; no generic remote instance selector, installer/auto-update path, Phase 7-B2/C actuator or automatic restart. Full reverse directory and power-loss recovery remain unqualified.
+The bounded **2.0.5 Bridge read-only lookup compatibility** is implemented and locally/remotely accepted under the continuation below, with v1 unchanged. Further v2 QR/session or installation work requires its own bounded authorization; read-only acceptance does not establish cryptographic issuer trust; no generic remote instance selector, installer/auto-update path, Phase 7-B2/C actuator or automatic restart. Full reverse directory and power-loss recovery remain unqualified.
 
 ## Active FQGate 2.0.5 read-only continuation
 
@@ -716,7 +716,10 @@ operator configuration and permanent Windows checkout. Signature/replay and real
 rollback remain unproven; separate operation compatibility never marks them PASS.
 
 Implementation/evidence: `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.
-PR #17 is draft/unmerged. New native adapter and in-process production handler
-pass. After explicit operator approval, only Bridge was restarted and the
-deployed socket passed 6/6; remote matrix remains blocked by 502/timeouts. This is OPEN, not
-full v2 or remote closure. Final exact-head CI is retained in external delivery.
+The bounded adapter has passed native Windows local 6/6 and real Vault-backed
+remote 22/22 on 2026-10-14. Separate operator authorizations covered Bridge-only
+recovery, one exact Access-team-domain daed premium rule/reload and backed-up
+FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
+new remote privilege or startup actuator was added. Signature/replay and full v2
+version rollback remain unqualified. Final source/PR/CI state is retained in the
+external delivery receipt.

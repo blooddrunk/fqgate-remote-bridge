@@ -276,7 +276,10 @@ operator configuration and permanent Windows checkout. Signature/replay and real
 rollback remain unproven; separate operation compatibility never marks them PASS.
 
 Implementation/evidence: `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.
-PR #17 is draft/unmerged. New native adapter and in-process production handler
-pass. After explicit operator approval, only Bridge was restarted and the
-deployed socket passed 6/6; remote matrix remains blocked by 502/timeouts. This is OPEN, not
-full v2 or remote closure. Final exact-head CI is retained in external delivery.
+The bounded adapter has passed native Windows local 6/6 and real Vault-backed
+remote 22/22 on 2026-10-14. Separate operator authorizations covered Bridge-only
+recovery, one exact Access-team-domain daed premium rule/reload and backed-up
+FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
+new remote privilege or startup actuator was added. Signature/replay and full v2
+version rollback remain unqualified. Final source/PR/CI state is retained in the
+external delivery receipt.

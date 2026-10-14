@@ -27,8 +27,11 @@ No account/session/source identifiers enter responses or logs.
 
 The exact artifact/protocol observation qualifies only this read-only operation;
 it does not mark the global lifecycle supported/validated or prove signature,
-authenticated replay, installer safety or actual rollback. Real runtime remains
-running throughout acceptance. Directory crash/rollback tests use inert fixtures.
+authenticated replay, installer safety or actual rollback. Directory crash/rollback tests use inert fixtures. The initial default scope
+preserved running processes; later explicit operator authorizations on 2026-10-14
+permitted Bridge-only recovery, an exact Access-domain daed rule/reload and one
+backed-up FQGate profile/process-record maintenance window. These are explicit
+local operator actions, not automatic recovery or installer authority.
 
 Required verification: frozen install, typecheck/lint/unit/build/format/E2E,
 v1 deterministic regressions, native permanent-Windows checks, existing local
@@ -36,3 +39,8 @@ v1 deterministic regressions, native permanent-Windows checks, existing local
 commit, command/exit/count/reason/path/hash, final Ubuntu/Windows CI. Failures and
 NOT_EXECUTED are never PASS. A Bridge deployment/restart requires an explicit
 operator boundary if the existing running process cannot consume the build.
+
+Bounded runtime acceptance passed on 2026-10-14: deployed native local 6/6 and
+real remote 22/22. See the implementation handoff and external exact-head CI
+receipt. Full v2 signature/replay/installation/version rollback qualification
+remains separate and unproven.
