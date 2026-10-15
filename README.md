@@ -68,16 +68,25 @@ v2 的 QR、更新、签名信任和真实回滚不因此获得资格。
 经独立授权完成 Bridge 恢复、精确 Access 域名分流和保留双份备份的 FQGate profile/进程记录修复；
 没有扩大权限、配置自动启动或解除 v2 安装及签名门禁。
 
-### FQGate 2.0.5 QR/session 调查
+### FQGate 2.0.5 QR/session：限定范围真实验收完成
 
-2026-10-15 已实现精确安装文件绑定的独立 v2 QR/session 适配器，状态为
-**IMPLEMENTED_NOT_LIVE_QUALIFIED**。运行时 OpenAPI 与安装文件内客户端合同共同约束
-固定 authentication 动作；全局 v2 兼容范围、v1 和现有 lookup 权限保持不变。
-多个 QR-capable source 必须由服务端明确绑定；本轮采用当前已连接实例，保留另一条记录。
-Preflight 只读；Live 必须另行明确批准，且正在运行的 Bridge 必须匹配当前提交。
-取消只停止轮询、清除页面 QR，不会注销账号。真实扫码尚未执行。
-[实现、重试命令和验收边界](docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md)。
-[未来多账号选择与隔离计划](docs/plans/future-multi-profile-account-isolation.md)。
+2026-10-15，[PR #18](https://github.com/blooddrunk/fqgate-remote-bridge/pull/18)
+实现独立、精确安装文件绑定的 v2 QR/session 适配；
+[PR #19](https://github.com/blooddrunk/fqgate-remote-bridge/pull/19)
+完成并发与取消竞态加固、隔离 Bridge 部署和真实 QR 验收，均已合并。
+状态为 **BOUNDED_QR_LIVE_QUALIFIED**，只针对指定 2.0.5 安装文件、
+服务器绑定的单个 source 和已部署的 Bridge 运行时代码 `481db65097cd63ea0f9c28f39e526e341b700721`。
+经单独批准的第三次 Live 通过 8/8 门禁；操作者确认看到并扫描二维码、完成手机确认，
+随后本地 6/6 和真实 remote_machine 22/22 通过。没有出现 MFA，不宣称 MFA 已测试。
+此前两次未成功的尝试也保留在验收记录中。
+
+合并到 main 的代码版本与上述**已部署的运行时代码**不是同一个 SHA：
+后续仅文档发生变化；不要为了追上文档提交而静默重启或替换 Bridge。
+签名信任、发行反回放、完整 v2 目录/断电回滚、原生会话 epoch 和多账号隔离
+仍未获得完整资格。全局 v1 兼容门禁、权限、Cloudflare 与后台自动动作不变。
+[最终交接及证据边界](docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md)。
+[多账号隔离设计](docs/plans/future-multi-profile-account-isolation.md)；
+[下一步 MP-0 设计审查任务](docs/tasks/fqgate-2-0-5-mp0-shared-profile-design-review.md)。
 
 ## 1. 用人话理解系统
 
@@ -1030,10 +1039,15 @@ node .\dist\cli\main.js fqgate inspect-v2 --json
 node .\dist\cli\main.js fqgate audit-v2 --json
 ```
 
-独立的精确 2.0.5 QR 适配器已实现，使用操作级合同、安装文件及进程身份门禁；
-**真实 Bridge QR 登录尚未验收，全局 v2 资格不变**。重启后 Bridge 未监听、FQGate 进程记录
-失效及 WebView2 数据目录边界应继续通过只读诊断处理，不授权静默修复或自动重启。
+独立的精确 2.0.5 QR 适配器已完成实际 Bridge 部署和一次操作者确认的
+**单 source 限定范围 QR Live 验收**，但不等于签名、升级回滚或多账号资格通过。
+[QR 最终验收](docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md)和
+[PR #19](https://github.com/blooddrunk/fqgate-remote-bridge/pull/19)记录了区分运行时 SHA、
+代码 SHA、失败尝试和仍未测试门禁的证据。重启后的异常仅做只读诊断，
+不授权静默修复、扫码、服务重启或自动部署。
+
 下一候选任务：
-[精确 2.0.5 QR/session 兼容性](docs/tasks/fqgate-2-0-5-qr-session-compatibility.md)。
+[MP-0 共享账号选择/隔离合同设计审查](docs/tasks/fqgate-2-0-5-mp0-shared-profile-design-review.md)；
+不执行第二账号登录、不添加 profile API、不扩大 machine 权限。
 保留原始[手动升级记录](docs/status/fqgate-v2-operator-risk-upgrade-handoff.md)和
 [升级信任边界](docs/operations/windows-fqgate-v2-qualification.md)。

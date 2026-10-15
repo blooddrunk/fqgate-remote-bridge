@@ -791,3 +791,21 @@ exact scope and unresolved trust/session-epoch/lifecycle risks. Final source and
 merge SHAs are recorded separately from deployed runtime SHA. Next task: bounded
 design review for shared-profile multi-account isolation. This closure authorizes
 no profile implementation, further QR, lifecycle expansion or remote permissions.
+
+## Proposed next task — MP-0 shared-profile isolation contract review (2026-10-15)
+
+The QR deployment task is closed only to **BOUNDED_QR_LIVE_QUALIFIED**
+for the fixed 2.0.5 artifact, source and Bridge runtime `481db65097cd63ea0f9c28f39e526e341b700721`.
+Main is at merge SHA `3ddda01b77e2df747ae4ab75e2755b72d1c2caec`,
+whose Ubuntu/Windows push CI passed; those later source changes do not imply
+another runtime replacement.
+
+MP-0 is the next **proposed** read-only design-review goal; it must not
+implement multi-account runtime selection or launch another real QR flow.
+Contract: `docs/tasks/fqgate-2-0-5-mp0-shared-profile-design-review.md`.
+Agent handoff: `docs/prompts/fqgate-2-0-5-mp0-codex-goal.md`.
+It should derive a shared QR/status/lookup profile-selection and fail-closed
+isolation contract, identify what static/single-connected-source evidence
+cannot prove, and propose a separately approved future local-only implementation
+slice. No new Issue or planning-only PR. The current source and live runtime
+remain untouched; Phase 7-B2/C and trust/rollback work remain separate.

@@ -750,7 +750,7 @@ v1 QR/global gate and existing permissions. Neither `-Mode Live` nor
 publisher contract and review unique source policy before implementing/mutating
 sessions. No new Issue, automatic restart or control-plane write is implied.
 
-## Current FQGate 2.0.5 QR/session continuation — 2026-10-15
+## Historical FQGate 2.0.5 QR/session implementation snapshot — 2026-10-15
 
 The current status supersedes the historical initial census above:
 **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Read the QR implementation handoff before
@@ -770,3 +770,32 @@ Continue to record actual running build separately from checkout/CI identity.
 Future shared QR/status/lookup account selection and isolation is documented in
 `docs/plans/future-multi-profile-account-isolation.md`; do not implement it
 opportunistically. No new Issues/planning PRs or Phase 7-B2/7-C authority.
+
+## Latest 2.0.5 QR closure and next MP-0 boundary — 2026-10-15
+
+This latest section **supersedes the earlier historical QR snapshots above**.
+PR #18 and #19 are merged; main merge SHA is
+`3ddda01b77e2df747ae4ab75e2755b72d1c2caec`, with passing Ubuntu/Windows
+main CI run 38703955298. The operator-approved Bridge-only deployed runtime
+is `481db65097cd63ea0f9c28f39e526e341b700721`; do not confuse this with the
+later documentation/merge SHAs. The third separately approved real QR Live
+passed 8/8, operator-confirmed scan/phone approval, and post-Live local 6/6
+and Vault remote_machine 22/22. MFA was not presented. Scope is
+**BOUNDED_QR_LIVE_QUALIFIED for the exact installed artifact, fixed source
+and sampled native identities**, not blanket FQGate 2.x qualification.
+
+Publisher signature and release anti-replay remain unverified; full v2
+rollback/power-loss recovery, native session epoch and multi-account isolation
+remain unqualified. Existing v1/global compatibility, operation allowlists,
+loopback, Cloudflare and Phase 7-B2/C boundaries remain unchanged. External
+private acceptance receipts remain external; do not copy them into Git.
+
+The next **proposed** goal is **MP-0 shared-profile contract design review**:
+`docs/tasks/fqgate-2-0-5-mp0-shared-profile-design-review.md`,
+with handoff at `docs/prompts/fqgate-2-0-5-mp0-codex-goal.md`.
+This is read-only contract review plus optional inert deterministic fixtures.
+It does not authorize profile routing/runtime registration, second-account
+login, a real QR begin/poll, Bridge deployment, process/service mutation or
+new remote permissions. Do not create an Issue or planning-only PR.
+See `docs/plans/future-multi-profile-account-isolation.md` and
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.

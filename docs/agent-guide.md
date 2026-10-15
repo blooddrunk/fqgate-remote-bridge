@@ -284,7 +284,7 @@ new remote privilege or startup actuator was added. Signature/replay and full v2
 version rollback remain unqualified. Final source/PR/CI state is retained in the
 external delivery receipt.
 
-## Exact 2.0.5 QR/session continuation — 2026-10-15
+## Historical exact 2.0.5 QR/session implementation snapshot — 2026-10-15
 
 An independent exact-artifact v2 QR adapter now supplements the v1 adapter,
 using reviewed runtime OpenAPI plus the installed executable's bundled client
@@ -310,3 +310,20 @@ See `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for contract
 hashes, limits, evidence, commands and exact authorization boundaries. Shared
 QR/status/lookup multi-account isolation remains a future separate task under
 `docs/plans/future-multi-profile-account-isolation.md`.
+
+## Latest QR Live closure and proposed MP-0 handoff — 2026-10-15
+
+Earlier `IMPLEMENTED_NOT_LIVE_QUALIFIED` status is historical. PR #19 is merged
+at `3ddda01b77e2df747ae4ab75e2755b72d1c2caec`, with Ubuntu/Windows
+main CI successful. The separately approved deployed runtime
+`481db65097cd63ea0f9c28f39e526e341b700721` passed one real,
+operator-confirmed QR Live (8/8), post-Live local 6/6 and Vault remote_machine
+22/22. No MFA occurred. This is bounded single-source qualification only.
+
+Read `docs/tasks/fqgate-2-0-5-mp0-shared-profile-design-review.md` and
+`docs/prompts/fqgate-2-0-5-mp0-codex-goal.md` for the **next proposed
+read-only design review**. Preserve the existing Windows deployment; do not
+restart services or trigger QR/another account login. Static and read-only
+evidence cannot prove two-account isolation; record such gates as NOT_EXECUTED
+until separate explicit authorization. Report exact checks and resume steps,
+never only "evidence incomplete".
