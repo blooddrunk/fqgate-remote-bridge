@@ -15,6 +15,13 @@ function Assert-Case($Facts, $Record, [string]$Id, [string]$Expected) {
 }
 Assert-Case (New-Facts) $record 'PROCESS_RECORD' 'PASS'
 Assert-Case (New-Facts) $record 'WEBVIEW_PROFILE' 'PASS'
+$longRecord = @{ pid = [long]123; executablePath = $record.executablePath; startedAt = [DateTime]::Parse('2026-10-14T00:00:00Z').ToUniversalTime() }
+Assert-Case (New-Facts) $longRecord 'PROCESS_RECORD' 'PASS'
+$parsedRecord = $record | ConvertTo-Json | ConvertFrom-Json
+Assert-Case (New-Facts) $parsedRecord 'PROCESS_RECORD' 'PASS'
+$badRecord = @{ pid = [double]123; executablePath = $record.executablePath; startedAt = $record.startedAt }
+Assert-Case (New-Facts) $badRecord 'PROCESS_RECORD' 'PROCESS_RECORD_NATIVE_IDENTITY_MISMATCH_OR_UNREADABLE'
+
 foreach ($port in @(17281, 17282)) {
     $f = New-Facts; $f.listeners = @($f.listeners | Where-Object { $_.port -ne $port })
     Assert-Case $f $record "LISTENER_$port" 'LISTENER_ABSENT'

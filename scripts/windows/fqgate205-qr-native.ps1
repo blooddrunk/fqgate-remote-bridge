@@ -12,12 +12,20 @@ function Test-QrNativeFacts {
     $native = $Facts.process
     $expected = [IO.Path]::GetFullPath((Join-Path $Current 'fqgate.exe'))
     $pathMatch = $native -and $native.path -and [IO.Path]::GetFullPath($native.path).Equals($expected, [StringComparison]::OrdinalIgnoreCase)
-    $recordMatch = $Record -and $Record.pid -is [int] -and $Record.pid -gt 0 -and $Record.executablePath -and [IO.Path]::GetFullPath($Record.executablePath).Equals($expected, [StringComparison]::OrdinalIgnoreCase)
+    $recordMatch = $Record -and ($Record.pid -is [int] -or $Record.pid -is [long]) -and $Record.pid -gt 0 -and $Record.pid -le [int]::MaxValue -and $Record.executablePath -and [IO.Path]::GetFullPath($Record.executablePath).Equals($expected, [StringComparison]::OrdinalIgnoreCase)
     $created = [DateTimeOffset]::MinValue
     $creationValid = $native -and [DateTimeOffset]::TryParse([string]$native.created, [ref]$created)
     # Exact v2 diagnostic: a launch-time-only or stale record cannot prove creation identity.
     $recorded = [DateTimeOffset]::MinValue
-    $recordTimeValid = $Record -and [DateTimeOffset]::TryParse([string]$Record.startedAt, [ref]$recorded)
+    $recordTimeValid = $false
+    if ($Record) {
+        if ($Record.startedAt -is [DateTime] -or $Record.startedAt -is [DateTimeOffset]) {
+            $recorded = [DateTimeOffset]$Record.startedAt
+            $recordTimeValid = $true
+        } else {
+            $recordTimeValid = [DateTimeOffset]::TryParse([string]$Record.startedAt, [ref]$recorded)
+        }
+    }
     $timeMatch = $creationValid -and $recordTimeValid -and [Math]::Abs(($created - $recorded).TotalMilliseconds) -lt 1
     $result['PROCESS_RECORD'] = if ($result.LISTENER_17281 -eq 'PASS' -and $pathMatch -and $recordMatch -and $native.pid -eq $Record.pid -and $timeMatch) { 'PASS' } else { 'PROCESS_RECORD_NATIVE_IDENTITY_MISMATCH_OR_UNREADABLE' }
     $result['WEBVIEW_PROFILE'] = if ($Facts.profile -ceq 'OUTSIDE_PAYLOAD') { 'PASS' } elseif ($Facts.profile -ceq 'INSIDE_PAYLOAD') { 'WEBVIEW_PROFILE_INSIDE_IMMUTABLE_PAYLOAD' } else { 'WEBVIEW_PROFILE_UNVERIFIED' }

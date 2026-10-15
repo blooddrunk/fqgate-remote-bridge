@@ -55,6 +55,8 @@ not the Bridge runtime. It reports separate gates for:
   authenticated origin acceptance claim;
 - pre/post file/process/listener/profile continuity and `LIVE_QR=NOT_EXECUTED`.
 
+Native fixtures also cover JSON integer/date representations across Windows
+PowerShell 5.1 and PowerShell 7, rejecting strings/floating-point PIDs.
 Creation-time matching requires native and recorded timestamps within one
 millisecond. A record holding only launch time cannot establish this gate and
 must stay BLOCKED; the probe never repairs/adopts it. WebView profile location
