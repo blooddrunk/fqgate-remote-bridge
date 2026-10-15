@@ -90,7 +90,7 @@ service/task, process.json, profile, daed or Cloudflare change is performed.
 
 ```powershell
 Set-Location D:\code\research\fqgate-remote-bridge
-pwsh -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 `
+powershell.exe -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 `
   -Mode Preflight -Config D:\code\research\fqgate-acceptance-config.json
 node .\scripts\windows\fqgate205-readonly-probe.mjs `
   --config D:\code\research\fqgate-acceptance-config.json
@@ -124,6 +124,45 @@ are distinct from unimplemented v2 QR success/expiry/replacement/cancel tests.
 Those tests and real QR local/remote acceptance remain NOT_EXECUTED, not fixture
 success. Exact delivery commit/CI and final Windows totals are recorded in the
 external delivery receipt and final report.
+
+### Actual Windows results — 2026-10-15
+
+Implementation `f3680f528cf55d76c71e0418501e8eac28c5e589` passed native
+Windows frozen install with pinned pnpm 11.23.0, CLI build, typecheck, lint,
+554 tests, format check and **25/25 native PowerShell behavior fixtures**.
+Full Linux build and 15 browser tests passed; both OS jobs of
+[implementation CI 38666726318](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38666726318)
+passed. The final receipt binds the later delivery head and its own CI separately.
+
+Native Preflight at 01:39Z returned **17 PASS / 2 BLOCKED / 1 NOT_EXECUTED**,
+exit 1. BLOCKED: incomplete QR contract and two eligible sources. NOT_EXECUTED:
+real QR. Native PID 34980 / creation `2026-10-14T03:15:00.2208930Z`, record,
+pinned payload, separate WebView profile, listeners, version/health, sampled
+source/account/protocol/runtime continuity and configured Access cert transports
+all passed. Observation-only six-operation/transitive-schema fingerprint:
+`1cc165c2086e6eece42f8a79b2ade2d13ffd7bf33edfec21d771e3c76cd87103`.
+Remote unauthenticated human/admin 302 and machine 401 only prove edge responses.
+
+The existing running Bridge reports
+`3f78bb9948d95bf7ffb21809bba2baab283e7fed`, independently of the checkout.
+No restart/deployment was performed. Its local **6/6** matrix and real Vault-backed
+remote_machine **22/22** matrix passed again at 01:39–01:40Z, including machine
+QR denials. These are existing-socket regressions, not proof that this PR's build
+was deployed or that v2 QR works. The standalone probe loads the checkout's
+compiled diagnostic directly. Full Windows production rebuild was left to CI
+to preserve the currently served build; native local CLI build was executed.
+
+External receipts: `native-checks.json`, `native-quality-checks.json`,
+`remote-check.json`, per-command logs and `preflight-*.json` with SHA-256 sidecars
+under the evidence directory above. Initial PATH/PATHEXT and PowerShell native
+stderr-capture tooling attempts failed and were corrected; those attempts are
+not counted as acceptance passes. No session mutation or recovery followed.
+
+A supplemental public code search for `app_qr_poll` in publisher org `fqgate`
+returned no indexed results. The public FQGate-agent tree at
+`7ae0f216e5ca5d98a0808b7dae7b20da5d97f097` contains no named authentication/QR
+implementation file. This limited corroborating search does not prove that a
+contract cannot exist elsewhere; it supplies no missing wire semantics.
 
 The next minimal task is to obtain a version-bound publisher contract for the
 missing QR states/errors/session identity, and define an evidence-backed unique
