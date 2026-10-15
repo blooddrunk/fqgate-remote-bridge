@@ -1,4 +1,127 @@
-# FQGate 2.0.5 QR/session census and continuity diagnostics
+# FQGate 2.0.5 QR/session compatibility
+
+2026-10-15 continuation: **IMPLEMENTED_NOT_LIVE_QUALIFIED**. This section supersedes
+the initial census conclusion below. One implementation branch / PR #18; no new
+Issue or planning PR. Real QR has not been started by this task.
+
+## Resolved contract and exact scope
+
+GET-only runtime OpenAPI is supplemented by static inspection of the **actual
+installed executable**, without executing or saving its embedded client code.
+The pinned nine-file tree is
+`9b9eb7f886b9ecb07bff1f1c04ab0ab5851f1182cdf92d01a5e4ea90ac15c99f`;
+FQGate.exe is 53,590,016 bytes, SHA-256
+`d0a104f6d25b98b971999a585080ccbe0c9bc9470ca86a602d937f6d23816847`.
+`qr-contract.ts` records independently checked byte offsets, lengths and SHA-256
+for bundled `sources-DsI-NEke.js` and `localApi-BafuLJCn.js`. These establish
+fixed POST authentication actions `app_qr_begin` / `app_qr_poll`, integer flow
+handles, image/media fields, pending states `waiting_for_scan` and
+`waiting_for_confirmation`, and boolean `connected` completion. The operation
+plus transitive schema fingerprint is
+`1cc165c2086e6eece42f8a79b2ade2d13ffd7bf33edfec21d771e3c76cd87103`.
+
+The bundled UI establishes only the terminal-code **set** {1003, 3014}, not a
+one-to-one mapping. The adapter normalizes expiry/replacement only when a code
+in that set accompanies an exact corresponding native message found in the same
+pinned executable. Generic code 1003 remains an upstream failure. Unknown states,
+malformed envelopes and contract drift fail closed. This static evidence is
+neither a publisher signature nor real QR wire acceptance.
+
+## Server binding, continuity and existing behavior
+
+`FqgateV2QrAdapter` is independent of v1 qualification. Global `supportedRange`
+and `validatedVersions` remain unchanged. Fixed loopback requests, exact payload,
+native PID/path/creation, process record and external WebView profile are checked;
+version/health/contract/source/worker/account are sampled before and after actions.
+Pending account changes, worker/process restart and identity drift invalidate the
+flow. The upstream does not expose a proven session epoch: changes occurring
+entirely between samples cannot be ruled out. Do not claim complete anti-replay
+or undetectable account-switch protection.
+
+The existing private config can contain `qrV2: { instanceNumber: <operator-selected integer> }`.
+It is server-only; callers cannot select native IDs or flow handles. Without a
+pin exactly one eligible source is required. Two ready QR-capable source records
+were observed, one connected. Both are persisted active records; their original
+creation action is unproven. The operator accepted the recommendation to select
+the currently connected source; no source is deleted or logged out. Binding is
+separate from QR authorization and does not begin login. Actual config-write and
+readiness results are recorded externally, never inferred from this document.
+
+A preservation guard refuses multiple connected sources, or a disconnected QR
+target while another source is connected. This protects the already accepted
+single-connected-source lookup. It is a Bridge policy, not an upstream limit on
+multiple accounts. This task does not change the market adapter.
+
+Bridge UUIDs remain the only client flow identifiers. Native source/account/flow
+bindings stay in memory, adapter identity is bound into the registry, operations
+are serialized, TTL is 120 seconds, image size 512 KiB, QR body 2 MiB, snapshot
+64 KiB and OpenAPI 4 MiB. Each HTTP operation group has a 5-second budget;
+additional native identity checks are separately bounded. Fatal UTF-8, JSON,
+enum, canonical base64, response and timeout checks reject invalid input.
+Local/human/admin QR permissions and JWT/Host/Origin/CSRF stay fixed; machines
+are always denied before upstream access.
+
+UI cancellation clears the image and stops polling; it does **not** revoke an
+upstream flow, log out or delete an instance. No undocumented cancel endpoint
+is invented. v2 has no demonstrated `cache_credentials:false` option; the Bridge
+does not change auto-login/saved-login settings. Starting QR may replace login
+state for the selected instance. The bundled FQGate UI's temporary-instance
+create/delete behavior is deliberately not copied.
+
+## Windows acceptance and safe operator boundary
+
+Preflight remains GET-only and produces per-gate PASS/BLOCKED/NOT_EXECUTED,
+exit status, reason/evidence/impact/recovery/retry and external SHA-256 receipts.
+It now checks installed client bytes and exercises adapter readiness without QR.
+An ambiguous unbound deployment remains BLOCKED despite passing contract checks.
+
+Live without `-AllowLiveQr` produces NOT_EXECUTED, with no config read, browser
+launch or QR request. An explicitly approved Live run requires all Preflight
+gates and the running Bridge's exact checkout SHA before opening a fresh local
+browser. Only the existing loopback QR begin/poll POSTs are allowed, once per
+flow, with UUID checks, a 120-second deadline and bounded polls. No QR image,
+trace, screenshot, storage state, native identifier or session response is saved.
+Connected completion requires the same source/worker/process plus automatic
+read-only lookup and local matrix regression. Closing/cancelling/expiry/failure
+stops safely and cannot become PASS. An observed connected state does not
+independently attest which MFA the operator performed.
+
+```powershell
+Set-Location D:\code\research\fqgate-remote-bridge
+powershell.exe -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 `
+  -Mode Preflight -Config D:\code\research\fqgate-acceptance-config.json
+# ONLY after separate explicit approval and a matching running Bridge build:
+powershell.exe -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 `
+  -Mode Live -AllowLiveQr -Config D:\code\research\fqgate-acceptance-config.json
+```
+
+Live impact: may replace the selected login; the operator scans/confirms in their
+own app. Expected: same bound instance connected and regression gates PASS. Stop
+on identity mismatch, cancel, expiry or timeout. Recovery: close the local QR UI,
+retain the existing processes/configuration, rerun Preflight and obtain approval
+before a fresh Live attempt. No automatic process restoration or account rollback.
+Bridge deployment/start/restart is a separate approval; this task does not perform
+it implicitly. Existing runtime socket results must retain their actual build SHA.
+
+Deterministic tests cover v1 regression, v2 pending/connected/error/expiry/replaced,
+source ambiguity and pinning, restart/drift, hostile responses, timeouts,
+concurrency, UUID isolation and policy/Origin denials. Browser fixtures cover
+local cancellation. Native Windows fixtures execute the actual PowerShell
+collector with fake Win32 inputs and prove the no-approval Live guard. These are
+simulation/behavior tests, separate from real Windows QR acceptance. Exact final
+SHA, CI and native results belong in the external continuation delivery receipt.
+
+## Next smallest task and unchanged risks
+
+After this bounded slice, use `docs/plans/future-multi-profile-account-isolation.md`
+to design shared QR/status/lookup account selection and isolation. Do not launch
+that implementation concurrently or expose a raw upstream selector. Signature
+trust, authenticated release replay, complete directory/power-loss rollback,
+queue/L2 qualification, startup and Phase 7-B2/7-C retain their prior risk states.
+
+---
+
+# Historical initial census delivery
 
 2026-10-15: **BLOCKED_UPSTREAM_QR_CONTRACT**. Read-only preflight implemented;
 v2 QR adapter and real QR acceptance remain **NOT_IMPLEMENTED / NOT_EXECUTED**.

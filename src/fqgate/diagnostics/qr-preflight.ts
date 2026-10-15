@@ -2,14 +2,8 @@ import { fingerprintJson } from "../openapi/catalog.js";
 import { operationContractFingerprint } from "../market/contract.js";
 import type { HttpTransport } from "../release/http.js";
 
-export const QR_CENSUS_CONTRACTS = [
-  ["/v2/system/version", "get"],
-  ["/v2/system/health", "get"],
-  ["/v2/source-instances", "get"],
-  ["/v2/source-instances/{instance_id}/account", "get"],
-  ["/v2/source-instances/{instance_id}/authentication", "get"],
-  ["/v2/source-instances/{instance_id}/authentication", "post"],
-] as const;
+import { QR_CENSUS_CONTRACTS, V2_QR_FINGERPRINT } from "./qr-contract.js";
+export { QR_CENSUS_CONTRACTS } from "./qr-contract.js";
 // Observation only. No value from this module grants QR compatibility or mutation authority.
 export interface QrDiagnosticGate {
   readonly id: string;
@@ -34,6 +28,8 @@ function safeInteger(v: unknown): v is number {
 export async function inspectQrPrerequisites(options: {
   readonly http: HttpTransport;
   readonly nowMs?: () => number;
+  readonly staticClientVerified?: boolean;
+  readonly instanceNumber?: number;
 }): Promise<readonly QrDiagnosticGate[]> {
   const gates: QrDiagnosticGate[] = [];
   const add = (
@@ -94,6 +90,7 @@ export async function inspectQrPrerequisites(options: {
     });
     const snapshots = [];
     let eligible = 0;
+    let boundEligible = 0;
     for (const s of sources) {
       const path = `/v2/source-instances/${encodeURIComponent(s.id)}`;
       const account = await get(`${path}/account`);
@@ -118,8 +115,10 @@ export async function inspectQrPrerequisites(options: {
         s.provider === "tonghuashun" &&
         descriptor.session_supported &&
         auth.modes.includes("app_qr")
-      )
+      ) {
         eligible++;
+        if (s.number === options.instanceNumber) boundEligible++;
+      }
       // Includes account changes internally; no digest or identifier is included in evidence.
       snapshots.push({
         source: s,
@@ -132,7 +131,7 @@ export async function inspectQrPrerequisites(options: {
     return {
       identity: fingerprintJson(snapshots),
       count: sources.length,
-      eligible,
+      eligible: options.instanceNumber === undefined ? eligible : boundEligible,
       connected: sources.filter((s) => s.state === "connected").length,
     };
   };
@@ -170,8 +169,10 @@ export async function inspectQrPrerequisites(options: {
     const hasStatusEnum = Array.isArray(record(fields.status).enum);
     add(
       "QR_CONTRACT",
-      "BLOCKED",
-      "BLOCKED_UPSTREAM_QR_CONTRACT",
+      options.staticClientVerified === true && contract === V2_QR_FINGERPRINT ? "PASS" : "BLOCKED",
+      options.staticClientVerified === true && contract === V2_QR_FINGERPRINT
+        ? "EXACT_STATIC_CLIENT_AND_OPENAPI_REVIEWED"
+        : "BLOCKED_UPSTREAM_QR_CONTRACT",
       {
         fingerprint: contract,
         beginActionDeclared: actions.includes("app_qr_begin"),
@@ -179,9 +180,11 @@ export async function inspectQrPrerequisites(options: {
         statusEnumDeclared: hasStatusEnum,
         expiredErrorDeclared: /qr_flow_expired|flow_expired/i.test(errors),
         replacedErrorDeclared: /qr_flow_replaced|flow_replaced/i.test(errors),
-        adapterEnabled: false,
+        adapterImplemented: true,
+        staticClientVerified: options.staticClientVerified === true,
+        liveWireVerified: false,
       },
-      "Obtain a version-bound publisher QR contract for pending/expired/replaced/cancelled and session identity; review before implementing. A schema fingerprint alone is insufficient.",
+      "Verify the pinned installed client and reviewed OpenAPI together, then repeat Preflight. Static evidence is not live QR acceptance; cancellation only abandons local polling.",
     );
   } catch {
     add("QR_CONTRACT", "BLOCKED", "BLOCKED_UPSTREAM_QR_CONTRACT");
@@ -229,7 +232,7 @@ export async function inspectQrPrerequisites(options: {
   add(
     "LIVE_QR",
     "NOT_EXECUTED",
-    "NO_REVIEWED_V2_ADAPTER_OR_LIVE_AUTHORIZATION",
+    "EXPLICIT_LIVE_AUTHORIZATION_REQUIRED",
     {},
     "Live begin may replace the current login. Implement and verify the contract first, then obtain explicit operator approval; do not begin QR to discover the contract.",
   );

@@ -1,7 +1,9 @@
 # FQGate 2.0.5 QR/session compatibility — bounded next implementation
 
-Status: **BLOCKED_UPSTREAM_QR_CONTRACT** after read-only Windows census (2026-10-15).
-Preflight diagnostics implemented; v2 QR adapter not implemented and Live NOT_EXECUTED.
+Status: **IMPLEMENTED_NOT_LIVE_QUALIFIED** (2026-10-15 continuation).
+Exact installed bundled-client evidence supplements the initial OpenAPI census;
+independent v2 adapter, server binding, Preflight and guarded Live harness implemented.
+Real QR remains NOT_EXECUTED pending separate approval and matching runtime build.
 Evidence/implementation: `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
 Owner workflow: single personal research implementation goal; no new Issues or
 planning-only PR. Prior read-only delivery:
@@ -96,8 +98,8 @@ Remote machines remain unable to start/poll QR.
 The agent should provide a dedicated
 `scripts/windows/fqgate205-qr-acceptance.ps1` with a **Preflight** mode that
 does not begin QR or change session state, and a separate explicitly interactive
-**Live** mode (e.g. `-Mode Live -AllowLiveQr`). These flags are a required
-new interface to implement; they are **not existing commands yet**.
+**Live** mode (e.g. `-Mode Live -AllowLiveQr`). These flags are implemented; `-AllowLiveQr` must never be supplied without
+separate explicit approval.
 
 From a clean, safely synchronized permanent checkout:
 
@@ -106,8 +108,8 @@ Set-Location D:\code\research\fqgate-remote-bridge
 git status --short
 node .\scripts\windows\fqgate205-readonly-probe.mjs --config D:\code\research\fqgate-acceptance-config.json
 node .\scripts\windows\phase5c-matrix.mjs --local
-# After implementing the new acceptance script:
-pwsh -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 -Mode Preflight -Config D:\code\research\fqgate-acceptance-config.json
+# Read-only; no QR begins:
+powershell.exe -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 -Mode Preflight -Config D:\code\research\fqgate-acceptance-config.json
 ```
 
 The script must report the actual bound build SHA, checks and exit codes.

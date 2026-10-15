@@ -154,7 +154,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "qr_payload",
-    requiredCompatibility: "validated",
+    requiredCompatibility: "operation_evidence",
     documentationVisible: true,
     upstream: { method: "POST", path: "/v1/market/session/qr/begin" },
   },
@@ -169,7 +169,7 @@ const OPERATION_POLICIES: readonly BridgeOperationPolicy[] = [
     timeoutMs: 5_000,
     maxBodyBytes: 4_096,
     sensitivity: "none",
-    requiredCompatibility: "validated",
+    requiredCompatibility: "operation_evidence",
     documentationVisible: true,
     upstream: { method: "POST", path: "/v1/market/session/qr/poll" },
   },
@@ -437,8 +437,12 @@ export function assertOperationRegistryInvariants(): void {
     }
     if (
       (operation.requiredCompatibility === "operation_evidence" &&
-        operation.id !== "market.instruments.lookup") ||
-      (operation.id === "market.instruments.lookup" &&
+        !["market.instruments.lookup", "session.qr.begin", "session.qr.poll"].includes(
+          operation.id,
+        )) ||
+      (["market.instruments.lookup", "session.qr.begin", "session.qr.poll"].includes(
+        operation.id,
+      ) &&
         operation.requiredCompatibility !== "operation_evidence")
     ) {
       throw new BridgeError(

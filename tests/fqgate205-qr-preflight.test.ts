@@ -145,7 +145,8 @@ describe("2.0.5 read-only QR preflight", () => {
       statusEnumDeclared: false,
       expiredErrorDeclared: false,
       replacedErrorDeclared: false,
-      adapterEnabled: false,
+      adapterImplemented: true,
+      staticClientVerified: false,
     });
     expect(gates.find((g) => g.id === "SOURCE_ACCOUNT_CONTINUITY")?.status).toBe("PASS");
     expect(

@@ -9,5 +9,12 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const flow = useQrLogin();
-  return <QrFlowView state={flow.viewState} onStart={flow.start} onRetry={flow.retry} />;
+  return (
+    <QrFlowView
+      state={flow.viewState}
+      onStart={flow.start}
+      onRetry={flow.retry}
+      onCancel={flow.cancel}
+    />
+  );
 }

@@ -13,6 +13,9 @@ import { V2_LOOKUP_TREE_HASH } from "../../dist/fqgate/market/v2.js";
 import { ChildProcessRunner } from "../../dist/fqgate/process/runner.js";
 import { FetchHttpTransport } from "../../dist/fqgate/release/http.js";
 import { fingerprintJson } from "../../dist/fqgate/openapi/catalog.js";
+import { verifyInstalledQrClient } from "../../dist/fqgate/diagnostics/qr-contract.js";
+import { FqgateV2QrAdapter } from "../../dist/bridge/qr/v2.js";
+import { verifyV2QrIdentity } from "../../dist/bridge/qr/v2-identity.js";
 import { inspectQrPrerequisites } from "../../dist/fqgate/diagnostics/qr-preflight.js";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -183,7 +186,39 @@ try {
   } catch {
     add("BRIDGE_BUILD", "BLOCKED", "BRIDGE_VERSION_UNAVAILABLE_OR_UNBOUND");
   }
-  for (const gate of await inspectQrPrerequisites({ http })) gates.push({ ...gate, retry });
+  let staticClientVerified = false;
+  try {
+    const proof = await verifyInstalledQrClient(layout.currentExecutable);
+    staticClientVerified = true;
+    add("QR_STATIC_CLIENT", "PASS", "EXACT_INSTALLED_STATIC_CLIENT", proof);
+  } catch {
+    add("QR_STATIC_CLIENT", "BLOCKED", "STATIC_CLIENT_CONTRACT_UNVERIFIED");
+  }
+  for (const gate of await inspectQrPrerequisites({
+    http,
+    staticClientVerified,
+    ...(config.qrV2 === undefined ? {} : { instanceNumber: config.qrV2.instanceNumber }),
+  }))
+    gates.push({ ...gate, retry });
+  try {
+    await new FqgateV2QrAdapter({
+      http,
+      identity: () => verifyV2QrIdentity(layout, runner),
+      ...(config.qrV2 === undefined ? {} : { instanceNumber: config.qrV2.instanceNumber }),
+    }).inspect();
+    add("QR_SCOPED_READINESS", "PASS", "EXACT_ADAPTER_READONLY_READY");
+  } catch (error) {
+    add(
+      "QR_SCOPED_READINESS",
+      "BLOCKED",
+      ["FQGATE_INCOMPATIBLE", "PROCESS_IDENTITY_MISMATCH", "OPENAPI_CONTRACT_MISSING"].includes(
+        error?.code,
+      )
+        ? error.code
+        : "QR_READINESS_UNVERIFIED",
+    );
+  }
+
   for (const kind of ["admin", "machine"]) {
     const access = config.remoteAccess[`${kind}Access`];
     if (!access) {
@@ -250,11 +285,9 @@ try {
     add(
       "LIVE_REQUEST",
       "NOT_EXECUTED",
-      option("--allow-live") === "True"
-        ? "BLOCKED_UPSTREAM_QR_CONTRACT"
-        : "EXPLICIT_LIVE_APPROVAL_ABSENT",
+      option("--allow-live") === "True" ? "LIVE_HARNESS_REQUIRED" : "EXPLICIT_LIVE_APPROVAL_ABSENT",
       {},
-      "No live harness is enabled until the contract and unique source gates are resolved. Starting QR could replace current login; no POST was sent.",
+      "Use the dedicated Live harness only after explicit approval and passing readiness/build gates. This diagnostic sends no POST.",
     );
 } catch {
   add("PREFLIGHT", "BLOCKED", "CONFIG_TOOLING_OR_ARGUMENTS_INVALID");
@@ -262,11 +295,18 @@ try {
 const sourceHashes = {};
 for (const file of [
   "scripts/windows/fqgate205-qr-acceptance.ps1",
+  "scripts/windows/fqgate205-qr-live.mjs",
+  "scripts/windows/test-fqgate205-qr-identity.mjs",
   "scripts/windows/fqgate205-qr-native.ps1",
   "scripts/windows/fqgate205-qr-preflight.mjs",
   "src/fqgate/diagnostics/qr-preflight.ts",
   "scripts/windows/test-fqgate205-qr-preflight.ps1",
   "tests/fqgate205-qr-preflight.test.ts",
+  "src/bridge/qr/v2.ts",
+  "src/bridge/qr/v2-identity.ts",
+  "src/fqgate/diagnostics/qr-contract.ts",
+  "tests/fqgate205-qr-adapter.test.ts",
+  "tests/fqgate205-qr-identity.test.ts",
 ]) {
   try {
     sourceHashes[file] = hash(await readFile(resolve(root, file)));
@@ -274,6 +314,8 @@ for (const file of [
     add("SOURCE_HASH", "BLOCKED", "DIAGNOSTIC_SOURCE_UNREADABLE");
   }
 }
+exitCode = gates.some((g) => g.status === "BLOCKED") || option("--mode") === "Live" ? 1 : 0;
+let receiptSaved = false;
 const report = {
   sourceHashes,
   schemaVersion: 1,
@@ -302,8 +344,9 @@ try {
     bytes = JSON.stringify(report, null, 2) + "\n";
   await writeFile(resolve(evidenceDirectory, name), bytes, { flag: "wx" });
   await writeFile(resolve(evidenceDirectory, `${name}.sha256`), hash(bytes) + "\n", { flag: "wx" });
+  receiptSaved = true;
   console.log(JSON.stringify({ ...report, receiptFile: name, receiptSha256: hash(bytes) }));
 } catch {
   console.log(JSON.stringify({ ...report, receiptSaved: false }));
 }
-process.exitCode = exitCode;
+process.exitCode = receiptSaved ? exitCode : 2;

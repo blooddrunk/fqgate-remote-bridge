@@ -8,6 +8,7 @@ export function useQrLogin(): {
   readonly viewState: QrFlowViewState;
   readonly start: () => void;
   readonly retry: () => void;
+  readonly cancel: () => void;
 } {
   const queryClient = useQueryClient();
   const [begin, setBegin] = useState<QrBeginResponse | undefined>();
@@ -61,8 +62,12 @@ export function useQrLogin(): {
       poll.error !== null &&
       poll.error !== undefined &&
       !isTerminalCode(poll.error instanceof BridgeApiError ? poll.error.code : "")
-    )
+    ) {
       setFatalError(messageForError(poll.error));
+      setBegin(undefined);
+      beginMutation.reset();
+      void queryClient.removeQueries({ queryKey: ["qr-flow"] });
+    }
   }, [begin, beginMutation, connected, poll.data, poll.error, queryClient]);
 
   const viewState = useMemo<QrFlowViewState>(() => {
@@ -103,7 +108,11 @@ export function useQrLogin(): {
     beginMutation.reset();
     void queryClient.removeQueries({ queryKey: ["qr-flow"] });
   };
-  return { viewState, start, retry };
+  const cancel = () => {
+    void queryClient.cancelQueries({ queryKey: ["qr-flow"] });
+    retry();
+  };
+  return { viewState, start, retry, cancel };
 }
 
 function isTerminalCode(code: string): boolean {

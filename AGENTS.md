@@ -724,7 +724,7 @@ new remote privilege or startup actuator was added. Signature/replay and full v2
 version rollback remain unqualified. Final source/PR/CI state is retained in the
 external delivery receipt.
 
-## Next proposed FQGate 2.0.5 QR/session slice
+## Historical proposed FQGate 2.0.5 QR/session slice
 
 The separate bounded task is
 `docs/tasks/fqgate-2-0-5-qr-session-compatibility.md` (**PROPOSED, not yet
@@ -738,7 +738,7 @@ Reboot/identity diagnostics remain read-only; this does not authorize
 unattended startup, process-record edits, Cloudflare changes, an installer,
 Phase 7-B2/C, or new Issues/planning-only PRs.
 
-## FQGate 2.0.5 QR/session census result — 2026-10-15
+## Historical initial FQGate 2.0.5 QR/session census result — 2026-10-15
 
 The operator authorized the bounded QR task. Permanent-Windows read-only census
 found two eligible QR sources and incomplete pending/expiry/replacement/error
@@ -749,3 +749,24 @@ v1 QR/global gate and existing permissions. Neither `-Mode Live` nor
 `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`. Obtain the missing
 publisher contract and review unique source policy before implementing/mutating
 sessions. No new Issue, automatic restart or control-plane write is implied.
+
+## Current FQGate 2.0.5 QR/session continuation — 2026-10-15
+
+The current status supersedes the historical initial census above:
+**IMPLEMENTED_NOT_LIVE_QUALIFIED**. Read the QR implementation handoff before
+changes. The exact installed client's static bytes supplement OpenAPI; this
+is not publisher-signature verification or real QR acceptance. The separate
+v2 QR adapter uses operation evidence without widening global compatibility.
+Server-only `qrV2.instanceNumber` pins an existing eligible instance; ambiguous
+selection is denied. The operator accepted binding the currently connected
+instance while retaining the second record. Do not create/delete sources,
+change saved-login settings or permit a second connected account in this slice.
+v1/lookup and local/human/admin/machine permissions stay unchanged.
+
+Preflight is GET-only. Real Live QR and any Bridge process replacement require
+separate explicit approval; `-AllowLiveQr` is never implied by engineering
+approval. UI cancellation clears local QR/polling, not native login state.
+Continue to record actual running build separately from checkout/CI identity.
+Future shared QR/status/lookup account selection and isolation is documented in
+`docs/plans/future-multi-profile-account-isolation.md`; do not implement it
+opportunistically. No new Issues/planning PRs or Phase 7-B2/7-C authority.

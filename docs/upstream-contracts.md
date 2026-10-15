@@ -636,7 +636,7 @@ v2 incompatible. It grants no install/restart/rollback authority. Missing publis
 signature and authenticated replay remain BLOCKED; fixture recovery is not proof
 of real power-loss rollback. See the active task and implementation handoff.
 
-## 2.0.5 QR census — 2026-10-15
+## Historical initial 2.0.5 QR census — 2026-10-15
 
 Actual native Windows OpenAPI uses GET/POST
 `/v2/source-instances/{instance_id}/authentication`; POST discriminates
@@ -648,3 +648,39 @@ so v1's expiry mapping cannot be assumed. Both ready tonghuashun sources support
 sessions and QR; one connected source is not proof of unique QR eligibility.
 No state-changing probe was used. This is observation, not operation readiness;
 v2 QR remains BLOCKED_UPSTREAM_QR_CONTRACT. See the QR implementation handoff.
+
+## Exact 2.0.5 QR/session continuation — 2026-10-15
+
+An independent exact-artifact v2 QR adapter now supplements the v1 adapter,
+using reviewed runtime OpenAPI plus the installed executable's bundled client
+contract. QR operation evidence does not change global lifecycle qualification.
+Only fixed authentication begin/poll actions are supported. Native instance,
+account and numeric flow handles remain private; clients retain Bridge UUIDs.
+Server-side optional `qrV2.instanceNumber` resolves an existing target, with
+ambiguity denied and a guard preserving the current single-connected lookup.
+The current operator choice is the connected target; both native records remain.
+
+Process record/native creation, pinned payload, loopback listener, external
+WebView data, contract and sampled source/worker/account continuity are checked.
+No public session epoch is proven; transient changes between samples remain a
+limitation. Cancellation clears local QR and polling, with no upstream revoke,
+logout or source CRUD. Saved-login options are unchanged. Host/JWT/Origin/CSRF,
+local/human/admin permissions and all machine QR denials remain mandatory.
+
+Status: **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Preflight is read-only; separate
+approval plus exact running build is required for guarded local Live QR. Static
+assets, deterministic tests, Windows fixtures and CI do not establish real login
+or MFA success. Publisher signing/replay and full rollback remain unresolved.
+See `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for contract
+hashes, limits, evidence, commands and exact authorization boundaries. Shared
+QR/status/lookup multi-account isolation remains a future separate task under
+`docs/plans/future-multi-profile-account-isolation.md`.
+
+The pinned bundled UI establishes pending states `waiting_for_scan` and
+`waiting_for_confirmation`, positive integer `flow_id`, image/media fields,
+boolean connected completion and terminal code set {1003, 3014}. Expired or
+replaced normalization requires both that set and the corresponding exact
+native message from the same executable. Code 1003 alone is not expiry.
+The upstream UI's temporary-source create/delete workflow is not authorized
+for this Bridge adapter. Actual two-account concurrent login/L2 isolation
+remains untested; multiple source declarations do not prove those properties.

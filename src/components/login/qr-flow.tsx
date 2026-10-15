@@ -32,9 +32,10 @@ export interface QrFlowViewProps {
   readonly state: QrFlowViewState;
   readonly onStart: () => void;
   readonly onRetry: () => void;
+  readonly onCancel?: () => void;
 }
 
-export function QrFlowView({ state, onStart, onRetry }: QrFlowViewProps) {
+export function QrFlowView({ state, onStart, onRetry, onCancel }: QrFlowViewProps) {
   return (
     <div className="mx-auto min-w-0 max-w-4xl space-y-7 sm:space-y-8">
       <section className="max-w-2xl">
@@ -52,7 +53,12 @@ export function QrFlowView({ state, onStart, onRetry }: QrFlowViewProps) {
       {state.kind === "idle" ? <StartCard onStart={onStart} /> : null}
       {state.kind === "starting" ? <StartingCard /> : null}
       {state.kind === "active" ? (
-        <ActiveCard begin={state.begin} poll={state.poll} isPolling={state.isPolling} />
+        <ActiveCard
+          begin={state.begin}
+          poll={state.poll}
+          isPolling={state.isPolling}
+          onCancel={onCancel}
+        />
       ) : null}
       {state.kind === "connected" ? (
         <ConnectedCard
@@ -76,7 +82,7 @@ function StartCard({ onStart }: { readonly onStart: () => void }) {
         </span>
         <h2 className="mt-6 text-xl font-semibold">准备好后开始</h2>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
-          开始后，桥接会向 FQGate 请求新的 QR 码，并关闭凭据缓存。
+          开始后会请求新的 QR 码，可能替换所选数据源的当前登录。请在准备好后继续。
         </p>
         <Button className="mt-7" size="lg" onClick={onStart}>
           生成 QR 码
@@ -104,10 +110,12 @@ function ActiveCard({
   begin,
   poll,
   isPolling,
+  onCancel,
 }: {
   readonly begin: QrBeginResponse;
   readonly poll: QrPollResponse | undefined;
   readonly isPolling: boolean;
+  readonly onCancel: (() => void) | undefined;
 }) {
   const status = poll?.status ?? begin.status;
   return (
@@ -141,6 +149,14 @@ function ActiveCard({
             <InfoRow icon={<ShieldCheck size={16} />} label="保存位置" value="仅内存" />
             <InfoRow icon={<WifiOff size={16} />} label="网络范围" value="127.0.0.1" />
           </div>
+          {onCancel === undefined ? null : (
+            <Button className="mt-6" variant="secondary" onClick={onCancel}>
+              取消本次扫码
+            </Button>
+          )}
+          <p className="mt-2 text-xs text-slate-500">
+            取消会清除本页二维码并停止轮询，不会登出账号。
+          </p>
         </div>
       </CardContent>
     </Card>

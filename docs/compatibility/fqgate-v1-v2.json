@@ -322,6 +322,22 @@
     "expiryReplacementMappingEstablished": false,
     "liveQr": "NOT_EXECUTED",
     "globalCompatibilityChanged": false,
-    "remotePermissionsChanged": false
+    "remotePermissionsChanged": false,
+    "historical": true
+  },
+  "r6Exact205QrImplementation": {
+    "asOf": "2026-10-15",
+    "status": "IMPLEMENTED_NOT_LIVE_QUALIFIED",
+    "handoff": "docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md",
+    "contractEvidence": "PINNED_INSTALLED_STATIC_CLIENT_AND_RUNTIME_OPENAPI",
+    "qrAdapterImplemented": true,
+    "sourceSelection": "PRIVATE_SERVER_PIN_OR_UNIQUE_ELIGIBLE_SOURCE",
+    "multipleConnectedSources": "DENIED_TO_PRESERVE_EXISTING_LOOKUP",
+    "liveQr": "NOT_EXECUTED",
+    "globalCompatibilityChanged": false,
+    "remotePermissionsChanged": false,
+    "sessionEpochProven": false,
+    "publisherSignatureVerified": false,
+    "futurePlan": "docs/plans/future-multi-profile-account-isolation.md"
   }
 }
