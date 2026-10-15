@@ -746,9 +746,18 @@ At 07:25Z on 2026-10-15, read-only ACL inspection found the current external
 config inherits `Authenticated Users: Modify` and `Builtin Users: ReadAndExecute`.
 The existing pre-binding backup grants only the current operator. Content hashes
 remain unchanged; no ACL was modified by that inspection. Protected-config
-verification is therefore an additional BLOCKED deployment prerequisite beyond
-Preflight's running-build mismatch. Narrowing the current file's DACL requires
-separate approval, an original-DACL backup in the protected private directory,
-and content-hash verification. No permission repair or process replacement is
-implied. Actual subsequent approvals/results belong in the external delivery
-receipt. Real QR and post-Live matrices remain independently unexecuted.
+verification does not establish operator-only protection for this file. The
+operator correctly questioned treating optional ACL hardening as a mandatory gate
+for a single-owner research trial; that strict interpretation is withdrawn.
+Content/hash/native identity checks remain mandatory. A replacement approval may
+explicitly retain the known existing ACL; it must not claim operator-only custody.
+
+The operator separately approved narrowing only this file's DACL. The attempted
+write was denied with `UnauthorizedAccessException / 0x80070005` before any ACL
+change. Content and permissions remain unchanged; the original DACL was backed up
+in the existing operator-only private directory. No elevation, ownership change,
+file replacement or process stop followed. Optional hardening remains BLOCKED on
+Windows write-DACL authority; it does not prove a QR protocol defect or require
+expanding this personal project into a multi-user deployment. Actual subsequent
+replacement/Live approvals and results belong in the external delivery receipt.
+Real QR and post-Live matrices remain independently unexecuted.
