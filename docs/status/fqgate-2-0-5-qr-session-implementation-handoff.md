@@ -111,6 +111,51 @@ collector with fake Win32 inputs and prove the no-approval Live guard. These are
 simulation/behavior tests, separate from real Windows QR acceptance. Exact final
 SHA, CI and native results belong in the external continuation delivery receipt.
 
+## Actual continuation validation — 2026-10-15
+
+Implementation `4c7c88b32fe6b64489ef2578d126e14b856a39b1` passed the complete
+Linux frozen-install/typecheck/lint/test/build/format/E2E pipeline: **639 tests,
+16 browser tests**. Its [CI 38676903103](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38676903103)
+passed Ubuntu and Windows. The later final delivery SHA/CI is bound separately
+in the external continuation receipt; do not treat this CI as another head.
+
+The permanent Windows checkout was clean before safe fast-forward. Native
+frozen install, CLI build, typecheck, lint, **639 tests**, format, **28/28**
+PowerShell preflight cases, **5/5** inline identity cases and **1/1** no-approval
+Live guard passed. No full production rebuild overwrote the active served
+output; the Windows CI full build is separate evidence.
+
+At 03:36Z the operator-approved current connected source was pinned in the
+external acceptance config, with an original-byte backup restricted to the
+operator outside the evidence directory. Static-client proof, adapter read-only
+readiness and pre/post process/source/account equality passed. No authentication
+POST was sent. Initial backup ACL-copy attempts failed because an identity was
+unresolvable and a redundant ACL write required an unavailable privilege;
+configuration was not changed by those attempts. Direct verification confirmed
+the already-created protected directory and its backup grant access only to the
+current operator, so no elevation or global ACL change was needed.
+
+At 03:37Z the newly compiled checkout's direct v2 lookup passed. The **existing
+running Bridge**, separately identified as
+`3f78bb9948d95bf7ffb21809bba2baab283e7fed`, again passed local **6/6** and real
+Vault-backed remote_machine **22/22** including QR denials. These do not prove
+new QR deployment. Final Preflight requires exact running/checkout SHA equality;
+a reachable older build is **BLOCKED**, even when all other readiness checks
+pass. No Bridge/FQGate restart, process-record change, Cloudflare/daed write,
+source deletion or real QR was performed.
+
+Continuation receipts/logs and SHA-256 summaries are outside Git under
+`D:\code\research\fqgate-205-qr-evidence\continuation`. Exact final gates,
+source hashes, tools, commands, exit codes, safe retries and automated versus
+human evidence are in `delivery-receipt.json` and the referenced Preflight.
+Remaining immediate gates are **BLOCKED running build mismatch** and
+**NOT_EXECUTED real QR pending separate approval**, rather than an unresolved
+OpenAPI-only contract investigation. Once approved, replace only Bridge using
+the reviewed build, rerun Preflight, then separately approve/run Live. A
+Bridge replacement briefly interrupts Bridge requests and clears its ephemeral
+registry; keep FQGate and both source records intact. Stop if native Bridge
+identity or preflight cannot be verified; never force-kill an unknown process.
+
 ## Next smallest task and unchanged risks
 
 After this bounded slice, use `docs/plans/future-multi-profile-account-isolation.md`

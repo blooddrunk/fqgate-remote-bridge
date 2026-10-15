@@ -234,7 +234,7 @@ export async function inspectQrPrerequisites(options: {
     "NOT_EXECUTED",
     "EXPLICIT_LIVE_AUTHORIZATION_REQUIRED",
     {},
-    "Live begin may replace the current login. Implement and verify the contract first, then obtain explicit operator approval; do not begin QR to discover the contract.",
+    "Live begin may replace the selected login. Require all Preflight gates, the exact running checkout build and explicit operator approval; never begin QR to discover the contract.",
   );
   return gates;
 }

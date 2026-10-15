@@ -174,7 +174,9 @@ try {
         if (path !== "/api/v1/session/qr/begin" && path !== "/api/v1/session/qr/poll") return;
         const value = await response.json();
         if (response.status() !== 200) {
-          terminal = known.has(value?.code) ? value.code : "LIVE_BRIDGE_REQUEST_FAILED";
+          terminal = known.has(value?.error?.code)
+            ? value.error.code
+            : "LIVE_BRIDGE_REQUEST_FAILED";
           return;
         }
         if (path.endsWith("/begin")) {

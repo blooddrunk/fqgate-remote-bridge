@@ -179,10 +179,13 @@ try {
       !/^[a-f0-9]{40}$/.test(v.commit)
     )
       throw Error();
-    add("BRIDGE_BUILD", "PASS", "RUNNING_BUILD_OBSERVED", {
-      runningCommit: v.commit,
-      matchesCheckout: v.commit === gitSha,
-    });
+    add(
+      "BRIDGE_BUILD",
+      v.commit === gitSha ? "PASS" : "BLOCKED",
+      v.commit === gitSha ? "EXACT_CHECKOUT_BUILD" : "RUNNING_BRIDGE_BUILD_MISMATCH",
+      { runningCommit: v.commit, matchesCheckout: v.commit === gitSha },
+      "Obtain separate approval to replace only Bridge with the reviewed checkout build, then repeat Preflight. Do not restart FQGate or begin QR to resolve this gate.",
+    );
   } catch {
     add("BRIDGE_BUILD", "BLOCKED", "BRIDGE_VERSION_UNAVAILABLE_OR_UNBOUND");
   }
