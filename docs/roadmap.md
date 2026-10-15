@@ -721,3 +721,73 @@ real two-account acceptance boundary are in
 `docs/plans/future-multi-profile-account-isolation.md`. That implementation is
 not started by this delivery. Publisher signing/replay, complete rollback and
 Phase 7-B2/7-C remain separate.
+
+## 2026-10-15 live QR qualification audit
+
+PR #18 is merged with passing main CI. A focused audit continuation hardens
+QR concurrency, UUID reservation, delayed UI callbacks and contradictory/native
+identity observations. Status remains **IMPLEMENTED_NOT_LIVE_QUALIFIED**.
+Prepare an isolated Bridge output and verified rollback from the existing Windows
+checkout; stopping the old Bridge requires explicit approval. Only a passing
+post-deployment Preflight permits requesting separate Live approval. Profile
+selection development remains deferred. Current evidence and retry commands:
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
+
+Audit validation: Linux/native Windows 652 tests and 16 Linux browser tests pass;
+staged candidate/previous version/status smoke passes. Existing-socket local 6/6
+and Vault remote 22/22 pass. Real Preflight still blocks on running-build mismatch;
+deployment, real QR and post-Live acceptance remain separately approval-gated.
+Rollback uses the existing protected pre-binding config without changing either
+config file. These results do not close QR live qualification.
+
+### Observed configuration protection prerequisite
+
+At 07:25Z on 2026-10-15, read-only ACL inspection found the current external
+config inherits `Authenticated Users: Modify` and `Builtin Users: ReadAndExecute`.
+The existing pre-binding backup grants only the current operator. Content hashes
+remain unchanged; no ACL was modified by that inspection. Protected-config
+verification does not establish operator-only protection for this file. The
+operator correctly questioned treating optional ACL hardening as a mandatory gate
+for a single-owner research trial; that strict interpretation is withdrawn.
+Content/hash/native identity checks remain mandatory. A replacement approval may
+explicitly retain the known existing ACL; it must not claim operator-only custody.
+
+The operator separately approved narrowing only this file's DACL. The attempted
+write was denied with `UnauthorizedAccessException / 0x80070005` before any ACL
+change. Content and permissions remain unchanged; the original DACL was backed up
+in the existing operator-only private directory. No elevation, ownership change,
+file replacement or process stop followed. Optional hardening remains BLOCKED on
+Windows write-DACL authority; it does not prove a QR protocol defect or require
+expanding this personal project into a multi-user deployment. Actual subsequent
+replacement/Live approvals and results belong in the external delivery receipt.
+Real QR and post-Live matrices remain independently unexecuted.
+
+## Live QR continuation: operator-visible readiness
+
+Bridge `1d3ff7c` was separately approved/deployed with passing Preflight and
+post-timeout local 6/6 / Vault remote 22/22. Both separately approved QR attempts
+failed (timeout, then normalized upstream unavailability); the operator saw no
+window and no phone action is attested. QR remains unqualified. The harness
+now requires an explicit click on a no-QR preparation page before any QR POST
+and records bounded begin/poll stage/counters. Windows visible/topmost flags do
+not substitute for operator visibility. New matching-runtime and Live approval
+gates precede another attempt; shared profile implementation remains deferred.
+
+## Final bounded QR live qualification — 2026-10-15
+
+**BOUNDED_QR_LIVE_QUALIFIED** for runtime
+`481db65097cd63ea0f9c28f39e526e341b700721`, the exact installed 2.0.5 artifact and
+fixed observed source. Separately approved Bridge-only deployment and third Live
+attempt passed: actual readiness click, one begin/two polls, waiting → connected,
+8/8 Live gates. Operator saw/scanned the QR and confirmed success on the phone;
+MFA was not presented. Post-Live lookup, local 6/6 and Vault remote_machine 22/22
+passed on that runtime; machine QR/admin denials remain enforced. Runtime CI
+`38702257233` passed Ubuntu/Windows. FQGate/cloudflared/config/ACL were preserved;
+no rollback or automatic retry occurred. Earlier two failed attempts are retained.
+
+See the final closure section in
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for evidence hashes,
+exact scope and unresolved trust/session-epoch/lifecycle risks. Final source and
+merge SHAs are recorded separately from deployed runtime SHA. Next task: bounded
+design review for shared-profile multi-account isolation. This closure authorizes
+no profile implementation, further QR, lifecycle expansion or remote permissions.

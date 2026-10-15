@@ -59,6 +59,7 @@ export class BridgeService {
   private readonly adminConfirmations: AdminConfirmationService;
   private readonly now: () => string;
   private readonly redactor = new Redactor();
+  private qrBusy = false;
 
   constructor(options: BridgeServiceOptions) {
     this.instrumentLookup = options.instrumentLookup;
@@ -126,10 +127,15 @@ export class BridgeService {
   }
 
   async beginQr(): Promise<QrBeginResponse> {
+    return this.exclusiveQr(() => this.beginQrExclusive());
+  }
+
+  private async beginQrExclusive(): Promise<QrBeginResponse> {
     const status = await this.lifecycle.status();
     const adapter = this.qrForStatus(status);
+    const commit = this.qrRegistry.prepareReplacement();
     const upstream = await adapter.begin();
-    const flow = this.qrRegistry.create(upstream.flowId, { replaceExisting: true, adapter });
+    const flow = commit(upstream.flowId, adapter);
     return {
       sessionId: flow.sessionId,
       qr: {
@@ -143,6 +149,21 @@ export class BridgeService {
   }
 
   async pollQr(sessionId: string): Promise<QrPollResponse> {
+    return this.exclusiveQr(() => this.pollQrExclusive(sessionId));
+  }
+
+  private async exclusiveQr<T>(run: () => Promise<T>): Promise<T> {
+    if (this.qrBusy)
+      throw new BridgeError(ERROR_CODES.QR_FLOW_LIMIT, "A QR operation is already in progress");
+    this.qrBusy = true;
+    try {
+      return await run();
+    } finally {
+      this.qrBusy = false;
+    }
+  }
+
+  private async pollQrExclusive(sessionId: string): Promise<QrPollResponse> {
     const lookup = this.qrRegistry.resolve(sessionId);
     if (lookup.kind === "missing") {
       throw new BridgeError(
@@ -161,6 +182,10 @@ export class BridgeService {
       if (lookup.flow.adapter !== undefined && lookup.flow.adapter !== adapter)
         throw new BridgeError(ERROR_CODES.QR_FLOW_REPLACED, "The QR adapter identity changed");
       const result = await adapter.poll(lookup.flow.flowId);
+      const current = this.qrRegistry.resolve(sessionId);
+      if (current.kind === "terminal") throw terminalFlowError(current.state);
+      if (current.kind !== "active" || current.flow !== lookup.flow)
+        throw new BridgeError(ERROR_CODES.QR_FLOW_REPLACED, "QR flow changed during polling");
       return this.completePoll(sessionId, lookup.flow, result);
     } catch (error) {
       if (isBridgeError(error) && isTerminalErrorCode(error.code)) {

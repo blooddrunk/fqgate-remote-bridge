@@ -1,9 +1,11 @@
 # FQGate 2.0.5 QR/session compatibility — bounded next implementation
 
-Status: **IMPLEMENTED_NOT_LIVE_QUALIFIED** (2026-10-15 continuation).
-Exact installed bundled-client evidence supplements the initial OpenAPI census;
-independent v2 adapter, server binding, Preflight and guarded Live harness implemented.
-Real QR remains NOT_EXECUTED pending separate approval and matching runtime build.
+Status: **BOUNDED_QR_LIVE_QUALIFIED** (2026-10-15 final continuation), restricted
+to exact runtime `481db65097cd63ea0f9c28f39e526e341b700721`, the installed 2.0.5
+artifact and fixed observed source. The third separately approved QR attempt and
+operator phone confirmation passed, followed by local 6/6 and authenticated remote
+22/22. Earlier dated sections retain historical pending/failed results; the final
+closure section supersedes those states. Global v2 lifecycle remains unqualified.
 Evidence/implementation: `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
 Owner workflow: single personal research implementation goal; no new Issues or
 planning-only PR. Prior read-only delivery:
@@ -145,3 +147,115 @@ Deliver one implementation branch/PR only if useful for the code review, an
 exact-head CI receipt, redacted external Windows evidence, and concise
 documentation updates. Full v2 issuer signing, anti-replay, directory/power-loss
 rollback, unattended startup and Phase 7-B2/7-C remain separate future work.
+
+## Live-qualification audit continuation — 2026-10-15
+
+Before deployment, audit and test delayed UI callbacks, begin/poll serialization,
+UUID allocation failure before upstream begin, and contradictory completion fields.
+The intended hardening reserves the opaque UUID before authentication mutation,
+invalidates prior flows when replacement starts, and prevents old asynchronous
+results from reviving cancelled UI state. A connected result must not also claim
+a pending status. No new upstream operation or cancellation action is authorized.
+Bridge replacement and real QR each require separate explicit operator approval.
+
+Actual continuation: 652 tests pass on Linux and native Windows; 16 Linux browser
+tests pass. Native staged candidate/previous version and status smoke passed.
+Existing old-runtime local 6/6 and Vault remote 22/22 passed; they are baseline
+checks. Preflight remains 20 PASS / 1 BLOCKED (running build mismatch) /
+1 NOT_EXECUTED (Live approval absent). No deployment or QR approval has occurred.
+Rollback requires the existing protected pre-binding config because the old
+bundle rejects `qrV2`; neither protected config file is overwritten. Exact
+head/CI/artifact bindings and safe resume actions are retained in the handoff
+and repo-external `live-qualification` receipts.
+
+### Observed configuration protection prerequisite
+
+At 07:25Z on 2026-10-15, read-only ACL inspection found the current external
+config inherits `Authenticated Users: Modify` and `Builtin Users: ReadAndExecute`.
+The existing pre-binding backup grants only the current operator. Content hashes
+remain unchanged; no ACL was modified by that inspection. Protected-config
+verification does not establish operator-only protection for this file. The
+operator correctly questioned treating optional ACL hardening as a mandatory gate
+for a single-owner research trial; that strict interpretation is withdrawn.
+Content/hash/native identity checks remain mandatory. A replacement approval may
+explicitly retain the known existing ACL; it must not claim operator-only custody.
+
+The operator separately approved narrowing only this file's DACL. The attempted
+write was denied with `UnauthorizedAccessException / 0x80070005` before any ACL
+change. Content and permissions remain unchanged; the original DACL was backed up
+in the existing operator-only private directory. No elevation, ownership change,
+file replacement or process stop followed. Optional hardening remains BLOCKED on
+Windows write-DACL authority; it does not prove a QR protocol defect or require
+expanding this personal project into a multi-user deployment. Actual subsequent
+replacement/Live approvals and results belong in the external delivery receipt.
+Real QR and post-Live matrices remain independently unexecuted.
+
+## Actual Bridge deployment and two bounded Live attempts — 2026-10-15
+
+The operator approved Bridge-only replacement and bounded failure rollback,
+explicitly retaining existing config contents/ACL. Runtime
+`1d3ff7c99a045df04e88123d40faafe1da0b0789` passed exact-head
+[Ubuntu/Windows CI 38699198461](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38699198461).
+Bridge PID 56740 started at `2026-10-15T07:34:51.8498790Z` on
+127.0.0.1:17282; FQGate PID 34980, cloudflared PID 5788, sampled native
+source/account observations and config bytes were unchanged. Post-deployment
+Preflight passed **21 PASS / 0 BLOCKED / 1 NOT_EXECUTED**. Initial stop was
+safely refused before mutation because CIM/handle creation differed by 600 ns;
+independent exact CIM and handle creation bindings resolved that tooling issue.
+No FQGate restart, source CRUD, Cloudflare/network/service/task change occurred.
+
+Two **separately approved**, single-attempt Live runs did not qualify QR:
+
+- At 07:36–07:38Z, `LIVE_QR_TIMEOUT`; operator reported no new browser window.
+- At 07:48Z, `UPSTREAM_UNAVAILABLE`; operator again reported no window.
+  The receipt did not retain whether begin or poll failed, so that layer and
+  its native cause remain unproven. Do not guess an upstream error mapping.
+
+No scan, phone confirmation or MFA is attested. No automatic third attempt.
+The deployed runtime's post-timeout direct lookup, local **6/6** and real
+Vault remote **22/22**, including machine QR/admin denials, passed. These are
+post-failure availability/permission diagnostics, not successful post-login
+acceptance. Full signing/replay/version rollback/profile isolation stay separate.
+
+Native desktop/window inspection found the browser in the interactive session,
+visible/non-minimized/non-cloaked but without foreground focus. An isolated
+no-network test page was seen by the operator after placing only its verified
+new Chromium window temporarily topmost. A process-tree-scoped external companion
+was tested, but its visibility flags did not prove that the real QR page was
+seen. OS window metadata is not operator-visible acceptance.
+
+The harness continuation therefore opens a static no-QR preparation page and
+requires the operator to click its readiness button **inside that window** before
+navigating to login or allowing any QR POST. Closing/not confirming the window
+is a bounded, zero-QR result. The existing explicit Live approval is still
+required; readiness is not authorization. The real QR deadline starts only after
+readiness confirmation. Receipts now record only bounded begin/poll counters,
+response stage/HTTP status, state transitions and readiness; UUIDs, images,
+upstream messages/bodies and credentials remain excluded. Three browser fixtures
+prove no-network pending, timeout and close behavior. No backend permission or
+upstream operation changes. A matching reviewed runtime and a new explicit Live
+approval are required before testing this continuation against FQGate.
+
+Status remains **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Preserve the current deployment
+while preparing the reviewed continuation. Exact receipts and commands are under
+`D:\code\research\fqgate-205-qr-evidence\live-qualification`. The next task
+is operator-visible, readiness-gated QR qualification, not profile development.
+
+## Final bounded QR live qualification — 2026-10-15
+
+**BOUNDED_QR_LIVE_QUALIFIED** for runtime
+`481db65097cd63ea0f9c28f39e526e341b700721`, the exact installed 2.0.5 artifact and
+fixed observed source. Separately approved Bridge-only deployment and third Live
+attempt passed: actual readiness click, one begin/two polls, waiting → connected,
+8/8 Live gates. Operator saw/scanned the QR and confirmed success on the phone;
+MFA was not presented. Post-Live lookup, local 6/6 and Vault remote_machine 22/22
+passed on that runtime; machine QR/admin denials remain enforced. Runtime CI
+`38702257233` passed Ubuntu/Windows. FQGate/cloudflared/config/ACL were preserved;
+no rollback or automatic retry occurred. Earlier two failed attempts are retained.
+
+See the final closure section in
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for evidence hashes,
+exact scope and unresolved trust/session-epoch/lifecycle risks. Final source and
+merge SHAs are recorded separately from deployed runtime SHA. Next task: bounded
+design review for shared-profile multi-account isolation. This closure authorizes
+no profile implementation, further QR, lifecycle expansion or remote permissions.

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { QrBeginResponse } from "../bridge/contracts.js";
 import { BridgeApiError, beginQrLogin, pollQrLogin } from "../lib/api/client.js";
 import type { QrFlowViewState } from "../components/login/qr-flow.js";
@@ -11,20 +11,30 @@ export function useQrLogin(): {
   readonly cancel: () => void;
 } {
   const queryClient = useQueryClient();
+  const generation = useRef(0);
+  const beginning = useRef(false);
+  useEffect(
+    () => () => {
+      generation.current++;
+    },
+    [],
+  );
   const [begin, setBegin] = useState<QrBeginResponse | undefined>();
   const [terminal, setTerminal] = useState<"expired" | "replaced" | undefined>();
   const [fatalError, setFatalError] = useState<string | undefined>();
   const [connected, setConnected] = useState<{ readonly loginMethod?: string } | undefined>();
   const beginMutation = useMutation({
-    mutationFn: beginQrLogin,
-    onMutate: () => {
-      setBegin(undefined);
-      setTerminal(undefined);
-      setFatalError(undefined);
-      setConnected(undefined);
+    mutationFn: (_generation: number) => beginQrLogin(),
+    onSuccess: (value, requestGeneration) => {
+      if (requestGeneration === generation.current) setBegin(value);
     },
-    onSuccess: (value) => setBegin(value),
-    onError: (error) => setFatalError(messageForError(error)),
+    onError: (error, requestGeneration) => {
+      if (requestGeneration === generation.current) setFatalError(messageForError(error));
+    },
+    onSettled: () => {
+      beginning.current = false;
+    },
+    retry: false,
   });
   const poll = useQuery({
     queryKey: ["qr-flow", begin?.sessionId],
@@ -42,6 +52,7 @@ export function useQrLogin(): {
   });
 
   useEffect(() => {
+    if (begin === undefined) return;
     if (poll.data?.status === "connected" && connected === undefined) {
       const activeSessionId = begin?.sessionId;
       setConnected({
@@ -94,13 +105,22 @@ export function useQrLogin(): {
 
   const start = () => {
     if (
+      beginning.current ||
       beginMutation.isPending ||
       (begin !== undefined && terminal === undefined && poll.data?.status !== "connected")
     )
       return;
-    beginMutation.mutate();
+    generation.current++;
+    beginning.current = true;
+    setBegin(undefined);
+    setTerminal(undefined);
+    setFatalError(undefined);
+    setConnected(undefined);
+    beginMutation.mutate(generation.current);
   };
   const retry = () => {
+    generation.current++;
+    void queryClient.cancelQueries({ queryKey: ["qr-flow"] });
     setBegin(undefined);
     setTerminal(undefined);
     setFatalError(undefined);
