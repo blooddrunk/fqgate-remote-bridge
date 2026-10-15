@@ -165,3 +165,16 @@ Rollback requires the existing protected pre-binding config because the old
 bundle rejects `qrV2`; neither protected config file is overwritten. Exact
 head/CI/artifact bindings and safe resume actions are retained in the handoff
 and repo-external `live-qualification` receipts.
+
+### Observed configuration protection prerequisite
+
+At 07:25Z on 2026-10-15, read-only ACL inspection found the current external
+config inherits `Authenticated Users: Modify` and `Builtin Users: ReadAndExecute`.
+The existing pre-binding backup grants only the current operator. Content hashes
+remain unchanged; no ACL was modified by that inspection. Protected-config
+verification is therefore an additional BLOCKED deployment prerequisite beyond
+Preflight's running-build mismatch. Narrowing the current file's DACL requires
+separate approval, an original-DACL backup in the protected private directory,
+and content-hash verification. No permission repair or process replacement is
+implied. Actual subsequent approvals/results belong in the external delivery
+receipt. Real QR and post-Live matrices remain independently unexecuted.
