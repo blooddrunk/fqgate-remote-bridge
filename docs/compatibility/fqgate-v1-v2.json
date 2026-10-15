@@ -7,7 +7,7 @@
   "v2RuntimeQualified": false,
   "sources": [
     "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.4",
-    "https://github.com/fqgate/FQGate-releases/blob/edb17da7fca0952534a65f4cfb98a62b6a017d43/\u4f7f\u7528\u8bf4\u660e.md",
+    "https://github.com/fqgate/FQGate-releases/blob/edb17da7fca0952534a65f4cfb98a62b6a017d43/使用说明.md",
     "https://github.com/fqgate/FQGate-releases/tree/edb17da7fca0952534a65f4cfb98a62b6a017d43/releases/v2",
     "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.5"
   ],
@@ -285,5 +285,29 @@
       "REAL_REMOTE_ACCEPTANCE"
     ],
     "evidenceDirectory": "D:/code/research/fqgate-v2-r3-evidence"
+  },
+  "historicalRowsNote": "Rows and r1-r3 reflect the earlier investigation; see r4Exact205Lookup for the bounded 2026-10-14 Bridge integration. No global v2 install/upgrade qualification is implied.",
+  "r4Exact205Lookup": {
+    "asOf": "2026-10-14",
+    "reviewedAt": "2026-10-15",
+    "mergedPr": 17,
+    "mergeCommit": "69faee22118eab1cfd80cdbc18ce2cf177254b12",
+    "reviewedMain": "1991d3a2002a4c100a0e06d7aa1086541c204892",
+    "contract": "docs/tasks/fqgate-2-0-5-readonly-compatibility.md",
+    "handoff": "docs/status/fqgate-2-0-5-readonly-implementation-handoff.md",
+    "scope": "EXACT_MANUALLY_INSTALLED_WINDOWS_2_0_5_LOOKUP_ONLY",
+    "localMatrix": "PASS_6_OF_6",
+    "remoteMachineMatrix": "PASS_22_OF_22",
+    "processAndPayloadBound": true,
+    "v1LookupUnchanged": true,
+    "newRemoteOperations": false,
+    "publisherSignatureVerified": false,
+    "authenticatedReleaseReplayQualified": false,
+    "fullDirectoryPowerLossRollbackQualified": false,
+    "automaticV2InstallAuthorized": false,
+    "globalV2RuntimeQualified": false,
+    "qrSessionCompatibility": "NOT_IMPLEMENTED_V1_ADAPTER_AND_GLOBAL_GATE",
+    "restartReadiness": "OBSERVED_MANUAL_RECOVERY_NO_AUTOSTART",
+    "nextProposedTask": "docs/tasks/fqgate-2-0-5-qr-session-compatibility.md"
   }
 }

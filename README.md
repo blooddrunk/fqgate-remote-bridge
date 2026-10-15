@@ -998,24 +998,31 @@ Phase 6-A 计划指纹，每次执行一项精确的 Tunnel ingress 或 Access �
 [Windows Phase 6-C 验收](docs/operations/windows-phase-6-c-acceptance.md)；结果见
 [实现交接](docs/status/phase-6-c-implementation-handoff.md)。
 
-### FQGate 2.x：只读调查，尚不能升级
+### FQGate 2.0.5：手动升级已完成，Bridge 限定只读兼容
 
-2026-10-13 复查的最新正式版为 2.0.5；已保留 2.0.4 历史快照，旧版 manifest 仍指向 1.0.5。
-Bridge 目前仅提供本机显式只读调查：
+2026-10-13 已在用户明确接受发行签名未验证风险的个人研究环境中手动安装
+官方 FQGate 2.0.5，并完成原生 Windows 登录与查询。
+这不代表自动安装、签名认证、反回放或完整目录回滚已通过。
+
+2026-10-14 合并的 [PR #17](https://github.com/blooddrunk/fqgate-remote-bridge/pull/17)
+为精确的 Windows 2.0.5 安装文件与运行身份增加**已有**
+`market.instruments.lookup` 的独立只读适配器；不扩大 remote_machine 权限，
+不修改全局 v1 supportedRange/validatedVersions。真实 Windows 本地 6/6、
+Vault-backed 远程 machine 22/22 已通过。详见
+[2.0.5 交付记录](docs/status/fqgate-2-0-5-readonly-implementation-handoff.md)。
+
+以下两条 CLI 仍用于**只读发行观察和非执行式 ZIP 审计**，即使 2.0.5 已手动运行，
+也继续以退出码 1 表示未获得完整升级资格；不能把它们作为运行时查询验收：
 
 ```powershell
 node .\dist\cli\main.js fqgate inspect-v2 --json
 node .\dist\cli\main.js fqgate audit-v2 --json
 ```
 
-第二条下载到临时目录进行非执行式 ZIP 检查并清理；两条均以 exit 1 和
-`qualification: BLOCKED` 表示没有安装资格。它们不升级、不运行 updater，
-也不批准 v2 行情能力。不要修改 supportedRange、复制单个 EXE 或使用
-`qualify-current` 绕过门禁。签名信任根、目录事务及真实 v2 Windows 合同尚未建立。
-详见 [验收/操作边界](docs/operations/windows-fqgate-v2-qualification.md)。
-
-2026-10-13 R3: user-approved personal-experiment manual installation of official
-FQGate 2.0.5 completed with signatures explicitly unverified; real canonical
-login/search passed. The Bridge's v1 compatibility/permissions remain unchanged,
-so App upgrade is not Bridge v2 qualification or PR merge closure. See
-`docs/status/fqgate-v2-operator-risk-upgrade-handoff.md`.
+现有 Bridge QR 适配器仍使用 v1 session API，且被全局兼容性门禁约束；
+**2.0.5 的 Bridge QR 登录尚未验证**。重启后 Bridge 未监听、FQGate 进程记录
+失效及 WebView2 数据目录边界应继续通过只读诊断处理，不授权静默修复或自动重启。
+下一候选任务：
+[精确 2.0.5 QR/session 兼容性](docs/tasks/fqgate-2-0-5-qr-session-compatibility.md)。
+保留原始[手动升级记录](docs/status/fqgate-v2-operator-risk-upgrade-handoff.md)和
+[升级信任边界](docs/operations/windows-fqgate-v2-qualification.md)。

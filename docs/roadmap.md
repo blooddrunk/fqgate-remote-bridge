@@ -677,3 +677,17 @@ FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
 new remote privilege or startup actuator was added. Signature/replay and full v2
 version rollback remain unqualified. Final source/PR/CI state is retained in the
 external delivery receipt.
+
+## Proposed next bounded slice — FQGate 2.0.5 QR/session compatibility
+
+**PROPOSED, NOT IMPLEMENTED.** The 2026-10-14 exact-artifact 2.0.5 lookup adapter
+passed native Windows local 6/6 and Vault-backed remote_machine 22/22; PR #17
+merged into main. Existing Bridge QR begin/poll still use v1 upstream endpoints and
+the global compatibility gate, so no real 2.0.5 Bridge QR acceptance is claimed.
+The next conditional engineering contract is
+`docs/tasks/fqgate-2-0-5-qr-session-compatibility.md`: inspect the actual v2 QR
+wire contract read-only first, implement only an exact-artifact operation-scoped
+adapter if proven, automate fixtures/CI/local/remote denials, and require a
+separate explicit human approval for any real QR begin/scan/MFA. This plan does
+not authorize automatic login, process/service restarts, Cloudflare writes,
+updater integration, or global v2 qualification.

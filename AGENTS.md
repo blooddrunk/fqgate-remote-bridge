@@ -701,7 +701,7 @@ This repository is a **single-owner personal research project**. Default next-ta
 
 The bounded **2.0.5 Bridge read-only lookup compatibility** is implemented and locally/remotely accepted under the continuation below, with v1 unchanged. Further v2 QR/session or installation work requires its own bounded authorization; read-only acceptance does not establish cryptographic issuer trust; no generic remote instance selector, installer/auto-update path, Phase 7-B2/C actuator or automatic restart. Full reverse directory and power-loss recovery remain unqualified.
 
-## Active FQGate 2.0.5 read-only continuation
+## Closed FQGate 2.0.5 read-only continuation
 
 The operator objective on 2026-10-13 authorizes a version/artifact-specific
 adapter for the existing lookup, v1 preservation, native local/remote diagnosis
@@ -723,3 +723,17 @@ FQGate profile/process-record maintenance. No force-kill, Cloudflare API write,
 new remote privilege or startup actuator was added. Signature/replay and full v2
 version rollback remain unqualified. Final source/PR/CI state is retained in the
 external delivery receipt.
+
+## Next proposed FQGate 2.0.5 QR/session slice
+
+The separate bounded task is
+`docs/tasks/fqgate-2-0-5-qr-session-compatibility.md` (**PROPOSED, not yet
+implemented**). It requires real read-only v2 QR contract discovery before any
+adapter is enabled and exact-artifact operation-scoped readiness rather than
+expanding global compatibility. Existing local/human/admin QR contexts and
+remote_machine denial remain fixed. QR begin may replace the current login;
+do not execute any real begin/poll/scan or mutate session state without
+explicit operator approval. Missing runtime evidence is BLOCKED, not PASS.
+Reboot/identity diagnostics remain read-only; this does not authorize
+unattended startup, process-record edits, Cloudflare changes, an installer,
+Phase 7-B2/C, or new Issues/planning-only PRs.
