@@ -459,3 +459,61 @@ Windows write-DACL authority; it does not prove a QR protocol defect or require
 expanding this personal project into a multi-user deployment. Actual subsequent
 replacement/Live approvals and results belong in the external delivery receipt.
 Real QR and post-Live matrices remain independently unexecuted.
+
+## Actual Bridge deployment and two bounded Live attempts — 2026-10-15
+
+The operator approved Bridge-only replacement and bounded failure rollback,
+explicitly retaining existing config contents/ACL. Runtime
+`1d3ff7c99a045df04e88123d40faafe1da0b0789` passed exact-head
+[Ubuntu/Windows CI 38699198461](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38699198461).
+Bridge PID 56740 started at `2026-10-15T07:34:51.8498790Z` on
+127.0.0.1:17282; FQGate PID 34980, cloudflared PID 5788, sampled native
+source/account observations and config bytes were unchanged. Post-deployment
+Preflight passed **21 PASS / 0 BLOCKED / 1 NOT_EXECUTED**. Initial stop was
+safely refused before mutation because CIM/handle creation differed by 600 ns;
+independent exact CIM and handle creation bindings resolved that tooling issue.
+No FQGate restart, source CRUD, Cloudflare/network/service/task change occurred.
+
+Two **separately approved**, single-attempt Live runs did not qualify QR:
+
+- At 07:36–07:38Z, `LIVE_QR_TIMEOUT`; operator reported no new browser window.
+- At 07:48Z, `UPSTREAM_UNAVAILABLE`; operator again reported no window.
+  The receipt did not retain whether begin or poll failed, so that layer and
+  its native cause remain unproven. Do not guess an upstream error mapping.
+
+No scan, phone confirmation or MFA is attested. No automatic third attempt.
+The deployed runtime's post-timeout direct lookup, local **6/6** and real
+Vault remote **22/22**, including machine QR/admin denials, passed. These are
+post-failure availability/permission diagnostics, not successful post-login
+acceptance. Full signing/replay/version rollback/profile isolation stay separate.
+
+Native desktop/window inspection found the browser in the interactive session,
+visible/non-minimized/non-cloaked but without foreground focus. An isolated
+no-network test page was seen by the operator after placing only its verified
+new Chromium window temporarily topmost. A process-tree-scoped external companion
+was tested, but its visibility flags did not prove that the real QR page was
+seen. OS window metadata is not operator-visible acceptance.
+
+The harness continuation therefore opens a static no-QR preparation page and
+requires the operator to click its readiness button **inside that window** before
+navigating to login or allowing any QR POST. Closing/not confirming the window
+is a bounded, zero-QR result. The existing explicit Live approval is still
+required; readiness is not authorization. The real QR deadline starts only after
+readiness confirmation. Receipts now record only bounded begin/poll counters,
+response stage/HTTP status, state transitions and readiness; UUIDs, images,
+upstream messages/bodies and credentials remain excluded. Three browser fixtures
+prove no-network pending, timeout and close behavior. No backend permission or
+upstream operation changes. A matching reviewed runtime and a new explicit Live
+approval are required before testing this continuation against FQGate.
+
+Status remains **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Preserve the current deployment
+while preparing the reviewed continuation. Exact receipts and commands are under
+`D:\code\research\fqgate-205-qr-evidence\live-qualification`. The next task
+is operator-visible, readiness-gated QR qualification, not profile development.
+
+The readiness continuation passed Linux frozen install/typecheck/lint, 652 tests,
+full build, format and 19 browser tests. A native no-network preparation-page
+probe observed the operator's actual readiness click with zero network/QR
+requests. This is UI readiness evidence, not a third Live attempt or QR success.
+The next candidate's exact source/CI/build identities are bound externally;
+matching-runtime deployment and another Live attempt each need fresh approval.

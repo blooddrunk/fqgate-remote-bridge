@@ -761,3 +761,14 @@ Windows write-DACL authority; it does not prove a QR protocol defect or require
 expanding this personal project into a multi-user deployment. Actual subsequent
 replacement/Live approvals and results belong in the external delivery receipt.
 Real QR and post-Live matrices remain independently unexecuted.
+
+## Live QR continuation: operator-visible readiness
+
+Bridge `1d3ff7c` was separately approved/deployed with passing Preflight and
+post-timeout local 6/6 / Vault remote 22/22. Both separately approved QR attempts
+failed (timeout, then normalized upstream unavailability); the operator saw no
+window and no phone action is attested. QR remains unqualified. The harness
+now requires an explicit click on a no-QR preparation page before any QR POST
+and records bounded begin/poll stage/counters. Windows visible/topmost flags do
+not substitute for operator visibility. New matching-runtime and Live approval
+gates precede another attempt; shared profile implementation remains deferred.

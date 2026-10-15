@@ -12,6 +12,7 @@ import { FetchHttpTransport } from "../../dist/fqgate/release/http.js";
 import { FqgateV2QrAdapter } from "../../dist/bridge/qr/v2.js";
 import { verifyV2QrIdentity } from "../../dist/bridge/qr/v2-identity.js";
 import { verifyInstalledQrClient } from "../../dist/fqgate/diagnostics/qr-contract.js";
+import { prepareQrOperatorWindow, waitForQrOperatorWindow } from "./fqgate205-qr-window.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const argv = process.argv.slice(2),
   option = (k) => argv[argv.indexOf(k) + 1];
@@ -34,7 +35,24 @@ let browser,
   gitSha = "unknown",
   liveQrStarted = false,
   passed = false,
-  browserVersion = "NOT_EXECUTED";
+  browserVersion = "NOT_EXECUTED",
+  phase = "approval",
+  failureOperation = null,
+  failureHttpStatus = null,
+  operatorWindowConfirmed = false,
+  beginRequests = 0,
+  beginResponses = 0,
+  pollRequests = 0,
+  pollResponses = 0;
+const observedStates = [];
+const observe = (status) => {
+  if (
+    ["waiting_for_scan", "waiting_for_confirmation", "connected"].includes(status) &&
+    observedStates.at(-1) !== status &&
+    observedStates.length < 8
+  )
+    observedStates.push(status);
+};
 try {
   if (
     process.platform !== "win32" ||
@@ -49,6 +67,7 @@ try {
   if (option("--allow-live") !== "True") {
     add("LIVE_QR", "NOT_EXECUTED", "EXPLICIT_APPROVAL_ABSENT");
   } else {
+    phase = "preflight";
     const config = await loadConfig(option("--config")),
       layout = createFqgateLayout(config.installDirectory),
       runner = new ChildProcessRunner(),
@@ -91,6 +110,7 @@ try {
     if (versionResponse.status !== 200 || version.commit !== gitSha)
       throw Error("RUNNING_BRIDGE_BUILD_MISMATCH");
     add("RUNNING_BUILD", "PASS", "EXACT_CHECKOUT_BUILD");
+    phase = "readiness";
     await verifyInstalledQrClient(layout.currentExecutable);
     const adapter = new FqgateV2QrAdapter({
       http,
@@ -119,7 +139,7 @@ try {
     context = await browser.newContext({ acceptDownloads: false, serviceWorkers: "block" });
     const page = await context.newPage();
     let sessionId,
-      deadline = Date.now() + 120000,
+      deadline = Number.POSITIVE_INFINITY,
       terminal,
       connected = false,
       pollCount = 0;
@@ -132,6 +152,11 @@ try {
         return;
       }
       if (req.method() === "POST") {
+        if (!operatorWindowConfirmed) {
+          terminal = "OPERATOR_WINDOW_NOT_CONFIRMED";
+          await route.abort();
+          return;
+        }
         if (
           url.pathname !== "/api/v1/session/qr/begin" &&
           url.pathname !== "/api/v1/session/qr/poll"
@@ -141,6 +166,7 @@ try {
           return;
         }
         if (url.pathname.endsWith("/poll")) {
+          pollRequests++;
           let body;
           try {
             body = req.postDataJSON();
@@ -164,21 +190,30 @@ try {
           terminal = "UNEXPECTED_SECOND_BEGIN";
           await route.abort();
           return;
-        } else liveQrStarted = true;
+        } else {
+          beginRequests++;
+          liveQrStarted = true;
+        }
       }
       await route.continue();
     });
     page.on("response", (response) => {
+      const path = new URL(response.url()).pathname;
+      if (path !== "/api/v1/session/qr/begin" && path !== "/api/v1/session/qr/poll") return;
+      const operation = path.endsWith("/begin") ? "qr.begin" : "qr.poll";
       void (async () => {
-        const path = new URL(response.url()).pathname;
-        if (path !== "/api/v1/session/qr/begin" && path !== "/api/v1/session/qr/poll") return;
+        if (operation === "qr.begin") beginResponses++;
+        else pollResponses++;
         const value = await response.json();
         if (response.status() !== 200) {
+          failureOperation = operation;
+          failureHttpStatus = response.status();
           terminal = known.has(value?.error?.code)
             ? value.error.code
             : "LIVE_BRIDGE_REQUEST_FAILED";
           return;
         }
+        observe(value.status);
         if (path.endsWith("/begin")) {
           if (
             typeof value.sessionId !== "string" ||
@@ -206,9 +241,25 @@ try {
             terminal = "INVALID_BRIDGE_POLL";
         }
       })().catch(() => {
+        failureOperation = operation;
+        failureHttpStatus = response.status();
         terminal = "LIVE_RESPONSE_UNVERIFIED";
       });
     });
+    phase = "operator_window";
+    await prepareQrOperatorWindow(page);
+    process.stdout.write(
+      JSON.stringify({
+        id: "OPERATOR_WINDOW",
+        status: "WAITING_FOR_LOCAL_READY_CLICK",
+        qrStarted: false,
+      }) + "\n",
+    );
+    await waitForQrOperatorWindow(page);
+    operatorWindowConfirmed = true;
+    add("OPERATOR_WINDOW", "PASS", "EXPLICIT_LOCAL_READY_CLICK");
+    deadline = Date.now() + 120000;
+    phase = "qr_flow";
     await page.goto("http://127.0.0.1:17282/login", {
       waitUntil: "domcontentloaded",
       timeout: 15000,
@@ -234,6 +285,7 @@ try {
     await context.close();
     context = undefined;
     if (terminal || !connected) throw Error(terminal ?? "LIVE_QR_TIMEOUT");
+    phase = "post_login";
     const after = await adapter.inspect();
     if (
       after.process !== before.process ||
@@ -274,6 +326,7 @@ try {
     "EVIDENCE_MUST_BE_EXTERNAL",
     "BUILD_SHA_UNAVAILABLE",
     "PREFLIGHT_NOT_READY",
+    "OPERATOR_WINDOW_NOT_CONFIRMED",
     "POST_LOGIN_REGRESSION_FAILED",
     "RUNNING_BRIDGE_BUILD_MISMATCH",
     "UNEXPECTED_BROWSER_ORIGIN",
@@ -310,6 +363,18 @@ const report = {
   humanApproval: option("--allow-live") === "True" ? "EXPLICIT_FLAG" : "NOT_COLLECTED",
   humanScan: passed ? "CONNECTED_OBSERVED_NO_INDEPENDENT_MFA_ATTESTATION" : "NOT_PROVEN",
   qrOrSessionMaterialSaved: false,
+  observation: {
+    phase,
+    failureOperation,
+    failureHttpStatus,
+    operatorWindowConfirmed,
+    beginRequests,
+    beginResponses,
+    pollRequests,
+    pollResponses,
+    observedStates,
+    identifiersOrResponseBodiesSaved: false,
+  },
   gates,
   totals: {
     total: gates.length,

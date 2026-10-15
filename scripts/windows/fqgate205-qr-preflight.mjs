@@ -299,6 +299,8 @@ const sourceHashes = {};
 for (const file of [
   "scripts/windows/fqgate205-qr-acceptance.ps1",
   "scripts/windows/fqgate205-qr-live.mjs",
+  "scripts/windows/fqgate205-qr-window.mjs",
+  "tests/e2e/qr-window.spec.ts",
   "scripts/windows/test-fqgate205-qr-identity.mjs",
   "scripts/windows/fqgate205-qr-native.ps1",
   "scripts/windows/fqgate205-qr-preflight.mjs",
