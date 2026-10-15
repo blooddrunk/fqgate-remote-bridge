@@ -19,7 +19,7 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const gates = [];
 const args = process.argv.slice(2);
 const option = (key) => args[args.indexOf(key) + 1];
-const retry = `Set-Location D:\\code\\research\\fqgate-remote-bridge; powershell.exe -NoProfile -File .\\scripts\\windows\\fqgate205-qr-acceptance.ps1 -Mode Preflight -Config D:\\code\\research\\fqgate-acceptance-config.json`;
+const retry = String.raw`Set-Location D:\code\research\fqgate-remote-bridge; powershell.exe -NoProfile -File .\scripts\windows\fqgate205-qr-acceptance.ps1 -Mode Preflight -Config D:\code\research\fqgate-acceptance-config.json`;
 function add(
   id,
   status,
