@@ -222,6 +222,37 @@ describe("exact 2.0.5 QR operation adapter", () => {
     };
     await rejected(f.adapter.poll(42), "QR_FLOW_REPLACED");
   });
+  it.each(["waiting_for_scan", "waiting_for_confirmation"])(
+    "rejects contradictory connected and %s status",
+    async (status) => {
+      const f = fixture();
+      await f.adapter.begin();
+      f.f.poll = { connected: true, status };
+      f.f.onPost = () => {
+        f.f.sources[0]!.session.state = "connected";
+      };
+      await rejected(f.adapter.poll(42));
+    },
+  );
+  it("rejects a different account on a previously connected target", async () => {
+    const f = fixture();
+    f.f.sources[0]!.session.state = "connected";
+    await f.adapter.begin();
+    f.f.poll = { connected: true };
+    f.f.onPost = () => {
+      f.f.account = "unexpected-account";
+    };
+    await rejected(f.adapter.poll(42), "QR_FLOW_REPLACED");
+  });
+  it("rejects changes to the other source during login", async () => {
+    const f = fixture(1);
+    f.f.sources.push(source(2));
+    await f.adapter.begin();
+    f.f.onPost = () => {
+      f.f.sources[1]!.restartCount++;
+    };
+    await rejected(f.adapter.poll(42), "QR_FLOW_REPLACED");
+  });
   it("rejects connected response without independently connected account", async () => {
     const f = fixture();
     await f.adapter.begin();
@@ -319,7 +350,7 @@ describe("exact 2.0.5 QR operation adapter", () => {
   });
 });
 
-function service(f: ReturnType<typeof fixture>) {
+function service(f: ReturnType<typeof fixture>, registry = new QrFlowRegistry()) {
   const status = {
     installed: {
       version: "2.0.5",
@@ -347,11 +378,54 @@ function service(f: ReturnType<typeof fixture>) {
     lifecycle: { status: async () => status },
     qrAdapter: v1,
     qrV2Adapter: f.adapter,
-    qrRegistry: new QrFlowRegistry(),
+    qrRegistry: registry,
   });
   return { bridge, status, v1 };
 }
 describe("2.0.5 scoped Bridge QR and unchanged authorization", () => {
+  it("rejects completion arriving after the registry TTL", async () => {
+    let now = 0;
+    const f = fixture(),
+      registry = new QrFlowRegistry({ nowMs: () => now }),
+      s = service(f, registry);
+    const a = await s.bridge.beginQr();
+    f.f.onPost = () => {
+      now = 120000;
+    };
+    await rejected(s.bridge.pollQr(a.sessionId), "QR_FLOW_EXPIRED");
+  });
+  it("allocates a UUID before any upstream begin and fails without mutation", async () => {
+    const f = fixture(),
+      s = service(f, new QrFlowRegistry({ idFactory: () => "invalid" }));
+    await rejected(s.bridge.beginQr(), "BRIDGE_NOT_READY");
+    expect(posts(f)).toHaveLength(0);
+  });
+  it("does not recycle a tombstoned UUID when native flow handles are reused", async () => {
+    const f = fixture(),
+      registry = new QrFlowRegistry({ idFactory: () => "11111111-1111-4111-8111-111111111111" }),
+      s = service(f, registry);
+    const a = await s.bridge.beginQr();
+    registry.terminate(a.sessionId, "replaced");
+    await rejected(s.bridge.beginQr(), "BRIDGE_NOT_READY");
+    await rejected(s.bridge.pollQr(a.sessionId), "QR_FLOW_REPLACED");
+  });
+  it("rejects service-level begin/poll concurrency before lifecycle selection", async () => {
+    const f = fixture(),
+      s = service(f),
+      first = s.bridge.beginQr();
+    await rejected(s.bridge.beginQr(), "QR_FLOW_LIMIT");
+    await rejected(s.bridge.pollQr("11111111-1111-4111-8111-111111111111"), "QR_FLOW_LIMIT");
+    await first;
+    expect(posts(f)).toHaveLength(1);
+  });
+  it("invalidates the prior Bridge session when replacement fails upstream", async () => {
+    const f = fixture(),
+      s = service(f),
+      a = await s.bridge.beginQr();
+    f.f.throwRequest = true;
+    await rejected(s.bridge.beginQr(), "UPSTREAM_UNAVAILABLE");
+    await rejected(s.bridge.pollQr(a.sessionId), "QR_FLOW_REPLACED");
+  });
   it("advertises independent QR readiness without validating global v2 lifecycle", async () => {
     const f = fixture(),
       s = service(f),

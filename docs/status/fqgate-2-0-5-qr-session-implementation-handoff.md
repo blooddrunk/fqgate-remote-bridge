@@ -4,6 +4,55 @@
 the initial census conclusion below. One implementation branch / PR #18; no new
 Issue or planning PR. Real QR has not been started by this task.
 
+## Live-qualification audit continuation — 2026-10-15
+
+PR #18 is merged at `f8c7b3a91f61f713025782411af4344ced3b4014`;
+[main CI 38694726179](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38694726179)
+passed. The clean development checkout was safely fast-forwarded before this audit.
+
+Confirmed audit fixes reserve a non-tombstoned Bridge UUID before upstream begin,
+serialize begin/poll across lifecycle selection and registry updates, invalidate
+old flows before replacement, and reject responses that cross registry expiry.
+UI generations discard late begin callbacks after cancellation/unmount and prevent
+same-tick duplicate begins; begin has no automatic retries. v2 rejects connected
+responses carrying a pending status, changes to sampled peer sources, guest
+completion, and a different observed account on a previously connected target.
+This is sampled continuity, not a native session-epoch or anti-replay guarantee.
+The Live harness repeats the peer/account checks independently after completion.
+
+Linux frozen install, typecheck, lint, **652 tests**, production build, format
+and **16 browser tests** passed before delivery. New regression cases also run
+against the merged baseline to retain failure identifiers outside Git. Exact
+final-head CI, native Windows results and artifact hashes belong in the external
+`live-qualification` receipts, not an inferred live-qualification claim.
+
+Read-only native inspection identified Bridge PID 38140, created
+`2026-10-14T02:14:47.0556360Z`, Node executable and exact working directory,
+loopback 17282, the protected external acceptance config, and running commit
+`3f78bb9948d95bf7ffb21809bba2baab283e7fed`. FQGate listener PID 34980 and
+its creation time remain separate identities. cloudflared PID/creation were
+readable but its native executable path was unavailable at current privileges;
+no cloudflared operation is authorized or required. Full command lines and
+process environments are never recorded; only selected non-secret bindings and
+hashes are retained outside Git. An inspection helper needed PowerShell 5.1
+split/path normalization corrections; those failed attempts changed no runtime.
+
+`FQGATE_BRIDGE_BUILD_DIRECTORY` optionally directs Nitro production output to an
+absolute staging directory. Default builds are unchanged. Build from the existing
+permanent Windows checkout; stage payload only, never a second source checkout.
+Preserve the existing served `.output` and rollback payload. Use only the
+Bridge-only launcher `scripts/start-bridge.mjs`; `start-dashboard.ps1` also owns
+FQGate lifecycle and must not be used for this deployment. Review the external
+prepared deployment/rollback commands before approving any process stop.
+
+Current task state remains **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Bridge replacement
+has not been approved by the task request; Live QR requires a second approval
+after successful Preflight. Existing-socket local/remote regressions must retain
+the old running SHA and cannot count as candidate acceptance. No FQGate/source,
+config, network policy, Cloudflare, service/task or login mutation is implied.
+The single next task is approval-gated Bridge deployment and real QR qualification;
+shared-profile implementation must wait for that gap to close.
+
 ## Resolved contract and exact scope
 
 GET-only runtime OpenAPI is supplemented by static inspection of the **actual

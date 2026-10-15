@@ -22,6 +22,8 @@ export interface QrV2Observation {
     readonly id: string;
     readonly worker: string;
     readonly account: string;
+    readonly accountIdentity: string;
+    readonly peers: string;
     readonly connected: boolean;
     readonly session: SessionState;
   };
@@ -96,7 +98,11 @@ export class FqgateV2QrAdapter implements QrAdapterPort {
       if (Buffer.from(result.imageBase64, "base64").toString("base64") !== result.imageBase64)
         fail();
       const after = await this.snapshot(read);
-      if (after.worker !== source.worker || after.account !== source.account)
+      if (
+        after.worker !== source.worker ||
+        after.account !== source.account ||
+        after.peers !== source.peers
+      )
         fail(ERROR_CODES.QR_FLOW_REPLACED);
       if (process !== (await this.options.identity())) fail(ERROR_CODES.PROCESS_IDENTITY_MISMATCH);
       this.binding = {
@@ -121,7 +127,11 @@ export class FqgateV2QrAdapter implements QrAdapterPort {
           fail(ERROR_CODES.PROCESS_IDENTITY_MISMATCH);
         const read = this.reader(),
           before = await this.snapshot(read);
-        if (before.worker !== source.worker || before.account !== source.account)
+        if (
+          before.worker !== source.worker ||
+          before.account !== source.account ||
+          before.peers !== source.peers
+        )
           fail(ERROR_CODES.QR_FLOW_REPLACED);
         const data = await read(
           `/v2/source-instances/${encodeURIComponent(source.id)}/authentication`,
@@ -137,14 +147,19 @@ export class FqgateV2QrAdapter implements QrAdapterPort {
         )
           fail();
         if (data.login_method !== undefined && !text(data.login_method, 64)) fail();
+        if (data.connected === true && data.status !== undefined) fail();
         const result = decodePollData(data),
           after = await this.snapshot(read);
         if (
           after.worker !== source.worker ||
+          after.peers !== source.peers ||
+          (result.connected &&
+            source.connected &&
+            after.accountIdentity !== source.accountIdentity) ||
           (!result.connected && after.account !== source.account)
         )
           fail(ERROR_CODES.QR_FLOW_REPLACED);
-        if (result.connected && !after.connected) fail();
+        if (result.connected && (!after.connected || after.session !== "connected")) fail();
         if (this.now() >= binding.value.expires) fail(ERROR_CODES.QR_FLOW_EXPIRED);
         if (process !== (await this.options.identity()))
           fail(ERROR_CODES.PROCESS_IDENTITY_MISMATCH);
@@ -354,6 +369,10 @@ export class FqgateV2QrAdapter implements QrAdapterPort {
           descriptor,
         }),
         account: fingerprintJson(stable),
+        accountIdentity: fingerprintJson({
+          account: snapshot.account_display ?? null,
+          kind: snapshot.session_kind ?? null,
+        }),
         connected: snapshot.state === "connected",
         session: (snapshot.state === "connected"
           ? snapshot.session_kind === "guest"
@@ -373,6 +392,26 @@ export class FqgateV2QrAdapter implements QrAdapterPort {
     // Do not create a second connected source and disable the closed lookup slice.
     if (connected > 1 || (!selected[0]!.connected && connected > 0))
       fail(ERROR_CODES.FQGATE_INCOMPATIBLE);
-    return selected[0]!;
+    const target = selected[0]!;
+    const peers = fingerprintJson({
+      sources: sources
+        .filter((s) => s.instanceId !== target.id)
+        .map((s) => ({
+          id: s.instanceId,
+          number: s.instanceNo,
+          provider: s.providerId,
+          pid: s.pid,
+          restarts: s.restartCount,
+          workerState: s.workerState,
+          state: object(s.session).state,
+          autoLogin: s.autoLogin,
+          defaultGuest: s.defaultGuest,
+        }))
+        .sort((a, b) => String(a.id).localeCompare(String(b.id))),
+      accounts: candidates
+        .filter((s) => s.id !== target.id)
+        .sort((a, b) => a.id.localeCompare(b.id)),
+    });
+    return { ...target, peers };
   }
 }

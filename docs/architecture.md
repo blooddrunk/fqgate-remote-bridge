@@ -703,3 +703,13 @@ See `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for contract
 hashes, limits, evidence, commands and exact authorization boundaries. Shared
 QR/status/lookup multi-account isolation remains a future separate task under
 `docs/plans/future-multi-profile-account-isolation.md`.
+
+The live-qualification audit reserves UUIDs before upstream begin and serializes
+Bridge begin/poll through registry completion. Failed replacements invalidate old
+flows; retained terminal UUIDs are not recycled. UI cancellation/unmount rejects
+late begin callbacks without invoking upstream cancellation. Connected responses
+with pending status, sampled peer drift or unexpected replacement of an already
+connected account fail closed. These checks do not establish a native session
+epoch. An optional absolute `FQGATE_BRIDGE_BUILD_DIRECTORY` changes only production
+build output placement so the current served output can remain intact during
+Bridge-only staging; process replacement and Live remain separate approval gates.

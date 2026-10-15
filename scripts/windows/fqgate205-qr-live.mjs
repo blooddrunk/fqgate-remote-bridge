@@ -238,6 +238,8 @@ try {
     if (
       after.process !== before.process ||
       after.source.worker !== before.source.worker ||
+      after.source.peers !== before.source.peers ||
+      (before.source.connected && after.source.accountIdentity !== before.source.accountIdentity) ||
       !after.source.connected ||
       after.source.session !== "connected"
     )

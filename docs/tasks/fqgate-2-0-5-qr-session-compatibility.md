@@ -145,3 +145,13 @@ Deliver one implementation branch/PR only if useful for the code review, an
 exact-head CI receipt, redacted external Windows evidence, and concise
 documentation updates. Full v2 issuer signing, anti-replay, directory/power-loss
 rollback, unattended startup and Phase 7-B2/7-C remain separate future work.
+
+## Live-qualification audit continuation — 2026-10-15
+
+Before deployment, audit and test delayed UI callbacks, begin/poll serialization,
+UUID allocation failure before upstream begin, and contradictory completion fields.
+The intended hardening reserves the opaque UUID before authentication mutation,
+invalidates prior flows when replacement starts, and prevents old asynchronous
+results from reviving cancelled UI state. A connected result must not also claim
+a pending status. No new upstream operation or cancellation action is authorized.
+Bridge replacement and real QR each require separate explicit operator approval.

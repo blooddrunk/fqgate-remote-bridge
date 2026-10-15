@@ -74,9 +74,31 @@ export class QrFlowRegistry {
     }
   }
 
+  /** Allocate before upstream mutation; failed replacement cannot revive an old flow. */
+  prepareReplacement(): (flowId: number, adapter: QrAdapterPort) => StoredQrFlow {
+    this.cleanup();
+    const sessionId = this.createUniqueSessionId();
+    for (const activeId of this.active.keys()) this.terminate(activeId, "replaced");
+    let consumed = false;
+    return (flowId, adapter) => {
+      if (consumed)
+        throw new BridgeError(ERROR_CODES.QR_FLOW_INVALID, "QR reservation already consumed");
+      consumed = true;
+      return this.createFlow(flowId, { adapter }, sessionId);
+    };
+  }
+
   create(
     flowId: number,
     options: { readonly replaceExisting?: boolean; readonly adapter?: QrAdapterPort } = {},
+  ): StoredQrFlow {
+    return this.createFlow(flowId, options);
+  }
+
+  private createFlow(
+    flowId: number,
+    options: { readonly replaceExisting?: boolean; readonly adapter?: QrAdapterPort },
+    reservedSessionId?: string,
   ): StoredQrFlow {
     if (!Number.isSafeInteger(flowId) || flowId <= 0) {
       throw new BridgeError(ERROR_CODES.QR_FLOW_INVALID, "The upstream QR flow is invalid");
@@ -96,7 +118,7 @@ export class QrFlowRegistry {
     const flow: StoredQrFlow = {
       flowId,
       ...(options.adapter === undefined ? {} : { adapter: options.adapter }),
-      sessionId: this.createUniqueSessionId(),
+      sessionId: reservedSessionId ?? this.createUniqueSessionId(),
       createdAtMs,
       expiresAtMs: createdAtMs + this.ttlMs,
     };
@@ -152,7 +174,11 @@ export class QrFlowRegistry {
   private createUniqueSessionId(): string {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const sessionId = this.idFactory();
-      if (this.isValidSessionId(sessionId) && !this.active.has(sessionId)) {
+      if (
+        this.isValidSessionId(sessionId) &&
+        !this.active.has(sessionId) &&
+        !this.terminal.has(sessionId)
+      ) {
         return sessionId;
       }
     }

@@ -721,3 +721,14 @@ real two-account acceptance boundary are in
 `docs/plans/future-multi-profile-account-isolation.md`. That implementation is
 not started by this delivery. Publisher signing/replay, complete rollback and
 Phase 7-B2/7-C remain separate.
+
+## 2026-10-15 live QR qualification audit
+
+PR #18 is merged with passing main CI. A focused audit continuation hardens
+QR concurrency, UUID reservation, delayed UI callbacks and contradictory/native
+identity observations. Status remains **IMPLEMENTED_NOT_LIVE_QUALIFIED**.
+Prepare an isolated Bridge output and verified rollback from the existing Windows
+checkout; stopping the old Bridge requires explicit approval. Only a passing
+post-deployment Preflight permits requesting separate Live approval. Profile
+selection development remains deferred. Current evidence and retry commands:
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
