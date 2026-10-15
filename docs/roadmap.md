@@ -772,3 +772,22 @@ now requires an explicit click on a no-QR preparation page before any QR POST
 and records bounded begin/poll stage/counters. Windows visible/topmost flags do
 not substitute for operator visibility. New matching-runtime and Live approval
 gates precede another attempt; shared profile implementation remains deferred.
+
+## Final bounded QR live qualification — 2026-10-15
+
+**BOUNDED_QR_LIVE_QUALIFIED** for runtime
+`481db65097cd63ea0f9c28f39e526e341b700721`, the exact installed 2.0.5 artifact and
+fixed observed source. Separately approved Bridge-only deployment and third Live
+attempt passed: actual readiness click, one begin/two polls, waiting → connected,
+8/8 Live gates. Operator saw/scanned the QR and confirmed success on the phone;
+MFA was not presented. Post-Live lookup, local 6/6 and Vault remote_machine 22/22
+passed on that runtime; machine QR/admin denials remain enforced. Runtime CI
+`38702257233` passed Ubuntu/Windows. FQGate/cloudflared/config/ACL were preserved;
+no rollback or automatic retry occurred. Earlier two failed attempts are retained.
+
+See the final closure section in
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for evidence hashes,
+exact scope and unresolved trust/session-epoch/lifecycle risks. Final source and
+merge SHAs are recorded separately from deployed runtime SHA. Next task: bounded
+design review for shared-profile multi-account isolation. This closure authorizes
+no profile implementation, further QR, lifecycle expansion or remote permissions.

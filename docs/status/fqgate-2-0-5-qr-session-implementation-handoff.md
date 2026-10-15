@@ -1,8 +1,13 @@
 # FQGate 2.0.5 QR/session compatibility
 
-2026-10-15 continuation: **IMPLEMENTED_NOT_LIVE_QUALIFIED**. This section supersedes
-the initial census conclusion below. One implementation branch / PR #18; no new
-Issue or planning PR. Real QR has not been started by this task.
+2026-10-15 final live continuation: **BOUNDED_QR_LIVE_QUALIFIED** for runtime
+`481db65097cd63ea0f9c28f39e526e341b700721` and the exact installed FQGate 2.0.5
+artifact, fixed source and sampled process/account bindings. Third separately
+approved attempt passed, with operator-confirmed scan/phone approval and no MFA
+presented; post-Live local 6/6 and real remote_machine 22/22 passed. PR #19 carries
+the audit hardening and readiness gate. Earlier dated sections below retain the
+historical pending/failed states and are superseded by the final closure section.
+This is not general v2 lifecycle, publisher trust or multi-account qualification.
 
 ## Live-qualification audit continuation — 2026-10-15
 
@@ -517,3 +522,77 @@ probe observed the operator's actual readiness click with zero network/QR
 requests. This is UI readiness evidence, not a third Live attempt or QR success.
 The next candidate's exact source/CI/build identities are bound externally;
 matching-runtime deployment and another Live attempt each need fresh approval.
+
+### Readiness build deployment — 2026-10-15
+
+The operator separately approved replacement of verified Bridge PID 56740
+(`1d3ff7c`) with `481db65097cd63ea0f9c28f39e526e341b700721`, retaining the
+external configuration contents and existing ACL, with bounded previous-payload
+rollback. Exact-source Ubuntu/Windows CI run `38702257233` passed. Native frozen
+install, typecheck, lint, 652 tests, format, 28 preflight fixtures and the
+identity/no-approval guards passed; candidate and previous staged startup/status
+probes also passed.
+
+The initial replacement invocation stopped before any process action because the
+native build regenerated `src/routeTree.gen.ts`. Its exact generated-only diff
+was preserved outside Git and that file was restored to the verified commit.
+The approved replacement then passed: new Bridge PID 61040 serves `481db65` at
+exclusive `127.0.0.1:17282`. Post-deployment Preflight passed 21 gates, blocked
+zero, with Live independently NOT_EXECUTED. Configuration SHA/ACL, FQGate native
+process identities, sampled source/account observations and cloudflared remained
+unchanged. Rollback was NOT_EXECUTED because deployment succeeded. Deployment
+receipt: `deployment.json`, SHA-256 sidecar and `runtime-after-ready.json` under
+the external evidence directory above. This proves Bridge replacement and
+readiness only; it does not establish QR or global v2 lifecycle qualification.
+
+## Final bounded QR live qualification — 2026-10-15
+
+After separate operator approval, Bridge-only deployment of runtime
+`481db65097cd63ea0f9c28f39e526e341b700721` passed on permanent Windows. PID 61040
+listens only on `127.0.0.1:17282`; FQGate PID 34980, its workers and cloudflared
+PID 5788 retained their creation identities. External config contents and ACL
+were preserved. The previous `1d3ff7c` payload was verified for bounded rollback;
+rollback was NOT_EXECUTED. Exact runtime CI
+[38702257233](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38702257233)
+passed Ubuntu and Windows. Native and Linux checks passed, including 652 tests,
+19 Linux browser tests and native preflight/identity/no-approval fixtures.
+
+The operator separately approved the third, single Live attempt. The preparation
+page required an actual in-window click before any QR POST. Live then observed
+exactly **one begin / two polls**, `waiting_for_scan → connected`, a Bridge-owned
+opaque UUID and unchanged sampled target/peer/account/native-worker identity.
+All **8/8 Live gates passed**. The operator reported seeing the QR, scanning and
+successful phone confirmation; **MFA was not presented**, so no MFA success is
+claimed. No QR image, session handle, raw upstream response or account identifier
+was persisted. Prior attempts remain recorded as timeout/no visible browser and
+UPSTREAM_UNAVAILABLE/no visible window; their missing failure stage is not inferred.
+
+Post-Live direct instrument lookup passed; local **6/6**, Vault-backed real
+remote_machine **22/22**, and native ingress/listener checks passed on the same
+runtime. Machine QR/admin denials remain enforced. Existing v1 regression tests
+passed in the full suite. Final read-only process/listener observations remain
+bound to the external receipts. No FQGate restart, source CRUD, Cloudflare/network
+mutation, Windows service/task or automatic retry occurred.
+
+External evidence directory:
+`D:\code\research\fqgate-205-qr-evidence\live-qualification`.
+The successful receipt is `live-1792051577765.json`, SHA-256
+`7549a6c3deeafa76152756636a49e78be6fdfb736ba2bf8027d41ee13f1b1850`.
+`phone-report.json`, `post-live-regressions.json`, `deployment.json`, final
+`delivery-receipt.json` and their hashes bind the human report, commands, exit
+codes, approved actions, source/runtime identities and all three attempts.
+Final documentation/merge source SHA is recorded separately from runtime SHA;
+documentation closure does not imply another deployment.
+
+**BOUNDED_QR_LIVE_QUALIFIED** closes this task's real-deployment/QR gap only.
+Publisher signature trust remains BLOCKED/unverified; authenticated release
+anti-replay remains unqualified; full v2 directory/power-loss rollback and
+multi-account isolation are NOT_EXECUTED. Native session epoch is unproven beyond
+sampled continuity. cloudflared executable path remains unreadable at current
+privilege and it stayed outside this operation. Config ACL hardening is optional
+for this personal trial; attempted ACL writes were denied before changing it,
+and the operator explicitly approved preserving the existing ACL.
+
+The single recommended next task is a bounded design review for shared-profile
+multi-account isolation, using this exact QR evidence as its baseline. No profile
+implementation or additional QR action is authorized by this closure.

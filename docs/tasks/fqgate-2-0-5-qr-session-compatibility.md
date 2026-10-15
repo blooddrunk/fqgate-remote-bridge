@@ -1,9 +1,11 @@
 # FQGate 2.0.5 QR/session compatibility — bounded next implementation
 
-Status: **IMPLEMENTED_NOT_LIVE_QUALIFIED** (2026-10-15 continuation).
-Exact installed bundled-client evidence supplements the initial OpenAPI census;
-independent v2 adapter, server binding, Preflight and guarded Live harness implemented.
-Real QR remains NOT_EXECUTED pending separate approval and matching runtime build.
+Status: **BOUNDED_QR_LIVE_QUALIFIED** (2026-10-15 final continuation), restricted
+to exact runtime `481db65097cd63ea0f9c28f39e526e341b700721`, the installed 2.0.5
+artifact and fixed observed source. The third separately approved QR attempt and
+operator phone confirmation passed, followed by local 6/6 and authenticated remote
+22/22. Earlier dated sections retain historical pending/failed results; the final
+closure section supersedes those states. Global v2 lifecycle remains unqualified.
 Evidence/implementation: `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
 Owner workflow: single personal research implementation goal; no new Issues or
 planning-only PR. Prior read-only delivery:
@@ -238,3 +240,22 @@ Status remains **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Preserve the current deployme
 while preparing the reviewed continuation. Exact receipts and commands are under
 `D:\code\research\fqgate-205-qr-evidence\live-qualification`. The next task
 is operator-visible, readiness-gated QR qualification, not profile development.
+
+## Final bounded QR live qualification — 2026-10-15
+
+**BOUNDED_QR_LIVE_QUALIFIED** for runtime
+`481db65097cd63ea0f9c28f39e526e341b700721`, the exact installed 2.0.5 artifact and
+fixed observed source. Separately approved Bridge-only deployment and third Live
+attempt passed: actual readiness click, one begin/two polls, waiting → connected,
+8/8 Live gates. Operator saw/scanned the QR and confirmed success on the phone;
+MFA was not presented. Post-Live lookup, local 6/6 and Vault remote_machine 22/22
+passed on that runtime; machine QR/admin denials remain enforced. Runtime CI
+`38702257233` passed Ubuntu/Windows. FQGate/cloudflared/config/ACL were preserved;
+no rollback or automatic retry occurred. Earlier two failed attempts are retained.
+
+See the final closure section in
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for evidence hashes,
+exact scope and unresolved trust/session-epoch/lifecycle risks. Final source and
+merge SHAs are recorded separately from deployed runtime SHA. Next task: bounded
+design review for shared-profile multi-account isolation. This closure authorizes
+no profile implementation, further QR, lifecycle expansion or remote permissions.
