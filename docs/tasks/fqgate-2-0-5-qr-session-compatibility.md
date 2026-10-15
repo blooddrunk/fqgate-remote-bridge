@@ -155,3 +155,13 @@ invalidates prior flows when replacement starts, and prevents old asynchronous
 results from reviving cancelled UI state. A connected result must not also claim
 a pending status. No new upstream operation or cancellation action is authorized.
 Bridge replacement and real QR each require separate explicit operator approval.
+
+Actual continuation: 652 tests pass on Linux and native Windows; 16 Linux browser
+tests pass. Native staged candidate/previous version and status smoke passed.
+Existing old-runtime local 6/6 and Vault remote 22/22 passed; they are baseline
+checks. Preflight remains 20 PASS / 1 BLOCKED (running build mismatch) /
+1 NOT_EXECUTED (Live approval absent). No deployment or QR approval has occurred.
+Rollback requires the existing protected pre-binding config because the old
+bundle rejects `qrV2`; neither protected config file is overwritten. Exact
+head/CI/artifact bindings and safe resume actions are retained in the handoff
+and repo-external `live-qualification` receipts.

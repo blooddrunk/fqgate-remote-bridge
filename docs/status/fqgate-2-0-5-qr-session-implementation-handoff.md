@@ -53,6 +53,55 @@ config, network policy, Cloudflare, service/task or login mutation is implied.
 The single next task is approval-gated Bridge deployment and real QR qualification;
 shared-profile implementation must wait for that gap to close.
 
+### Actual native preparation and baseline regressions — 2026-10-15
+
+Implementation `2af40f4f34d09a723264609d9a254349bf030552` passed
+[exact-head CI 38697400235](https://github.com/blooddrunk/fqgate-remote-bridge/actions/runs/38697400235)
+on Ubuntu and Windows. Permanent Windows frozen install, typecheck, lint,
+**652 tests**, a full production build into an independent payload directory,
+format, **28/28** preflight behavior cases, **5/5** identity fixtures and **1/1**
+no-approval Live guard passed. Ten added cases fail against merged baseline
+`f8c7b3a`; all added cases pass after hardening. The final documentation head
+and its own CI/artifact bindings are recorded separately in the external receipt.
+
+At 07:20Z native read-only Preflight returned **20 PASS / 1 BLOCKED /
+1 NOT_EXECUTED**. Only `BRIDGE_BUILD=RUNNING_BRIDGE_BUILD_MISMATCH` blocks it;
+`LIVE_QR` is not authorized. Direct checkout lookup passed. At 07:21Z the existing
+old-build socket again passed local **6/6** and real Vault-backed remote **22/22**,
+including machine QR/admin denials. These are pre-deployment baseline results.
+Post-deployment Preflight, Live and post-Live regressions remain NOT_EXECUTED.
+
+Both staged candidate and previous payload passed isolated native IPv4 loopback
+version/status smoke on temporary port 17283 at 07:22Z, then their test processes
+exited. Original listeners/processes were preserved. A critical rollback
+prerequisite was discovered: the previous bundle rejects the new `qrV2` config
+key. The existing operator-protected pre-binding backup differs from the current
+config **only** by that key and successfully starts the previous bundle. Bounded
+rollback must point the previous process at that existing backup, without
+replacing either protected file. Candidate uses the unchanged current config.
+Both file hashes and all staged payload hashes are bound in external manifests.
+This proves Bridge payload startup/read-only status, not FQGate version rollback.
+
+The native repository's narrow fetch configuration required an explicit candidate
+ref fetch and a non-tracking local branch. Git's failed tracking setup had already
+staged exactly the candidate tree; index/tree equality and no unstaged differences
+were verified before switching safely to that same commit. No reset/clean or
+operator-file overwrite occurred. A PowerShell artifact-manifest helper failed;
+its replacement hashes every regular staged file in native Node. Neither tooling
+failure is counted as an acceptance pass or triggered process replacement.
+
+External preparation, deployment approval script, manifests, per-command logs,
+case identifiers, receipts and SHA-256 files reside under
+`D:\code\research\fqgate-205-qr-evidence\live-qualification`.
+`replace-bridge.mjs --approve-bridge-only` must not run until the operator approves
+its precise old PID/build, candidate, temporary interruption and bounded rollback.
+It verifies hashes/identity/config/source continuity, stops only the verified
+Bridge, starts the staged candidate, and runs read-only Preflight. Approved
+failure rollback can stop only that candidate and start the verified previous
+payload with the existing pre-binding backup. FQGate/cloudflared, source records,
+config files, services/tasks and network policy stay outside the action.
+Real QR still needs a second approval and the operator's phone result.
+
 ## Resolved contract and exact scope
 
 GET-only runtime OpenAPI is supplemented by static inspection of the **actual

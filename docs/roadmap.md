@@ -732,3 +732,10 @@ checkout; stopping the old Bridge requires explicit approval. Only a passing
 post-deployment Preflight permits requesting separate Live approval. Profile
 selection development remains deferred. Current evidence and retry commands:
 `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
+
+Audit validation: Linux/native Windows 652 tests and 16 Linux browser tests pass;
+staged candidate/previous version/status smoke passes. Existing-socket local 6/6
+and Vault remote 22/22 pass. Real Preflight still blocks on running-build mismatch;
+deployment, real QR and post-Live acceptance remain separately approval-gated.
+Rollback uses the existing protected pre-binding config without changing either
+config file. These results do not close QR live qualification.
