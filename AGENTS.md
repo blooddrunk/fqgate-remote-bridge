@@ -737,3 +737,15 @@ explicit operator approval. Missing runtime evidence is BLOCKED, not PASS.
 Reboot/identity diagnostics remain read-only; this does not authorize
 unattended startup, process-record edits, Cloudflare changes, an installer,
 Phase 7-B2/C, or new Issues/planning-only PRs.
+
+## FQGate 2.0.5 QR/session census result — 2026-10-15
+
+The operator authorized the bounded QR task. Permanent-Windows read-only census
+found two eligible QR sources and incomplete pending/expiry/replacement/error
+semantics. Current delivery is **BLOCKED_UPSTREAM_QR_CONTRACT**, with a GET-only
+Preflight and native behavior fixtures; no v2 QR adapter is enabled. Keep the
+v1 QR/global gate and existing permissions. Neither `-Mode Live` nor
+`-AllowLiveQr` can bypass the blocked contract. See
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`. Obtain the missing
+publisher contract and review unique source policy before implementing/mutating
+sessions. No new Issue, automatic restart or control-plane write is implied.

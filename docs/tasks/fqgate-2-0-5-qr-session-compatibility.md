@@ -1,6 +1,8 @@
 # FQGate 2.0.5 QR/session compatibility — bounded next implementation
 
-Status: PROPOSED, **not implemented and not live-qualified** (2026-10-15).
+Status: **BLOCKED_UPSTREAM_QR_CONTRACT** after read-only Windows census (2026-10-15).
+Preflight diagnostics implemented; v2 QR adapter not implemented and Live NOT_EXECUTED.
+Evidence/implementation: `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
 Owner workflow: single personal research implementation goal; no new Issues or
 planning-only PR. Prior read-only delivery:
 `docs/status/fqgate-2-0-5-readonly-implementation-handoff.md`.

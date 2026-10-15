@@ -68,6 +68,15 @@ v2 的 QR、更新、签名信任和真实回滚不因此获得资格。
 经独立授权完成 Bridge 恢复、精确 Access 域名分流和保留双份备份的 FQGate profile/进程记录修复；
 没有扩大权限、配置自动启动或解除 v2 安装及签名门禁。
 
+### FQGate 2.0.5 QR/session 调查
+
+2026-10-15 已交付只读 Preflight，状态为 **BLOCKED_UPSTREAM_QR_CONTRACT**。
+真实 authentication 接口虽声明 App QR 动作，但缺少完整状态/过期/替换合同，且有两个
+QR-capable source。v2 QR adapter 未启用；v1 QR、现有 lookup 和权限保持原样。
+不需要扫码即可运行 `scripts/windows/fqgate205-qr-acceptance.ps1 -Mode Preflight`；
+`Live` 模式在合同补全前拒绝执行，不会开始登录。
+[调查、重试命令和验收边界](docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md)。
+
 ## 1. 用人话理解系统
 
 ### 1.1 四层结构

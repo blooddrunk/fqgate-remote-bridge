@@ -635,3 +635,16 @@ lifecycle range; Dashboard lifecycle/QR/update qualification can still report
 v2 incompatible. It grants no install/restart/rollback authority. Missing publisher
 signature and authenticated replay remain BLOCKED; fixture recovery is not proof
 of real power-loss rollback. See the active task and implementation handoff.
+
+## 2.0.5 QR census — 2026-10-15
+
+Actual native Windows OpenAPI uses GET/POST
+`/v2/source-instances/{instance_id}/authentication`; POST discriminates
+`app_qr_begin` and `app_qr_poll` (positive integer flow_id). Read-only GET on both
+sources declares `app_qr`. Generic AuthenticationResult has optional data fields
+and string status without an enum; published error examples do not establish
+expired/replaced QR semantics. HTTP 400/code 1003 is described as invalid request,
+so v1's expiry mapping cannot be assumed. Both ready tonghuashun sources support
+sessions and QR; one connected source is not proof of unique QR eligibility.
+No state-changing probe was used. This is observation, not operation readiness;
+v2 QR remains BLOCKED_UPSTREAM_QR_CONTRACT. See the QR implementation handoff.

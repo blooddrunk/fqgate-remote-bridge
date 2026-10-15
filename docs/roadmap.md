@@ -691,3 +691,12 @@ adapter if proven, automate fixtures/CI/local/remote denials, and require a
 separate explicit human approval for any real QR begin/scan/MFA. This plan does
 not authorize automatic login, process/service restarts, Cloudflare writes,
 updater integration, or global v2 qualification.
+
+## 2026-10-15 QR/session census delivery
+
+The QR task is active but **BLOCKED_UPSTREAM_QR_CONTRACT** after permanent-Windows
+GET-only investigation. Read-only preflight and Windows behavior fixtures are
+implemented. Two QR-capable sources and incomplete state/error declarations
+prevent enabling an adapter; Live remains NOT_EXECUTED. No QR/runtime permission,
+global compatibility or recovery authority changed. See
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.

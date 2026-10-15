@@ -309,5 +309,19 @@
     "qrSessionCompatibility": "NOT_IMPLEMENTED_V1_ADAPTER_AND_GLOBAL_GATE",
     "restartReadiness": "OBSERVED_MANUAL_RECOVERY_NO_AUTOSTART",
     "nextProposedTask": "docs/tasks/fqgate-2-0-5-qr-session-compatibility.md"
+  },
+  "r5Exact205QrCensus": {
+    "asOf": "2026-10-15",
+    "contract": "docs/tasks/fqgate-2-0-5-qr-session-compatibility.md",
+    "handoff": "docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md",
+    "status": "BLOCKED_UPSTREAM_QR_CONTRACT",
+    "preflightImplemented": true,
+    "qrAdapterImplemented": false,
+    "eligibleSourcesObserved": 2,
+    "qrStateEnumDeclared": false,
+    "expiryReplacementMappingEstablished": false,
+    "liveQr": "NOT_EXECUTED",
+    "globalCompatibilityChanged": false,
+    "remotePermissionsChanged": false
   }
 }

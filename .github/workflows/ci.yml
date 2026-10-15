@@ -90,4 +90,6 @@ jobs:
           }
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate-v2-observation.ps1"
           if ($LASTEXITCODE -ne 0) { throw 'v2 observation behavior fixtures failed' }
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate205-qr-preflight.ps1"
+          if ($LASTEXITCODE -ne 0) { throw 'QR preflight behavior fixtures failed' }
           exit 0
