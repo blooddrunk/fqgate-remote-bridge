@@ -67,6 +67,8 @@ export interface AppConfig {
   readonly cloudflared: CloudflaredConfig;
   readonly logLevel: LogLevel;
   readonly recoveryPolicy?: RecoveryConfig;
+  /** Operator-only target for exact 2.0.5 QR; never accepted from an HTTP caller. */
+  readonly qrV2?: { readonly instanceNumber: number };
 }
 
 const DEFAULT_COMPATIBILITY: CompatibilityConfig = {
@@ -421,6 +423,7 @@ export function parseConfig(
       "cloudflared",
       "logLevel",
       "recoveryPolicy",
+      "qrV2",
     ]),
     "config",
   );
@@ -720,6 +723,19 @@ export function parseConfig(
     }
   }
 
+  let qrV2: AppConfig["qrV2"];
+  if (input.qrV2 !== undefined) {
+    if (!isRecord(input.qrV2))
+      throw new BridgeError(ERROR_CODES.CONFIG_INVALID, "qrV2 must be an object");
+    rejectUnknownKeys(input.qrV2, new Set(["instanceNumber"]), "qrV2");
+    const number = input.qrV2.instanceNumber;
+    if (typeof number !== "number" || !Number.isSafeInteger(number) || number < 0 || number > 65535)
+      throw new BridgeError(
+        ERROR_CODES.CONFIG_INVALID,
+        "qrV2.instanceNumber must be a bounded integer",
+      );
+    qrV2 = { instanceNumber: number };
+  }
   return {
     manifestUrl,
     installDirectory,
@@ -735,6 +751,7 @@ export function parseConfig(
     cloudflared,
     logLevel,
     ...(recoveryPolicy === undefined ? {} : { recoveryPolicy }),
+    ...(qrV2 === undefined ? {} : { qrV2 }),
   };
 }
 

@@ -759,3 +759,30 @@ lifecycle range; Dashboard lifecycle/QR/update qualification can still report
 v2 incompatible. It grants no install/restart/rollback authority. Missing publisher
 signature and authenticated replay remain BLOCKED; fixture recovery is not proof
 of real power-loss rollback. See the active task and implementation handoff.
+
+## Exact 2.0.5 QR/session continuation — 2026-10-15
+
+An independent exact-artifact v2 QR adapter now supplements the v1 adapter,
+using reviewed runtime OpenAPI plus the installed executable's bundled client
+contract. QR operation evidence does not change global lifecycle qualification.
+Only fixed authentication begin/poll actions are supported. Native instance,
+account and numeric flow handles remain private; clients retain Bridge UUIDs.
+Server-side optional `qrV2.instanceNumber` resolves an existing target, with
+ambiguity denied and a guard preserving the current single-connected lookup.
+The current operator choice is the connected target; both native records remain.
+
+Process record/native creation, pinned payload, loopback listener, external
+WebView data, contract and sampled source/worker/account continuity are checked.
+No public session epoch is proven; transient changes between samples remain a
+limitation. Cancellation clears local QR and polling, with no upstream revoke,
+logout or source CRUD. Saved-login options are unchanged. Host/JWT/Origin/CSRF,
+local/human/admin permissions and all machine QR denials remain mandatory.
+
+Status: **IMPLEMENTED_NOT_LIVE_QUALIFIED**. Preflight is read-only; separate
+approval plus exact running build is required for guarded local Live QR. Static
+assets, deterministic tests, Windows fixtures and CI do not establish real login
+or MFA success. Publisher signing/replay and full rollback remain unresolved.
+See `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md` for contract
+hashes, limits, evidence, commands and exact authorization boundaries. Shared
+QR/status/lookup multi-account isolation remains a future separate task under
+`docs/plans/future-multi-profile-account-isolation.md`.

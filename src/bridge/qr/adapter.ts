@@ -30,6 +30,11 @@ export interface QrPollUpstreamResult {
 
 export type QrMediaType = "image/png" | "image/jpeg" | "image/webp";
 
+export interface QrAdapterPort {
+  begin(): Promise<QrBeginUpstreamResult>;
+  poll(flowId: number): Promise<QrPollUpstreamResult>;
+}
+
 export interface FqgateQrAdapterOptions {
   readonly baseUrl: string;
   readonly http: HttpTransport;
@@ -179,7 +184,7 @@ function normalizeUpstreamError(error: unknown): BridgeError {
   );
 }
 
-function decodeBeginData(value: unknown): QrBeginUpstreamResult {
+export function decodeBeginData(value: unknown): QrBeginUpstreamResult {
   const record = requireRecord(value, "begin");
   const flowId = record.flow_id;
   if (typeof flowId !== "number" || !Number.isSafeInteger(flowId) || flowId <= 0) {
@@ -196,7 +201,7 @@ function decodeBeginData(value: unknown): QrBeginUpstreamResult {
   return { flowId, imageBase64, mediaType, status };
 }
 
-function decodePollData(value: unknown): QrPollUpstreamResult {
+export function decodePollData(value: unknown): QrPollUpstreamResult {
   const record = requireRecord(value, "poll");
   const connected = record.connected;
   if (connected !== undefined && typeof connected !== "boolean") {

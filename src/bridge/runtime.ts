@@ -4,6 +4,10 @@ import { getBuildInfo } from "../shared/build-info.js";
 import { StructuredLogger } from "../shared/logger.js";
 import { BridgeService } from "./service.js";
 import { FqgateQrAdapter } from "./qr/adapter.js";
+import { FqgateV2QrAdapter } from "./qr/v2.js";
+import { verifyV2QrIdentity } from "./qr/v2-identity.js";
+import { createFqgateLayout } from "../fqgate/install/layout.js";
+import { ChildProcessRunner } from "../fqgate/process/runner.js";
 import { QrFlowRegistry } from "./qr/registry.js";
 import {
   createBridgeErrorResponse,
@@ -61,6 +65,12 @@ async function createRuntimeHandler(): Promise<BridgeHttpHandler> {
         baseUrl: config.fqgateBaseUrl,
         http,
         timeoutMs: 5_000,
+      }),
+      qrV2Adapter: new FqgateV2QrAdapter({
+        http,
+        identity: () =>
+          verifyV2QrIdentity(createFqgateLayout(config.installDirectory), new ChildProcessRunner()),
+        ...(config.qrV2 === undefined ? {} : { instanceNumber: config.qrV2.instanceNumber }),
       }),
       qrRegistry: new QrFlowRegistry(),
     });

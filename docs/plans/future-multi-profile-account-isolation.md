@@ -1,6 +1,7 @@
 # Future Plan: Multi-Profile FQGate Account Isolation
 
-Status: **PLANNED — no implementation in Phase 4.5**.
+Status: **PLANNED — no multi-profile implementation authorized by the current QR slice**.
+Updated 2026-10-15 after observing native 2.0.5 source-instance authentication.
 
 This note records the multi-account idea raised during Phase 4.5 closeout. It
 is separate from Phase 5 `remote_machine`: a profile is a human-owned FQGate
@@ -126,3 +127,45 @@ can generate a redacted checklist and validate DNS, Access app/AUD, Tunnel
 host mapping, certificate coverage, loopback listeners, and posture status,
 but it must use plan/dry-run and never silently provision broad Cloudflare
 permissions.
+
+## 2.0.5 evidence and next minimal task — 2026-10-15
+
+One FQGate process exposes multiple tonghuashun source instances, each with its own
+authentication actions and account snapshot. Two persistent active QR-capable
+records were observed, one connected and one disconnected. This establishes the
+native instance model, not two different accounts concurrently accepted or L2
+isolation. Do not create a second FQGate process merely to reproduce an already
+available native source model. Keep the process-per-profile option only as a
+fallback if subsequent isolation evidence requires it.
+
+The current QR task binds one operator-selected existing instance server-side;
+no source CRUD or account picker is implemented. Its conservative guard protects
+the unchanged lookup adapter, which requires exactly one connected source.
+Multiple connected accounts are not an upstream error; they are outside the
+current Bridge selection contract.
+
+The next smallest task is a **local-first shared account-selection contract**:
+
+1. Inspect native account/session identity stability, duplicate/same-account
+   behavior, saved-login scope and concurrent-login/L2 displacement semantics.
+   Use deterministic fixtures first; real additional logins require approval.
+2. Define Bridge-owned profile aliases mapped to registered native instances,
+   without exposing native IDs or accepting arbitrary endpoint/flow selectors.
+   QR, status and lookup must resolve the same profile. Bind caches, in-flight
+   queries and flows to that profile and invalidate on account/worker drift.
+3. Preserve existing single-profile requests and machine operation allowlists.
+   Multiple candidates without an authorized selection fail closed. A machine
+   lookup profile never grants QR or account-maintenance permission. Keep the
+   personal single-owner scope; do not invent a multi-user deployment requirement.
+4. Test cross-profile QR/poll/cache/query isolation, unavailable/removed/reused
+   instances, account switch, simultaneous flows and no implicit fallback to
+   another connected account. Define a local-only reviewable prototype before
+   considering remote selection or new profile discovery operations.
+5. Separately approve any real two-account Windows acceptance. Record whether
+   two different accounts actually remain connected, which L1/L2 capabilities
+   survive, and what happens on replacement. Static evidence and fixtures do
+   not close these gates.
+
+Do not change lookup selection, add profile APIs, create sources, log in a second
+account or widen remote permissions in the current QR/session implementation.
+No new phase is started by updating this plan.

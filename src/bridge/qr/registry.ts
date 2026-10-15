@@ -1,12 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { BridgeError, ERROR_CODES } from "../../shared/errors.js";
-import { QR_FLOW_TTL_MS } from "./adapter.js";
+import { QR_FLOW_TTL_MS, type QrAdapterPort } from "./adapter.js";
 
 export type QrTerminalState = "expired" | "replaced" | "connected";
 
 export interface StoredQrFlow {
   /** Server-only upstream identifier. Never serialize this record to a client. */
   readonly flowId: number;
+  /** Server-only adapter binding prevents a v1/v2 switch from reusing flow IDs. */
+  readonly adapter?: QrAdapterPort;
   readonly sessionId: string;
   readonly createdAtMs: number;
   readonly expiresAtMs: number;
@@ -72,7 +74,10 @@ export class QrFlowRegistry {
     }
   }
 
-  create(flowId: number, options: { readonly replaceExisting?: boolean } = {}): StoredQrFlow {
+  create(
+    flowId: number,
+    options: { readonly replaceExisting?: boolean; readonly adapter?: QrAdapterPort } = {},
+  ): StoredQrFlow {
     if (!Number.isSafeInteger(flowId) || flowId <= 0) {
       throw new BridgeError(ERROR_CODES.QR_FLOW_INVALID, "The upstream QR flow is invalid");
     }
@@ -90,6 +95,7 @@ export class QrFlowRegistry {
     const createdAtMs = this.nowMs();
     const flow: StoredQrFlow = {
       flowId,
+      ...(options.adapter === undefined ? {} : { adapter: options.adapter }),
       sessionId: this.createUniqueSessionId(),
       createdAtMs,
       expiresAtMs: createdAtMs + this.ttlMs,

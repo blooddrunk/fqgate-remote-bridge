@@ -678,9 +678,9 @@ new remote privilege or startup actuator was added. Signature/replay and full v2
 version rollback remain unqualified. Final source/PR/CI state is retained in the
 external delivery receipt.
 
-## Proposed next bounded slice — FQGate 2.0.5 QR/session compatibility
+## Historical proposal — FQGate 2.0.5 QR/session compatibility
 
-**PROPOSED, NOT IMPLEMENTED.** The 2026-10-14 exact-artifact 2.0.5 lookup adapter
+**Historical proposal, superseded by the continuation below.** The 2026-10-14 exact-artifact 2.0.5 lookup adapter
 passed native Windows local 6/6 and Vault-backed remote_machine 22/22; PR #17
 merged into main. Existing Bridge QR begin/poll still use v1 upstream endpoints and
 the global compatibility gate, so no real 2.0.5 Bridge QR acceptance is claimed.
@@ -691,3 +691,33 @@ adapter if proven, automate fixtures/CI/local/remote denials, and require a
 separate explicit human approval for any real QR begin/scan/MFA. This plan does
 not authorize automatic login, process/service restarts, Cloudflare writes,
 updater integration, or global v2 qualification.
+
+## Historical initial 2026-10-15 QR/session census delivery
+
+The initial QR task was **BLOCKED_UPSTREAM_QR_CONTRACT** after permanent-Windows
+GET-only investigation. Read-only preflight and Windows behavior fixtures are
+implemented. Two QR-capable sources and incomplete state/error declarations
+prevent enabling an adapter; Live remains NOT_EXECUTED. No QR/runtime permission,
+global compatibility or recovery authority changed. See
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
+
+## 2026-10-15 QR/session implementation continuation
+
+**IMPLEMENTED_NOT_LIVE_QUALIFIED.** Exact installed bundled-client evidence now
+supplements the runtime OpenAPI contract. Independent 2.0.5 adapter, private
+server-side source pin, native identity checks, read-only Preflight, local UI
+cancellation and explicitly guarded Live automation are implemented. v1,
+lookup, global compatibility and remote operation permissions remain fixed.
+Real QR and Bridge runtime replacement still require separate approval;
+no fixture or CI result constitutes live QR acceptance. See the current
+`docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
+
+The operator chose the single-instance approach for this task. Preserve both
+native source records and bind the currently connected instance server-side.
+Do not log in another instance or weaken the existing lookup ambiguity guard.
+The next minimal planning item is shared QR/status/lookup profile selection and
+isolation using native 2.0.5 instances; the updated evidence, requirements and
+real two-account acceptance boundary are in
+`docs/plans/future-multi-profile-account-isolation.md`. That implementation is
+not started by this delivery. Publisher signing/replay, complete rollback and
+Phase 7-B2/7-C remain separate.

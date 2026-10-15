@@ -45,6 +45,38 @@ test.describe("local bridge QR flow", () => {
     });
   });
 
+  test("cancels a pending QR without beginning another flow or logging out", async ({ page }) => {
+    let begins = 0,
+      polls = 0;
+    await installFakeBridge(page, {
+      status: () => statusPayload(false),
+      begin: () => {
+        begins++;
+        return {
+          sessionId,
+          qr: { mediaType: "image/png", imageBase64 },
+          status: "waiting_for_scan",
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 120000).toISOString(),
+        };
+      },
+      poll: () => {
+        polls++;
+        return { sessionId, status: "waiting_for_scan", connected: false };
+      },
+    });
+    await page.goto("/login");
+    await page.getByRole("button", { name: "生成 QR 码" }).click();
+    await expect(page.getByRole("img", { name: "FQGate 扫码登录二维码" })).toBeVisible();
+    await page.getByRole("button", { name: "取消本次扫码" }).click();
+    await expect(page.getByRole("img", { name: "FQGate 扫码登录二维码" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "生成 QR 码" })).toBeVisible();
+    const stopped = polls;
+    await page.waitForTimeout(2500);
+    expect(polls).toBe(stopped);
+    expect(begins).toBe(1);
+  });
+
   test("shows an expired flow and offers a deliberate retry", async ({ page }) => {
     await installFakeBridge(page, {
       status: () => statusPayload(false),

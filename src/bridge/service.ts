@@ -3,6 +3,7 @@ import type { CompatibilityEvaluation } from "../fqgate/compatibility/policy.js"
 import type { FqgateLifecycleManager, FqgateStatus } from "../fqgate/install/lifecycle.js";
 import type { HealthObservation } from "../fqgate/health/types.js";
 import { BridgeError, ERROR_CODES, isBridgeError } from "../shared/errors.js";
+import type { QrV2Observation } from "./qr/v2.js";
 import type { BuildInfo } from "../shared/build-info.js";
 import {
   type BridgeOpenApiCatalogResponse,
@@ -16,7 +17,7 @@ import {
   normalizeCompatibility,
 } from "./contracts.js";
 import { AdminConfirmationService, bindingForAdminPlan } from "./admin/confirmation.js";
-import { QR_FLOW_TTL_MS, type FqgateQrAdapter, type QrPollUpstreamResult } from "./qr/adapter.js";
+import { QR_FLOW_TTL_MS, type QrAdapterPort, type QrPollUpstreamResult } from "./qr/adapter.js";
 import type { QrFlowRegistry, StoredQrFlow } from "./qr/registry.js";
 import { Redactor } from "../shared/redaction.js";
 import type { FqgateOpenApiServicePort } from "../fqgate/openapi/service.js";
@@ -37,7 +38,8 @@ export interface BridgeServiceOptions {
   readonly instrumentLookup?: InstrumentLookupPort;
   readonly buildInfo: BuildInfo;
   readonly lifecycle: LifecycleStatusReader | FqgateLifecycleManager;
-  readonly qrAdapter: FqgateQrAdapter;
+  readonly qrAdapter: QrAdapterPort;
+  readonly qrV2Adapter?: QrAdapterPort & { inspect(): Promise<QrV2Observation> };
   readonly qrRegistry: QrFlowRegistry;
   readonly updateService?: FqgateUpdateServicePort;
   readonly openApiService?: FqgateOpenApiServicePort;
@@ -49,7 +51,8 @@ export class BridgeService {
   private readonly instrumentLookup: InstrumentLookupPort | undefined;
   private readonly buildInfo: BuildInfo;
   private readonly lifecycle: LifecycleStatusReader;
-  private readonly qrAdapter: FqgateQrAdapter;
+  private readonly qrAdapter: QrAdapterPort;
+  private readonly qrV2Adapter: BridgeServiceOptions["qrV2Adapter"];
   private readonly qrRegistry: QrFlowRegistry;
   private readonly updateService: FqgateUpdateServicePort | undefined;
   private readonly openApiService: FqgateOpenApiServicePort | undefined;
@@ -62,6 +65,7 @@ export class BridgeService {
     this.buildInfo = options.buildInfo;
     this.lifecycle = options.lifecycle;
     this.qrAdapter = options.qrAdapter;
+    this.qrV2Adapter = options.qrV2Adapter;
     this.qrRegistry = options.qrRegistry;
     this.updateService = options.updateService;
     this.openApiService = options.openApiService;
@@ -86,10 +90,19 @@ export class BridgeService {
   async capabilities(context: BridgeRequestContext = "local"): Promise<BridgeCapabilitiesResponse> {
     const status = await this.lifecycle.status();
     const compatibility = normalizeCompatibility(status);
+    let qrLogin = compatibility.validated;
+    if (status.installed?.version?.startsWith("2.")) {
+      try {
+        await this.requireV2Qr().inspect();
+        qrLogin = true;
+      } catch {
+        qrLogin = false;
+      }
+    }
     return {
       apiVersion: "v1",
       requestContext: context,
-      capabilities: { status: true, qrLogin: compatibility.validated },
+      capabilities: { status: true, qrLogin },
       fqgate: {
         version: status.installed?.version ?? null,
         compatibility,
@@ -100,14 +113,23 @@ export class BridgeService {
   async status(): Promise<BridgeStatusResponse> {
     const checkedAt = this.now();
     const status = await this.lifecycle.status();
-    return normalizeBridgeStatus(this.buildInfo, checkedAt, status);
+    const response = normalizeBridgeStatus(this.buildInfo, checkedAt, status);
+    if (status.installed?.version?.startsWith("2.")) {
+      try {
+        const observation = await this.requireV2Qr().inspect();
+        return { ...response, session: { state: observation.source.session, loginMethod: null } };
+      } catch {
+        return { ...response, session: { state: "unknown", loginMethod: null } };
+      }
+    }
+    return response;
   }
 
   async beginQr(): Promise<QrBeginResponse> {
     const status = await this.lifecycle.status();
-    assertQrReady(status);
-    const upstream = await this.qrAdapter.begin();
-    const flow = this.qrRegistry.create(upstream.flowId, { replaceExisting: true });
+    const adapter = this.qrForStatus(status);
+    const upstream = await adapter.begin();
+    const flow = this.qrRegistry.create(upstream.flowId, { replaceExisting: true, adapter });
     return {
       sessionId: flow.sessionId,
       qr: {
@@ -133,10 +155,12 @@ export class BridgeService {
     }
 
     const status = await this.lifecycle.status();
-    assertQrReady(status);
+    const adapter = this.qrForStatus(status);
 
     try {
-      const result = await this.qrAdapter.poll(lookup.flow.flowId);
+      if (lookup.flow.adapter !== undefined && lookup.flow.adapter !== adapter)
+        throw new BridgeError(ERROR_CODES.QR_FLOW_REPLACED, "The QR adapter identity changed");
+      const result = await adapter.poll(lookup.flow.flowId);
       return this.completePoll(sessionId, lookup.flow, result);
     } catch (error) {
       if (isBridgeError(error) && isTerminalErrorCode(error.code)) {
@@ -147,6 +171,17 @@ export class BridgeService {
       }
       throw error;
     }
+  }
+
+  private requireV2Qr(): NonNullable<BridgeServiceOptions["qrV2Adapter"]> {
+    if (!this.qrV2Adapter)
+      throw new BridgeError(ERROR_CODES.FQGATE_INCOMPATIBLE, "No exact v2 QR adapter is available");
+    return this.qrV2Adapter;
+  }
+  private qrForStatus(status: FqgateStatus): QrAdapterPort {
+    if (status.installed?.version?.startsWith("2.")) return this.requireV2Qr();
+    assertQrReady(status);
+    return this.qrAdapter;
   }
 
   async updateStatus(): Promise<BridgeUpdateStatusResponse> {

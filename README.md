@@ -68,6 +68,17 @@ v2 的 QR、更新、签名信任和真实回滚不因此获得资格。
 经独立授权完成 Bridge 恢复、精确 Access 域名分流和保留双份备份的 FQGate profile/进程记录修复；
 没有扩大权限、配置自动启动或解除 v2 安装及签名门禁。
 
+### FQGate 2.0.5 QR/session 调查
+
+2026-10-15 已实现精确安装文件绑定的独立 v2 QR/session 适配器，状态为
+**IMPLEMENTED_NOT_LIVE_QUALIFIED**。运行时 OpenAPI 与安装文件内客户端合同共同约束
+固定 authentication 动作；全局 v2 兼容范围、v1 和现有 lookup 权限保持不变。
+多个 QR-capable source 必须由服务端明确绑定；本轮采用当前已连接实例，保留另一条记录。
+Preflight 只读；Live 必须另行明确批准，且正在运行的 Bridge 必须匹配当前提交。
+取消只停止轮询、清除页面 QR，不会注销账号。真实扫码尚未执行。
+[实现、重试命令和验收边界](docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md)。
+[未来多账号选择与隔离计划](docs/plans/future-multi-profile-account-isolation.md)。
+
 ## 1. 用人话理解系统
 
 ### 1.1 四层结构
@@ -1019,8 +1030,8 @@ node .\dist\cli\main.js fqgate inspect-v2 --json
 node .\dist\cli\main.js fqgate audit-v2 --json
 ```
 
-现有 Bridge QR 适配器仍使用 v1 session API，且被全局兼容性门禁约束；
-**2.0.5 的 Bridge QR 登录尚未验证**。重启后 Bridge 未监听、FQGate 进程记录
+独立的精确 2.0.5 QR 适配器已实现，使用操作级合同、安装文件及进程身份门禁；
+**真实 Bridge QR 登录尚未验收，全局 v2 资格不变**。重启后 Bridge 未监听、FQGate 进程记录
 失效及 WebView2 数据目录边界应继续通过只读诊断处理，不授权静默修复或自动重启。
 下一候选任务：
 [精确 2.0.5 QR/session 兼容性](docs/tasks/fqgate-2-0-5-qr-session-compatibility.md)。
