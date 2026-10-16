@@ -809,3 +809,21 @@ isolation contract, identify what static/single-connected-source evidence
 cannot prove, and propose a separately approved future local-only implementation
 slice. No new Issue or planning-only PR. The current source and live runtime
 remain untouched; Phase 7-B2/C and trust/rollback work remain separate.
+
+## MP-0 shared-profile design review completed — 2026-10-16
+
+**MP-0 DESIGN_REVIEW_COMPLETE**, superseding the proposed status above.
+Result: `docs/plans/fqgate205-shared-profile-contract-review.md`.
+Review source `0df0d96156df4a9e8e4a6b044f9bde1d811205e7`; no production
+Resolver, permission, deployment or authentication change. The design selects
+native-instance investigation, opaque Bridge aliases, one shared private Resolver
+and identity/generation fencing, with 28 specified negative/isolation cases.
+MP-1 is a separately authorized offline fixture/prototype; live account identity,
+native session epoch and distinct-account/L1/L2 isolation are unproven.
+
+Current GET-only Windows Preflight returned 9 PASS / 12 BLOCKED / 1 NOT_EXECUTED
+(exit 1): 17281/17282 listeners absent; runtime SHA/source/session continuity
+cannot currently be verified. Historical deployed `481db65` Live 8/8 and local
+6/6 / remote 22/22 remain historical evidence, not repeated observations.
+No repair or restart followed. Source tests/CI and the review's external receipts
+are separate from native acceptance; see the result document for exact boundaries.

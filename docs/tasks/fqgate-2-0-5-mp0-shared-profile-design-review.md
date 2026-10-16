@@ -1,6 +1,8 @@
 # FQGate 2.0.5 MP-0: shared-profile account-selection and isolation design review
 
-Status: **PROPOSED / READY FOR CODING-AGENT HANDOFF — DESIGN REVIEW ONLY**.
+Status: **MP-0 DESIGN_REVIEW_COMPLETE — 2026-10-16; DESIGN ONLY**.
+Result: [shared-profile contract review](../plans/fqgate205-shared-profile-contract-review.md).
+MP-1 implementation and real two-account acceptance remain separately authorized work.
 Date: 2026-10-15. This task is not an authorization to deploy, reauthenticate
 or implement profile-aware runtime behavior.
 
