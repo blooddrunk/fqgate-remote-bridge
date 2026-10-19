@@ -1051,3 +1051,7 @@ node .\dist\cli\main.js fqgate audit-v2 --json
 不执行第二账号登录、不添加 profile API、不扩大 machine 权限。
 保留原始[手动升级记录](docs/status/fqgate-v2-operator-risk-upgrade-handoff.md)和
 [升级信任边界](docs/operations/windows-fqgate-v2-qualification.md)。
+
+### MP-0 / MP-1 共享 Profile 进展（2026-10-19）
+
+MP-0 共享 Profile 合同审查已于 `607d174` 完成（仅设计审查，不是多账号隔离实现）。最新交接以 [MP-1 离线 Resolver 任务](docs/tasks/fqgate-2-0-5-mp1-offline-resolver-prototype.md)及 [coding agent goal](docs/prompts/fqgate-2-0-5-mp1-codex-goal.md) 为准；本文件上文提及“下一候选 MP-0”的描述为历史记录。MP-1 仅包含不接入生产环境的合成数据原型与 28 个自动化隔离测试；不授权真实双账号登录、profile API、Bridge 重新部署或权限扩大。真实账号 epoch、L1/L2 隔离依然未验证。
