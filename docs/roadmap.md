@@ -827,3 +827,7 @@ cannot currently be verified. Historical deployed `481db65` Live 8/8 and local
 6/6 / remote 22/22 remain historical evidence, not repeated observations.
 No repair or restart followed. Source tests/CI and the review's external receipts
 are separate from native acceptance; see the result document for exact boundaries.
+
+## Proposed next task: MP-1 offline shared-profile Resolver (2026-10-19)
+
+Following MP-0 DESIGN_REVIEW_COMPLETE, implement only the production-unwired, synthetic Resolver prototype specified in `docs/tasks/fqgate-2-0-5-mp1-offline-resolver-prototype.md` with coding brief `docs/prompts/fqgate-2-0-5-mp1-codex-goal.md`. Require executable MP1-01..28 negative/race tests, no production imports or real side effects, preservation of v1 and exact-2.0.5 single-profile behavior, and exact-final-head Ubuntu/Windows CI. No human step is necessary for offline MP-1. The native session epoch, simultaneous distinct accounts, account displacement, saved-login and L1/L2 independence, publisher signatures and full directory rollback remain unqualified; any future live procedure requires separate authorization, precise preflight, one-attempt harness, and explicit stop boundary. Previous 'next MP-0' wording is retained solely as historical context.
