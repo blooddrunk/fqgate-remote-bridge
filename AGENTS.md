@@ -799,3 +799,7 @@ login, a real QR begin/poll, Bridge deployment, process/service mutation or
 new remote permissions. Do not create an Issue or planning-only PR.
 See `docs/plans/future-multi-profile-account-isolation.md` and
 `docs/status/fqgate-2-0-5-qr-session-implementation-handoff.md`.
+
+## Latest handoff: MP-0 closed, MP-1 offline-only (2026-10-19)
+
+This section supersedes the historical 'next proposed MP-0' text above. MP-0 design review completed at `607d174`; current executable task is `docs/tasks/fqgate-2-0-5-mp1-offline-resolver-prototype.md`, and the agent handoff is `docs/prompts/fqgate-2-0-5-mp1-codex-goal.md`. MP-1 authorizes only a production-unwired offline synthetic Resolver with MP1-01..28 deterministic isolation tests. No live profile API, native login, process/deployment/Cloudflare mutation, remote permission expansion, or second account experiment. Preserve exact deployed QR baseline `481db65` as historical, not a mandate to redeploy. A separate live integration authorization and native account/session epoch evidence will be required.
