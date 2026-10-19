@@ -4,7 +4,7 @@ Status: PROPOSED / READY FOR IMPLEMENTATION; NOT AUTHORIZED FOR LIVE INTEGRATION
 
 Source contract: [MP-0 review](../plans/fqgate205-shared-profile-contract-review.md).
 Historic QR acceptance:
-[handoff](../status/fqgate-2-0-5-qr-session-implementation-handoff.md) .
+[handoff](../status/fqgate-2-0-5-qr-session-implementation-handoff.md).
 
 ## Goal
 
@@ -33,7 +33,7 @@ wholly offline: fake identity, clock, inventory, adapter, network, and QR only.
    serialization or caller-made lease.
 5. Validate before side effects and again before result publication under an atomic
    generation/policy fence. After a QR POST, a stale lease can suppress publication
-   but **cannot undo upstream authentication** . Never retry, silently rebind, fall
+   but **cannot undo upstream authentication**. Never retry, silently rebind, fall
    back, auto-login, or claim rollback.
 6. Bound the QR registry by owner/alias/generation/audience/UUID/TTL and tombstones.
    Deny cross-owner polling, including terminal UUIDs. Preserve global mutex:
@@ -102,6 +102,6 @@ appropriate.
 
 Only label **MP-1_OFFLINE_PROTOTYPE_COMPLETE** after all 28 named cases, baseline
 tests, no-live-wiring audit, and exact-head Ubuntu/Windows CI pass. Always separately
-state **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED** . Otherwise give exact failing
+state **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. Otherwise give exact failing
 case, reproduction command, exit, missing prerequisite and safe stop. One focused
 implementation PR; no new Issues or planning-only PRs.
