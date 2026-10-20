@@ -72,7 +72,7 @@ corepack pnpm format:check
 corepack pnpm test:e2e
 ```
 
-Also run applicable native Windows *synthetic* fixture checks. Require exact-head
+Also run applicable native Windows _synthetic_ fixture checks. Require exact-head
 Ubuntu/Windows GitHub Actions success. Note Windows browser E2E is skipped in
 existing workflow; Linux E2E does not constitute live native A/B validation. Record
 commit SHA, OS, commands, exits, named case results, fake call counts, CI URLs, and
