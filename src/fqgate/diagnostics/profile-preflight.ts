@@ -418,6 +418,14 @@ export async function inspectProfilePreflight(options: {
         restartCount: s.source.restarts,
       })),
     );
+    const connected = summaries.filter((s) => s.state === "connected").length;
+    add(
+      "LEGACY_SINGLE_PROFILE_STATE",
+      connected > 1 ? "BLOCKED" : "OBSERVED",
+      connected > 1
+        ? "MULTIPLE_CONNECTED_SOURCES_BREAK_EXISTING_LOOKUP_QR_GUARD"
+        : "EXISTING_SINGLE_CONNECTED_GUARD_PRESERVED",
+    );
     add("ALIAS_SOURCE_CONTINUITY", "OBSERVED", "TWO_EQUAL_SAMPLES_WITH_NATIVE_WORKER_CREATION");
     // Display, even when equal or hashed, is never an account credential.
     add("ACCOUNT_IDENTITY", "UNPROVEN", "NO_REVIEWED_NON_DISPLAY_ACCOUNT_ID");

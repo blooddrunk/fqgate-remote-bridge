@@ -422,4 +422,13 @@ describe("MP2 alias-aware GET-only diagnostic", () => {
     expect(r.profiles).toEqual([]);
     assertSafe(r);
   });
+  it("MP2-17 two connected sources with the same display cannot prove duplicate-account safety", async () => {
+    const t = fixture();
+    t.f.config.profiles[1]!.expectedState = "connected";
+    t.f.sources[1]!.session.state = "connected";
+    const r = await t.run();
+    expect(gate(r, "LEGACY_SINGLE_PROFILE_STATE")?.status).toBe("BLOCKED");
+    expect(gate(r, "ACCOUNT_IDENTITY")?.status).toBe("UNPROVEN");
+    assertSafe(r);
+  });
 });

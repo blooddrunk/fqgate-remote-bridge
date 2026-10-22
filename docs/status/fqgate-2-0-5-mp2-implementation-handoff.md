@@ -42,6 +42,13 @@ is absent. Two ready workers exist: source number 1 connected, number 2
 disconnected. No account value, native source ID or WebView profile content is
 included here. Running Bridge identity and live method denials are BLOCKED
 because the Bridge port is absent; no process was started to clear that gate.
+The existing QR diagnostic returned **14 PASS / 7 BLOCKED / 1 NOT_EXECUTED**,
+exit 1. Its additional failures identify payload-tree drift, stale/unverified
+process record, WebView data inside immutable payload, scoped QR readiness and
+runtime-continuity failure. The MP-2 diagnostic independently observed equal
+source/worker samples while keeping those install/runtime gates BLOCKED;
+strong identity/epoch remain UNPROVEN, real QR NOT_EXECUTED. All MP-2 POST,
+account-write, QR begin and QR poll counters are **0**. No repair followed.
 The complete diagnostic's gates and hashes are in the external receipt. Historical
 remote acceptance is not current remote availability.
 
@@ -108,6 +115,38 @@ audit still forbids production paths into MP-1. Existing v1/v2, Host/JWT/Origin,
 remote-human/admin/machine suites remain required. Local command exits and
 final-head CI results are bound in the external delivery receipt; browser E2E
 runs on Ubuntu, not native Windows, under the existing workflow.
+
+Linux/WSL Node 24 / pnpm 11.23.0 final implementation verification:
+
+| Command                                    | Result / exit           |
+| ------------------------------------------ | ----------------------- |
+| `corepack pnpm install --frozen-lockfile`  | PASS / 0                |
+| `corepack pnpm typecheck`                  | PASS / 0                |
+| `corepack pnpm lint`                       | PASS / 0                |
+| `corepack pnpm test`                       | 737 tests, 36 files / 0 |
+| `corepack pnpm build`                      | PASS / 0                |
+| `corepack pnpm format:check`               | PASS / 0                |
+| `corepack pnpm test:e2e`                   | 19 tests / 0            |
+| `node scripts/audit-profile-prototype.mjs` | PASS / 0                |
+
+New tests: 42 preflight scenarios + 15 executable Live-model scenarios, all
+FIXTURE_ONLY. Windows native collection fixtures 9/9, QR native fixtures 28/28,
+inline identity fixtures 5/5, no-approval Live guard 1/1, v2 observation fixtures
+40/40, each exit 0. The existing GET-only QR Preflight and new MP-2 Preflight
+exit 1 with explicitly retained BLOCKED/UNPROVEN gates. No authenticated remote
+regression or real lookup POST was executed in this task; offline permission
+regression does not attest to the currently absent Bridge's runtime policy.
+
+The clean permanent Windows main at `607d174` was fast-forwarded to merged MP-1,
+then switched to the fetched MP-2 source branch in the same checkout. Its remote
+fetch configuration tracks only main; the branch was explicitly fetched via
+FETCH_HEAD rather than changing operator Git configuration. Only the new ignored
+`dist/fqgate/diagnostics/profile-preflight.js` was added for standalone diagnostics;
+all prior dist and .output file hashes were preserved. No runtime build output
+was replaced. Windows native child exit capture uses `Start-Process -Wait
+-PassThru`; the initial WSL-hosted PowerShell `$LASTEXITCODE=null` attempt is not
+counted as a verified exit, and all applicable native commands were rerun with
+explicit captured exits. Final native/CI/delivery metadata are external.
 
 ## MP2-D next-stage decision
 
