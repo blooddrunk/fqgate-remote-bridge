@@ -1,6 +1,7 @@
 # FQGate 2.0.5 MP-1 — Offline Shared-Profile Resolver Prototype
 
-Status: PROPOSED / READY FOR IMPLEMENTATION; NOT AUTHORIZED FOR LIVE INTEGRATION.
+Status: offline prototype implemented; NOT AUTHORIZED FOR LIVE INTEGRATION.
+Verification and final-head CI custody: [implementation handoff](../status/fqgate-2-0-5-mp1-implementation-handoff.md).
 
 Source contract: [MP-0 review](../plans/fqgate205-shared-profile-contract-review.md).
 Historic QR acceptance:

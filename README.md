@@ -1055,3 +1055,11 @@ node .\dist\cli\main.js fqgate audit-v2 --json
 ### MP-0 / MP-1 共享 Profile 进展（2026-10-19）
 
 MP-0 共享 Profile 合同审查已于 `607d174` 完成（仅设计审查，不是多账号隔离实现）。最新交接以 [MP-1 离线 Resolver 任务](docs/tasks/fqgate-2-0-5-mp1-offline-resolver-prototype.md)及 [coding agent goal](docs/prompts/fqgate-2-0-5-mp1-codex-goal.md) 为准；本文件上文提及“下一候选 MP-0”的描述为历史记录。MP-1 仅包含不接入生产环境的合成数据原型与 28 个自动化隔离测试；不授权真实双账号登录、profile API、Bridge 重新部署或权限扩大。真实账号 epoch、L1/L2 隔离依然未验证。
+
+## MP-1 离线共享 Profile 原型（2026-10-22）
+
+已实现未接入生产的 Resolver、合成 QR/status/lookup 和 **MP1-01..28 全部测试**。
+私有 Lease 绑定注册、权限、启动和身份版本，异步结果经原子 Fence 后才发布；
+现有 v1、精确 2.0.5 单账户行为及远程权限不变。
+[实现、验证与最终 SHA/CI 证据边界](docs/status/fqgate-2-0-5-mp1-implementation-handoff.md)。
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**；后续真实接线和双账户 QR 须另行授权。
