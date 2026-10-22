@@ -1063,3 +1063,13 @@ MP-0 共享 Profile 合同审查已于 `607d174` 完成（仅设计审查，不�
 现有 v1、精确 2.0.5 单账户行为及远程权限不变。
 [实现、验证与最终 SHA/CI 证据边界](docs/status/fqgate-2-0-5-mp1-implementation-handoff.md)。
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**；后续真实接线和双账户 QR 须另行授权。
+
+## MP-2 原生身份调查与只读预检（2026-10-22）
+
+MP-1 PR #20 已合并。MP-2 提供独立 Alias-aware GET-only Windows 预检和
+fixture-only 单次 Live 验收规格；生产 Resolver、v1/2.0.5 单账号和远程权限不变。
+原生账号强身份及 Session Epoch 仍未证明，保持
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**。缺失监听端口只报告 BLOCKED，
+不启动、修复或部署。
+[运行命令与未来实验边界](docs/operations/windows-fqgate205-mp2.md)；
+[身份调查、验证与技术选择](docs/status/fqgate-2-0-5-mp2-implementation-handoff.md)。

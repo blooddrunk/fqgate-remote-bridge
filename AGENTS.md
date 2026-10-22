@@ -813,3 +813,15 @@ opaque leases, pre-effect/commit fences, global QR mutex and bounded registries.
 [Handoff and final-head qualification receipts](docs/status/fqgate-2-0-5-mp1-implementation-handoff.md).
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; future native integration requires
 separate authorization, alias-aware GET-only preflight and one-attempt QR readiness.
+
+## Latest MP-2 boundary — 2026-10-22
+
+MP-1 PR #20 is merged at `20b5e3b3a16505e296f125cb5d3a8043f55c6441`.
+MP-2 authorizes standalone GET-only identity/preflight tooling, deterministic
+fixtures and a test-only executable future experiment specification. Contract:
+`docs/tasks/fqgate-2-0-5-mp2-native-preflight.md`; evidence/decision:
+`docs/status/fqgate-2-0-5-mp2-implementation-handoff.md`. No production Resolver
+wiring, account/session/QR POST, second login, restart/deployment or permission
+expansion. Unknown account/epoch always denies integration readiness. Preserve
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. The old single-source Live harness
+is not alias-aware and must not be used as a multi-account research shortcut.
