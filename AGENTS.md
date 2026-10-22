@@ -803,3 +803,13 @@ See `docs/plans/future-multi-profile-account-isolation.md` and
 ## Latest handoff: MP-0 closed, MP-1 offline-only (2026-10-19)
 
 This section supersedes the historical 'next proposed MP-0' text above. MP-0 design review completed at `607d174`; current executable task is `docs/tasks/fqgate-2-0-5-mp1-offline-resolver-prototype.md`, and the agent handoff is `docs/prompts/fqgate-2-0-5-mp1-codex-goal.md`. MP-1 authorizes only a production-unwired offline synthetic Resolver with MP1-01..28 deterministic isolation tests. No live profile API, native login, process/deployment/Cloudflare mutation, remote permission expansion, or second account experiment. Preserve exact deployed QR baseline `481db65` as historical, not a mandate to redeploy. A separate live integration authorization and native account/session epoch evidence will be required.
+
+## MP-1 offline prototype implemented — 2026-10-22
+
+`src/bridge/profiles/` is fixture-only: never import it from production runtime,
+API, UI, configuration or live adapters. Preserve local-only synthetic authority,
+opaque leases, pre-effect/commit fences, global QR mutex and bounded registries.
+`node scripts/audit-profile-prototype.mjs` enforces the import/I/O boundary in CI.
+[Handoff and final-head qualification receipts](docs/status/fqgate-2-0-5-mp1-implementation-handoff.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; future native integration requires
+separate authorization, alias-aware GET-only preflight and one-attempt QR readiness.

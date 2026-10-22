@@ -828,6 +828,15 @@ cannot currently be verified. Historical deployed `481db65` Live 8/8 and local
 No repair or restart followed. Source tests/CI and the review's external receipts
 are separate from native acceptance; see the result document for exact boundaries.
 
-## Proposed next task: MP-1 offline shared-profile Resolver (2026-10-19)
+## Historical proposal: MP-1 offline shared-profile Resolver (2026-10-19)
 
 Following MP-0 DESIGN_REVIEW_COMPLETE, implement only the production-unwired, synthetic Resolver prototype specified in `docs/tasks/fqgate-2-0-5-mp1-offline-resolver-prototype.md` with coding brief `docs/prompts/fqgate-2-0-5-mp1-codex-goal.md`. Require executable MP1-01..28 negative/race tests, no production imports or real side effects, preservation of v1 and exact-2.0.5 single-profile behavior, and exact-final-head Ubuntu/Windows CI. No human step is necessary for offline MP-1. The native session epoch, simultaneous distinct accounts, account displacement, saved-login and L1/L2 independence, publisher signatures and full directory rollback remain unqualified; any future live procedure requires separate authorization, precise preflight, one-attempt harness, and explicit stop boundary. Previous 'next MP-0' wording is retained solely as historical context.
+
+## MP-1 offline implementation delivered — 2026-10-22
+
+Implemented the unconnected shared-profile Resolver and 28 deterministic cases;
+production selection and remote permissions remain unchanged. Closure requires
+all checks and both final-head CI jobs under the
+[implementation handoff](status/fqgate-2-0-5-mp1-implementation-handoff.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. Live integration is a separate,
+unstarted task with explicit account-operation authorization and native preflight.

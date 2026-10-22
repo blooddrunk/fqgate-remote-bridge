@@ -41,6 +41,9 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Offline profile boundary audit
+        run: node scripts/audit-profile-prototype.mjs
+
       - name: Build
         run: pnpm build
 
