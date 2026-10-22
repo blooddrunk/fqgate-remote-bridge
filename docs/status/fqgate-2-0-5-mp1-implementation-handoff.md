@@ -17,7 +17,9 @@ The final implementation commit, PR URL and exact-head Ubuntu/Windows run/jobs
 are bound in the PR and Git-external `delivery-receipt.json` under
 `/home/jelinenaro/research/fqgate-mp1-evidence-20261022`. This avoids embedding a
 self-referential commit SHA. A complete designation requires all checks below
-and both CI jobs for the final PR head, not an earlier successful run. No merge
+and both CI jobs for the final PR head, not an earlier successful run. CI checkout
+is explicitly pinned to the PR head SHA (or push SHA), rather than GitHub's
+synthetic merge commit. No merge
 or deployment is implied by an implementation PR.
 
 ## Implementation and isolation
