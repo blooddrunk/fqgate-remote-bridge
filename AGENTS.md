@@ -1,8 +1,9 @@
 # AGENTS.md
 
-Current MP-3 follow-up is limited to the read-only/offline contract at
-`docs/tasks/fqgate-2-0-5-mp3-isolation-feasibility.md`. Its evidence/decision is
-`docs/status/fqgate-2-0-5-mp3-feasibility-handoff.md`. No native instance launch,
+Current MP-4 follow-up is limited to the GET-only/offline contract at
+`docs/tasks/fqgate-2-0-5-mp4-native-source-readiness.md`, authorized by Issue #24
+following merged MP-3 PR #23. Evidence/decision:
+`docs/status/fqgate-2-0-5-mp4-readiness-handoff.md`. No native instance launch,
 account/QR mutation, runtime integration or permission expansion is authorized.
 Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
 

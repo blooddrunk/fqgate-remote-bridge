@@ -730,3 +730,13 @@ runtime composition. A private immutable diagnostic alias/source map, native
 worker creation and sampled GET observations do not grant production routing
 authority. No trusted native account identity/session epoch is synthesized.
 [MP-2 contract and limits](status/fqgate-2-0-5-mp2-implementation-handoff.md).
+
+## MP-4 diagnostic separation
+
+MP-2's compatibility diagnostic entry re-exports `source-readiness.ts`; the
+standalone Windows wrapper uses this newly compiled module without rebuilding
+permanent served output. Neither diagnostic is reachable from production runtime
+or the MP-1 Resolver. The import audit enforces both boundaries. Fixed loopback
+GETs, repeated owner/worker PID+creation/path checks and immutable private A/B
+mapping remain observational; no POST mode or production routing was added.
+See the [MP-4 handoff](status/fqgate-2-0-5-mp4-readiness-handoff.md).

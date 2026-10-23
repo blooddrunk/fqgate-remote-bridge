@@ -863,3 +863,13 @@ not qualified isolation. No runtime/permission change, second process, account
 operation or MP-1 integration. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
 [Decision/evidence](status/fqgate-2-0-5-mp3-feasibility-handoff.md),
 [Windows repeat and future experiment](operations/windows-fqgate205-mp3.md).
+
+## MP-4 Native Source contract/readiness — 2026-10-23
+
+Issue #24 follows merged MP-3 PR #23. Standalone GET-only tooling and exact-2.0.5
+contract clarification preserve single-account production. Native account/epoch,
+Saved Login/L2 and independent port/storage contracts remain insufficient:
+**NO-GO** for production integration; **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+Current missing 17282 remains BLOCKED, no repair/QR/phone operation performed.
+[Task](tasks/fqgate-2-0-5-mp4-native-source-readiness.md),
+[handoff](status/fqgate-2-0-5-mp4-readiness-handoff.md).

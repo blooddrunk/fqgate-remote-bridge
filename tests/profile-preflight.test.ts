@@ -34,6 +34,7 @@ const processFact = (pid: number, parentPid = 10) => ({
   parentPid,
   path: "C:\\inert\\FQGate.exe",
   created: "2026-10-22T00:00:00.0000000Z",
+  pathSafe: true,
 });
 const sources = () =>
   [1, 2].map((n) => ({
@@ -50,6 +51,7 @@ const sources = () =>
 function fixture() {
   const f = {
     config: config(),
+    now: Date.parse("2026-10-22T00:00:01Z"),
     sources: sources(),
     display: "SECRET_MASKED_ACCOUNT",
     runningSha: sha,
@@ -142,6 +144,7 @@ function fixture() {
     inspectProfilePreflight({
       config: f.config,
       checkoutCommit: sha,
+      now: () => f.now,
       http,
       native,
       ...(signal ? { signal } : {}),
@@ -429,6 +432,106 @@ describe("MP2 alias-aware GET-only diagnostic", () => {
     const r = await t.run();
     expect(gate(r, "LEGACY_SINGLE_PROFILE_STATE")?.status).toBe("BLOCKED");
     expect(gate(r, "ACCOUNT_IDENTITY")?.status).toBe("UNPROVEN");
+    assertSafe(r);
+  });
+  it.each([
+    ["stale", "2026-10-21T23:59:00Z"],
+    ["future", "2026-10-22T00:00:04Z"],
+    ["zone-less", "2026-10-22T00:00:00"],
+  ])("MP4-01 %s observation is rejected", async (_kind, observed_at) => {
+    const t = fixture();
+    t.f.accountExtra = { observed_at };
+    const r = await t.run();
+    expect(gate(r, "ALIAS_SOURCE_CONTINUITY")?.status).toBe("BLOCKED");
+    expect(r.profiles).toEqual([]);
+    assertSafe(r);
+  });
+  it("MP4-02 regressing observation time is not a fresh second sample", async () => {
+    const t = fixture();
+    t.f.mutate = (n) => {
+      t.f.accountExtra = { observed_at: n === 1 ? "2026-10-22T00:00:01Z" : "2026-10-22T00:00:00Z" };
+    };
+    const r = await t.run();
+    expect(r.profiles).toEqual([]);
+    assertSafe(r);
+  });
+  it.each([
+    "reparse",
+    "parent-after-worker",
+    "parent-after-worker-tick",
+    "shared-worker",
+    "unreadable-creation",
+  ])("MP4-03 %s ownership fails closed", async (kind) => {
+    const t = fixture();
+    if (kind === "reparse") t.f.native.processes[2]!.pathSafe = false;
+    if (kind === "parent-after-worker") t.f.native.processes[0]!.created = "2026-10-22T00:00:01Z";
+    if (kind === "parent-after-worker-tick")
+      t.f.native.processes[0]!.created = "2026-10-22T00:00:00.0000001Z";
+    if (kind === "shared-worker") t.f.sources[1]!.pid = t.f.sources[0]!.pid;
+    if (kind === "unreadable-creation") t.f.native.processes[2]!.created = "UNKNOWN";
+    const r = await t.run();
+    expect(r.profiles).toEqual([]);
+    assertSafe(r);
+  });
+  it("MP4-04 absent Bridge makes no unowned Bridge GET and links executable resume procedure", async () => {
+    const t = fixture();
+    t.f.native.listeners.splice(1);
+    const r = await t.run();
+    expect(t.calls.every((c) => new URL(c.url).port === "17281")).toBe(true);
+    expect(gate(r, "LISTENER_17282")?.reason).toBe("LISTENER_ABSENT");
+    expect(r.resumeProcedure).toBe("docs/operations/windows-fqgate205-mp4.md");
+    expect(gate(r, "L2_INDEPENDENCE")?.status).toBe("UNPROVEN");
+    assertSafe(r);
+  });
+  it("MP4-05 unsupported OpenAPI rejects before account reads", async () => {
+    const t = fixture();
+    vi.mocked(contract.operationContractFingerprint).mockReturnValue("unknown");
+    const r = await t.run();
+    expect(t.calls.some((c) => c.url.endsWith("/account"))).toBe(false);
+    expect(r.profiles).toEqual([]);
+    assertSafe(r);
+  });
+  it("MP4-06 failed peer fences delayed response before outer diagnostic finishes", async () => {
+    const t = fixture();
+    let release!: () => void;
+    let entered!: () => void;
+    const started = new Promise<void>((r) => (entered = r));
+    t.f.blockedPath = "/v2/source-instances/fixture-source-A/account";
+    t.f.barrier = async (path) => {
+      if (path.endsWith("fixture-source-B/account"))
+        await new Promise<void>((r) => {
+          release = r;
+          entered();
+        });
+    };
+    const pending = t.run();
+    await started;
+    // Settle A's rejection and peer fencing before releasing B.
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    release();
+    const r = await pending;
+    expect(t.calls.some((c) => c.url.endsWith("/authentication"))).toBe(false);
+    expect(r.profiles).toEqual([]);
+    assertSafe(r);
+  });
+  it("MP4-07 native collection failure is classified without private exception output", async () => {
+    const t = fixture();
+    t.native.mockRejectedValueOnce(Error("SECRET_CIM_PATH"));
+    const r = await t.run();
+    expect(gate(r, "NATIVE_COLLECTION")?.status).toBe("BLOCKED");
+    expect(t.calls).toHaveLength(0);
+    assertSafe(r);
+  });
+  it("MP4-08 account samples expiring during final native verification cannot publish", async () => {
+    const t = fixture();
+    t.f.onNative = (n) => {
+      if (n === 3) t.f.now += 30_000;
+    };
+    const r = await t.run();
+    expect(gate(r, "ALIAS_SOURCE_CONTINUITY")?.reason).toBe("SNAPSHOT_EXPIRED_BEFORE_PUBLICATION");
+    expect(r.profiles).toEqual([]);
     assertSafe(r);
   });
 });

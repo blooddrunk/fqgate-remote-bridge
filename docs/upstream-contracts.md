@@ -705,3 +705,12 @@ root inside the application directory. No second process, Source mutation,
 saved-login restoration or account experiment ran. Independent process/port/
 complete storage and session isolation remain UNKNOWN; production integration
 is NO-GO. See the [MP-3 evidence inventory](status/fqgate-2-0-5-mp3-feasibility-handoff.md).
+
+## MP-4 exact Native Source clarification — 2026-10-23
+
+The [version-pinned evidence matrix](plans/fqgate205-mp4-native-source-contract.md)
+separates bundled-client Source/account action vocabulary and L2 notice rendering
+from unproven server identity/epoch, persistence and isolation semantics. Fresh
+GET schema/Source observations do not qualify multi-account operation. Supported
+independent ports and all storage/IPC roots remain UNKNOWN. No native mutation
+or upstream message was sent. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
