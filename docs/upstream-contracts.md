@@ -694,3 +694,14 @@ not a proven non-display account identifier or login epoch. `observed_at` is
 observation time. Equal samples cannot exclude A → B → A. No native multi-account,
 saved-login or L1/L2 independence is inferred from two source declarations.
 [Investigation and exact evidence classifications](status/fqgate-2-0-5-mp2-implementation-handoff.md).
+
+## MP-3 exact-2.0.5 process/storage evidence — 2026-10-23
+
+Reviewed publisher/package instructions establish ordinary desktop launch and
+tray/menu exit; they do not establish independent port/data-root launch syntax.
+Static EXE token presence or absence cannot authorize a flag. Current native
+read-only observation sees one parent, two direct workers and one UI WebView
+root inside the application directory. No second process, Source mutation,
+saved-login restoration or account experiment ran. Independent process/port/
+complete storage and session isolation remain UNKNOWN; production integration
+is NO-GO. See the [MP-3 evidence inventory](status/fqgate-2-0-5-mp3-feasibility-handoff.md).

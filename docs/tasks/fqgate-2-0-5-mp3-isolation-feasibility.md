@@ -1,0 +1,32 @@
+# FQGate 2.0.5 MP-3 — process-isolation feasibility and empirical decision
+
+Status: AUTHORIZED FOR READ-ONLY / OFFLINE ENGINEERING ONLY. MP-2 PR #21 was merged as `19e850bf212b4d032badbbc96df28cc12bddecd5`. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+
+## Goal
+
+Determine, with executable evidence rather than additional optimistic snapshots, whether distinct Windows FQGate **process instances** could provide defensible per-profile isolation, or whether native-source multi-account behavior needs a separately approved empirical experiment. Deliver a documented GO / NO-GO / UNKNOWN decision and the smallest following task; do not implement multi-account production integration in MP-3.
+
+## Required implementation / investigation
+
+1. First fetch latest origin/main, inspect working-tree status, PR #21, the MP-1 prototype, MP-2 collector and handoff; do not overwrite local operator changes.
+2. Read the exact, pinned FQGate 2.0.5 installed-client/package contracts and reviewed native Windows read-only facts. Inventory executable arguments, port binding, data directory and WebView2 storage placement, listener ownership, lifecycle behavior, worker process topology, profile/session authentication semantics, and exact confidence limits. Classify every claim as CONTRACT_PROVEN, OBSERVED, FIXTURE_ONLY, UNPROVEN, BLOCKED or NOT_EXECUTED, with evidence references.
+3. Independently investigate process-per-profile feasibility: Can one host launch two FQGate process trees with different loopback ports and truly disjoint storage _without relying on unsupported flags or editing the live installation_? Examine source/package/docs and **only** read-only native probes. If unsupported or uncertain, return NO-GO/UNKNOWN with missing contract, not a guessed launch command.
+4. Compare two alternatives: (A) native multi-source within one FQGate process, lacking stable account identity and session epoch; (B) separate process/port/storage boundaries, with native lifecycle/port/storage guarantees still requiring proof. Neither process separation nor equal sampling proves saved-login, L2 or same-account independence.
+5. Implement deterministic, test-only topology/isolation feasibility probes (or a standalone GET-only preflight extension if strictly necessary): duplicate port/alias, PID reuse and creation drift, parent/child ownership, directory overlap/symlinks/reparse points, shared WebView storage, renamed/reused source, listener absence, process exit, unsupported command-line flag, two-account contamination, L2 displacement, stale in-flight QR/poll/status/lookup and cross-profile routing. Use injected fakes, no real processes or mutable native state. Prove zero POST, restart, login, installation and Cloudflare changes.
+6. Produce a bounded decision matrix and a **separate future** one-attempt live-experiment contract if native evidence remains insufficient. Reuse MP-2's documented approval/stop/counter semantics; do not create a live executor or pretend a test-only model is real integration. Precisely document which real measurements can distinguish displacement/saved-login behavior and which cannot establish a monotonic native session epoch.
+7. Preserve the exact production v1/2.0.5 adapters, MP-1 production-unwired boundary, single-connected-source guard and all four caller permissions, especially machine QR denial. No auto-recovery, process-per-profile launch, source CRUD, login, bridge deployment, WebView storage mutation, Cloudflare writes or broad security machinery.
+
+## Automatic acceptance
+
+- Clean checkout/controlled branch. Frozen pnpm install, typecheck, lint, all unit/integration tests, build, format:check, browser E2E, and `node scripts/audit-profile-prototype.mjs`.
+- Windows synthetic collector/QR/identity/observation smoke, plus all MP-3 fixture cases where applicable. CI success on **exact final PR head**, both Ubuntu and Windows. Report actual commands, exits, case counts and workflow URLs; browser E2E Windows skip must be disclosed.
+- Collect checks and reduced secret-free evidence externally. No real account/QR identifiers, hashes of displayed names, tokens, cookies, WebView contents, private config, native paths or raw responses in Git. Verify tests cannot start/restart FQGate or issue mutating network calls.
+- A GO for engineering feasibility needs a _documented, supported_ independent port/process/storage contract, not only a mocked topology. Otherwise record NO-GO/UNKNOWN and propose the next bounded investigation or approved experiment. Always preserve `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
+
+## Human boundary — only if unavoidable
+
+Current MP-3 requires **no human interaction**. If a finding requires Windows instance launch, second-account QR, phone scan, login/L2 displacement, Bridge start/deployment, config or saved-login modification: mark NOT_EXECUTED and stop. Provide (1) why offline/read-only verification cannot answer it; (2) exact host and pinned binary/build/process checks; (3) requested specific mutation and one-attempt limits; (4) backup/side-effect/rollback limitations; (5) explicit phone/operator steps, expected observable states and abort conditions; (6) safe GET-only resume command from `docs/operations/windows-fqgate205-mp2.md`. Do not execute without a _separate_ future authorization. Never auto-repair missing 17282.
+
+## Deliverables
+
+`docs/status/fqgate-2-0-5-mp3-feasibility-handoff.md`, reproducible synthetic tests, any standalone read-only tools, a decision table, unchanged production boundary proof, and the next smallest task recommendation. A green test suite is not proof of two simultaneous native accounts.
