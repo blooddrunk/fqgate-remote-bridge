@@ -101,4 +101,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Inline QR identity behavior fixtures failed' }
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate205-mp2-native.ps1"
           if ($LASTEXITCODE -ne 0) { throw 'MP2 native collection fixtures failed' }
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate205-mp3-native.ps1"
+          if ($LASTEXITCODE -ne 0) { throw 'MP3 native collection fixtures failed' }
           exit 0

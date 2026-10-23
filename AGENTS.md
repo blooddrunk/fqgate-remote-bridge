@@ -1,5 +1,11 @@
 # AGENTS.md
 
+Current MP-3 follow-up is limited to the read-only/offline contract at
+`docs/tasks/fqgate-2-0-5-mp3-isolation-feasibility.md`. Its evidence/decision is
+`docs/status/fqgate-2-0-5-mp3-feasibility-handoff.md`. No native instance launch,
+account/QR mutation, runtime integration or permission expansion is authorized.
+Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
+
 This file is the working contract for coding agents contributing to `fqgate-remote-bridge`.
 
 ## Source of truth

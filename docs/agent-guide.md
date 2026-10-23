@@ -337,3 +337,14 @@ QR/second login, process mutation or remote permission change is authorized.
 Missing listeners are BLOCKED; never repair them automatically. Preserve
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. Use the exact commands and
 separate future authorization boundary in `operations/windows-fqgate205-mp2.md`.
+
+## MP-3 process-isolation feasibility — 2026-10-23
+
+MP-3 investigates only exact-2.0.5 read-only/static evidence and offline
+process/port/storage/race requirements. Supported independent port and full
+storage-root launch contracts remain **UNKNOWN**; production multi-account
+integration is **NO-GO**. Native Sources remain an empirical research option,
+not qualified isolation. No runtime/permission change, second process, account
+operation or MP-1 integration. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+[Decision/evidence](status/fqgate-2-0-5-mp3-feasibility-handoff.md),
+[Windows repeat and future experiment](operations/windows-fqgate205-mp3.md).

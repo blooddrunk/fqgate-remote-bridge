@@ -6,6 +6,8 @@ import ts from "typescript";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const prototypeRoot = resolve(root, "src/bridge/profiles") + sep;
+const mp3Model = resolve(root, "tests/helpers/mp3-isolation-model.ts");
+const mp3Tests = resolve(root, "tests/mp3-isolation.test.ts");
 const failures = [];
 const graph = new Map();
 const modules = [];
@@ -15,7 +17,8 @@ function walk(directory) {
     return statSync(path).isDirectory() ? walk(path) : /\.[cm]?[jt]sx?$/.test(name) ? [path] : [];
   });
 }
-const files = ["src", "server", "config"].flatMap((name) => walk(resolve(root, name)));
+const productionFiles = ["src", "server", "config"].flatMap((name) => walk(resolve(root, name)));
+const files = [...productionFiles, mp3Model, mp3Tests];
 const config = ts.readConfigFile(resolve(root, "tsconfig.json"), ts.sys.readFile).config;
 const compilerOptions = ts.convertCompilerOptionsFromJson(config.compilerOptions, root).options;
 const forbidden = new Set([
@@ -53,6 +56,7 @@ for (const file of files) {
     true,
   );
   const inside = file.startsWith(prototypeRoot);
+  const research = file === mp3Model || file === mp3Tests;
   if (inside) modules.push(relative(root, file));
   const edges = [];
   function dependency(specifier) {
@@ -61,6 +65,13 @@ for (const file of files) {
     if (target) edges.push(target);
     if (inside && (!specifier.startsWith(".") || !target?.startsWith(prototypeRoot)))
       failures.push(`${relative(root, file)}: non-prototype dependency`);
+    if (
+      (file === mp3Model && specifier !== "node:path") ||
+      (file === mp3Tests && specifier !== "vitest" && target !== mp3Model)
+    )
+      failures.push(`${relative(root, file)}: non-pure research dependency`);
+    if (!research && (target === mp3Model || /mp3-isolation-model/.test(specifier)))
+      failures.push(`${relative(root, file)}: production imports MP3 model`);
     if (
       !inside &&
       (target?.startsWith(prototypeRoot) || /(?:^|\/)profiles(?:\/|$)/.test(specifier))
@@ -87,11 +98,11 @@ for (const file of files) {
     ) {
       const arg = node.arguments[0];
       if (arg && ts.isStringLiteral(arg)) dependency(arg.text);
-      else if (inside || /profiles/.test(node.getText(source)))
+      else if (inside || research || /profiles|mp3-isolation-model/.test(node.getText(source)))
         failures.push(`${relative(root, file)}: computed module load`);
     }
     if (
-      inside &&
+      (inside || research) &&
       ts.isIdentifier(node) &&
       forbidden.has(node.text) &&
       !(
@@ -108,12 +119,17 @@ for (const file of files) {
   graph.set(file, edges);
 }
 // Check reachability from EVERY non-prototype production source, including type/re-export edges.
-for (const file of files.filter((file) => !file.startsWith(prototypeRoot))) {
+for (const file of productionFiles.filter((file) => !file.startsWith(prototypeRoot))) {
   const seen = new Set();
   function reachable(current) {
     if (seen.has(current)) return false;
     seen.add(current);
-    return current.startsWith(prototypeRoot) || (graph.get(current) ?? []).some(reachable);
+    return (
+      current.startsWith(prototypeRoot) ||
+      current === mp3Model ||
+      current === mp3Tests ||
+      (graph.get(current) ?? []).some(reachable)
+    );
   }
   if (reachable(file)) failures.push(`${relative(root, file)}: transitively reaches prototype`);
 }
@@ -122,10 +138,12 @@ if (failures.length) throw new Error([...new Set(failures)].join("\n"));
 globalThis.console.log(
   JSON.stringify({
     audit: "MP1_OFFLINE_BOUNDARY",
-    productionFiles: files.length - modules.length,
+    productionFiles: productionFiles.length - modules.length,
     prototypeModules: modules,
     productionImportPaths: 0,
     externalPrototypeDependencies: 0,
     forbiddenIOGlobals: 0,
+    mp3TestOnlyModel: relative(root, mp3Model),
+    productionImportsOfMp3Model: 0,
   }),
 );

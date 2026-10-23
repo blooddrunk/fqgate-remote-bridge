@@ -169,3 +169,16 @@ The next smallest task is a **local-first shared account-selection contract**:
 Do not change lookup selection, add profile APIs, create sources, log in a second
 account or widen remote permissions in the current QR/session implementation.
 No new phase is started by updating this plan.
+
+## MP-3 feasibility review — 2026-10-23
+
+The earlier process-per-profile fallback is now **UNKNOWN**, not an endorsed
+deployment route. Exact 2.0.5 evidence has not established supported independent
+port, full data/credential/WebView root or lifecycle configuration. One parent
+with two workers is observed; process separation would still not establish
+account, saved-login or provider L2 isolation. Production integration is
+**NO-GO**; keep native Sources as the existing research route without changing
+single-account behavior. See the
+[decision/evidence](../status/fqgate-2-0-5-mp3-feasibility-handoff.md) and
+[separate future experiment](../operations/windows-fqgate205-mp3.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED** remains unchanged.
