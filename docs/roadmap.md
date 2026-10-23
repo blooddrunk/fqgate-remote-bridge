@@ -840,3 +840,15 @@ all checks and both final-head CI jobs under the
 [implementation handoff](status/fqgate-2-0-5-mp1-implementation-handoff.md).
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. Live integration is a separate,
 unstarted task with explicit account-operation authorization and native preflight.
+
+## MP-2 native identity evidence and integration preflight — 2026-10-22
+
+MP-1 merged in PR #20. MP-2 delivers a separate alias-aware GET-only diagnostic,
+negative/race fixtures and a fixture-only executable Live specification. Native
+account identity/session epoch remain insufficient for production integration;
+current single-account adapters and remote permissions remain unchanged.
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. See the
+[task](tasks/fqgate-2-0-5-mp2-native-preflight.md),
+[handoff/decision](status/fqgate-2-0-5-mp2-implementation-handoff.md) and
+[Windows procedure](operations/windows-fqgate205-mp2.md). A real experiment or
+process-level isolation investigation requires separate authorization.

@@ -721,3 +721,12 @@ Live approval, Host/JWT/Origin checks or the exact runtime gate. Closing or timi
 out before the click sends zero QR requests. Receipts keep stage, HTTP status,
 bounded counters and enum transitions only, never QR/session identifiers or raw
 responses. Native visible/foreground/topmost flags alone are not live acceptance.
+
+## MP-2 independent native preflight
+
+The diagnostic `fqgate/diagnostics/profile-preflight.ts` is composed only by the
+standalone Windows MP-2 script. It does not import the MP-1 prototype or change
+runtime composition. A private immutable diagnostic alias/source map, native
+worker creation and sampled GET observations do not grant production routing
+authority. No trusted native account identity/session epoch is synthesized.
+[MP-2 contract and limits](status/fqgate-2-0-5-mp2-implementation-handoff.md).

@@ -804,3 +804,14 @@ Live approval, Host/JWT/Origin checks or the exact runtime gate. Closing or timi
 out before the click sends zero QR requests. Receipts keep stage, HTTP status,
 bounded counters and enum transitions only, never QR/session identifiers or raw
 responses. Native visible/foreground/topmost flags alone are not live acceptance.
+
+## MP-2 evidence boundary
+
+MP-2's standalone Windows diagnostic sends only fixed loopback GET requests and
+reads bounded native process facts. It never accepts a real Live flag, performs
+authentication, repairs listeners or widens permissions. Display text, its hash,
+observation timestamps and fixture tokens never establish native account/epoch
+proof. Receipts omit native source IDs, display values, private paths and all
+QR/credential material. Unknown or drifted bindings deny integration readiness.
+The future one-attempt protocol exists only as an executable test specification.
+[Procedure and approval requirements](operations/windows-fqgate205-mp2.md).

@@ -684,3 +684,13 @@ native message from the same executable. Code 1003 alone is not expiry.
 The upstream UI's temporary-source create/delete workflow is not authorized
 for this Bridge adapter. Actual two-account concurrent login/L2 isolation
 remains untested; multiple source declarations do not prove those properties.
+
+## MP-2 2.0.5 native continuity evidence — 2026-10-22
+
+GET inventory/account observations and Windows CIM provide source ID/number,
+worker PID/restart count and native process creation/parent metadata. The
+reviewed account snapshot has display/state/session-kind/L2/saved-login fields,
+not a proven non-display account identifier or login epoch. `observed_at` is
+observation time. Equal samples cannot exclude A → B → A. No native multi-account,
+saved-login or L1/L2 independence is inferred from two source declarations.
+[Investigation and exact evidence classifications](status/fqgate-2-0-5-mp2-implementation-handoff.md).

@@ -327,3 +327,13 @@ restart services or trigger QR/another account login. Static and read-only
 evidence cannot prove two-account isolation; record such gates as NOT_EXECUTED
 until separate explicit authorization. Report exact checks and resume steps,
 never only "evidence incomplete".
+
+## MP-2 current handoff
+
+MP-1 is merged. Follow `tasks/fqgate-2-0-5-mp2-native-preflight.md` and
+`status/fqgate-2-0-5-mp2-implementation-handoff.md` for standalone GET-only native
+evidence and test-only one-attempt specification. No production Resolver, real
+QR/second login, process mutation or remote permission change is authorized.
+Missing listeners are BLOCKED; never repair them automatically. Preserve
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**. Use the exact commands and
+separate future authorization boundary in `operations/windows-fqgate205-mp2.md`.
