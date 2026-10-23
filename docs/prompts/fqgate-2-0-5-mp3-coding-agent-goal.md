@@ -1,0 +1,11 @@
+# Coding Agent Goal — FQGate 2.0.5 MP-3
+
+**FIRST ACTION: synchronize the latest remote code.** In `blooddrunk/fqgate-remote-bridge`, inspect `git status --short`, `git fetch origin --prune`, `git log --oneline -5 origin/main`; safely switch to the current `origin/main` and create a topic branch. Preserve any uncommitted local/operator files; never use blind `reset --hard`, `clean -fd`, force push or overwrite existing permanent Windows runtime outputs. MP-2 PR #21 has been merged (main `19e850bf212b4d032badbbc96df28cc12bddecd5`); always trust the **newest fetched main**, not this historical SHA.
+
+Implement **only** the bounded MP-3 contract at `docs/tasks/fqgate-2-0-5-mp3-isolation-feasibility.md`. Review `AGENTS.md`, `docs/roadmap.md`, MP-1 prototype and MP-2 handoff. Investigate whether independent process/port/WebView data roots are supported by real FQGate 2.0.5 interfaces; contrast with the observed native two-source architecture. Use exact-client/source and GET-only evidence. Build injected deterministic tests for port/process/storage and A/B contamination/race cases; report GO/NO-GO/UNKNOWN with per-claim evidence. Do not simulate stable account IDs/session epochs and call them proven.
+
+**Automate first:** frozen install, typecheck, lint, full tests, build, format, E2E, prototype audit, applicable native Windows fixtures and CI at exact PR-head SHA. Report every real command, exit and passed/failed counts plus CI run links. If native 17282 is absent, report BLOCKED; don't start it. No production adapter/permission/config integration; no native process spawn, QR/account POST, login, restart, deployment, installer, saved-login/WebView modification or Cloudflare mutation. Preserve `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
+
+If real Windows account experiments are needed, **stop** and document independently authorizable precise operator steps and resume commands: exact runtime/process identity, alias, mutation, one-attempt QR limit, explicit account replacement/L2 risk, visible readiness and phone approval, expected before/after, abort/cancellation, redacted evidence and no automatic rollback. Mark unavailable proof NOT_EXECUTED rather than fabricating pass or vaguely saying evidence incomplete.
+
+Deliver implementation/handoff, exact-head green CI if achievable, and reviewable PR. Do not merge untested code.
