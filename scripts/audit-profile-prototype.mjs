@@ -8,6 +8,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const prototypeRoot = resolve(root, "src/bridge/profiles") + sep;
 const mp3Model = resolve(root, "tests/helpers/mp3-isolation-model.ts");
 const mp3Tests = resolve(root, "tests/mp3-isolation.test.ts");
+const diagnostics = new Set(
+  ["profile-preflight.ts", "source-readiness.ts"].map((name) =>
+    resolve(root, "src/fqgate/diagnostics", name),
+  ),
+);
 const failures = [];
 const graph = new Map();
 const modules = [];
@@ -132,6 +137,16 @@ for (const file of productionFiles.filter((file) => !file.startsWith(prototypeRo
     );
   }
   if (reachable(file)) failures.push(`${relative(root, file)}: transitively reaches prototype`);
+  if (!diagnostics.has(file)) {
+    const visited = new Set();
+    function reachesDiagnostic(current) {
+      if (visited.has(current)) return false;
+      visited.add(current);
+      return diagnostics.has(current) || (graph.get(current) ?? []).some(reachesDiagnostic);
+    }
+    if (reachesDiagnostic(file))
+      failures.push(`${relative(root, file)}: production reaches GET-only diagnostic`);
+  }
 }
 if (modules.length !== 4) failures.push("unexpected prototype module set");
 if (failures.length) throw new Error([...new Set(failures)].join("\n"));
@@ -145,5 +160,6 @@ globalThis.console.log(
     forbiddenIOGlobals: 0,
     mp3TestOnlyModel: relative(root, mp3Model),
     productionImportsOfMp3Model: 0,
+    productionImportsOfReadinessDiagnostic: 0,
   }),
 );

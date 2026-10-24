@@ -13,7 +13,7 @@ import { FetchHttpTransport } from "../../dist/fqgate/release/http.js";
 import {
   inspectProfilePreflight,
   parseProfilePreflightConfig,
-} from "../../dist/fqgate/diagnostics/profile-preflight.js";
+} from "../../dist/fqgate/diagnostics/source-readiness.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const outside = (path) => {
@@ -101,7 +101,7 @@ const toolHashes = {};
 for (const name of [
   "scripts/windows/fqgate205-mp2-preflight.mjs",
   "scripts/windows/fqgate205-mp2-native.ps1",
-  "dist/fqgate/diagnostics/profile-preflight.js",
+  "dist/fqgate/diagnostics/source-readiness.js",
 ]) {
   try {
     toolHashes[name] = hash(await readFile(resolve(root, name)));
@@ -113,7 +113,8 @@ const receipt = {
   ...report,
   toolHashes,
   utc: new Date().toISOString(),
-  mode: "Preflight",
+  mode: "MP4_GET_ONLY_READINESS",
+  resumeProcedure: "docs/operations/windows-fqgate205-mp4.md",
   realLoginAuthorized: false,
 };
 try {

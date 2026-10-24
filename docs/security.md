@@ -815,3 +815,15 @@ proof. Receipts omit native source IDs, display values, private paths and all
 QR/credential material. Unknown or drifted bindings deny integration readiness.
 The future one-attempt protocol exists only as an executable test specification.
 [Procedure and approval requirements](operations/windows-fqgate205-mp2.md).
+
+## MP-4 GET-only evidence boundary
+
+A/B preflight rejects stale/future/regressing observations, invalid parent
+creation order, shared worker PID and unreadable/reparse executable ancestry.
+Repeated process/listener reads fence PID reuse and unstable ownership; a failed
+peer fences late reads before another request or publication. Missing exclusive
+17282 owner suppresses Bridge GETs and reports BLOCKED, with no process repair.
+Freshness limits do not establish an account identity or session epoch; L2 and
+Saved Login flags never establish independence. No Live/POST mode, permission
+expansion or native account action is introduced. Reduced evidence and future
+separate authorization are defined in the [MP-4 procedure](operations/windows-fqgate205-mp4.md).

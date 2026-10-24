@@ -348,3 +348,13 @@ not qualified isolation. No runtime/permission change, second process, account
 operation or MP-1 integration. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
 [Decision/evidence](status/fqgate-2-0-5-mp3-feasibility-handoff.md),
 [Windows repeat and future experiment](operations/windows-fqgate205-mp3.md).
+
+## MP-4 GET-only continuation
+
+Issue #24 authorizes the [MP-4 task](tasks/fqgate-2-0-5-mp4-native-source-readiness.md)
+after MP-3 PR #23. Use the [current handoff](status/fqgate-2-0-5-mp4-readiness-handoff.md)
+and [Windows procedure](operations/windows-fqgate205-mp4.md). Current Bridge
+17282 absence is BLOCKED, not permission to launch/deploy. Account/QR/phone,
+Saved Login/L2 experiments and POST-capable runners require separate reviewed
+implementation and explicit authorization. Production remains single-account;
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.

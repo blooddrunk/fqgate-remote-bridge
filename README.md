@@ -1084,3 +1084,13 @@ not qualified isolation. No runtime/permission change, second process, account
 operation or MP-1 integration. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
 [Decision/evidence](docs/status/fqgate-2-0-5-mp3-feasibility-handoff.md),
 [Windows repeat and future experiment](docs/operations/windows-fqgate205-mp3.md).
+
+## MP-4 Native Source readiness — 2026-10-23
+
+MP-4 clarifies exact 2.0.5 contracts and strengthens the standalone GET-only
+A/B preflight. Stable account identity/session epoch, Saved Login/L2 isolation
+and independent port/complete storage roots remain unproven; production
+multi-account integration is NO-GO. Current Windows 17282 is absent (BLOCKED),
+with no automatic launch or deployment. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+[Handoff](docs/status/fqgate-2-0-5-mp4-readiness-handoff.md),
+[repeat and future separate authorization](docs/operations/windows-fqgate205-mp4.md).
