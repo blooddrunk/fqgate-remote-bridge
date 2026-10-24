@@ -9,9 +9,12 @@ const prototypeRoot = resolve(root, "src/bridge/profiles") + sep;
 const mp3Model = resolve(root, "tests/helpers/mp3-isolation-model.ts");
 const mp3Tests = resolve(root, "tests/mp3-isolation.test.ts");
 const diagnostics = new Set(
-  ["profile-preflight.ts", "source-readiness.ts"].map((name) =>
-    resolve(root, "src/fqgate/diagnostics", name),
-  ),
+  [
+    "profile-preflight.ts",
+    "source-readiness.ts",
+    "source-readiness-mp5.ts",
+    "readiness-evidence.ts",
+  ].map((name) => resolve(root, "src/fqgate/diagnostics", name)),
 );
 const failures = [];
 const graph = new Map();

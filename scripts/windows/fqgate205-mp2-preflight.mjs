@@ -1,6 +1,6 @@
 import process from "node:process";
 import console from "node:console";
-import { readFile, lstat, mkdir, writeFile } from "node:fs/promises";
+import { readFile, lstat, mkdir, writeFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve, dirname, relative, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,7 +13,7 @@ import { FetchHttpTransport } from "../../dist/fqgate/release/http.js";
 import {
   inspectProfilePreflight,
   parseProfilePreflightConfig,
-} from "../../dist/fqgate/diagnostics/source-readiness.js";
+} from "../../dist/fqgate/diagnostics/source-readiness-mp5.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const outside = (path) => {
@@ -66,6 +66,8 @@ try {
     try {
       await verifyInstalledQrClient(layout.currentExecutable);
       payloadVerified = true;
+      if ((await readdir(layout.currentDirectory)).some((name) => /webview/i.test(name)))
+        throw Error();
       const identity = await verifyV2QrIdentity(layout, runner);
       if (previousIdentity !== undefined && identity !== previousIdentity) throw Error();
       previousIdentity = identity;
@@ -78,6 +80,7 @@ try {
   };
   report = await inspectProfilePreflight({
     config: profiles,
+    requireAB: true,
     checkoutCommit: checkout.stdout.trim(),
     http: new FetchHttpTransport(),
     native,
@@ -101,7 +104,7 @@ const toolHashes = {};
 for (const name of [
   "scripts/windows/fqgate205-mp2-preflight.mjs",
   "scripts/windows/fqgate205-mp2-native.ps1",
-  "dist/fqgate/diagnostics/source-readiness.js",
+  "dist/fqgate/diagnostics/source-readiness-mp5.js",
 ]) {
   try {
     toolHashes[name] = hash(await readFile(resolve(root, name)));
@@ -113,8 +116,8 @@ const receipt = {
   ...report,
   toolHashes,
   utc: new Date().toISOString(),
-  mode: "MP4_GET_ONLY_READINESS",
-  resumeProcedure: "docs/operations/windows-fqgate205-mp4.md",
+  mode: "MP5_GET_ONLY_READINESS",
+  resumeProcedure: "docs/operations/windows-fqgate205-mp5.md",
   realLoginAuthorized: false,
 };
 try {
