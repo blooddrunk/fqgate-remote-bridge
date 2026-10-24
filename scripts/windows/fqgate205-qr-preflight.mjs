@@ -2,7 +2,7 @@ import process from "node:process";
 import console from "node:console";
 import { TextDecoder } from "node:util";
 import { createHash } from "node:crypto";
-import { readFile, lstat, mkdir, writeFile } from "node:fs/promises";
+import { readFile, lstat, mkdir, writeFile, readdir } from "node:fs/promises";
 import { dirname, resolve, relative, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfig } from "../../dist/config/config.js";
@@ -41,7 +41,14 @@ function add(
   });
 }
 const runner = new ChildProcessRunner();
-const http = new FetchHttpTransport();
+const transport = new FetchHttpTransport();
+let getCount = 0;
+const http = {
+  request(url, options) {
+    getCount++;
+    return transport.request(url, options);
+  },
+};
 async function json(url, maxBytes = 65536) {
   const r = await http.request(url, {
     method: "GET",
@@ -84,6 +91,10 @@ try {
   );
   const layout = createFqgateLayout(config.installDirectory);
   const snapshot = async () => {
+    // A mutable browser root invalidates the immutable payload; never read its contents.
+    if ((await readdir(layout.currentDirectory)).some((name) => /webview/i.test(name)))
+      throw Error();
+    immutableRootSafe = true;
     const recordStat = await lstat(layout.processFile);
     if (!recordStat.isFile() || recordStat.isSymbolicLink() || recordStat.size > 4096)
       throw Error();
@@ -98,6 +109,7 @@ try {
     };
   };
   let before;
+  let immutableRootSafe = false;
   try {
     before = await snapshot();
     const state = await readFqgateState(layout);
@@ -172,6 +184,7 @@ try {
     );
   }
   try {
+    if (firstNative?.checks.LISTENER_17282 !== "PASS") throw Error();
     const v = await json("http://127.0.0.1:17282/api/v1/version");
     if (
       v?.name !== "fqgate-remote-bridge" ||
@@ -204,6 +217,7 @@ try {
   }))
     gates.push({ ...gate, retry });
   try {
+    if (!immutableRootSafe) throw Object.assign(Error(), { code: "PROCESS_IDENTITY_MISMATCH" });
     await new FqgateV2QrAdapter({
       http,
       identity: () => verifyV2QrIdentity(layout, runner),
@@ -322,6 +336,7 @@ for (const file of [
 exitCode = gates.some((g) => g.status === "BLOCKED") || option("--mode") === "Live" ? 1 : 0;
 let receiptSaved = false;
 const report = {
+  counters: { get: getCount, post: 0, accountWrites: 0, qrBegin: 0, qrPoll: 0 },
   sourceHashes,
   schemaVersion: 1,
   utc: new Date().toISOString(),

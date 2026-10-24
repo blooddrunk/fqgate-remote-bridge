@@ -68,8 +68,8 @@ function fixture() {
         processFact(21),
         processFact(22),
       ],
-      payloadVerified: true,
-      recordVerified: true,
+      payloadVerified: true as boolean,
+      recordVerified: true as boolean,
     } satisfies ProfileNativeFacts,
     accountExtra: {} as Record<string, unknown>,
     broken: "",
@@ -140,9 +140,10 @@ function fixture() {
     f.onNative(++f.nativeCalls);
     return structuredClone(f.native);
   });
-  const run = (signal?: AbortSignal, timeoutMs?: number) =>
+  const run = (signal?: AbortSignal, timeoutMs?: number, requireAB = false) =>
     inspectProfilePreflight({
       config: f.config,
+      requireAB,
       checkoutCommit: sha,
       now: () => f.now,
       http,
@@ -532,6 +533,78 @@ describe("MP2 alias-aware GET-only diagnostic", () => {
     const r = await t.run();
     expect(gate(r, "ALIAS_SOURCE_CONTINUITY")?.reason).toBe("SNAPSHOT_EXPIRED_BEFORE_PUBLICATION");
     expect(r.profiles).toEqual([]);
+    assertSafe(r);
+  });
+});
+
+describe("MP5 explicit A/B readiness", () => {
+  it.each(["one", "three", "both-connected", "both-disconnected", "reversed"])(
+    "MP5-01 %s fails strict A/B before I/O but generic parser stays compatible",
+    async (kind) => {
+      const t = fixture();
+      if (kind === "one") t.f.config.profiles.pop();
+      if (kind === "three")
+        t.f.config.profiles.push({
+          ...t.f.config.profiles[1]!,
+          alias: `p_${"c".repeat(32)}`,
+          sourceId: "fixture-source-C",
+          instanceNumber: 3,
+        });
+      if (kind === "both-connected") t.f.config.profiles[1]!.expectedState = "connected";
+      if (kind === "both-disconnected") t.f.config.profiles[0]!.expectedState = "disconnected";
+      if (kind === "reversed") t.f.config.profiles.reverse();
+      expect(parseProfilePreflightConfig(t.f.config).profiles).toHaveLength(
+        t.f.config.profiles.length,
+      );
+      const r = await t.run(undefined, undefined, true);
+      expect(gate(r, "AB_MAPPING")?.status).toBe("BLOCKED");
+      expect(r.abExperimentReady).toBe(false);
+      expect(t.calls).toEqual([]);
+      expect(t.native).not.toHaveBeenCalled();
+      assertSafe(r);
+    },
+  );
+  it("MP5-02 partial GET observations cannot turn missing Bridge/payload into readiness", async () => {
+    const t = fixture();
+    t.f.native.listeners.pop();
+    t.f.native.payloadVerified = false;
+    t.f.native.recordVerified = false;
+    const r = await t.run(undefined, undefined, true);
+    expect(gate(r, "ALIAS_SOURCE_CONTINUITY")?.status).toBe("OBSERVED");
+    expect(gate(r, "AB_MAPPING")?.status).toBe("OBSERVED");
+    expect(gate(r, "AB_EXPERIMENT_READINESS")?.status).toBe("BLOCKED");
+    expect(r.readiness).toBe("BLOCKED");
+    expect(r.exitCode).toBe(1);
+    expect(gate(r, "CHECKOUT_RUNTIME")?.status).toBe("BLOCKED");
+    assertSafe(r);
+  });
+  it("MP5-03 native timeout exposes every prerequisite without late counter/publication changes", async () => {
+    vi.useFakeTimers();
+    const t = fixture();
+    let release!: (value: typeof t.f.native) => void;
+    t.native.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          release = r;
+        }),
+    );
+    const pending = t.run(undefined, 10, true);
+    await vi.advanceTimersByTimeAsync(11);
+    const r = await pending,
+      frozen = JSON.stringify(r);
+    for (const id of [
+      "LISTENER_17281",
+      "LISTENER_17282",
+      "BRIDGE_BUILD",
+      "CHECKOUT_RUNTIME",
+      "PAYLOAD_PROCESS_RECORD",
+      "SNAPSHOT_FRESHNESS",
+    ])
+      expect(gate(r, id)?.status).toBe("BLOCKED");
+    release(t.f.native);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(JSON.stringify(r)).toBe(frozen);
+    expect(t.calls).toEqual([]);
     assertSafe(r);
   });
 });
