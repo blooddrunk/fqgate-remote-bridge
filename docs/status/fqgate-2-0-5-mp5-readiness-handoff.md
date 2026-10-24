@@ -53,10 +53,86 @@ latest origin/main. Permanent Windows checkout is reused in place. Its original
 286 runtime/output/config files were snapshotted before source synchronization;
 no destructive reset/clean, existing artifact overwrite or service start occurs.
 
-Final automated and real-host result tables are populated after the fresh-source
-Windows run. This interim engineering commit makes no acceptance claim. Both
-exact-head CI jobs remain required; Windows browser E2E is skipped by unchanged
-platform policy. Real readiness exit 1 is BLOCKED, independently of fixture PASS.
+## Real permanent-Windows blockers
+
+Fresh GET-only triage at `2026-10-24T03:23:42.897Z` on engineering source
+`5bf24e507c9ff1067baf230307939224b29493fe`: **6 OBSERVED / 7 BLOCKED** host
+gates, exit **1**, **37 GET / 0 POST / 0 account writes / 0 QR begin / 0 QR poll /
+0 process mutations**. This is **BLOCKED**, not native acceptance success.
+The original reduced receipt SHA-256 is
+`0abe251013e6849676a48194d1faecb789f3261724884a833661ac1497dbaf03`.
+Final-head repeat and CI are separately bound in the external delivery receipt;
+the timestamp/source above remain this particular observation, not the final SHA.
+
+| Gate                               | Verified condition and root cause                                                                                                                      | Consequence / safe repeat                                                                                                                   |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| LISTENER_17281                     | OBSERVED: exactly one 127.0.0.1 listener, parent PID 9656, native creation `2026-10-21T02:59:51.8892760Z`; two direct workers                          | Fixed 2.0.5 GET evidence remains useful; repeat triage/native metadata without mutation                                                     |
+| LISTENER_17282                     | **ABSENT**: no listener                                                                                                                                | Current Bridge owner/build unavailable; separately reviewed Bridge-only availability decision required                                      |
+| INSTALLED_CLIENT                   | OBSERVED: pinned 53,590,016-byte EXE and both exact client slices match                                                                                | Does not verify full payload, signature, process record or account isolation                                                                |
+| STATE / INSTALL_LOCK / TRANSACTION | OBSERVED: exact active 2.0.5 artifact metadata; no lock or transaction file                                                                            | A blanket installation failure does not erase these independently observed prerequisites                                                    |
+| PAYLOAD                            | **MISMATCH**: WebView entry inside immutable current payload; no browser data read or tree qualification                                               | Separate native storage/installation maintenance review needed; exact EXE success cannot override layout mismatch                           |
+| PROCESS_RECORD                     | **STALE**: recorded PID differs from current native listener owner; recorded creation also differs and has only three decimal places                   | No adoption/rewrite performed. Repeat exact path/PID/creation diagnostic; current process is not repaired by modifying expectations         |
+| WEBVIEW_PROFILE                    | **MISMATCH**: seven observed descendant WebViews share one root inside payload; zero unknown roots/reparse ancestors in sampled topology               | Placement is observed, complete native storage ownership remains unproven; no directory move or native restart                              |
+| BRIDGE_BUILD                       | **UNKNOWN / BLOCKED**: no current Bridge version response is requested from absent 17282                                                               | Historical expected `481db65...` is never treated as current build; checkout/tool hashes stay separate                                      |
+| QR_SCOPED_READINESS                | **UNKNOWN / BLOCKED**, existing adapter identity gate `PROCESS_IDENTITY_MISMATCH`                                                                      | Native record/tree/profile prerequisites fail independently; no QR sent                                                                     |
+| RUNTIME_CONTINUITY                 | **UNKNOWN / BLOCKED**: full payload/native/Bridge baseline cannot be attested                                                                          | Byte-equal protected files alone do not prove operational readiness                                                                         |
+| PROTECTED_FILES                    | OBSERVED: **343 entries unchanged**, same before/after digest `32da2e364928678e89db88b0b3b5bc755a084b059b925212e0b8f2c2d9adadc0`, zero changed entries | Includes directory markers and 290 files after additive diagnostic staging; independently, all original **286 files** remain byte-identical |
+
+A/B samples: A connected, Saved Login available, L2=false; B disconnected,
+Saved Login unavailable, L2 unknown. Both worker incarnations and reviewed
+private Source/number mappings remained stable over two fresh samples. These
+facts are **OBSERVED**, not distinct-account/epoch evidence. Inner MP-5 diagnostic
+emits **8 OBSERVED / 11 BLOCKED / 4 UNPROVEN / 2 NOT_EXECUTED** (repeated native
+sample gates counted as emitted), exit 1, 16 GET. Independent QR Preflight emits
+**14 PASS / 7 BLOCKED / 1 NOT_EXECUTED**, exit 1, 21 GET. Its seven blocked gates
+are PAYLOAD, LISTENER_17282, PROCESS_RECORD, WEBVIEW_PROFILE, BRIDGE_BUILD,
+QR_SCOPED_READINESS and RUNTIME_CONTINUITY. No authenticated remote acceptance
+or lookup POST is implied by unauthenticated edge/certificate GETs.
+
+The existing permanent checkout had a narrow fetch refspec; the explicit MP-5
+ref was fetched and a local branch created without changing Git configuration.
+No operator changes were overwritten. Two previously absent compiled diagnostic
+modules were added after **25 reused transitive compiled dependencies** matched
+byte-for-byte. Existing dist/.output files were retained, including the older
+MP-4 diagnostic. External original-file manifest SHA-256:
+`9997523316a4a0f2a4b53a3d2589bf2052d1702b533a59213c43eba724db9a93`.
+
+## Automated verification and limits
+
+| Command                                        | Result / exit                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `corepack pnpm install --frozen-lockfile`      | PASS / 0                                                                            |
+| `corepack pnpm typecheck`                      | PASS / 0                                                                            |
+| `corepack pnpm lint`                           | PASS / 0                                                                            |
+| `corepack pnpm test`                           | **825 PASS, 38 files**, 0 failed / 0                                                |
+| `corepack pnpm build`                          | PASS / 0                                                                            |
+| `corepack pnpm format:check`                   | PASS / 0                                                                            |
+| `corepack pnpm test:e2e`                       | **19 PASS**, 0 failed / 0                                                           |
+| `node scripts/audit-profile-prototype.mjs`     | PASS, zero production imports of prototype/research model/readiness diagnostics / 0 |
+| Windows MP-2 native fixtures                   | **14/14** / 0                                                                       |
+| Windows MP-3 native fixtures                   | **14/14** / 0                                                                       |
+| Windows MP-4/MP-5 CLI fail-closed flags        | **12/12** / 0                                                                       |
+| Windows QR Preflight fixtures                  | **28/28** / 0                                                                       |
+| Windows inline QR identity + no-approval guard | **5/5 + 1/1** / 0                                                                   |
+| Windows v2 observation fixtures                | **40 cases** / 0                                                                    |
+| Real triage / inner MP-5 / QR Preflight        | **BLOCKED / 1** each, not fixture failure or acceptance PASS                        |
+| Real MP-3 metadata collector                   | OBSERVED metadata / 0, not isolation PASS                                           |
+
+The 17 additional deterministic tests cover five invalid explicit A/B shapes,
+partial observation with blocked readiness, native timeout/late completion with
+all missing gates visible, eight process-record classifications including
+100-ns creation drift and rounded creation, protected-file edits/additions/
+deletions, absent versus unreadable paths and unsafe ancestor/junction snapshots.
+Retained source-recreation, worker drift, peer races, unknown identity and
+A→B→A blind-spot tests continue to pass. CLI checks reject six mutation/generic
+selector flags for each diagnostic before native I/O.
+
+Exact-final-head Ubuntu/Windows job SHAs, URLs and completed conclusions belong
+in `delivery-receipt.json`; neither an earlier green run nor a synthetic merge is
+substituted. **Windows browser E2E is skipped** by unchanged CI platform policy;
+Linux Chromium E2E runs. CI fixture Bridge smoke is independent of this host and
+does not start any permanent FQGate/Bridge/cloudflared process. No human action
+is needed to complete MP-5 engineering.
 
 ## Unresolved contract and subsequent decision
 

@@ -139,22 +139,30 @@ try {
   );
   const record = await fileCondition(layout.processFile, 4096);
   let recordCondition = record.condition;
+  let recordReason = "RECORD_UNAVAILABLE_OR_UNREADABLE";
   if (record.bytes) {
     try {
-      recordCondition = classifyProcessRecord(
-        JSON.parse(new TextDecoder("utf8", { fatal: true }).decode(record.bytes)),
-        owner,
-        layout.currentExecutable,
+      const privateRecord = JSON.parse(
+        new TextDecoder("utf8", { fatal: true }).decode(record.bytes),
       );
+      recordCondition = classifyProcessRecord(privateRecord, owner, layout.currentExecutable);
+      recordReason =
+        recordCondition === "STALE"
+          ? privateRecord.pid !== owner.pid
+            ? "RECORD_PID_STALE"
+            : "RECORD_CREATION_STALE_OR_PRECISION_INSUFFICIENT"
+          : recordCondition === "MISMATCH"
+            ? "RECORD_OR_OWNER_PATH_MISMATCH_OR_UNSAFE"
+            : recordCondition === "OBSERVED"
+              ? "EXACT_RECORD_PATH_PID_AND_CREATION_MATCH"
+              : recordCondition === "UNKNOWN"
+                ? "NATIVE_OWNER_UNAVAILABLE_NO_RECORD_COMPARISON"
+                : "RECORD_UNAVAILABLE_OR_UNREADABLE";
     } catch {
       recordCondition = "UNREADABLE";
     }
   }
-  add(
-    "PROCESS_RECORD",
-    recordCondition,
-    "RECORD_PATH_PID_AND_EXACT_CREATION_MUST_MATCH_NATIVE_OWNER",
-  );
+  add("PROCESS_RECORD", recordCondition, recordReason);
   const client = await fileCondition(layout.currentExecutable, 64 * 1024 * 1024);
   if (client.condition !== "OBSERVED")
     add("INSTALLED_CLIENT", client.condition, "PINNED_CLIENT_UNAVAILABLE");
@@ -349,6 +357,10 @@ report = {
   qualification: "LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED",
   abExperimentReady: false,
   commands,
+  totals: {
+    observed: gates.filter((g) => g.status === "OBSERVED").length,
+    blocked: gates.filter((g) => g.status === "BLOCKED").length,
+  },
   gates,
   toolHashes,
   counters: {
