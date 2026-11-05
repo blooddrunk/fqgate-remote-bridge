@@ -714,3 +714,17 @@ from unproven server identity/epoch, persistence and isolation semantics. Fresh
 GET schema/Source observations do not qualify multi-account operation. Supported
 independent ports and all storage/IPC roots remain UNKNOWN. No native mutation
 or upstream message was sent. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+
+## MP-5 non-mutating readiness triage — 2026-10-24
+
+[Issue #26](https://github.com/blooddrunk/fqgate-remote-bridge/issues/26) follows
+merged MP-4 PR #25. Standalone diagnostics now require exactly two pinned Sources
+(A connected, B disconnected) for explicit A/B, retain generic parser compatibility,
+and report independent host blockers plus automatic protected-file comparisons.
+The new diagnostic modules remain unreachable from production; served runtime
+outputs, adapters, permissions, Cloudflare and MP-1 integration are unchanged.
+No process/service launch, deployment/repair or native account action is authorized.
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; production integration **NO-GO**.
+[Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
+[repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
+[engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).

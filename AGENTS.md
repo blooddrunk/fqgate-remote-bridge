@@ -1,10 +1,11 @@
 # AGENTS.md
 
-Current MP-4 follow-up is limited to the GET-only/offline contract at
-`docs/tasks/fqgate-2-0-5-mp4-native-source-readiness.md`, authorized by Issue #24
-following merged MP-3 PR #23. Evidence/decision:
-`docs/status/fqgate-2-0-5-mp4-readiness-handoff.md`. No native instance launch,
-account/QR mutation, runtime integration or permission expansion is authorized.
+Current MP-5 follow-up is limited to non-mutating Windows readiness triage and
+A/B evidence integrity at `docs/tasks/fqgate-2-0-5-mp5-readiness-triage.md`,
+authorized by Issue #26 after merged MP-4 PR #25 (`eedbc615...`). Evidence/decision:
+`docs/status/fqgate-2-0-5-mp5-readiness-handoff.md`. No native process/service
+start, deployment/repair, account/QR/phone/Saved Login/L2 mutation, production
+integration or permission expansion is authorized.
 Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
 
 This file is the working contract for coding agents contributing to `fqgate-remote-bridge`.

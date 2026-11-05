@@ -740,3 +740,17 @@ or the MP-1 Resolver. The import audit enforces both boundaries. Fixed loopback
 GETs, repeated owner/worker PID+creation/path checks and immutable private A/B
 mapping remain observational; no POST mode or production routing was added.
 See the [MP-4 handoff](status/fqgate-2-0-5-mp4-readiness-handoff.md).
+
+## MP-5 non-mutating readiness triage — 2026-10-24
+
+[Issue #26](https://github.com/blooddrunk/fqgate-remote-bridge/issues/26) follows
+merged MP-4 PR #25. Standalone diagnostics now require exactly two pinned Sources
+(A connected, B disconnected) for explicit A/B, retain generic parser compatibility,
+and report independent host blockers plus automatic protected-file comparisons.
+The new diagnostic modules remain unreachable from production; served runtime
+outputs, adapters, permissions, Cloudflare and MP-1 integration are unchanged.
+No process/service launch, deployment/repair or native account action is authorized.
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; production integration **NO-GO**.
+[Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
+[repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
+[engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).
