@@ -754,3 +754,15 @@ No process/service launch, deployment/repair or native account action is authori
 [Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
 [repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
 [engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).
+
+## MP-6 standalone host metadata and provenance
+
+Issue #28 follows merged MP-5 PR #27. The standalone PowerShell collector reads
+TCP/process/startup metadata with independent unavailable states; it does not
+compose production lifecycle or MP-1. A diagnostic-only creation comparison
+rejects rounded timestamp collisions. Host checkout, candidate manifest/source
+claim, rebuilt inventory and running identity remain separate. Actual Windows
+2.0.6 work is preserved; no 2.0.6 integration is introduced on main by MP-6.
+[Task](tasks/fqgate-2-0-5-mp6-host-prerequisites.md) and
+[host/provenance handoff](status/fqgate-2-0-5-mp6-host-handoff.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; production multi-account NO-GO.

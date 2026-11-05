@@ -728,3 +728,18 @@ No process/service launch, deployment/repair or native account action is authori
 [Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
 [repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
 [engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).
+
+## MP-6 clarification draft and host version drift — 2026-11-06
+
+The [draft inquiry](plans/fqgate205-mp6-upstream-inquiry-draft.md) is NOT SENT.
+It requests versioned native account-ID/monotonic-epoch, Source recreation, Saved
+Login, L2 displacement/data validity and independent full storage/IPC/port
+contracts. No new upstream statement or endpoint is assumed.
+
+Current host metadata shows a later, separately maintained 2.0.6 installation;
+exact 2.0.5 gates correctly fail there. A WebView directory entry without a live
+owner proves neither active storage placement nor a supported relocation
+contract. Read-only findings do not authorize downgrade/upgrade or broaden
+main's artifact profiles. [Current evidence](status/fqgate-2-0-5-mp6-host-handoff.md).
+Native account identity/epoch, Saved Login/L2 and complete independent storage
+remain unproven; **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / NO-GO**.

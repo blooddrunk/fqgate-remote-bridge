@@ -841,3 +841,20 @@ No process/service launch, deployment/repair or native account action is authori
 [Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
 [repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
 [engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).
+
+## MP-6 read-only diagnosis and future startup side effects
+
+Issue #28 permits bounded standalone metadata, GET-only diagnostics and external
+receipts, not host recovery. The collector emits enums, PID/creation and presence
+booleans, never raw CIM commands/paths, service/task names or environment values.
+Low-precision native creation cannot match by zero padding. Existing output and
+private-file byte snapshots remain mandatory; they are sampled continuity, not
+an atomic Windows path/handle or machine-wide zero-write guarantee.
+
+Static review found the existing lifecycle status path can remove a record for
+an exited PID. Do not use broad runtime status/Dashboard GETs to diagnose that
+record under this non-mutating task. Future Bridge startup must account for
+client-triggered lifecycle cleanup as well as availability and volatile sessions.
+No production behavior is changed here.
+[Procedure, caveats and three reserved decision sheets](operations/windows-fqgate205-mp6.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; multi-account NO-GO.

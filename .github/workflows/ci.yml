@@ -105,4 +105,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'MP3 native collection fixtures failed' }
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate205-mp4-cli.ps1"
           if ($LASTEXITCODE -ne 0) { throw 'MP4 GET-only CLI boundary fixtures failed' }
+          pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate205-mp6-host.ps1"
+          if ($LASTEXITCODE -ne 0) { throw 'MP6 host metadata fixtures failed' }
           exit 0

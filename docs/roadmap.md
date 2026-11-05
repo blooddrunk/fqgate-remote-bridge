@@ -887,3 +887,15 @@ No process/service launch, deployment/repair or native account action is authori
 [Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
 [repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
 [engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).
+
+## MP-6 read-only host prerequisites — 2026-11-06
+
+Issue #28 follows MP-5 PR #27 merged at `97aea578...`. Standalone diagnostic
+engineering, real-host metadata/provenance, an unsent upstream inquiry and three
+independent operator decision sheets are delivered under the
+[task](tasks/fqgate-2-0-5-mp6-host-prerequisites.md). The accessible permanent
+Windows tree has later unmerged 2.0.6 work; preserve it and its existing artifacts.
+Both runtime listeners are currently absent. Host readiness stays BLOCKED; no
+startup, deployment, repair, account action, Cloudflare or MP-1 integration is
+authorized. [Handoff and next safe decision](status/fqgate-2-0-5-mp6-host-handoff.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; multi-account production NO-GO.

@@ -372,3 +372,18 @@ No process/service launch, deployment/repair or native account action is authori
 [Task](tasks/fqgate-2-0-5-mp5-readiness-triage.md),
 [repeat / operator decision sheet](operations/windows-fqgate205-mp5.md),
 [engineering and host evidence](status/fqgate-2-0-5-mp5-readiness-handoff.md).
+
+## Current MP-6 handoff — 2026-11-06
+
+Follow [Issue #28](https://github.com/blooddrunk/fqgate-remote-bridge/issues/28),
+[task](tasks/fqgate-2-0-5-mp6-host-prerequisites.md),
+[operations](operations/windows-fqgate205-mp6.md) and
+[handoff](status/fqgate-2-0-5-mp6-host-handoff.md). Preserve later Windows
+2.0.6 local work; main and the host are distinct source histories. Build only
+in isolated outputs, protect permanent dist/.output and private artifacts.
+Do not use lifecycle status as a non-mutating process-record probe; its existing
+cleanup may write. Native/Bridge/cloudflared starts/stops, deployment/repair,
+account/QR/phone actions and Cloudflare changes need fresh explicit approval.
+Stage B sheets and upstream inquiry are draft only, not executed/sent.
+Fixtures and exact-head CI cannot resolve real BLOCKED gates.
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; multi-account NO-GO.

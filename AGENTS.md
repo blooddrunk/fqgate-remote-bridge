@@ -1,9 +1,12 @@
 # AGENTS.md
 
-Current MP-5 follow-up is limited to non-mutating Windows readiness triage and
-A/B evidence integrity at `docs/tasks/fqgate-2-0-5-mp5-readiness-triage.md`,
-authorized by Issue #26 after merged MP-4 PR #25 (`eedbc615...`). Evidence/decision:
-`docs/status/fqgate-2-0-5-mp5-readiness-handoff.md`. No native process/service
+Current MP-6 is limited to read-only host prerequisites, build provenance,
+standalone diagnostic corrections and decision sheets under
+`docs/tasks/fqgate-2-0-5-mp6-host-prerequisites.md`, authorized by Issue #28
+after merged MP-5 PR #27 (`97aea578...`). Evidence/decision:
+`docs/status/fqgate-2-0-5-mp6-host-handoff.md`. Preserve subsequent unmerged
+Windows 2.0.6 work, existing dist/.output and external private artifacts.
+Stage B sheets and the upstream inquiry are draft only. No native process/service
 start, deployment/repair, account/QR/phone/Saved Login/L2 mutation, production
 integration or permission expansion is authorized.
 Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
