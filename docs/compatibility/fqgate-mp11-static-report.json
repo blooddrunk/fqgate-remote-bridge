@@ -1,0 +1,367 @@
+{
+  "revision": "mp11-static-v1",
+  "archive207": {
+    "bytes": 32181584,
+    "sha256": "6a6a43aea7380cd5e3c5c6f6e271140d78bb3a978a8711e2d0a4f64dfe253dcf"
+  },
+  "reports": {
+    "2.0.6": {
+      "bytes": 58236416,
+      "sha256": "f69ab04f75c6b2b20e1776aad3cec51c0b4df4658aaf46fd05367f4ec857e8eb",
+      "slices": [
+        {
+          "name": "local-api",
+          "offset": 44195775,
+          "bytes": 3900,
+          "sha256": "9214dff802e03716afe1c15ca9f646ba61023e15061b48251cfcd8a4c2482a8c",
+          "observations": [
+            {
+              "needle": "/v2/source-instances",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44196481
+            },
+            {
+              "needle": "/authentication",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44196704
+            },
+            {
+              "needle": "/account",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44196987
+            },
+            {
+              "needle": "method:`POST`",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44196824
+            },
+            {
+              "needle": "cache:`no-store`",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44199032
+            },
+            {
+              "needle": "clear_saved_login",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44198739
+            },
+            {
+              "needle": "restore_saved_login",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 44198785
+            }
+          ]
+        },
+        {
+          "name": "qr-ui",
+          "offset": 46434771,
+          "bytes": 21849,
+          "sha256": "d488bb353be3ca565bc5d809cb9726d0a512a33caafe180e1f641e4239f0acec",
+          "observations": [
+            {
+              "needle": "app_qr_begin",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46445703
+            },
+            {
+              "needle": "app_qr_poll",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46446131
+            },
+            {
+              "needle": "flow_id",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46445834
+            },
+            {
+              "needle": "qr_media_type",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46445786
+            },
+            {
+              "needle": "qr_image_base64",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46445809
+            },
+            {
+              "needle": "waiting_for_scan",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46442018
+            },
+            {
+              "needle": "waiting_for_confirmation",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46441945
+            },
+            {
+              "needle": "connected===!0",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46445503
+            },
+            {
+              "needle": "new Set([1003,3014])",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 46441480
+            }
+          ]
+        }
+      ],
+      "runtimeQualified": false
+    },
+    "2.0.7": {
+      "bytes": 60748288,
+      "sha256": "b9f4194db9ac6cad5b62e932ceddd90dcc21332152927f6ab348b50941d67a31",
+      "slices": [
+        {
+          "name": "local-api",
+          "offset": 45955388,
+          "bytes": 3900,
+          "sha256": "9214dff802e03716afe1c15ca9f646ba61023e15061b48251cfcd8a4c2482a8c",
+          "observations": [
+            {
+              "needle": "/v2/source-instances",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45956094
+            },
+            {
+              "needle": "/authentication",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45956317
+            },
+            {
+              "needle": "/account",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45956600
+            },
+            {
+              "needle": "method:`POST`",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45956437
+            },
+            {
+              "needle": "cache:`no-store`",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45958645
+            },
+            {
+              "needle": "clear_saved_login",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45958352
+            },
+            {
+              "needle": "restore_saved_login",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45958398
+            }
+          ]
+        },
+        {
+          "name": "qr-ui",
+          "offset": 48187102,
+          "bytes": 21849,
+          "sha256": "c9bcffaaf1290e83f49b4f8d196345c13ff9484cf679313eb298b207200dfb1a",
+          "observations": [
+            {
+              "needle": "app_qr_begin",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48198034
+            },
+            {
+              "needle": "app_qr_poll",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48198462
+            },
+            {
+              "needle": "flow_id",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48198165
+            },
+            {
+              "needle": "qr_media_type",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48198117
+            },
+            {
+              "needle": "qr_image_base64",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48198140
+            },
+            {
+              "needle": "waiting_for_scan",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48194349
+            },
+            {
+              "needle": "waiting_for_confirmation",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48194276
+            },
+            {
+              "needle": "connected===!0",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48197834
+            },
+            {
+              "needle": "new Set([1003,3014])",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 48193811
+            }
+          ]
+        },
+        {
+          "name": "lookup-client",
+          "offset": 31113250,
+          "bytes": 355,
+          "sha256": "73542371a5c7c601fcfeac44b2e91724da28eca1cfaf6dbef400892cd9b744d8",
+          "observations": [
+            {
+              "needle": "URLSearchParams({query:n,market:r})",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 31113368
+            },
+            {
+              "needle": "s.get(`/v2/instruments/search?",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 31113411
+            },
+            {
+              "needle": "r.items",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 31113476
+            },
+            {
+              "needle": "r.security.market",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 31113501
+            },
+            {
+              "needle": "r.security.code",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 31113524
+            },
+            {
+              "needle": "r.name",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 31113545
+            }
+          ]
+        },
+        {
+          "name": "account-ui",
+          "offset": 45355018,
+          "bytes": 305,
+          "sha256": "af6a1b36f664186c988288c5a17fb75e58f230153196ce93b16003e02243f09b",
+          "observations": [
+            {
+              "needle": "account_display",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45355084
+            },
+            {
+              "needle": "saved_login",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45355136
+            },
+            {
+              "needle": "session_kind",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45355228
+            },
+            {
+              "needle": "account_id",
+              "state": "MISSING",
+              "firstByteOffset": null
+            },
+            {
+              "needle": "session_epoch",
+              "state": "MISSING",
+              "firstByteOffset": null
+            }
+          ]
+        },
+        {
+          "name": "legacy-openapi",
+          "offset": 44412740,
+          "bytes": 756270,
+          "sha256": "5e290042b606c548899a72328664ee73ee2856be53ae9005f62993914b2d8f2a",
+          "observations": [
+            {
+              "needle": "MarketQueryPoolStatus",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45039773
+            },
+            {
+              "needle": "session_epoch",
+              "state": "OBSERVED_STATIC",
+              "firstByteOffset": 45065492
+            }
+          ]
+        }
+      ],
+      "runtimeQualified": false
+    }
+  },
+  "comparison": [
+    {
+      "name": "local-api",
+      "equal": true
+    },
+    {
+      "name": "qr-ui",
+      "equal": false,
+      "beforeRange": [271, 279],
+      "afterRange": [271, 279],
+      "beforeSha256": "e6b8ef6b5bc798c0814d87b0462979e953695db668551986ae78cba693e00f52",
+      "afterSha256": "1d797d4e59223c3b07b14e53b2e7c03f5c64492f58128a03a78056ff20498979"
+    }
+  ],
+  "legacyOpenapi": {
+    "version": "1.0.2",
+    "schemas": 153,
+    "requiredOperations": [
+      {
+        "path": "/v2/system/version",
+        "method": "get",
+        "state": "MISSING"
+      },
+      {
+        "path": "/v2/system/health",
+        "method": "get",
+        "state": "MISSING"
+      },
+      {
+        "path": "/v2/source-instances",
+        "method": "get",
+        "state": "MISSING"
+      },
+      {
+        "path": "/v2/source-instances/{instance_id}/account",
+        "method": "get",
+        "state": "MISSING"
+      },
+      {
+        "path": "/v2/instruments/search",
+        "method": "get",
+        "state": "MISSING"
+      },
+      {
+        "path": "/v2/source-instances/{instance_id}/authentication",
+        "method": "get",
+        "state": "MISSING"
+      },
+      {
+        "path": "/v2/source-instances/{instance_id}/authentication",
+        "method": "post",
+        "state": "MISSING"
+      }
+    ]
+  },
+  "runtimeFingerprint207": null,
+  "strongAccountIdentity": "UNKNOWN",
+  "nativeSessionEpoch": "UNKNOWN",
+  "publisherTrust": "UNKNOWN",
+  "runtime": "NOT_EXECUTED",
+  "admission": "DENIED",
+  "productionAllowed": false,
+  "runtimeQualified": false
+}

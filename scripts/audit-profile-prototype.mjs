@@ -11,6 +11,15 @@ const mp3Tests = resolve(root, "tests/mp3-isolation.test.ts");
 const candidates = new Set(
   ["registry.ts", "lookup.ts"].map((name) => resolve(root, "src/fqgate/admission", name)),
 );
+const staticReview = new Set(
+  [
+    "scripts/mp11-static-review.mjs",
+    "scripts/lib/mp11-static.mjs",
+    "scripts/lib/mp11-static.d.mts",
+    "docs/compatibility/fqgate-mp11-static-pins.json",
+    "docs/compatibility/fqgate-mp11-static-report.json",
+  ].map((name) => resolve(root, name)),
+);
 const diagnostics = new Set(
   [
     "profile-preflight.ts",
@@ -76,6 +85,11 @@ for (const file of files) {
     const result = ts.resolveModuleName(specifier, file, compilerOptions, ts.sys).resolvedModule;
     const target = result && resolve(result.resolvedFileName);
     if (target) edges.push(target);
+    if (
+      staticReview.has(target) ||
+      /mp11-static(?:-review|-pins|-report)?\.(?:mjs|json)$/.test(specifier)
+    )
+      failures.push(`${relative(root, file)}: production imports MP11 static review data/tool`);
     if (inside && (!specifier.startsWith(".") || !target?.startsWith(prototypeRoot)))
       failures.push(`${relative(root, file)}: non-prototype dependency`);
     if (
@@ -206,5 +220,6 @@ globalThis.console.log(
     productionImportsOfReadinessDiagnostic: 0,
     mp8CandidateModules: [...candidates].map((file) => relative(root, file)),
     productionImportsOfMp8Candidates: 0,
+    productionImportsOfMp11StaticReview: 0,
   }),
 );

@@ -1,5 +1,13 @@
 # Development Roadmap
 
+MP-11 / Issue #39 follows independently reviewed MP-10-A PR #38 at `52e0620a…`.
+Only [offline 2.0.7 contract research](tasks/fqgate-mp11-offline-contract-delta.md),
+adversarial static fixtures and [host prerequisite evidence](plans/fqgate-mp10-host-decision.md)
+are authorized. [Versioned delta](plans/fqgate-mp11-contract-delta.md) keeps native
+fingerprints/identity/epoch/trust UNKNOWN and real-byte admission DENIED.
+Stop at independent review; no live activation. **HOST_BLOCKED / LIVE_UNQUALIFIED /
+PROD_NO_GO / LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+
 This roadmap is ordered to reduce risk before Internet exposure. The repository has closed the local lifecycle, local operator UI, upgrade center, runtime API discovery, and authenticated remote human access milestones while preserving loopback-only origin services and deny-by-default operation policy.
 
 ## Current state

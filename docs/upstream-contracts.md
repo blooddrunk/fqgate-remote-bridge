@@ -1,5 +1,12 @@
 # Upstream Contracts and Compatibility Baseline
 
+MP-11's [offline 2.0.7 delta](plans/fqgate-mp11-contract-delta.md) supplements
+the historical ledger below. Exact pinned 207 local API bytes equal 206; QR UI
+bytes differ at one imported main bundle filename. Neither observation proves
+native schemas, account identity/epoch or runtime compatibility. The embedded
+legacy 1.0.2 OpenAPI lacks all seven required v2 method/path pairs; 207 runtime
+fingerprints stay UNKNOWN. No production gate or remote permission changes.
+
 This document records upstream behavior that the project may rely on. It is a compatibility ledger, not a promise that upstream behavior will remain unchanged.
 
 Baseline date: **2026-09-17**

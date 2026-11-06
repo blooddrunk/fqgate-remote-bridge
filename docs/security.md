@@ -1,5 +1,16 @@
 # Security Model
 
+MP-11 ([Issue #39](https://github.com/blooddrunk/fqgate-remote-bridge/issues/39))
+is offline artifact research only. Exact package/client byte equality cannot
+authenticate a publisher, v2 native contract, account identity or login epoch.
+The standalone static script reads bounded hash-pinned data without executing
+EXE/DLL/embedded JS; its pins/report have no production consumers. Existing
+admission, QR/status, operation permissions and MP-9 production continuity stay
+fixed. No live API/host/account action is authorized. See the
+[delta and limits](plans/fqgate-mp11-contract-delta.md) and
+[host decision prerequisites](plans/fqgate-mp10-host-decision.md).
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO**.
+
 ## Security objective
 
 The project exists to make a local FQGate instance remotely usable **without turning FQGate itself into an Internet-facing service**.

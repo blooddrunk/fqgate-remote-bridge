@@ -11,6 +11,15 @@ Tunnel 把流量安全地送到 Bridge。
 > 本 README 是部署入口和操作地图，不替代规范文档。涉及安全边界时，以
 > [AGENTS.md](AGENTS.md)、当前 task package 和安全文档为准。
 
+MP-11 正在进行 **2.0.7 离线合同差异审查**，依据
+[Issue #39](https://github.com/blooddrunk/fqgate-remote-bridge/issues/39)。
+复用 MP-7 制品并核对嵌入客户端，不运行官方程序或脚本，不恢复真实主机。
+[版本决策矩阵](docs/plans/fqgate-mp11-contract-delta.md)、
+[离线复核步骤](docs/operations/fqgate-mp11-offline-review.md)及
+[主机前置决策](docs/plans/fqgate-mp10-host-decision.md)区分静态事实与未知项。
+2.0.7 运行时准入仍拒绝；保持 **HOST_BLOCKED / LIVE_UNQUALIFIED / PROD_NO_GO /
+LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**。交付后停在独立审查。
+
 ## 先看结论：现在能做什么
 
 当前项目仍在持续开发；Phase 0–6、Phase 7-A 与 Phase 7-B1 已关闭。

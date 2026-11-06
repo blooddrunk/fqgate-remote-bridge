@@ -3,6 +3,12 @@
 2026-11-06. **CONTRACT_REVIEWED** means bounded static/source review, never live
 compatibility. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / PROD_NO_GO**.
 
+Later [MP-11 versioned delta](fqgate-mp11-contract-delta.md) supplements this
+historical matrix with exact 207/206 client slices and updates
+[MP-10-B prerequisites](fqgate-mp10-host-decision.md). MP-9 has since repaired
+the observable 205 display-drift gap described below. Historical observations
+remain historical; no 207 runtime qualification or new permission follows.
+
 ## Sources and their limits
 
 P1: official application Releases

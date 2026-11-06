@@ -3,6 +3,12 @@
 2026-11-06. Exact baseline: accepted main `2410e86334f9c498cd5a1023f06153e48407629b`.
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO**.
 
+Later [MP-11 static delta](fqgate-mp11-contract-delta.md) identifies the exact
+207 local API and QR slices without changing this historical admission registry.
+Its null native 207 fingerprint and real-byte denial remain; no candidate is
+activated. MP-9 separately repaired the production observable display-drift gap
+described as unresolved in this historical document.
+
 ## Independent evidence axes
 
 | Version                         | Operation                                               | Release observation                                                   | Static contract / byte evidence                                        | Offline qualification                                             | Current host / local / remote / trust                                        | MP-8 admission                                                   |

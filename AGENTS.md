@@ -1,5 +1,18 @@
 # AGENTS.md
 
+Current MP-11 is authorized by Issue #39 after reviewed MP-10-A PR #38 merged at
+`52e0620a7cbb8b89e34eadbb12e1095cfaa77b49`. Contract:
+`docs/tasks/fqgate-mp11-offline-contract-delta.md`. Only bounded non-executing
+2.0.7 static artifact/client comparison, adversarial fixtures and host decision
+evidence are allowed. The static script and its pins/report are offline tooling,
+never production admission. Preserve production sources/config/permissions,
+admission isolation and protected Windows c06fbcf outputs/state/evidence.
+No EXE/DLL/embedded JS execution, localhost live API probing, host/service/account/
+Cloudflare mutation or inquiry send. MP-10-B and MP-6 sheets remain drafts.
+Existing CI tests actual synthetic merge, separately recording HEAD/BASE.
+Stop at independent review; no merge/release/deploy. Retain HOST_BLOCKED /
+LIVE_UNQUALIFIED / PROD_NO_GO / LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED.
+
 Current MP-10 is authorized by Issue #37 after reviewed MP-9 PR #36 merged at
 `b33a44116be51b8306d908b01796eb9459bd9a7f`. Contract:
 `docs/tasks/fqgate-mp10-ci-fidelity.md`. MP-10-A changes CI/scripts/tests/docs only:
