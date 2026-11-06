@@ -8,6 +8,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const prototypeRoot = resolve(root, "src/bridge/profiles") + sep;
 const mp3Model = resolve(root, "tests/helpers/mp3-isolation-model.ts");
 const mp3Tests = resolve(root, "tests/mp3-isolation.test.ts");
+const candidates = new Set(
+  ["registry.ts", "lookup.ts"].map((name) => resolve(root, "src/fqgate/admission", name)),
+);
 const diagnostics = new Set(
   [
     "profile-preflight.ts",
@@ -65,6 +68,7 @@ for (const file of files) {
     true,
   );
   const inside = file.startsWith(prototypeRoot);
+  const candidate = candidates.has(file);
   const research = file === mp3Model || file === mp3Tests;
   if (inside) modules.push(relative(root, file));
   const edges = [];
@@ -74,6 +78,16 @@ for (const file of files) {
     if (target) edges.push(target);
     if (inside && (!specifier.startsWith(".") || !target?.startsWith(prototypeRoot)))
       failures.push(`${relative(root, file)}: non-prototype dependency`);
+    if (
+      candidate &&
+      ![
+        "../openapi/catalog.js",
+        "../market/contract.js",
+        "../market/lookup.js",
+        "./registry.js",
+      ].includes(specifier)
+    )
+      failures.push(`${relative(root, file)}: unexpected candidate dependency`);
     if (
       (file === mp3Model && specifier !== "node:path") ||
       (file === mp3Tests && specifier !== "vitest" && target !== mp3Model)
@@ -107,8 +121,7 @@ for (const file of files) {
     ) {
       const arg = node.arguments[0];
       if (arg && ts.isStringLiteral(arg)) dependency(arg.text);
-      else if (inside || research || /profiles|mp3-isolation-model/.test(node.getText(source)))
-        failures.push(`${relative(root, file)}: computed module load`);
+      else failures.push(`${relative(root, file)}: computed module load`);
     }
     if (
       (inside || research) &&
@@ -122,6 +135,28 @@ for (const file of files) {
       )
     )
       failures.push(`${relative(root, file)}: forbidden I/O/global ${node.text}`);
+    if (
+      candidate &&
+      ts.isIdentifier(node) &&
+      [
+        "fetch",
+        "XMLHttpRequest",
+        "WebSocket",
+        "EventSource",
+        "process",
+        "console",
+        "require",
+        "eval",
+        "Function",
+      ].includes(node.text) &&
+      !(
+        (ts.isPropertyAccessExpression(node.parent) ||
+          ts.isPropertyAssignment(node.parent) ||
+          ts.isPropertySignature(node.parent)) &&
+        node.parent.name === node
+      )
+    )
+      failures.push(`${relative(root, file)}: candidate I/O/global ${node.text}`);
     ts.forEachChild(node, visit);
   }
   visit(source);
@@ -141,12 +176,16 @@ for (const file of productionFiles.filter((file) => !file.startsWith(prototypeRo
     );
   }
   if (reachable(file)) failures.push(`${relative(root, file)}: transitively reaches prototype`);
-  if (!diagnostics.has(file)) {
+  if (!diagnostics.has(file) && !candidates.has(file)) {
     const visited = new Set();
     function reachesDiagnostic(current) {
       if (visited.has(current)) return false;
       visited.add(current);
-      return diagnostics.has(current) || (graph.get(current) ?? []).some(reachesDiagnostic);
+      return (
+        diagnostics.has(current) ||
+        candidates.has(current) ||
+        (graph.get(current) ?? []).some(reachesDiagnostic)
+      );
     }
     if (reachesDiagnostic(file))
       failures.push(`${relative(root, file)}: production reaches GET-only diagnostic`);
@@ -165,5 +204,7 @@ globalThis.console.log(
     mp3TestOnlyModel: relative(root, mp3Model),
     productionImportsOfMp3Model: 0,
     productionImportsOfReadinessDiagnostic: 0,
+    mp8CandidateModules: [...candidates].map((file) => relative(root, file)),
+    productionImportsOfMp8Candidates: 0,
   }),
 );

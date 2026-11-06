@@ -763,3 +763,31 @@ unchanged; the preserved Windows 2.0.6 branch is reviewed read-only, not integra
 No permanent runtime/service start/stop, deployment, private/account change or
 permission/range expansion. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**;
 production multi-account **NO-GO**. MP-8 is not authorized by this delivery.
+
+## MP-8 exact-version lookup candidates — 2026-11-06
+
+[Issue #32](https://github.com/blooddrunk/fqgate-remote-bridge/issues/32) authorizes
+[the isolated candidate task](tasks/fqgate-mp8-admission-candidates.md)
+after PR #31 merged at `2410e863...`. `src/fqgate/admission/` is unreachable from
+production and has no native/HTTP/config adapter. Typed exact-version operation
+profiles bind Windows x64 artifacts, client and transitive contract hashes,
+parser/probe and Source/process/listener policy. Real-byte 2.0.5/6/7 review entries
+always deny; only explicitly synthetic fixtures exercise the candidate. Fixture
+success cannot grant production authority or trusted publisher provenance.
+
+The candidate rejects observed account/peer/Source/Worker/process/protocol drift,
+requires synthetic Source lifetime evidence and a single 5000 ms total deadline,
+with no retry or partial results. Display/hash, observed_at, worker incarnation
+and legacy session_epoch are not strong native account identity/login epoch;
+identical-display swaps and hidden ABA remain unqualified. Production 2.0.5's
+account-display gap is reproduced and reserved for a separate security PR. Its
+adapter, v1 supportedRange and all remote operation permissions remain unchanged.
+
+[Version/operation/evidence decisions](plans/fqgate-mp8-admission-matrix.md),
+[repeat and deferred approvals](operations/fqgate-mp8-offline-acceptance.md),
+[engineering handoff](status/fqgate-mp8-handoff.md).
+Preserve unmerged Windows c06fbcf and all existing outputs/private artifacts.
+Stop at independent PR review; no merge/release/deploy, native/service mutation,
+Cloudflare, account/QR/MFA/Saved Login/L2 action or upstream inquiry send.
+**HOST_BLOCKED / LIVE_UNQUALIFIED / PROD_NO_GO;
+LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.

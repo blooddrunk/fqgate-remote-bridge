@@ -177,6 +177,18 @@ describe("exact 2.0.5 read-only lookup", () => {
     expect(value.items).toHaveLength(1);
     expect(JSON.stringify(value)).not.toContain("changed-private-account");
   });
+  // Expected failure is deliberate: fixing production requires a separate security PR.
+  // The initial ordinary failing execution and full log are retained outside Git.
+  it.fails(
+    "P0 production 2.0.5 must reject account-display drift (separate security patch required)",
+    async () => {
+      const f = fixture();
+      f.f.mutate = (n) => {
+        if (n === 2) f.f.account.snapshot.account_display = "changed-private-account";
+      };
+      await expect(f.adapter.lookup({ code: "600000" })).rejects.toBeDefined();
+    },
+  );
   it("checks selected account readiness independently", async () => {
     const f = fixture();
     f.f.account.snapshot.state = "disconnected";
