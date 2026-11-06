@@ -9,9 +9,9 @@ on:
 permissions:
   contents: read
 
-# Superseded PR runs have no value; preserve every main push verification.
+# Cancel obsolete PR work, but use a unique group per main push to preserve every run.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
