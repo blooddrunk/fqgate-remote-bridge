@@ -1,0 +1,118 @@
+{
+  "archive207": {
+    "bytes": 32181584,
+    "sha256": "6a6a43aea7380cd5e3c5c6f6e271140d78bb3a978a8711e2d0a4f64dfe253dcf"
+  },
+  "versions": {
+    "2.0.6": {
+      "bytes": 58236416,
+      "sha256": "f69ab04f75c6b2b20e1776aad3cec51c0b4df4658aaf46fd05367f4ec857e8eb",
+      "slices": [
+        {
+          "name": "local-api",
+          "offset": 44195775,
+          "bytes": 3900,
+          "sha256": "9214dff802e03716afe1c15ca9f646ba61023e15061b48251cfcd8a4c2482a8c",
+          "needles": [
+            "/v2/source-instances",
+            "/authentication",
+            "/account",
+            "method:`POST`",
+            "cache:`no-store`",
+            "clear_saved_login",
+            "restore_saved_login"
+          ]
+        },
+        {
+          "name": "qr-ui",
+          "offset": 46434771,
+          "bytes": 21849,
+          "sha256": "d488bb353be3ca565bc5d809cb9726d0a512a33caafe180e1f641e4239f0acec",
+          "needles": [
+            "app_qr_begin",
+            "app_qr_poll",
+            "flow_id",
+            "qr_media_type",
+            "qr_image_base64",
+            "waiting_for_scan",
+            "waiting_for_confirmation",
+            "connected===!0",
+            "new Set([1003,3014])"
+          ]
+        }
+      ]
+    },
+    "2.0.7": {
+      "bytes": 60748288,
+      "sha256": "b9f4194db9ac6cad5b62e932ceddd90dcc21332152927f6ab348b50941d67a31",
+      "slices": [
+        {
+          "name": "local-api",
+          "offset": 45955388,
+          "bytes": 3900,
+          "sha256": "9214dff802e03716afe1c15ca9f646ba61023e15061b48251cfcd8a4c2482a8c",
+          "needles": [
+            "/v2/source-instances",
+            "/authentication",
+            "/account",
+            "method:`POST`",
+            "cache:`no-store`",
+            "clear_saved_login",
+            "restore_saved_login"
+          ]
+        },
+        {
+          "name": "qr-ui",
+          "offset": 48187102,
+          "bytes": 21849,
+          "sha256": "c9bcffaaf1290e83f49b4f8d196345c13ff9484cf679313eb298b207200dfb1a",
+          "needles": [
+            "app_qr_begin",
+            "app_qr_poll",
+            "flow_id",
+            "qr_media_type",
+            "qr_image_base64",
+            "waiting_for_scan",
+            "waiting_for_confirmation",
+            "connected===!0",
+            "new Set([1003,3014])"
+          ]
+        },
+        {
+          "name": "lookup-client",
+          "offset": 31113250,
+          "bytes": 355,
+          "sha256": "73542371a5c7c601fcfeac44b2e91724da28eca1cfaf6dbef400892cd9b744d8",
+          "needles": [
+            "URLSearchParams({query:n,market:r})",
+            "s.get(`/v2/instruments/search?",
+            "r.items",
+            "r.security.market",
+            "r.security.code",
+            "r.name"
+          ]
+        },
+        {
+          "name": "account-ui",
+          "offset": 45355018,
+          "bytes": 305,
+          "sha256": "af6a1b36f664186c988288c5a17fb75e58f230153196ce93b16003e02243f09b",
+          "needles": [
+            "account_display",
+            "saved_login",
+            "session_kind",
+            "account_id",
+            "session_epoch"
+          ]
+        },
+        {
+          "name": "legacy-openapi",
+          "offset": 44412740,
+          "bytes": 756270,
+          "sha256": "5e290042b606c548899a72328664ee73ee2856be53ae9005f62993914b2d8f2a",
+          "needles": ["MarketQueryPoolStatus", "session_epoch"]
+        }
+      ]
+    }
+  }
+}

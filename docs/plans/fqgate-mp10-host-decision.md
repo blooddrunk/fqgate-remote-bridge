@@ -111,6 +111,45 @@ bounds and non-reversibility review. None are prepared or authorized here.
 The native identity/epoch inquiry remains an unsent draft. Human authorization
 is needed to grant new host/account authority, not to finish this CI PR.
 
-Recommended next milestone: independent review of MP-10-A, then a separately
-scoped exact-version prerequisite decision resolving these UNKNOWNs. Keep
+## MP-11 prerequisite update — 2026-11-06
+
+MP-10-A is independently reviewed and merged as PR #38 at
+`52e0620a7cbb8b89e34eadbb12e1095cfaa77b49`. Its CI fidelity gap is closed;
+this does not close any native prerequisite. Issue #39 authorizes only the
+[MP-11 offline delta](fqgate-mp11-contract-delta.md). The earlier sections and
+MP-6 sheets remain planning-only; the table below updates their evidence,
+not their authority. **HOST_BLOCKED; no runtime target selected.**
+
+| Gate                  | Newly resolved offline fact                                                                                                                                                                              | Still required before a concrete host decision                                                                                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exact candidate bytes | Reused MP-7 207 ZIP 32181584 / SHA `6a6a43aea7380cd5e3c5c6f6e271140d78bb3a978a8711e2d0a4f64dfe253dcf`; EXE 60748288 / SHA `b9f4194db9ac6cad5b62e932ceddd90dcc21332152927f6ab348b50941d67a31` reverified. | No chosen target. Exact full tree/build-info/required plugin hashes and Windows layout must be bound in any later decision; a matching ZIP is not installation approval. Release assets are not GitHub-immutable.   |
+| Client contract       | 207 localApi equals 206 byte-for-byte; QR slice differs only at the main bundle import filename.                                                                                                         | Imported dependencies, actual native v2 OpenAPI/schema/fingerprints, 503/timeout semantics and source-specific behavior UNKNOWN. Never copy 205/206 fingerprints.                                                   |
+| Bridge source/build   | Main contains MP-9 security repair and MP-10 synthetic-merge attestation. MP-11 changes no production source.                                                                                            | Reviewed exact-version adapter/tooling, full Windows build/toolchain/lockfile/output manifest and actual running provenance; c06fbcf historical build is not latest-main or 207 acceptance.                         |
+| Identity/epoch        | Static account UI uses display/saved-login labels; legacy query-pool epoch cannot prove v2 account identity.                                                                                             | Stable native per-account identity and Source lifetime/monotonic login epoch with documented restart/relogin semantics, or an explicitly narrower separately reviewed experiment. No display/hash/PID substitution. |
+| Storage/IPC/rollback  | No new isolation or rollback contract discovered in the bounded slices.                                                                                                                                  | Complete mutable roots, credential/session/IPC/port ownership and protected before/after manifests, migration behavior and rollback limitations. No opportunistic copying or session restoration claim.             |
+| Trust/expiry          | Pinned bytes are unchanged; MP-7's no embedded Authenticode observation still applies.                                                                                                                   | Publisher key/signing input/bootstrap/rotation/revocation/replay/30-day expiry policy remains unverified. Any exception must be separately concrete, not inherited from the historical 205 trial.                   |
+| Current host          | No current listener/process/local API observation performed in MP-11.                                                                                                                                    | Separately approved metadata-only collection first; then reviewed version-specific GET census only after host/command/allowlist/custody approval. Absent historical listeners are not a new finding.                |
+
+### Operator approval sheet — draft, NOT APPROVED
+
+This is a fill-before-request record, not a request for blanket restoration.
+No start/install/repair command exists until the unresolved target and native
+contracts above have been reviewed. Do not run a placeholder or old 206 script.
+
+| Required field               | Decision-ready requirement / current value                                                                                                                                                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Why automation cannot finish | Static client bytes cannot prove current listener ownership, running build, provider identity/epoch, native storage migrations or authenticated publisher trust. Exact missing facts are in the MP-11 matrix.                                                                                    |
+| One action and owner         | NOT SELECTED. Separate metadata observation, foreground Bridge start, deployment and native remediation into distinct approvals. First possible request is metadata-only observation, without localhost API traffic or any process action.                                                       |
+| Target/prerequisites/command | Bind host owner, exact native version/payload/tree, reviewed tools/source/build/config digests and literal resolved command. The metadata collector template above must be staged and hashed in the later task. No wildcard target, broad lifecycle status or pin replacement.                   |
+| Impact/protection            | Name exact read/write paths, owned process if applicable, maximum duration and expected traffic. Hash c06fbcf checkout, existing dist/.output/candidate, config and fixed native records before/after privately; protect prior receipts and credentials.                                         |
+| Expected result / criteria   | Metadata exit 0 means collection, not readiness. Independent missing categories stay UNKNOWN. Any subsequent census must prove exact sole IPv4 owner/native creation/build and unchanged protected files before interpreting sampled contracts. Strong account isolation remains separate.       |
+| STOP / failure               | One attempt, no automatic retries. Stop on version/hash/reparse/ownership drift, absent/duplicate/state-0/wildcard/IPv6 listener, native prompt, account/session change, unexpected write, timeout or unreadable evidence. Preserve failure and HOST_BLOCKED; no kill/adopt/repair.              |
+| Rollback limit               | Metadata-only action has no runtime change to undo; preserve failed receipt. Future owned foreground process rollback may stop only that approved process and reuse intact prior output. Files cannot reverse provider sessions, migrations, account/QR actions or entitlement effects.          |
+| Resume automation            | For metadata-only collection, rerun only its pinned approved command after the cause is reviewed, writing a new receipt. Version-specific GET tooling and its exact resume command require a separate reviewed task; 205 triage is prohibited against 206/207. No account experiment is implied. |
+
+The next executable path is independent MP-11 review, then offline native
+contract/trust review or a separately bounded metadata-only task. Sending the
+draft upstream inquiry, native starts or any real account step remains separately
+unauthorized. No human action is necessary to complete MP-11's offline PR.
+Keep
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO**.

@@ -3,6 +3,14 @@
 这份文档是给编码 Agent 的快速交接说明。规范性约束以根目录 AGENTS.md、当前
 task package 和安全文档为准。
 
+当前 MP-11 仅做 [Issue #39](https://github.com/blooddrunk/fqgate-remote-bridge/issues/39)
+授权的 2.0.7 离线研究。读取[版本差异](plans/fqgate-mp11-contract-delta.md)、
+[复核命令及缺失事实](operations/fqgate-mp11-offline-review.md)和
+[主机决策草案](plans/fqgate-mp10-host-decision.md)。不得执行官方 EXE/DLL/嵌入 JS，
+不得探测真实 localhost API 或恢复主机。生产代码、准入及权限保持不变。
+独立审查前不合并／发布；保留 HOST_BLOCKED / LIVE_UNQUALIFIED / PROD_NO_GO /
+LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED。
+
 ## 当前状态
 
 - Phase 0–4.5：CLOSED。
