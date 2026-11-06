@@ -1,14 +1,18 @@
 # AGENTS.md
 
-Current MP-7 is authorized by Issue #30 after merged MP-6 PR #29
-(`3e06422260a81255de1e5ff8b623a00f52cf5454`). Scope: standalone GET-only
-release observation, offline/source/package inspection, tests and evidence/docs
-under `docs/tasks/fqgate-mp7-release-investigation.md`. Preserve Windows
-`codex/fqgate206-compatibility` / c06fbcf, dist/.output, private inputs and candidates.
-No runtime start/stop, upgrade/deployment/repair, private-file/account/QR/phone/
-Saved Login/L2 mutation, Cloudflare change, production integration or permission/
-supportedRange expansion. MP-8 is proposal only. Stop at a reviewable PR.
-Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`; production multi-account NO-GO.
+Current MP-8 is authorized by Issue #32 after reviewed PR #31 merged at
+`2410e86334f9c498cd5a1023f06153e48407629b`. Contract:
+`docs/tasks/fqgate-mp8-admission-candidates.md`. Work only on isolated exact-version
+lookup admission candidates, synthetic continuity fixtures, read-only release/host
+observation and decision evidence. `src/fqgate/admission/` must remain unreachable
+from production, including type/re-export imports. Real-byte ledger entries always
+deny; fixture success grants no production authority. Existing production 2.0.5
+account-display drift requires a separate security PR, never implicit activation.
+Preserve Windows `codex/fqgate206-compatibility` c06fbcf, dist/.output and private
+artifacts. No native/service start/stop, repair/deploy, Cloudflare, account/QR/phone/
+MFA/Saved Login/L2 mutation or upstream inquiry send. MP-6 decision sheets remain
+drafts. Stop at independent PR review; no merge/tag/release.
+Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / PROD_NO_GO`.
 
 This file is the working contract for coding agents contributing to `fqgate-remote-bridge`.
 

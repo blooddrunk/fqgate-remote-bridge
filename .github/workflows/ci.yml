@@ -107,4 +107,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'MP4 GET-only CLI boundary fixtures failed' }
           pwsh -NoProfile -NonInteractive -File "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate205-mp6-host.ps1"
           if ($LASTEXITCODE -ne 0) { throw 'MP6 host metadata fixtures failed' }
+          node "$env:GITHUB_WORKSPACE\scripts\windows\test-fqgate-mp8.mjs"
+          if ($LASTEXITCODE -ne 0) { throw 'MP8 inert compiled fixtures failed' }
           exit 0
