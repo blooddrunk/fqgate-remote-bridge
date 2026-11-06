@@ -20,8 +20,39 @@ const source = () => ({
   pid: 123,
   restartCount: 0,
   workerState: "ready",
+  autoLogin: false,
+  defaultGuest: false,
   session: { state: "connected" },
 });
+const TEST_NOW = Date.parse("2026-11-06T00:00:00Z");
+const account = (state = "connected") => ({
+  descriptor: {
+    session_supported: true,
+    saved_login_supported: true,
+    actions: ["logout", "restore_saved_login", "clear_saved_login"],
+  },
+  snapshot: {
+    state,
+    account_display: "never-return",
+    session_kind: "user",
+    level2_access: true,
+    saved_login: {
+      available: true,
+      account_display: "never-return",
+      session_kind: "user",
+      level2_access: true,
+    },
+    observed_at: new Date(TEST_NOW).toISOString(),
+    session_notice: null as string | null,
+  },
+});
+const set = (value: unknown, path: string, replacement: unknown) => {
+  const parts = path.split(".");
+  let current = value as Record<string, unknown>;
+  for (const part of parts.slice(0, -1)) current = current[part] as Record<string, unknown>;
+  if (replacement === undefined) delete current[parts.at(-1)!];
+  else current[parts.at(-1)!] = replacement;
+};
 const result = () => ({
   code: 0,
   message: "ok",
@@ -45,16 +76,14 @@ function fixture() {
       architecture: "x86_64",
     },
     sources: [source()],
-    account: {
-      descriptor: { session_supported: true },
-      snapshot: { state: "connected", account_display: "never-return" },
-    },
+    account: account(),
+    peerAccount: account("disconnected"),
     result: result(),
     health: { status: "ready" },
     mutate: (_count: number) => {},
     status: 200,
     bytes: undefined as Uint8Array | undefined,
-    time: 0,
+    time: TEST_NOW,
     error: false,
   };
   vi.spyOn(contract, "operationContractFingerprint").mockReturnValue(V2_LOOKUP_FINGERPRINT);
@@ -75,6 +104,7 @@ function fixture() {
       f.mutate(++inventories);
       value = { instances: f.sources };
     } else if (path === "/v2/source-instances/fixture-source/account") value = f.account;
+    else if (path === "/v2/source-instances/peer/account") value = f.peerAccount;
     else if (path === "/v2/instruments/search") {
       expect(new URL(url).search).toBe("?query=600000");
       expect(options.headers?.["X-FQGate-Instance-Id"]).toBe("fixture-source");
@@ -93,6 +123,7 @@ function fixture() {
     http: { request },
     identity,
     nowMs: () => f.time,
+    nowUtcMs: () => f.time,
   });
   return { f, request, adapter, identity };
 }
@@ -139,7 +170,7 @@ describe("exact 2.0.5 read-only lookup", () => {
   );
   it("denies multiple connected sources and never guesses the default", async () => {
     const f = fixture();
-    f.f.sources.push({ ...source(), instanceId: "other" });
+    f.f.sources.push({ ...source(), instanceId: "other", instanceNo: 3, pid: 456 });
     await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
       code: "FQGATE_INCOMPATIBLE",
     });
@@ -166,34 +197,23 @@ describe("exact 2.0.5 read-only lookup", () => {
     };
     await expect(f.adapter.lookup({ code: "600000" })).rejects.toBeDefined();
   });
-  it("records the existing account-display sampling gap for MP-8 review", async () => {
+  it("P0 production 2.0.5 rejects account-display drift without publishing results", async () => {
     const f = fixture();
     f.f.mutate = (n) => {
       if (n === 2) f.f.account.snapshot.account_display = "changed-private-account";
     };
-    // Characterization only: main binds Source incarnation, not native account identity/epoch.
-    // This passing assertion documents a limitation; it is NOT an isolation guarantee.
-    const value = await f.adapter.lookup({ code: "600000" });
-    expect(value.items).toHaveLength(1);
-    expect(JSON.stringify(value)).not.toContain("changed-private-account");
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+      code: "FQGATE_INCOMPATIBLE",
+    });
+    expect(f.request).toHaveBeenCalledTimes(8);
+    expect(f.identity).toHaveBeenCalledTimes(1);
+    expect(f.request.mock.calls.filter(([u]) => u.includes("search?")).length).toBe(1);
   });
-  // Expected failure is deliberate: fixing production requires a separate security PR.
-  // The initial ordinary failing execution and full log are retained outside Git.
-  it.fails(
-    "P0 production 2.0.5 must reject account-display drift (separate security patch required)",
-    async () => {
-      const f = fixture();
-      f.f.mutate = (n) => {
-        if (n === 2) f.f.account.snapshot.account_display = "changed-private-account";
-      };
-      await expect(f.adapter.lookup({ code: "600000" })).rejects.toBeDefined();
-    },
-  );
   it("checks selected account readiness independently", async () => {
     const f = fixture();
     f.f.account.snapshot.state = "disconnected";
     await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
-      code: "LOGIN_REQUIRED",
+      code: "FQGATE_INCOMPATIBLE",
     });
   });
   it.each(["../escape", "hidden\nvalue", ".", ".."])("denies unsafe source IDs %s", async (id) => {
@@ -332,7 +352,7 @@ describe("exact 2.0.5 read-only lookup", () => {
   it("enforces shared deadline and transport cancellation without retry", async () => {
     const f = fixture();
     f.f.mutate = () => {
-      f.f.time = 5001;
+      f.f.time = TEST_NOW + 5001;
     };
     await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
       code: "UPSTREAM_UNAVAILABLE",
@@ -344,6 +364,365 @@ describe("exact 2.0.5 read-only lookup", () => {
       code: "UPSTREAM_UNAVAILABLE",
     });
     expect(cancelled.request).toHaveBeenCalledTimes(1);
+  });
+  it.each([
+    "snapshot.session_kind",
+    "snapshot.level2_access",
+    "snapshot.session_notice",
+    "snapshot.saved_login.available",
+    "snapshot.saved_login.account_display",
+    "snapshot.saved_login.session_kind",
+    "snapshot.saved_login.level2_access",
+    "descriptor.session_supported",
+    "descriptor.saved_login_supported",
+    "descriptor.actions",
+  ])("refuses visible account/descriptor drift %s", async (path) => {
+    const f = fixture();
+    f.f.mutate = (n) => {
+      if (n === 2)
+        set(
+          f.f.account,
+          path,
+          path.endsWith("actions")
+            ? ["logout"]
+            : path.endsWith("session_kind")
+              ? "guest"
+              : path.endsWith("account_display")
+                ? "changed-private"
+                : path.endsWith("session_notice")
+                  ? "level2_replaced_by_remote_login"
+                  : false,
+        );
+    };
+    const error = await f.adapter.lookup({ code: "600000" }).catch((e) => e);
+    expect(["LOGIN_REQUIRED", "FQGATE_INCOMPATIBLE"]).toContain(error.code);
+    expect(error).not.toHaveProperty("items");
+    expect(JSON.stringify(error)).not.toContain("private");
+  });
+  it.each([
+    "snapshot",
+    "snapshot.saved_login",
+    "descriptor",
+    "snapshot.observed_at",
+    "snapshot.saved_login.available",
+    "snapshot.account_display",
+    "snapshot.session_kind",
+    "snapshot.level2_access",
+    "snapshot.session_notice",
+    "descriptor.actions",
+  ])("refuses missing or malformed required account metadata %s", async (path) => {
+    const f = fixture();
+    set(
+      f.f.account,
+      path,
+      path.endsWith("account_display")
+        ? ""
+        : path.endsWith("session_kind")
+          ? ["user"]
+          : path.endsWith("level2_access")
+            ? "true"
+            : path.endsWith("session_notice")
+              ? "secret"
+              : undefined,
+    );
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+      code: "UPSTREAM_RESPONSE_INVALID",
+    });
+    expect(f.request.mock.calls.some(([u]) => u.includes("search?"))).toBe(false);
+  });
+  it.each(["snapshot.account_display", "snapshot.saved_login.account_display"])(
+    "bounds private display %s",
+    async (path) => {
+      for (const value of [" ", "x".repeat(129), "private\nvalue", {}, ["private"]]) {
+        const f = fixture();
+        set(f.f.account, path, value);
+        // Whitespace-only is an unusable display, never silently normalized.
+        await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+          code: "UPSTREAM_RESPONSE_INVALID",
+        });
+      }
+    },
+  );
+  it.each([
+    "snapshot.token",
+    "snapshot.account_id",
+    "snapshot.saved_login.cookie",
+    "descriptor.secret",
+    "credentials",
+  ])("rejects unreviewed/sensitive account fields %s", async (path) => {
+    const f = fixture();
+    set(f.f.account, path, "private-secret");
+    const error = await f.adapter.lookup({ code: "600000" }).catch((e) => e);
+    expect(error.code).toBe("UPSTREAM_RESPONSE_INVALID");
+    expect(JSON.stringify(error)).not.toMatch(/private-secret|never-return/);
+    expect(error).not.toHaveProperty("cause");
+  });
+  it("accepts schema-reviewed optional nullable account fields without claiming identity", async () => {
+    const f = fixture();
+    for (const path of [
+      "snapshot.account_display",
+      "snapshot.session_kind",
+      "snapshot.level2_access",
+      "snapshot.session_notice",
+      "snapshot.saved_login.account_display",
+      "snapshot.saved_login.session_kind",
+      "snapshot.saved_login.level2_access",
+    ])
+      set(f.f.account, path, null);
+    await expect(f.adapter.lookup({ code: "600000" })).resolves.toHaveProperty("items");
+  });
+  it.each(["stale", "future", "regressing", "no-zone", "oversize", "invalid"])(
+    "denies observation time %s",
+    async (kind) => {
+      const f = fixture();
+      if (kind === "regressing")
+        f.f.mutate = (n) => {
+          if (n === 2) f.f.account.snapshot.observed_at = new Date(TEST_NOW - 1).toISOString();
+        };
+      else
+        f.f.account.snapshot.observed_at =
+          kind === "stale"
+            ? new Date(TEST_NOW - 30_001).toISOString()
+            : kind === "future"
+              ? new Date(TEST_NOW + 2_001).toISOString()
+              : kind === "no-zone"
+                ? "2026-11-06T00:00:00"
+                : kind === "oversize"
+                  ? "x".repeat(65)
+                  : "invalid";
+      await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+        "code",
+        kind === "regressing" ? "FQGATE_INCOMPATIBLE" : "UPSTREAM_RESPONSE_INVALID",
+      );
+    },
+  );
+  it("ignores advancing observed_at and inventory/action ordering as identity keys", async () => {
+    const f = fixture();
+    f.f.sources.push({
+      ...source(),
+      instanceId: "peer",
+      instanceNo: 3,
+      pid: 456,
+      session: { state: "disconnected" },
+    });
+    f.f.mutate = (n) => {
+      if (n === 2) {
+        f.f.sources.reverse();
+        f.f.account.descriptor.actions.reverse();
+        f.f.account.snapshot.observed_at = new Date(TEST_NOW + 1).toISOString();
+      }
+    };
+    await expect(f.adapter.lookup({ code: "600000" })).resolves.toHaveProperty("items");
+    expect(f.request).toHaveBeenCalledTimes(13);
+  });
+  it.each([
+    "pid",
+    "instanceNo",
+    "restartCount",
+    "providerId",
+    "workerState",
+    "autoLogin",
+    "defaultGuest",
+    "state",
+    "removed",
+    "account",
+    "saved",
+    "l2",
+  ])("refuses peer continuity change %s", async (kind) => {
+    const f = fixture();
+    f.f.sources.push({
+      ...source(),
+      instanceId: "peer",
+      instanceNo: 3,
+      pid: 456,
+      session: { state: "disconnected" },
+    });
+    f.f.mutate = (n) => {
+      if (n !== 2) return;
+      if (kind === "removed") {
+        f.f.sources.pop();
+        return;
+      }
+      if (kind === "account") f.f.peerAccount.snapshot.account_display = "private-peer";
+      else if (kind === "saved") f.f.peerAccount.snapshot.saved_login.available = false;
+      else if (kind === "l2") f.f.peerAccount.snapshot.level2_access = false;
+      else if (kind === "state") f.f.sources[1]!.session.state = "connected";
+      else
+        set(
+          f.f.sources[1],
+          kind,
+          ["pid", "instanceNo", "restartCount"].includes(kind)
+            ? 999
+            : ["autoLogin", "defaultGuest"].includes(kind)
+              ? true
+              : "changed",
+        );
+    };
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+      "code",
+      "FQGATE_INCOMPATIBLE",
+    );
+    expect(f.request.mock.calls.filter(([u]) => u.includes("search?"))).toHaveLength(1);
+  });
+  it.each(["pid", "instanceNo"])("refuses duplicated peer %s before search", async (key) => {
+    const f = fixture();
+    const peer = {
+      ...source(),
+      instanceId: "peer",
+      instanceNo: 3,
+      pid: 456,
+      session: { state: "disconnected" },
+    };
+    set(peer, key, key === "pid" ? 123 : 2);
+    f.f.sources.push(peer);
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+      "code",
+      "UPSTREAM_RESPONSE_INVALID",
+    );
+    expect(f.request).toHaveBeenCalledTimes(4);
+  });
+  it("rejects partial coverage instead of publishing a partial result", async () => {
+    const f = fixture();
+    f.f.result.data.coverage.status = "partial";
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+      "code",
+      "UPSTREAM_RESPONSE_INVALID",
+    );
+  });
+  it.each(["initial", "final"])(
+    "five seconds include %s identity and ignore late completion",
+    async (stage) => {
+      vi.useFakeTimers();
+      try {
+        const f = fixture();
+        let finish!: (v: string) => void;
+        const delayed = () =>
+          new Promise<string>((resolve) => {
+            finish = resolve;
+          });
+        if (stage === "initial") f.identity.mockImplementationOnce(delayed);
+        else f.identity.mockResolvedValueOnce("a".repeat(64)).mockImplementationOnce(delayed);
+        const outcome = f.adapter.lookup({ code: "600000" });
+        const assertion = expect(outcome).rejects.toHaveProperty("code", "UPSTREAM_UNAVAILABLE");
+        await vi.advanceTimersByTimeAsync(5000);
+        await assertion;
+        const count = f.request.mock.calls.length;
+        expect(count).toBe(stage === "initial" ? 0 : 11);
+        finish("a".repeat(64));
+        await vi.advanceTimersByTimeAsync(1);
+        expect(f.request).toHaveBeenCalledTimes(count);
+        expect(vi.getTimerCount()).toBe(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+  it.each(["initial", "final"])("deadline counts %s identity elapsed time", async (stage) => {
+    const f = fixture();
+    const slow = async () => {
+      f.f.time += 5000;
+      return "a".repeat(64);
+    };
+    if (stage === "initial") f.identity.mockImplementationOnce(slow);
+    else f.identity.mockResolvedValueOnce("a".repeat(64)).mockImplementationOnce(slow);
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+      "code",
+      "UPSTREAM_UNAVAILABLE",
+    );
+    expect(f.request).toHaveBeenCalledTimes(stage === "initial" ? 0 : 11);
+  });
+  it("rejects a late HTTP completion and sends no subsequent requests", async () => {
+    vi.useFakeTimers();
+    try {
+      const f = fixture();
+      let finish!: (v: {
+        status: number;
+        headers: Record<string, string>;
+        body: Uint8Array;
+      }) => void;
+      f.request.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      );
+      const outcome = f.adapter.lookup({ code: "600000" });
+      const assertion = expect(outcome).rejects.toHaveProperty("code", "UPSTREAM_UNAVAILABLE");
+      await vi.advanceTimersByTimeAsync(5000);
+      await assertion;
+      finish({ status: 200, headers: {}, body: Buffer.from(JSON.stringify(f.f.version)) });
+      await vi.advanceTimersByTimeAsync(1);
+      expect(f.request).toHaveBeenCalledTimes(1);
+      expect(f.identity).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("counts contract parsing/fingerprinting against the same budget", async () => {
+    const f = fixture();
+    vi.mocked(contract.operationContractFingerprint).mockImplementation(() => {
+      f.f.time += 5000;
+      return V2_LOOKUP_FINGERPRINT;
+    });
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+      "code",
+      "UPSTREAM_UNAVAILABLE",
+    );
+    expect(f.request).toHaveBeenCalledTimes(3);
+  });
+  it("normalizes identity failures without private causes", async () => {
+    const f = fixture();
+    f.identity.mockRejectedValueOnce(new Error("private-process-path"));
+    const error = await f.adapter.lookup({ code: "600000" }).catch((e) => e);
+    expect(error.code).toBe("PROCESS_IDENTITY_MISMATCH");
+    expect(JSON.stringify(error)).not.toContain("private");
+    expect(error).not.toHaveProperty("cause");
+    expect(f.request).not.toHaveBeenCalled();
+  });
+  it.each(Array.from({ length: 11 }, (_, i) => i + 1))(
+    "refuses 503 at GET stage %s without retry or post-failure work",
+    async (stage) => {
+      const f = fixture();
+      const original = f.request.getMockImplementation()!;
+      let calls = 0;
+      f.request.mockImplementation(async (url, options) => {
+        if (++calls === stage)
+          return { status: 503, headers: {}, body: Buffer.from('{"message":"private-account"}') };
+        return original(url, options);
+      });
+      const error = await f.adapter.lookup({ code: "600000" }).catch((e) => e);
+      expect(error.code).toBe("UPSTREAM_UNAVAILABLE");
+      expect(error).not.toHaveProperty("items");
+      expect(JSON.stringify(error)).not.toContain("private-account");
+      expect(f.request).toHaveBeenCalledTimes(stage);
+    },
+  );
+  it.each(["initial", "final"])("deadline includes %s response decoding", async (phase) => {
+    const f = fixture();
+    const decoder = TextDecoder.prototype.decode;
+    let calls = 0;
+    vi.spyOn(TextDecoder.prototype, "decode").mockImplementation(function (
+      this: TextDecoder,
+      ...args
+    ) {
+      const result = decoder.apply(this, args);
+      if (++calls === (phase === "initial" ? 1 : 11)) f.f.time += 5000;
+      return result;
+    });
+    await expect(f.adapter.lookup({ code: "600000" })).rejects.toHaveProperty(
+      "code",
+      "UPSTREAM_UNAVAILABLE",
+    );
+    expect(f.request).toHaveBeenCalledTimes(phase === "initial" ? 1 : 11);
+  });
+  it("reduces all per-call timeouts after identity consumes part of the budget", async () => {
+    const f = fixture();
+    f.identity.mockImplementationOnce(async () => {
+      f.f.time += 1234;
+      return "a".repeat(64);
+    });
+    await expect(f.adapter.lookup({ code: "600000" })).resolves.toHaveProperty("items");
+    for (const [, options] of f.request.mock.calls) expect(options.timeoutMs).toBe(3766);
   });
   it("rejects caller-selected instances before any identity or HTTP work", async () => {
     const f = fixture();
@@ -426,6 +805,32 @@ describe("exact 2.0.5 read-only lookup", () => {
       if (status !== 200) {
         expect(f.identity).not.toHaveBeenCalled();
         expect(f.request).not.toHaveBeenCalled();
+      } else {
+        const logs = vi.spyOn(console, "error").mockImplementation(() => {});
+        f.f.mutate = (n) => {
+          if (n === 4) f.f.account.snapshot.account_display = "changed-private-account";
+        };
+        const drift = await handler(
+          new Request(`http://${host}/api/v1/instruments/lookup`, {
+            method: "POST",
+            headers: {
+              host,
+              "cf-access-jwt-assertion": "fixture",
+              "content-type": "application/json",
+            },
+            body: '{"code":"600000"}',
+          }),
+        );
+        expect(drift.status).toBeGreaterThanOrEqual(400);
+        const body = await drift.text();
+        expect(body).toContain("FQGATE_INCOMPATIBLE");
+        expect(body).not.toMatch(
+          /items|600000|Fixture|never-return|changed-private-account|fixture-source|account_display/,
+        );
+        expect(JSON.stringify(logs.mock.calls)).not.toMatch(
+          /never-return|changed-private-account|fixture-source|account_display/,
+        );
+        expect(logs).toHaveBeenCalled();
       }
       f.request.mockClear();
       f.identity.mockClear();

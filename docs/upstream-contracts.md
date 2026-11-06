@@ -791,3 +791,28 @@ Stop at independent PR review; no merge/release/deploy, native/service mutation,
 Cloudflare, account/QR/MFA/Saved Login/L2 action or upstream inquiry send.
 **HOST_BLOCKED / LIVE_UNQUALIFIED / PROD_NO_GO;
 LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**.
+
+## MP-9 exact-2.0.5 production continuity repair — 2026-11-06
+
+[Issue #34](https://github.com/blooddrunk/fqgate-remote-bridge/issues/34) authorizes
+this separate production security patch after merged MP-8 PR #33. The prior
+expected-failure account-display regression becomes an ordinary negative test.
+The existing exact-2.0.5 lookup now compares all listed Sources' bounded reviewed
+account/Saved Login/L2/session fields and Source/worker metadata before and after
+search, with one 5000 ms deadline including both identity calls and parsing.
+Unknown account fields, observed drift, missing/malformed evidence, explicit
+partial coverage and late completions deny all results. Native optional nullable
+fields stay optional; observed_at is freshness-only, never identity.
+
+[Task](tasks/fqgate-mp9-production-continuity.md),
+[field policy and limitations](plans/fqgate-mp9-production-continuity.md),
+[repeat and excluded approvals](operations/fqgate-mp9-offline-validation.md),
+[engineering handoff](status/fqgate-mp9-handoff.md).
+Only production `src/fqgate/market/v2.ts` changes. v1, exact compatibility pins,
+QR/status, remote permissions and admission import boundaries remain unchanged.
+No native identity epoch/lifetime is invented or MP-8/2.0.6/2.0.7 code activated.
+Same-display swaps and unsampled ABA, native account identity, Saved Login/L2
+isolation and live acceptance remain unqualified. Preserve permanent Windows
+c06fbcf and outputs; no runtime/service action, credential/account/Cloudflare
+mutation or upstream inquiry send. Stop for independent PR review.
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO**.

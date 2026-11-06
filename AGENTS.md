@@ -1,5 +1,14 @@
 # AGENTS.md
 
+Current MP-9 is authorized by Issue #34 after reviewed MP-8 PR #33 merged at
+`7413604e7a055c493c7b006e898fe8c6e59c05c2`. Contract:
+`docs/tasks/fqgate-mp9-production-continuity.md`. This separate security task
+permits only exact-2.0.5 production lookup observable-continuity repair and
+source/offline/inert validation. It supersedes MP-8's production-repair exclusion
+below; every other protected-host, permission, experimental-import and no-live
+boundary remains. Stop at independent PR review. No merge/tag/release/deploy.
+Retain LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO.
+
 Current MP-8 is authorized by Issue #32 after reviewed PR #31 merged at
 `2410e86334f9c498cd5a1023f06153e48407629b`. Contract:
 `docs/tasks/fqgate-mp8-admission-candidates.md`. Work only on isolated exact-version
