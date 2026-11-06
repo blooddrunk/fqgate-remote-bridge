@@ -1108,3 +1108,16 @@ No process/service launch, deployment/repair or native account action is authori
 [Task](docs/tasks/fqgate-2-0-5-mp5-readiness-triage.md),
 [repeat / operator decision sheet](docs/operations/windows-fqgate205-mp5.md),
 [engineering and host evidence](docs/status/fqgate-2-0-5-mp5-readiness-handoff.md).
+
+## MP-6 只读主机前提与决策（2026-11-06）
+
+[Issue #28](https://github.com/blooddrunk/fqgate-remote-bridge/issues/28) 在 MP-5
+PR #27 合并后授权独立只读诊断、产物来源核对和修复决策单。真实 WORK-PC 已有
+未合并的 2.0.6 工作，两端口当前均无监听；保留其 checkout、已有产物与私有状态，
+不把历史 2.0.5 结果当作当前观察。新增 metadata collector 与低精度创建时间负向测试，
+不改变运行时。工程验证与真实主机 **BLOCKED** 分开记录。
+[任务](docs/tasks/fqgate-2-0-5-mp6-host-prerequisites.md)、
+[只读复查和三份独立决策单](docs/operations/windows-fqgate205-mp6.md)、
+[交接/证据](docs/status/fqgate-2-0-5-mp6-host-handoff.md)。
+启动/部署/原生修复均未执行，upstream 问询仅为草稿、未发送。
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**；多账号生产 **NO-GO**。

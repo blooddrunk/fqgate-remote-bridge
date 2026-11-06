@@ -37,6 +37,9 @@ export function classifyProcessRecord(
   const recorded = ticks(r.startedAt),
     created = ticks(owner.created);
   if (!recorded || !created) return "UNREADABLE";
+  // Padding can make rounded timestamps equal real ticks ending in zero. Equality
+  // must not promote missing precision into a verified native incarnation.
+  if (!/\.\d{7}Z$/.test(r.startedAt) || !/\.\d{7}Z$/.test(owner.created)) return "STALE";
   return r.pid === owner.pid && recorded === created ? "OBSERVED" : "STALE";
 }
 

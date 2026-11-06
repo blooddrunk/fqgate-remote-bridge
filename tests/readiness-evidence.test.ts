@@ -21,6 +21,29 @@ const owner = {
 };
 const record = () => ({ pid: 12, executablePath: owner.path, startedAt: owner.created });
 describe("MP5 redacted evidence integrity", () => {
+  it.each([3, 4, 5, 6])(
+    "MP6 rejects %i-digit creation even when zero padding equals the native ticks",
+    (precision) => {
+      const p = { ...owner, created: "2026-10-24T00:00:00.1230000Z" };
+      expect(classifyProcessRecord({ ...record(), startedAt: p.created }, p, owner.path)).toBe(
+        "OBSERVED",
+      );
+      const rounded = p.created.replace(
+        /\.(\d{7})Z$/,
+        (_, fraction: string) => `.${fraction.slice(0, precision)}Z`,
+      );
+      expect(classifyProcessRecord({ ...record(), startedAt: rounded }, p, owner.path)).toBe(
+        "STALE",
+      );
+      expect(
+        classifyProcessRecord(
+          { ...record(), startedAt: p.created },
+          { ...p, created: rounded },
+          owner.path,
+        ),
+      ).toBe("STALE");
+    },
+  );
   it.each([
     ["matching", "OBSERVED"],
     ["pid-reuse", "STALE"],
