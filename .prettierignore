@@ -12,3 +12,6 @@ tests/fixtures/fqgate-v2/release.json
 tests/fixtures/fqgate-v2/latest/freshness.json
 tests/fixtures/fqgate-v2/latest/stable.json
 tests/fixtures/fqgate-v2/latest/release.json
+tests/fixtures/fqgate-mp7/freshness.json
+tests/fixtures/fqgate-mp7/stable.json
+tests/fixtures/fqgate-mp7/release.json

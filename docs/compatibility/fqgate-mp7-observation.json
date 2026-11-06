@@ -1,0 +1,129 @@
+{
+  "status": "RELEASE_OBSERVED",
+  "observedAt": "2026-11-06T01:16:47.925Z",
+  "sourceCommit": "3434783820aa2623bb0b74d1f3643ef6941aa5ec",
+  "channel": "stable-v2",
+  "legacy": {
+    "version": "1.0.5",
+    "manifestUrl": "https://raw.githubusercontent.com/fqgate/FQGate-releases/3434783820aa2623bb0b74d1f3643ef6941aa5ec/releases/stable.json"
+  },
+  "releases": {
+    "application": {
+      "version": "2.0.7",
+      "publishedAt": "2026-10-31T03:03:54Z",
+      "url": "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.7"
+    },
+    "agent": {
+      "version": "2.0.7",
+      "publishedAt": "2026-10-31T03:53:09Z",
+      "url": "https://github.com/fqgate/FQGate-agent/releases/tag/fqgate-v2.0.7"
+    }
+  },
+  "manifestPaths": {
+    "freshness": "releases/v2/freshness.json",
+    "stable": "releases/v2/10/stable.json",
+    "release": "releases/v2/2.0.7/release.json"
+  },
+  "schemaVersion": 1,
+  "trust": "UNAUTHENTICATED_OBSERVATION",
+  "signatureVerified": false,
+  "installAllowed": false,
+  "runtimeQualified": false,
+  "qualification": "BLOCKED",
+  "blockers": [
+    "SIGNING_TRUST_ROOT_UNESTABLISHED",
+    "SIGNATURE_ALGORITHM_AND_BYTES_CONTRACT_UNCONFIRMED",
+    "KEY_ROTATION_AND_REVOCATION_UNCONFIRMED",
+    "AUTHENTICATED_PERSISTENT_ANTI_ROLLBACK_UNIMPLEMENTED",
+    "DIRECTORY_ACTIVATION_AND_CRASH_ROLLBACK_UNIMPLEMENTED",
+    "V2_WINDOWS_RUNTIME_CONTRACT_NOT_QUALIFIED"
+  ],
+  "version": "2.0.7",
+  "publishedAt": "2026-10-31T03:03:54.000Z",
+  "sequence": 10,
+  "refreshSequence": 11,
+  "keyIds": [
+    "update-freshness-signing-v2",
+    "update-release-signing-v2",
+    "update-release-signing-v2"
+  ],
+  "metadataHashes": {
+    "freshness": "fc8cd377c6a5fc1e331b1f428dbfce8d0b36d69f704fed9e31cec92cc3fb8669",
+    "stable": "cdf2101e7b4d569cdb752f814e14e5fe06210e3935d66e9ce87781961168f5fc",
+    "release": "00189cdd61af4a1fba1287a98932f70d324df591ff0d3b749f6df65bb646b9ae",
+    "githubRelease": "346f7c58a5f6bc1d9b99459ec401c591e99844a024c2cbdac72e5c2bfd41f1c2"
+  },
+  "githubReleaseUrl": "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.7",
+  "windows": {
+    "fileName": "FQGate-2.0.7-windows-x64.zip",
+    "bytes": 32181584,
+    "sha256": "6a6a43aea7380cd5e3c5c6f6e271140d78bb3a978a8711e2d0a4f64dfe253dcf",
+    "assetUrl": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.7/FQGate-2.0.7-windows-x64.zip",
+    "installMode": "replaceApplication",
+    "requiredEntries": ["FQGate.exe", "fqgate-updater.exe"]
+  },
+  "baseline": {
+    "version": "2.0.7",
+    "sequence": 10,
+    "refreshSequence": 11,
+    "releaseHash": "00189cdd61af4a1fba1287a98932f70d324df591ff0d3b749f6df65bb646b9ae",
+    "stableHash": "cdf2101e7b4d569cdb752f814e14e5fe06210e3935d66e9ce87781961168f5fc",
+    "freshnessHash": "fc8cd377c6a5fc1e331b1f428dbfce8d0b36d69f704fed9e31cec92cc3fb8669"
+  },
+  "change": "INITIAL_REVIEW_REQUIRED",
+  "replayProtection": "UNAUTHENTICATED_COMPARISON_ONLY",
+  "compatibility": "UNKNOWN",
+  "production": "NO_GO",
+  "receipts": [
+    {
+      "url": "https://api.github.com/repos/fqgate/FQGate-releases/releases/latest",
+      "bytes": 18078,
+      "sha256": "346f7c58a5f6bc1d9b99459ec401c591e99844a024c2cbdac72e5c2bfd41f1c2"
+    },
+    {
+      "url": "https://api.github.com/repos/fqgate/FQGate-agent/releases/latest",
+      "bytes": 17997,
+      "sha256": "b7603d4d34dea1bfb0db56f2f798c78fe6e28b2c92a215a8ca47290a544a0163"
+    },
+    {
+      "url": "https://api.github.com/repos/fqgate/FQGate-releases/commits/main",
+      "bytes": 2882,
+      "sha256": "6c4000e87877dce18f6ee81b134447a19afba20bb8f9a59749bc4b13a2b6207f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fqgate/FQGate-releases/3434783820aa2623bb0b74d1f3643ef6941aa5ec/releases/stable.json",
+      "bytes": 1333,
+      "sha256": "4e200afc9f682fe634cacd23fb3561ccd24605f5adff3c89272fe6eefcede222"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fqgate/FQGate-releases/3434783820aa2623bb0b74d1f3643ef6941aa5ec/releases/v2/freshness.json",
+      "bytes": 381,
+      "sha256": "fc8cd377c6a5fc1e331b1f428dbfce8d0b36d69f704fed9e31cec92cc3fb8669"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fqgate/FQGate-releases/3434783820aa2623bb0b74d1f3643ef6941aa5ec/releases/v2/10/stable.json",
+      "bytes": 402,
+      "sha256": "cdf2101e7b4d569cdb752f814e14e5fe06210e3935d66e9ce87781961168f5fc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fqgate/FQGate-releases/3434783820aa2623bb0b74d1f3643ef6941aa5ec/releases/v2/2.0.7/release.json",
+      "bytes": 4026,
+      "sha256": "00189cdd61af4a1fba1287a98932f70d324df591ff0d3b749f6df65bb646b9ae"
+    },
+    {
+      "url": "https://api.github.com/repos/fqgate/FQGate-releases/releases/tags/fqgate-v2.0.7",
+      "bytes": 18078,
+      "sha256": "346f7c58a5f6bc1d9b99459ec401c591e99844a024c2cbdac72e5c2bfd41f1c2"
+    },
+    {
+      "url": "https://api.github.com/repos/fqgate/FQGate-releases/releases/latest",
+      "bytes": 18078,
+      "sha256": "346f7c58a5f6bc1d9b99459ec401c591e99844a024c2cbdac72e5c2bfd41f1c2"
+    },
+    {
+      "url": "https://api.github.com/repos/fqgate/FQGate-agent/releases/latest",
+      "bytes": 17997,
+      "sha256": "b7603d4d34dea1bfb0db56f2f798c78fe6e28b2c92a215a8ca47290a544a0163"
+    }
+  ]
+}
