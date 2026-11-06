@@ -1,0 +1,15 @@
+{
+  "tag_name": "fqgate-v2.0.7",
+  "published_at": "2026-10-31T03:03:54Z",
+  "draft": false,
+  "prerelease": false,
+  "html_url": "https://github.com/fqgate/FQGate-releases/releases/tag/fqgate-v2.0.7",
+  "assets": [
+    {
+      "name": "FQGate-2.0.7-windows-x64.zip",
+      "size": 32181584,
+      "digest": "sha256:6a6a43aea7380cd5e3c5c6f6e271140d78bb3a978a8711e2d0a4f64dfe253dcf",
+      "browser_download_url": "https://github.com/fqgate/FQGate-releases/releases/download/fqgate-v2.0.7/FQGate-2.0.7-windows-x64.zip"
+    }
+  ]
+}

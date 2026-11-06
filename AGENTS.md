@@ -1,15 +1,14 @@
 # AGENTS.md
 
-Current MP-6 is limited to read-only host prerequisites, build provenance,
-standalone diagnostic corrections and decision sheets under
-`docs/tasks/fqgate-2-0-5-mp6-host-prerequisites.md`, authorized by Issue #28
-after merged MP-5 PR #27 (`97aea578...`). Evidence/decision:
-`docs/status/fqgate-2-0-5-mp6-host-handoff.md`. Preserve subsequent unmerged
-Windows 2.0.6 work, existing dist/.output and external private artifacts.
-Stage B sheets and the upstream inquiry are draft only. No native process/service
-start, deployment/repair, account/QR/phone/Saved Login/L2 mutation, production
-integration or permission expansion is authorized.
-Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`.
+Current MP-7 is authorized by Issue #30 after merged MP-6 PR #29
+(`3e06422260a81255de1e5ff8b623a00f52cf5454`). Scope: standalone GET-only
+release observation, offline/source/package inspection, tests and evidence/docs
+under `docs/tasks/fqgate-mp7-release-investigation.md`. Preserve Windows
+`codex/fqgate206-compatibility` / c06fbcf, dist/.output, private inputs and candidates.
+No runtime start/stop, upgrade/deployment/repair, private-file/account/QR/phone/
+Saved Login/L2 mutation, Cloudflare change, production integration or permission/
+supportedRange expansion. MP-8 is proposal only. Stop at a reviewable PR.
+Retain `LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED`; production multi-account NO-GO.
 
 This file is the working contract for coding agents contributing to `fqgate-remote-bridge`.
 

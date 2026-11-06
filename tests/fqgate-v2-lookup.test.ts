@@ -116,14 +116,17 @@ describe("exact 2.0.5 read-only lookup", () => {
     };
     await expect(f.adapter.lookup({ code: "600000" })).resolves.toEqual({ items: [] });
   });
-  it.each(["2.0.4", "2.0.6", "1.0.5", "unknown"])("denies wrong version %s", async (version) => {
-    const f = fixture();
-    f.f.version.version = version;
-    await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
-      code: "FQGATE_INCOMPATIBLE",
-    });
-    expect(f.request).toHaveBeenCalledTimes(1);
-  });
+  it.each(["2.0.4", "2.0.6", "2.0.7", "2.0.8", "1.0.5", "unknown"])(
+    "denies wrong version %s",
+    async (version) => {
+      const f = fixture();
+      f.f.version.version = version;
+      await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
+        code: "FQGATE_INCOMPATIBLE",
+      });
+      expect(f.request).toHaveBeenCalledTimes(1);
+    },
+  );
   it.each([{ sources: [] }, { sources: [{ ...source(), session: { state: "disconnected" } }] }])(
     "requires a connected source %#",
     async ({ sources }) => {
@@ -162,6 +165,17 @@ describe("exact 2.0.5 read-only lookup", () => {
       }
     };
     await expect(f.adapter.lookup({ code: "600000" })).rejects.toBeDefined();
+  });
+  it("records the existing account-display sampling gap for MP-8 review", async () => {
+    const f = fixture();
+    f.f.mutate = (n) => {
+      if (n === 2) f.f.account.snapshot.account_display = "changed-private-account";
+    };
+    // Characterization only: main binds Source incarnation, not native account identity/epoch.
+    // This passing assertion documents a limitation; it is NOT an isolation guarantee.
+    const value = await f.adapter.lookup({ code: "600000" });
+    expect(value.items).toHaveLength(1);
+    expect(JSON.stringify(value)).not.toContain("changed-private-account");
   });
   it("checks selected account readiness independently", async () => {
     const f = fixture();
@@ -208,7 +222,7 @@ describe("exact 2.0.5 read-only lookup", () => {
     expect(JSON.stringify(error)).not.toContain("sensitive-account-secret");
     expect(f.request.mock.calls.filter(([u]) => u.includes("search?")).length).toBe(1);
   });
-  it.each([201, 302, 409, 500, 502, 504])("denies non-200 %s", async (status) => {
+  it.each([201, 302, 409, 500, 502, 503, 504])("denies non-200 %s", async (status) => {
     const f = fixture();
     f.f.status = status;
     await expect(f.adapter.lookup({ code: "600000" })).rejects.toMatchObject({
@@ -401,6 +415,24 @@ describe("exact 2.0.5 read-only lookup", () => {
         expect(f.identity).not.toHaveBeenCalled();
         expect(f.request).not.toHaveBeenCalled();
       }
+      f.request.mockClear();
+      f.identity.mockClear();
+      for (const path of ["/api/v1/trading/orders", "/v2/trading/orders"]) {
+        const denied = await handler(
+          new Request(`http://${host}${path}`, {
+            method: "POST",
+            headers: {
+              host,
+              "cf-access-jwt-assertion": "fixture",
+              "content-type": "application/json",
+            },
+            body: "{}",
+          }),
+        );
+        expect(denied.status).toBe(host === "unknown.example.com" ? 421 : 404);
+      }
+      expect(f.request).not.toHaveBeenCalled();
+      expect(f.identity).not.toHaveBeenCalled();
       vi.restoreAllMocks();
     }
   });
@@ -416,7 +448,7 @@ describe("exact 2.0.5 read-only lookup", () => {
       components: { schemas: { Fixture: { type: "string" } } },
     };
     const baseline = contract.operationContractFingerprint(doc, V2_LOOKUP_CONTRACTS);
-    doc.paths["/unrelated"] = {
+    doc.paths["/trading/orders"] = {
       get: { responses: { "200": { $ref: "#/components/schemas/Fixture" } } },
     };
     expect(contract.operationContractFingerprint(doc, V2_LOOKUP_CONTRACTS)).toBe(baseline);

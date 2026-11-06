@@ -14,6 +14,7 @@ const diagnostics = new Set(
     "source-readiness.ts",
     "source-readiness-mp5.ts",
     "readiness-evidence.ts",
+    "release-observer.ts",
   ].map((name) => resolve(root, "src/fqgate/diagnostics", name)),
 );
 const failures = [];

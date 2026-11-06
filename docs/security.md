@@ -858,3 +858,23 @@ client-triggered lifecycle cleanup as well as availability and volatile sessions
 No production behavior is changed here.
 [Procedure, caveats and three reserved decision sheets](operations/windows-fqgate205-mp6.md).
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**; multi-account NO-GO.
+
+## MP-7 release and compatibility investigation — 2026-11-06
+
+Issue #30 follows merged MP-6 PR #29 (`3e064222...`). A standalone GET-only
+observer distinguishes legacy 1.0.5 from latest official stable 2.0.7, pins the
+v2 chain to one immutable upstream SHA, compares strict optional baselines and
+emits review-required changes. It never authenticates publisher signatures or
+grants compatibility/installation authority. No production caller imports it.
+2.0.5 exact version/artifact/client/fingerprint gates and v1 supportedRange remain
+unchanged; the preserved Windows 2.0.6 branch is reviewed read-only, not integrated.
+2.0.7 package structure/hash/static review is not runtime qualification.
+
+[Task](tasks/fqgate-mp7-release-investigation.md),
+[versioned matrix and MP-8 design](plans/fqgate-mp7-contract-matrix.md),
+[repeat/limits and deferred boundaries](operations/fqgate-mp7-observation.md),
+[delivery evidence](status/fqgate-mp7-handoff.md),
+[proposed MP-8 goal](prompts/fqgate-mp8-codex-goal.md).
+No permanent runtime/service start/stop, deployment, private/account change or
+permission/range expansion. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**;
+production multi-account **NO-GO**. MP-8 is not authorized by this delivery.

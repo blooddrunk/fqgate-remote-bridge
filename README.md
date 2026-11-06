@@ -1121,3 +1121,23 @@ PR #27 合并后授权独立只读诊断、产物来源核对和修复决策单�
 [交接/证据](docs/status/fqgate-2-0-5-mp6-host-handoff.md)。
 启动/部署/原生修复均未执行，upstream 问询仅为草稿、未发送。
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**；多账号生产 **NO-GO**。
+
+## MP-7 release and compatibility investigation — 2026-11-06
+
+Issue #30 follows merged MP-6 PR #29 (`3e064222...`). A standalone GET-only
+observer distinguishes legacy 1.0.5 from latest official stable 2.0.7, pins the
+v2 chain to one immutable upstream SHA, compares strict optional baselines and
+emits review-required changes. It never authenticates publisher signatures or
+grants compatibility/installation authority. No production caller imports it.
+2.0.5 exact version/artifact/client/fingerprint gates and v1 supportedRange remain
+unchanged; the preserved Windows 2.0.6 branch is reviewed read-only, not integrated.
+2.0.7 package structure/hash/static review is not runtime qualification.
+
+[Task](docs/tasks/fqgate-mp7-release-investigation.md),
+[versioned matrix and MP-8 design](docs/plans/fqgate-mp7-contract-matrix.md),
+[repeat/limits and deferred boundaries](docs/operations/fqgate-mp7-observation.md),
+[delivery evidence](docs/status/fqgate-mp7-handoff.md),
+[proposed MP-8 goal](docs/prompts/fqgate-mp8-codex-goal.md).
+No permanent runtime/service start/stop, deployment, private/account change or
+permission/range expansion. **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED**;
+production multi-account **NO-GO**. MP-8 is not authorized by this delivery.
