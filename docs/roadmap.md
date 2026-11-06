@@ -972,3 +972,18 @@ isolation and live acceptance remain unqualified. Preserve permanent Windows
 c06fbcf and outputs; no runtime/service action, credential/account/Cloudflare
 mutation or upstream inquiry send. Stop for independent PR review.
 **LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO**.
+
+## MP-10 CI evidence fidelity — 2026-11-06
+
+[Issue #37](https://github.com/blooddrunk/fqgate-remote-bridge/issues/37) follows
+reviewed MP-9 PR #36 (`b33a44116be51b8306d908b01796eb9459bd9a7f`).
+[MP-10-A](tasks/fqgate-mp10-ci-fidelity.md) restores synthetic PR merge-candidate
+checkout, separately records source HEAD/base/tested merge and adds deterministic
+workflow/provenance regression coverage. Resource optimizations, both OS duties,
+Windows inert suites and production/security behavior stay unchanged.
+[Handoff and external evidence](status/fqgate-mp10-handoff.md).
+Stop at independent PR review; this is not a merge or phase-closure claim.
+[MP-10-B](plans/fqgate-mp10-host-decision.md) remains planning only / HOST_BLOCKED;
+exact native version/artifact/build and strong identity/epoch are unresolved.
+No host restoration, install/deploy, service/Cloudflare or account experiment.
+**LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO**.
