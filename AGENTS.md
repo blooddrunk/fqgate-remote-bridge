@@ -1,5 +1,15 @@
 # AGENTS.md
 
+Current MP-10 is authorized by Issue #37 after reviewed MP-9 PR #36 merged at
+`b33a44116be51b8306d908b01796eb9459bd9a7f`. Contract:
+`docs/tasks/fqgate-mp10-ci-fidelity.md`. MP-10-A changes CI/scripts/tests/docs only:
+test the synthetic PR merge candidate and record source head/base separately.
+This supersedes MP-9's head-only CI instruction. MP-10-B is planning only;
+`docs/plans/fqgate-mp10-host-decision.md` grants no host/account authority.
+All protected-host, permission and experimental-import boundaries below remain.
+Stop at independent PR review; no merge/tag/release/deploy.
+Retain LIVE_MULTI_ACCOUNT_ISOLATION_NOT_QUALIFIED / LIVE_UNQUALIFIED / PROD_NO_GO.
+
 Current MP-9 is authorized by Issue #34 after reviewed MP-8 PR #33 merged at
 `7413604e7a055c493c7b006e898fe8c6e59c05c2`. Contract:
 `docs/tasks/fqgate-mp9-production-continuity.md`. This separate security task
